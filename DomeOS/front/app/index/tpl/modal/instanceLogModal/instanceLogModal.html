@@ -1,0 +1,16 @@
+
+<div class="d-modal-header">查看日志</div>
+<div class="modal-body">
+  <p>实例名称：{{instanceInfo.instanceName}}</p>
+  <div style="margin-bottom:16px;">选择容器：
+    <div style="display:inline-block;width:490px;" class="select-con">
+      <button class="btn btn-white btn-select">{{currentContainer?currentContainer.containerId.substring(0, 12):'选择容器'}}<i class="icon-down"></i></button>
+      <ul class="select-list">
+        <li ng-repeat="container in instanceInfo.containers" class="select-item"><a ng-bind="container.pageTxt" ng-click="toggleContainer($index)"></a></li>
+      </ul>
+    </div>
+  </div>
+  <div log-info="log-info" class="modal-log text-left">
+    <div ng-bind-html="log" class="log"></div>
+  </div>
+</div>

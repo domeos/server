@@ -1,0 +1,236 @@
+/*
+ * @description: common css variable and function
+ * @version: 0.1
+ */
+/* line 4, createDeploy1.scss */
+.create-deploy1 {
+  min-height: 1000px;
+  background-color: #e5e5e5;
+  margin: 0 -20px 0 -20px;
+}
+/* line 9, createDeploy1.scss */
+.create-deploy1 .mirror-con {
+  padding: 30px 32px 10px 32px;
+  background-color: #fff;
+}
+/* line 12, createDeploy1.scss */
+.create-deploy1 .mirror-con .mirrror {
+  position: relative;
+  width: 100%;
+  border: 1px solid #d4d7de;
+  border-radius: 3px;
+}
+/* line 17, createDeploy1.scss */
+.create-deploy1 .mirror-con .mirrror .mirror-txt {
+  width: 100%;
+  height: 70px;
+}
+/* line 21, createDeploy1.scss */
+.create-deploy1 .mirror-con .mirrror .mirror-label {
+  position: absolute;
+  width: 152px;
+  height: 72px;
+  left: -1px;
+  top: -1px;
+  font-weight: bold;
+  color: #fff;
+  text-align: center;
+  line-height: 70px;
+  background-color: #2994e7;
+  border-radius: 3px 0 0 3px;
+}
+/* line 34, createDeploy1.scss */
+.create-deploy1 .mirror-con .mirrror .icon-search {
+  position: absolute;
+  left: 182px;
+  top: 28px;
+}
+/* line 39, createDeploy1.scss */
+.create-deploy1 .mirror-con .mirrror .mirror-txt {
+  height: 70px;
+  padding-left: 206px;
+  padding-right: 249px;
+  border: none;
+}
+/* line 45, createDeploy1.scss */
+.create-deploy1 .mirror-con .mirrror .mirror-button {
+  position: absolute;
+  width: 235px;
+  height: 42px;
+  line-height: 42px;
+  top: 14px;
+  right: 0;
+  border-left: 1px solid #d4d7de;
+  text-align: center;
+}
+/* line 55, createDeploy1.scss */
+.create-deploy1 .mirror-con .mirrror .select-list {
+  border: none;
+  top: 73px;
+  width: 78%;
+  margin-left: 152px;
+  max-height: none;
+}
+/* line 61, createDeploy1.scss */
+.create-deploy1 .mirror-con .mirrror .select-list ul {
+  border: 1px solid #d4d7de;
+  border-radius: 3px;
+  max-height: 300px;
+  overflow: auto;
+}
+/* line 70, createDeploy1.scss */
+.create-deploy1 .nomirror {
+  padding-left: 32px;
+  padding-bottom: 16px;
+  background-color: #fff;
+}
+/* line 75, createDeploy1.scss */
+.create-deploy1 .tabset {
+  background-color: #fff;
+}
+/* line 78, createDeploy1.scss */
+.create-deploy1 .nav-tabs {
+  padding-left: 6px;
+  min-width: 300px;
+}
+/* line 82, createDeploy1.scss */
+.create-deploy1 .nav-tabs li .icon-cancel {
+  filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=0);
+  opacity: 0;
+}
+/* line 86, createDeploy1.scss */
+.create-deploy1 .nav-tabs li:hover .icon-cancel, .create-deploy1 .nav-tabs li.active .icon-cancel {
+  filter: progid:DXImageTransform.Microsoft.Alpha(enabled=false);
+  opacity: 1;
+}
+/* line 92, createDeploy1.scss */
+.create-deploy1 .tab-content {
+  background-color: #e5e5e5;
+}
+/* line 95, createDeploy1.scss */
+.create-deploy1 ng-form {
+  display: block;
+}
+/* line 98, createDeploy1.scss */
+.create-deploy1 .tab-content {
+  margin: 0 -20px 0 -20px;
+}
+/* line 101, createDeploy1.scss */
+.create-deploy1 .nav-option {
+  position: absolute;
+  width: 136px;
+  border-bottom: 2px solid transparent;
+  background-color: #fff;
+  z-index: 99;
+}
+/* line 107, createDeploy1.scss */
+.create-deploy1 .nav-option span {
+  display: inline-block;
+  padding: 22px 5px 20px 5px;
+  text-align: center;
+}
+/* line 111, createDeploy1.scss */
+.create-deploy1 .nav-option span .icon-next {
+  margin-left: 20px;
+}
+/* line 117, createDeploy1.scss */
+.create-deploy1 .mirror-info-con {
+  padding: 34px 52px 0 52px;
+}
+/* line 119, createDeploy1.scss */
+.create-deploy1 .mirror-info-con .mirror-info {
+  padding-bottom: 14px;
+  background-color: #fff;
+  border-radius: 3px;
+}
+/* line 123, createDeploy1.scss */
+.create-deploy1 .mirror-info-con .mirror-info li {
+  display: table;
+  width: 100%;
+}
+/* line 126, createDeploy1.scss */
+.create-deploy1 .mirror-info-con .mirror-info li:not(:first-child) {
+  border-top: 1px solid #f5f5f5;
+}
+/* line 130, createDeploy1.scss */
+.create-deploy1 .mirror-info-con .mirror-info .info-name {
+  display: table-cell;
+  width: 150px;
+  padding-top: 42px;
+  padding-left: 20px;
+  font-weight: bold;
+}
+/* line 137, createDeploy1.scss */
+.create-deploy1 .mirror-info-con .mirror-info .info-content {
+  display: table-cell;
+  padding-left: 20px;
+  padding-bottom: 20px;
+}
+/* line 147, createDeploy1.scss */
+.create-deploy1 .mirror-info-con .mirror-info .info-content .table-mirror, .create-deploy1 .mirror-info-con .mirror-info .info-content .env-line, .create-deploy1 .mirror-info-con .mirror-info .info-content .add-env {
+  width: 70%;
+}
+/* line 150, createDeploy1.scss */
+.create-deploy1 .mirror-info-con .mirror-info .info-content .select-con {
+  width: 50%;
+}
+/* line 152, createDeploy1.scss */
+.create-deploy1 .mirror-info-con .mirror-info .info-content .select-con .txt-prompt {
+  float: right;
+  margin-right: 12px;
+}
+/* line 157, createDeploy1.scss */
+.create-deploy1 .mirror-info-con .mirror-info .info-content .table-mirror {
+  table-layout: fixed;
+}
+/* line 159, createDeploy1.scss */
+.create-deploy1 .mirror-info-con .mirror-info .info-content .table-mirror .tb-value {
+  padding-left: 4px;
+}
+/* line 161, createDeploy1.scss */
+.create-deploy1 .mirror-info-con .mirror-info .info-content .table-mirror .tb-value .input-fill {
+  width: 100%;
+}
+/* line 165, createDeploy1.scss */
+.create-deploy1 .mirror-info-con .mirror-info .info-content .table-mirror td {
+  word-break: break-all;
+}
+/* line 169, createDeploy1.scss */
+.create-deploy1 .mirror-info-con .mirror-info .info-content .env-line {
+  position: relative;
+  display: flex;
+  margin-top: 12px;
+}
+/* line 173, createDeploy1.scss */
+.create-deploy1 .mirror-info-con .mirror-info .info-content .env-line input {
+  margin-left: 10px;
+  flex: 1;
+}
+/* line 176, createDeploy1.scss */
+.create-deploy1 .mirror-info-con .mirror-info .info-content .env-line input:first-child {
+  margin-left: 0;
+}
+/* line 180, createDeploy1.scss */
+.create-deploy1 .mirror-info-con .mirror-info .info-content .env-line .icon-delete {
+  position: absolute;
+  top: 8px;
+  left: 100%;
+  margin-left: 14px;
+}
+/* line 187, createDeploy1.scss */
+.create-deploy1 .mirror-info-con .mirror-info .info-content .input-sm {
+  margin-right: 50px;
+}
+/* line 190, createDeploy1.scss */
+.create-deploy1 .mirror-info-con .mirror-info .info-content .add-env {
+  display: block;
+  height: 34px;
+  margin-top: 12px;
+  border: 1px solid #f5f5f5;
+  text-align: center;
+  line-height: 30px;
+}
+/* line 197, createDeploy1.scss */
+.create-deploy1 .mirror-info-con .mirror-info .info-content .add-env:hover {
+  cursor: pointer;
+}

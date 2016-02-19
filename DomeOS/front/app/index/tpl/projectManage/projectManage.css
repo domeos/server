@@ -1,0 +1,32 @@
+/* line 168, index/images/nav/*.png */
+.nav-sprite {
+  background-image: url('../../../index/images/nav-s489985784d.png');
+  background-repeat: no-repeat;
+}
+
+/*
+ * @description: common css variable and function
+ * @version: 0.1
+ */
+/* line 6, projectManage.scss */
+.project-manage .project-options {
+  padding-top: 16px;
+  height: 82px;
+}
+/* line 9, projectManage.scss */
+.project-manage .project-options .btn-lg {
+  height: 43px;
+  width: 158px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: bold;
+  background-color: #2994e7;
+}
+/* line 16, projectManage.scss */
+.project-manage .project-options .btn-lg .icon-add-white {
+  margin-right: 4px;
+}
+/* line 20, projectManage.scss */
+.project-manage .project-options .input-search {
+  margin-left: 34px;
+}

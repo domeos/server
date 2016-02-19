@@ -1,0 +1,21 @@
+{
+  "id": 1,
+  "name": "mycluster",
+  "api": "10.16.42.200:8080",
+  "tag": null,
+  "ownerName": "test",
+  "ownerType": "USER",
+  "domain": null,
+  "dns": null,
+  "etcd": "http://10.16.42.200:4012",
+  "logConfig": 1,
+  "createTime": 1450169432283,
+  "clusterLog": {
+    "id": 1,
+    "clusterId": 1,
+    "kafka": "10.16.42.221:9292,10.16.42.222:9292",
+    "zookeeper": "10.11.150.71:1234",
+    "imageName": "sohucs/flumecsf1",
+    "imageTag": "1.0"
+  }
+}

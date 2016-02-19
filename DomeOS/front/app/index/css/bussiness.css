@@ -1,0 +1,487 @@
+/*
+ * @description: dome console bussiness stylesheet 
+ * @version: 0.1
+ */
+/*
+ * @description: common css variable and function
+ * @version: 0.1
+ */
+/* line 42, ../../common/css/_common.scss */
+.header {
+  background: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4gPHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJncmFkIiBncmFkaWVudFVuaXRzPSJvYmplY3RCb3VuZGluZ0JveCIgeDE9IjAuMCIgeTE9IjAuNSIgeDI9IjEuMCIgeTI9IjAuNSI+PHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzVkYWJmMyIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzRlZDZiMiIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JhZCkiIC8+PC9zdmc+IA==');
+  background: -webkit-gradient(linear, 0% 50%, 100% 50%, color-stop(0%, #5dabf3), color-stop(100%, #4ed6b2));
+  background: -moz-linear-gradient(left, #5dabf3, #4ed6b2);
+  background: -webkit-linear-gradient(left, #5dabf3, #4ed6b2);
+  background: linear-gradient(to right, #5dabf3, #4ed6b2);
+}
+
+/* line 8, bussiness.scss */
+.page {
+  padding-left: 79px;
+  overflow: hidden;
+}
+/* line 12, bussiness.scss */
+.page .content .module {
+  padding: 0 20px 0 20px;
+}
+
+/* line 18, bussiness.scss */
+.header {
+  width: 100%;
+  padding: 6px 40px 0 20px;
+  color: #fff;
+}
+/* line 23, bussiness.scss */
+.header .breadcrunmbs {
+  padding-top: 4px;
+  padding-bottom: 10px;
+}
+/* line 26, bussiness.scss */
+.header .breadcrunmbs .breadcrumb {
+  display: inline-block;
+  background: none;
+  padding: 0;
+  margin: 0;
+}
+/* line 31, bussiness.scss */
+.header .breadcrunmbs .breadcrumb a, .header .breadcrunmbs .breadcrumb span {
+  color: #fff;
+}
+/* line 38, bussiness.scss */
+.header .header-item > li {
+  margin-left: 24px;
+  display: inline-block;
+  vertical-align: top;
+  line-height: 26px;
+}
+/* line 45, bussiness.scss */
+.header .header-item > li.header-doc a {
+  color: #fff;
+}
+/* line 48, bussiness.scss */
+.header .header-item > li.header-doc .icon-doc {
+  margin-right: 10px;
+}
+/* line 53, bussiness.scss */
+.header .header-item > li.header-user {
+  position: relative;
+  min-width: 80px;
+}
+/* line 56, bussiness.scss */
+.header .header-item > li.header-user .user-header {
+  height: 26px;
+  width: 26px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+/* line 62, bussiness.scss */
+.header .header-item > li.header-user .username {
+  display: block;
+  text-align: right;
+  color: #fff;
+  line-height: 26px;
+}
+/* line 67, bussiness.scss */
+.header .header-item > li.header-user .username .icon-down-white {
+  margin-left: 8px;
+}
+/* line 74, bussiness.scss */
+.header .page-info {
+  overflow: hidden;
+}
+/* line 76, bussiness.scss */
+.header .page-info .page-title {
+  float: left;
+  margin: 5px 40px 21px 0;
+  font-size: 22px;
+}
+/* line 81, bussiness.scss */
+.header .page-info .page-detail {
+  display: block;
+  margin-top: 8px;
+}
+
+/* line 88, bussiness.scss */
+.mod-option {
+  height: 79px;
+  padding-top: 16px;
+}
+/* line 91, bussiness.scss */
+.mod-option.hasborder {
+  border-bottom: 10px solid #def0fe;
+}
+/* line 94, bussiness.scss */
+.mod-option .btn-lg {
+  height: 43px;
+  width: 158px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: bold;
+  background-color: #2994e7;
+}
+/* line 101, bussiness.scss */
+.mod-option .btn-lg .icon-add-white {
+  margin-right: 4px;
+}
+/* line 105, bussiness.scss */
+.mod-option .right-option {
+  padding-top: 10px;
+}
+/* line 107, bussiness.scss */
+.mod-option .right-option .input-search {
+  margin-left: 34px;
+  margin-right: 10px;
+}
+/* line 111, bussiness.scss */
+.mod-option .right-option .icon-down-white {
+  margin-left: 4px;
+}
+
+/* line 117, bussiness.scss */
+.mod-list {
+  margin: 0 -20px 0 -20px;
+}
+/* line 120, bussiness.scss */
+.mod-list .table-dome tr:hover a {
+  color: #2994e7;
+}
+/* line 123, bussiness.scss */
+.mod-list .table-dome td:first-child, .mod-list .table-dome th:first-child {
+  padding-left: 52px;
+}
+/* line 126, bussiness.scss */
+.mod-list .table-dome td:last-child, .mod-list .table-dome th:last-child {
+  padding-right: 52px;
+}
+/* line 129, bussiness.scss */
+.mod-list .table-dome .btn:not(:first-child) {
+  margin-left: 10px;
+}
+
+/* line 135, bussiness.scss */
+.mod-tab {
+  margin: 0 -20px 0 -20px;
+}
+
+/* line 139, bussiness.scss */
+.detail-header {
+  margin: 0 -20px 0 -20px;
+  padding: 20px 20px 24px 20px;
+  border-bottom: 10px solid #def0fe;
+  overflow: hidden;
+}
+/* line 144, bussiness.scss */
+.detail-header .detail-item {
+  float: left;
+}
+/* line 146, bussiness.scss */
+.detail-header .detail-item .item-name {
+  display: block;
+  font-size: 12px;
+}
+/* line 150, bussiness.scss */
+.detail-header .detail-item .item-content {
+  display: inline-block;
+  margin-top: 4px;
+  color: #444;
+}
+/* line 154, bussiness.scss */
+.detail-header .detail-item .item-content + .item-content {
+  margin-left: 8px;
+}
+/* line 159, bussiness.scss */
+.detail-header .detail-sep {
+  float: left;
+  display: block;
+  height: 30px;
+  width: 2px;
+  margin: 13px 30px 0 30px;
+  background-color: #eee;
+}
+
+/* line 169, bussiness.scss */
+.mod-title {
+  font-weight: bold;
+  font-size: 14px;
+  margin: 18px 0 18px 42px;
+}
+
+/* line 176, bussiness.scss */
+.list-info > li {
+  display: table;
+  width: 100%;
+}
+/* line 179, bussiness.scss */
+.list-info > li .info-name {
+  display: table-cell;
+  width: 148px;
+  padding: 22px 0 0 42px;
+  vertical-align: top;
+  font-weight: bold;
+}
+/* line 185, bussiness.scss */
+.list-info > li .info-name.not-align-input {
+  padding-top: 16px;
+}
+/* line 189, bussiness.scss */
+.list-info > li .info-simple {
+  display: inline-block;
+  width: 70%;
+  padding: 23px 0 16px 45px;
+}
+/* line 194, bussiness.scss */
+.list-info > li .info-content {
+  display: table-cell;
+  padding: 16px 0 16px 45px;
+}
+/* line 197, bussiness.scss */
+.list-info > li .info-content.nochild {
+  padding-top: 23px;
+}
+/* line 200, bussiness.scss */
+.list-info > li .info-content .check-con {
+  margin-right: 40px;
+}
+/* line 203, bussiness.scss */
+.list-info > li .info-content .log-topic {
+  display: -webkit-flex;
+  display: flex;
+}
+/* line 205, bussiness.scss */
+.list-info > li .info-content .log-topic .input-fill {
+  -webkit-flex: 1;
+  flex: 1;
+  margin-right: 0;
+}
+/* line 210, bussiness.scss */
+.list-info > li .info-content .auto-collect {
+  display: inline-block;
+  padding-top: 8px;
+  top: 0 !important;
+}
+/* line 215, bussiness.scss */
+.list-info > li .info-content .container-unit {
+  display: inline-block;
+  margin-top: 8px;
+}
+/* line 219, bussiness.scss */
+.list-info > li .info-content .host-txt-con {
+  display: -webkit-flex;
+  display: flex;
+  width: 100%;
+  height: auto;
+  min-height: 34px;
+}
+/* line 226, bussiness.scss */
+.list-info > li .info-content .select-con:not(:first-child) {
+  margin-left: 10px;
+}
+/* line 230, bussiness.scss */
+.list-info > li .info-content .line-short, .list-info > li .info-content .line-long, .list-info > li .info-content .line-single, .list-info > li .info-content .line-longer {
+  position: relative;
+  width: 40%;
+  display: -webkit-flex;
+  display: flex;
+}
+/* line 234, bussiness.scss */
+.list-info > li .info-content .line-short:not(:first-child), .list-info > li .info-content .line-long:not(:first-child), .list-info > li .info-content .line-single:not(:first-child), .list-info > li .info-content .line-longer:not(:first-child) {
+  margin-top: 16px;
+}
+/* line 238, bussiness.scss */
+.list-info > li .info-content .txt-wrap {
+  position: absolute;
+  left: 100%;
+  top: 7px;
+  margin-left: 10px;
+  width: 300px;
+}
+/* line 245, bussiness.scss */
+.list-info > li .info-content .line-long {
+  width: 60%;
+}
+/* line 248, bussiness.scss */
+.list-info > li .info-content .line-longer {
+  width: 70%;
+}
+/* line 251, bussiness.scss */
+.list-info > li .info-content .line-single {
+  position: relative;
+  width: 70%;
+}
+/* line 254, bussiness.scss */
+.list-info > li .info-content .line-single .single-element {
+  width: 100%;
+}
+/* line 258, bussiness.scss */
+.list-info > li .info-content .line-element {
+  position: relative;
+  flex: 1;
+}
+/* line 262, bussiness.scss */
+.list-info > li .info-content .child-name {
+  width: 120px;
+  line-height: 30px;
+}
+/* line 267, bussiness.scss */
+.list-info > li .info-content .child-info .input-fill {
+  width: 100%;
+  margin-bottom: 16px;
+}
+/* line 271, bussiness.scss */
+.list-info > li .info-content .child-info .child-repeat {
+  position: relative;
+}
+/* line 275, bussiness.scss */
+.list-info > li .info-content .child-error {
+  padding-left: 122px;
+}
+/* line 278, bussiness.scss */
+.list-info > li .info-content .child-txt {
+  line-height: 30px;
+}
+/* line 281, bussiness.scss */
+.list-info > li .info-content .top-margin {
+  margin-top: 20px;
+}
+/* line 285, bussiness.scss */
+.list-info > li.has-border {
+  border-bottom: 1px solid #f5f5f5;
+}
+/* line 289, bussiness.scss */
+.list-info.border-info {
+  border: 1px solid #f5f5f5;
+}
+/* line 291, bussiness.scss */
+.list-info.border-info li {
+  border-top: 1px solid #f5f5f5;
+}
+/* line 293, bussiness.scss */
+.list-info.border-info li:first-child {
+  border-top: none;
+}
+/* line 296, bussiness.scss */
+.list-info.border-info li .info-simple, .list-info.border-info li .info-content {
+  border-left: 1px solid #f5f5f5;
+}
+
+/* line 304, bussiness.scss */
+.mod-deploy .log-error {
+  padding-left: 110px;
+}
+/* line 307, bussiness.scss */
+.mod-deploy .add-loadbalance {
+  margin-top: 12px;
+}
+/* line 310, bussiness.scss */
+.mod-deploy .log-item {
+  position: relative;
+  width: 60%;
+  padding: 10px 30px 10px 10px;
+  margin-top: 12px;
+  border: 1px solid #f5f5f5;
+}
+/* line 316, bussiness.scss */
+.mod-deploy .log-item .cancel-log {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+}
+/* line 321, bussiness.scss */
+.mod-deploy .log-item .element-full {
+  width: 100%;
+}
+/* line 324, bussiness.scss */
+.mod-deploy .log-item .log-check, .mod-deploy .log-item .ips {
+  margin-top: 10px;
+}
+/* line 327, bussiness.scss */
+.mod-deploy .log-item .ips {
+  position: relative;
+}
+/* line 329, bussiness.scss */
+.mod-deploy .log-item .ips:first-child {
+  margin-top: 0;
+}
+/* line 333, bussiness.scss */
+.mod-deploy .log-item .line-full {
+  margin-top: 10px;
+  display: -webkit-flex;
+  display: flex;
+}
+/* line 336, bussiness.scss */
+.mod-deploy .log-item .line-full .log-title {
+  width: 110px;
+  padding-top: 6px;
+}
+/* line 339, bussiness.scss */
+.mod-deploy .log-item .line-full .log-title.not-align-input {
+  padding-top: 0;
+}
+/* line 344, bussiness.scss */
+.mod-deploy .log-item .unit {
+  display: inline-block;
+  margin: 7px 0 0 10px;
+}
+
+/* line 352, bussiness.scss */
+.mod-cluster .select-creator {
+  width: 70%;
+}
+/* line 355, bussiness.scss */
+.mod-cluster .cluster-log-con {
+  width: 70%;
+}
+/* line 357, bussiness.scss */
+.mod-cluster .cluster-log-con .cluster-log {
+  width: 100%;
+}
+/* line 359, bussiness.scss */
+.mod-cluster .cluster-log-con .cluster-log:not(:first-child) {
+  margin-top: 10px;
+}
+
+/* line 367, bussiness.scss */
+.modal-newpw .info-name {
+  display: inline-block;
+  margin-top: 6px;
+}
+/* line 371, bussiness.scss */
+.modal-newpw .info-content {
+  margin-left: 12px;
+  width: 300px;
+  display: inline-block;
+  vertical-align: top;
+}
+
+/* line 378, bussiness.scss */
+.modal-container .select-con {
+  display: inline-block;
+  width: 400px;
+}
+
+/* line 386, bussiness.scss */
+.modal-buildModal .info-txt input {
+  width: 100%;
+}
+
+/* line 393, bussiness.scss */
+.modal-scale ul {
+  display: inline-block;
+  text-align: left;
+}
+/* line 397, bussiness.scss */
+.modal-scale .info-name {
+  display: inline-block;
+  width: 106px;
+  padding-top: 6px;
+  vertical-align: top;
+}
+/* line 403, bussiness.scss */
+.modal-scale .info-content {
+  display: inline-block;
+}
+/* line 405, bussiness.scss */
+.modal-scale .info-content .input-white {
+  width: 126px;
+  margin-right: 10px;
+}

@@ -1,0 +1,37 @@
+
+<div class="mod-group group-manage">
+  <div class="mod-option">
+    <button ui-sref="createGroup" class="btn btn-lg"><i class="icon-add-white"></i>创建组</button>
+    <div class="pull-right right-option"><span ng-cloak="ng-cloak">共{{groupListFiltered.length}}个组</span>
+      <input type="text" placeholder="输入组名称查询" ng-model="groupKey" class="input-search input-fill"/>
+    </div>
+  </div>
+  <div class="mod-list">
+    <loading ng-if="isLoading"></loading>
+    <table class="table-dome">
+      <thead>
+        <tr>
+          <th>组名称</th>
+          <th>成员数</th>
+          <th>项目数</th>
+          <th>部署数</th>
+          <th>集群数</th>
+          <th>创建时间</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-if="!groupList||groupListFiltered.length===0">
+          <td colspan="6">无相关组信息</td>
+        </tr>
+        <tr ng-repeat="group in groupListFiltered=(groupList|filter:{'name':groupKey})">
+          <td><a ui-sref="groupDetail({'id':group.id})" ng-bind="group.name"></a></td>
+          <td ng-bind="group.countMap.memberCount"></td>
+          <td ng-bind="group.countMap.projectCount"></td>
+          <td ng-bind="group.countMap.deployCount"></td>
+          <td ng-bind="group.countMap.clusterCount"></td>
+          <td ng-bind="group.create_time.split(' ')[0]"></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

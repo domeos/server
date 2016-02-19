@@ -1,0 +1,175 @@
+@import "compass/css3";
+@import "common/css/common.scss";
+.project-detail{
+	$tab-padding:48px;
+	margin: 0 0-$page-padding 0 0-$page-padding;
+	.tab-pane{
+		padding-left: $tab-padding;
+		overflow: hidden;
+	}
+	.tab-member{
+		margin: 0 0-$tab-padding 0 0-$tab-padding;
+	}
+	.proInfo-form{
+		margin-left: 0-$tab-padding+$page-padding;
+		margin-right: $page-padding;
+	}
+	.project-options{
+		background-color: dome-color(background,primary);
+		padding:18px 0 18px $page-padding;
+		.btn{
+			margin-right: 12px;
+		}
+		.btn-delete{
+			display: inline-block;
+			width: 34px;
+			padding: 6px 0 7px 0;
+			height: 34px;
+			margin-left: 10px;
+			text-align: center;
+			border-radius: $default-radius;
+			background-color: #fff;
+		}
+	}
+	.code-origin{
+		padding: 30px 0 60px 0;
+		font-size: 18px;
+		a{
+			color:dome-color(dome,primary);
+		}
+	}
+	.dockerfile-setting{
+		overflow: hidden;
+		padding: 28px 0 29px 28px;
+		.s1{
+			margin-right: 20px;
+			font-weight: bold;
+		}
+		.s2{
+			display: inline-block;
+			vertical-align: middle;
+		}
+		.s3{
+			margin-left: 12px;
+			color:dome-color(dome,primary);
+		}
+	}
+	.dockerfile-options{
+		padding: 23px 0;
+		.btn-dockerfile{
+			color: dome-color(dome,bright);
+		}
+	}
+	.btn-options{
+		text-align: center;
+		padding-top: 32px;
+	}
+	.ci-con{
+		padding-top: 30px;
+		padding-bottom: 20px;
+		.ci-title{
+			font-weight: bold;
+			margin-right: 40px;
+		}
+		.branch-check{
+			display: inline-block;
+			margin-right: 64px;
+			.input-white{
+				width: 350px;
+			}
+		}
+	}
+	.chose-log{
+		padding: 23px 0 23px 0;
+		.chose-title{
+			font-weight: bold;
+		}
+		.txt-chose{
+			margin-left: 18px;
+			&.active{
+				color: dome-color(dome,bright);
+			}
+		}
+		.sep{
+			margin-left: 45px;
+			margin-right: 45px;
+			color: dome-color(border,light);
+			font-style: normal;
+		}
+	}
+	.build-log{
+		margin-left: -$tab-padding;
+		border-top: $light-border;
+		.table-dome{
+			td{
+				padding-top: 30px;
+				padding-bottom: 30px;
+			}
+			td:first-child{
+				padding-left: $tab-padding;
+			}
+			td:last-child{
+				padding-right: 50px;
+			}
+		}
+	}
+	.log-detail{
+		background-color: dome-color(background,light);
+		&:hover{
+			background-color: dome-color(background,light);
+		}
+		.detail-list{
+			position: relative;
+			.detail-row{
+				padding: 10px 0 10px 0;
+				display: block;
+				.detail-title{
+					position: relative;
+					display: inline-block;
+					width: 125px;
+					vertical-align: top;
+				}
+				.cmd-txt{
+					width: 40%;
+					background-color: #fff;
+					border: none;
+					margin-bottom: 3px;
+				}
+				.detail-content{
+					display: inline-block;
+					width: 70%;
+					.cmd-prompt{
+						padding-left: 12px;
+					}
+					.link-safe{
+						margin-left: 10px;
+					}
+				}
+			}
+		}
+	}
+}
+.modal-log{
+	background-color: #000;
+	max-height: 430px;
+	min-height: 140px;
+	overflow: auto;
+	padding:  10px;
+	color: #fff;
+	.nolog{
+		padding: 20px 0 10px 0;
+		margin: 0;
+		text-align: center;
+	}
+}
+.modal-dockerfile{
+	.dockerfile-content{
+		padding: 12px 30px 36px 38px;
+		min-height: 140px;
+		max-height: 400px;
+		overflow: auto;
+	}
+}
+.modal-branchcheck{
+	padding: 20px 0  30px 0;
+}

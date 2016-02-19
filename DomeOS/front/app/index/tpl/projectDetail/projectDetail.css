@@ -1,0 +1,217 @@
+/*
+ * @description: common css variable and function
+ * @version: 0.1
+ */
+/* line 3, projectDetail.scss */
+.project-detail {
+  margin: 0 -20px 0 -20px;
+}
+/* line 6, projectDetail.scss */
+.project-detail .tab-pane {
+  padding-left: 48px;
+  overflow: hidden;
+}
+/* line 10, projectDetail.scss */
+.project-detail .tab-member {
+  margin: 0 -48px 0 -48px;
+}
+/* line 13, projectDetail.scss */
+.project-detail .proInfo-form {
+  margin-left: -28px;
+  margin-right: 20px;
+}
+/* line 17, projectDetail.scss */
+.project-detail .project-options {
+  background-color: #def0fe;
+  padding: 18px 0 18px 20px;
+}
+/* line 20, projectDetail.scss */
+.project-detail .project-options .btn {
+  margin-right: 12px;
+}
+/* line 23, projectDetail.scss */
+.project-detail .project-options .btn-delete {
+  display: inline-block;
+  width: 34px;
+  padding: 6px 0 7px 0;
+  height: 34px;
+  margin-left: 10px;
+  text-align: center;
+  border-radius: 3px;
+  background-color: #fff;
+}
+/* line 34, projectDetail.scss */
+.project-detail .code-origin {
+  padding: 30px 0 60px 0;
+  font-size: 18px;
+}
+/* line 37, projectDetail.scss */
+.project-detail .code-origin a {
+  color: #5dabf3;
+}
+/* line 41, projectDetail.scss */
+.project-detail .dockerfile-setting {
+  overflow: hidden;
+  padding: 28px 0 29px 28px;
+}
+/* line 44, projectDetail.scss */
+.project-detail .dockerfile-setting .s1 {
+  margin-right: 20px;
+  font-weight: bold;
+}
+/* line 48, projectDetail.scss */
+.project-detail .dockerfile-setting .s2 {
+  display: inline-block;
+  vertical-align: middle;
+}
+/* line 52, projectDetail.scss */
+.project-detail .dockerfile-setting .s3 {
+  margin-left: 12px;
+  color: #5dabf3;
+}
+/* line 57, projectDetail.scss */
+.project-detail .dockerfile-options {
+  padding: 23px 0;
+}
+/* line 59, projectDetail.scss */
+.project-detail .dockerfile-options .btn-dockerfile {
+  color: #2994e7;
+}
+/* line 63, projectDetail.scss */
+.project-detail .btn-options {
+  text-align: center;
+  padding-top: 32px;
+}
+/* line 67, projectDetail.scss */
+.project-detail .ci-con {
+  padding-top: 30px;
+  padding-bottom: 20px;
+}
+/* line 70, projectDetail.scss */
+.project-detail .ci-con .ci-title {
+  font-weight: bold;
+  margin-right: 40px;
+}
+/* line 74, projectDetail.scss */
+.project-detail .ci-con .branch-check {
+  display: inline-block;
+  margin-right: 64px;
+}
+/* line 77, projectDetail.scss */
+.project-detail .ci-con .branch-check .input-white {
+  width: 350px;
+}
+/* line 82, projectDetail.scss */
+.project-detail .chose-log {
+  padding: 23px 0 23px 0;
+}
+/* line 84, projectDetail.scss */
+.project-detail .chose-log .chose-title {
+  font-weight: bold;
+}
+/* line 87, projectDetail.scss */
+.project-detail .chose-log .txt-chose {
+  margin-left: 18px;
+}
+/* line 89, projectDetail.scss */
+.project-detail .chose-log .txt-chose.active {
+  color: #2994e7;
+}
+/* line 93, projectDetail.scss */
+.project-detail .chose-log .sep {
+  margin-left: 45px;
+  margin-right: 45px;
+  color: #eee;
+  font-style: normal;
+}
+/* line 100, projectDetail.scss */
+.project-detail .build-log {
+  margin-left: -48px;
+  border-top: 1px solid #f5f5f5;
+}
+/* line 104, projectDetail.scss */
+.project-detail .build-log .table-dome td {
+  padding-top: 30px;
+  padding-bottom: 30px;
+}
+/* line 108, projectDetail.scss */
+.project-detail .build-log .table-dome td:first-child {
+  padding-left: 48px;
+}
+/* line 111, projectDetail.scss */
+.project-detail .build-log .table-dome td:last-child {
+  padding-right: 50px;
+}
+/* line 116, projectDetail.scss */
+.project-detail .log-detail {
+  background-color: #f5f5f5;
+}
+/* line 118, projectDetail.scss */
+.project-detail .log-detail:hover {
+  background-color: #f5f5f5;
+}
+/* line 121, projectDetail.scss */
+.project-detail .log-detail .detail-list {
+  position: relative;
+}
+/* line 123, projectDetail.scss */
+.project-detail .log-detail .detail-list .detail-row {
+  padding: 10px 0 10px 0;
+  display: block;
+}
+/* line 126, projectDetail.scss */
+.project-detail .log-detail .detail-list .detail-row .detail-title {
+  position: relative;
+  display: inline-block;
+  width: 125px;
+  vertical-align: top;
+}
+/* line 132, projectDetail.scss */
+.project-detail .log-detail .detail-list .detail-row .cmd-txt {
+  width: 40%;
+  background-color: #fff;
+  border: none;
+  margin-bottom: 3px;
+}
+/* line 138, projectDetail.scss */
+.project-detail .log-detail .detail-list .detail-row .detail-content {
+  display: inline-block;
+  width: 70%;
+}
+/* line 141, projectDetail.scss */
+.project-detail .log-detail .detail-list .detail-row .detail-content .cmd-prompt {
+  padding-left: 12px;
+}
+/* line 144, projectDetail.scss */
+.project-detail .log-detail .detail-list .detail-row .detail-content .link-safe {
+  margin-left: 10px;
+}
+
+/* line 152, projectDetail.scss */
+.modal-log {
+  background-color: #000;
+  max-height: 430px;
+  min-height: 140px;
+  overflow: auto;
+  padding: 10px;
+  color: #fff;
+}
+/* line 159, projectDetail.scss */
+.modal-log .nolog {
+  padding: 20px 0 10px 0;
+  margin: 0;
+  text-align: center;
+}
+
+/* line 166, projectDetail.scss */
+.modal-dockerfile .dockerfile-content {
+  padding: 12px 30px 36px 38px;
+  min-height: 140px;
+  max-height: 400px;
+  overflow: auto;
+}
+
+/* line 173, projectDetail.scss */
+.modal-branchcheck {
+  padding: 20px 0  30px 0;
+}

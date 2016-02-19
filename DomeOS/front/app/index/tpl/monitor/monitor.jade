@@ -1,0 +1,126 @@
+.mod-monitor.clearfix
+	loading(ng-if="loadingIns.isLoading||(monitorType=='容器'&&deployListIns.isLoading)")
+	.monitor-select
+		h3.monitor-title.txt-bright 监控对象{{$sce}}
+		span.item-title 监控类型
+		.select-con
+			button.btn.btn-select.btn-white(ng-cloak)
+				| {{monitorType}}
+				i.icon-down
+			ul.select-list
+				li.select-item
+					a(ng-click="toggleMonitorType('主机')") 主机
+				li.select-item
+					a(ng-click="toggleMonitorType('容器')") 容器
+		span.item-title 集群
+		.select-con
+			button.btn.btn-select.btn-white(ng-cloak)
+				| {{clusterListIns.cluster.name||'选择集群'}}
+				i.icon-down
+			ul.select-list
+				li.select-item(ng-repeat="cluster in clusterListIns.clusterList track by $index")
+					a(ng-bind="cluster.name" ng-click="toggleCluster($index)")
+		span.item-title(ng-hide="monitorType!=='容器'") 部署
+		.select-con(ng-hide="monitorType!=='容器'")
+			button.btn.btn-select.btn-white(ng-cloak)
+				| {{deployListIns.deploy.name||'选择部署'}}
+				i.icon-down
+			ul.select-list
+				li.select-item(ng-if="!deployListIns.deployList||deployFiltered.length===0")
+					a 无相关部署
+				li.select-item(ng-repeat="deploy in deployFiltered=(deployListIns.deployList|filter:{'clusterFilter':true})")
+					a(ng-bind="deploy.deployName" ng-click="toggleDeploy(deploy.deployId,deploy.deployName)")
+		span.item-title(ng-if="monitorType=='主机'") 主机标签
+		.input-white.select-con(label="true" ng-if="monitorType=='主机'")
+			ul.selected-labels
+				li.select-label(ng-repeat="(label,value) in nodeListIns.labelsInfo|search:'isSelected':true" ng-cloak)
+					| {{label}}
+					a.icon-cancel(ng-click="nodeListIns.toggleLabel(label,false)")
+				li.select-input
+					input.line-element.btn-select(placeholder="选择主机标签" ng-model="labelKey.key" ng-keydown="labelKeyDown($event,labelKey.key,labelsInfoFiltered)")
+			ul.select-list
+				li(ng-if="objLength(labelsInfoFiltered)===0")
+					a 无相关信息
+				li.select-item(ng-repeat="(label,value) in labelsInfoFiltered=(nodeListIns.labelsInfo| searchKey:labelKey.key|search:'isShow':true)")
+					a(ng-bind="label" ng-click="nodeListIns.toggleLabel(label,true);labelKey.key=''")
+		.search-con(ng-show="monitorType=='主机'")
+			input.input-white(placeholder="请输入关键字" ng-model="keywords1")
+			button.btn.btn-sm.btn-bright.pull-right(ng-click="filterItem()") 搜索
+		//- 实例选择栏
+		ul.monitor-list(ng-hide="monitorType=='主机'||showContainer")
+			li
+				span.check-item
+					input.dome-check#checkAllInstance(type="checkbox" ng-model="deployListIns.deployInstanceListIns.isCheckAll" ng-change="deployListIns.deployInstanceListIns.checkAllInstance()")
+					label(for="checkAllInstance")
+				a.txt-bright.pull-right(ng-click="getCounterList()") 刷新监控指标列表
+				a.txt-bright.pull-right(ng-click="toggleShowContainer(true)") 查看容器
+			li(ng-if="!deployListIns.deployInstanceListIns.instanceList||deployListIns.deployInstanceListIns.instanceList.length===0")
+				span 无实例信息
+			li(ng-repeat="instance in deployListIns.deployInstanceListIns.instanceList")
+				span.check-item
+					input.dome-check(id="{{'instance'+$index}}" type="checkbox" ng-model="instance.isSelected" ng-change="deployListIns.deployInstanceListIns.toggleCheck(instance)")
+					label(for="{{'instance'+$index}}")
+				em.item-name(ng-bind="instance.instanceName" popover="{{instance.instanceName}}" popover-trigger="mouseenter")
+		//- container选择栏
+		ul.monitor-list(ng-hide="monitorType=='主机'||!showContainer")
+			li
+				span.check-item
+					input.dome-check#checkAllContainer(type="checkbox" ng-model="deployListIns.deployInstanceListIns.isCheckAllContainer" ng-change="deployListIns.deployInstanceListIns.checkAllContainer()")
+					label(for="checkAllContainer")
+				a.txt-bright.pull-right(ng-click="getCounterList()") 刷新监控指标列表
+				a.txt-bright.pull-right(ng-click="toggleShowContainer(false)") 返回实例列表
+			li(ng-if="!deployListIns.deployInstanceListIns.containerList||deployListIns.deployInstanceListIns.containerList.length===0")
+				span 无Container信息
+			li(ng-repeat="container in deployListIns.deployInstanceListIns.containerList")
+				span.check-item
+					input.dome-check(id="{{'container'+$index}}" type="checkbox" ng-model="container.isSelected" ng-change="deployListIns.deployInstanceListIns.toggleContainerCheck(container)")
+					label(for="{{'container'+$index}}")
+				em.item-name(ng-bind="container.shortContainerId" popover="{{container.shortContainerId+'('+container.imageName+')'}}" popover-trigger="mouseenter")
+		//- 主机选择栏
+		ul.monitor-list(ng-hide="monitorType=='容器'")
+			li
+				span.check-item
+					input.dome-check#checkAllItem(type="checkbox" ng-model="nodeListIns.isCheckAll" ng-change="nodeListIns.checkAllNode()")
+					label(for="checkAllItem")
+				a.txt-bright.pull-right(ng-click="getCounterList()") 刷新监控指标列表
+			li(ng-if="!nodeListIns.nodeList||filteredNodes.length===0")
+				span 无主机信息
+			li(ng-repeat="node in filteredNodes=(nodeListIns.nodeList|filter:{'labelFilter':true,'keyFilter':true})")
+				span.check-item
+					input.dome-check(id="{{'node'+$index}}" type="checkbox" ng-model="node.isSelected" ng-change="nodeListIns.toggleNodeCheck(node)")
+					label(for="{{'node'+$index}}")
+				em.item-name(ng-bind="node.name")
+	.monitor-counter 
+		h3.monitor-title.txt-bright 监控指标
+		.monitor-option.pull-right
+			a.icon-fresh(ng-click="getCounterList()")
+			.select-con.type-select
+				button.btn.btn-white.btn-select.pull-right(ng-cloak)
+					| 看图
+					i.icon-down
+				ul.select-list
+					li.select-item
+						a(ng-click="toChart('h')") Endpoint视角
+					li.select-item
+						a(ng-click="toChart('k')") Counter视角
+					li.select-item
+						a(ng-click="toChart('a')") 组合视角
+		.search-con
+			input.input-white.input-search(placeholder="搜索监控指标" ng-model="monitorKey")
+			button.btn.btn-bright.btn-sm(ng-click="searchCount()") 搜索
+		ul.counter-list
+			li
+				span.check-item.counter-item
+					input.dome-check#checkAllCounter( type="checkbox" ng-model="counterListIns.isCheckAll" ng-change="counterListIns.checkAllInstance()")
+					label(for="checkAllCounter")
+				span.counter-item 监控指标
+				span.counter-item 类型
+				span.counter-item 频率
+			li(ng-show="!counterListIns.counterList||counterListIns.counterList.length===0") 无相关信息
+			li(ng-repeat="counter in counterListIns.counterList")
+				span.check-item.counter-item
+					input.dome-check(id="counter{{$index}}" type="checkbox"  ng-model="counter.isSelected" ng-change="counterListIns.toggleCheck(counter)")
+					label(for="counter{{$index}}")
+				a.counter-item.link-bright(ng-bind="counter.counter" ng-click="toBigChart(counter.counter)")
+				span.counter-item(ng-bind="counter.type")
+				span.counter-item(ng-bind="counter.step")

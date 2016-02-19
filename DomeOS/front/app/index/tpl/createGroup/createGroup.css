@@ -1,0 +1,67 @@
+/*
+ * @description: common css variable and function
+ * @version: 0.1
+ */
+/* line 3, createGroup.scss */
+.create-group {
+  padding-top: 20px;
+}
+/* line 6, createGroup.scss */
+.create-group .info-list > li {
+  display: table;
+}
+/* line 8, createGroup.scss */
+.create-group .info-list > li .info-name {
+  display: table-cell;
+  width: 10%;
+  padding: 16px 12px 10px 52px;
+  font-weight: bold;
+  vertical-align: top;
+}
+/* line 15, createGroup.scss */
+.create-group .info-list > li .info-content {
+  display: table-cell;
+  width: 70%;
+  padding: 10px 0 16px 0;
+  vertical-align: top;
+}
+/* line 20, createGroup.scss */
+.create-group .info-list > li .info-content .line-long {
+  position: relative;
+  display: -webkit-flex;
+  display: flex;
+}
+/* line 23, createGroup.scss */
+.create-group .info-list > li .info-content .line-long + .line-long {
+  margin-top: 12px;
+}
+/* line 27, createGroup.scss */
+.create-group .info-list > li .info-content .line-element {
+  -webkit-flex: 1;
+  flex: 1;
+}
+/* line 30, createGroup.scss */
+.create-group .info-list > li .info-content .btn-add {
+  position: absolute;
+  left: 100%;
+  top: 0;
+  margin-left: 12px;
+}
+/* line 36, createGroup.scss */
+.create-group .info-list > li .info-content textarea {
+  height: 54px;
+  overflow-y: auto;
+  resize: none;
+}
+/* line 44, createGroup.scss */
+.create-group .info-list.group-info .info-content {
+  padding-right: 24px;
+}
+/* line 46, createGroup.scss */
+.create-group .info-list.group-info .info-content table {
+  width: 100%;
+}
+/* line 49, createGroup.scss */
+.create-group .info-list.group-info .info-content .line-member {
+  margin-right: -72px;
+}

@@ -1,0 +1,14 @@
+
+<div class="d-modal-header">选择容器</div>
+<div class="modal-body modal-container text-center">
+  <div class="select-con">
+    <button class="btn btn-select btn-white btn-sm">{{currentContainer?currentContainer.shortContainerId:'选择容器'}}<i class="icon-down"></i></button>
+    <ul class="select-list">
+      <li ng-if="containerList.length===0" class="select-item">无容器信息</li>
+      <li ng-repeat="container in containerList" class="select-item"><a ng-bind="container.pageContainer" ng-click="toggleCurrentContainer($index)"></a></li>
+    </ul>
+  </div>
+</div>
+<div class="modal-footer">
+  <button ng-click="cancel()" class="btn btn-sm btn-white">取消</button><a ng-if="containerList.length!==0" href="console?host={{hostIp}}&amp;container={{currentContainer.shortContainerId}}" target="_blank" class="btn btn-sm btn-safe">进入控制台</a>
+</div>

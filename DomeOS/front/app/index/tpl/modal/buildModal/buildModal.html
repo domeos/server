@@ -1,0 +1,27 @@
+
+<div class="d-modal-header">手动构建</div>
+<div ng-if="isModalLoading" class="loading">
+  <div class="dot1"></div>
+  <div class="dot2"></div>
+</div>
+<ul ng-form="ng-form" role="form" name="buildForm" class="modal-body text-center modal-buildModal modal-info">
+  <li ng-show="projectInfo.hasCodeInfo"><span class="info-name">选择分支 *</span>
+    <div class="select-con info-txt">
+      <button class="btn btn-white btn-select">{{buildInfo.selectedBranch}}<i class="icon-down"></i></button>
+      <ul class="select-list">
+        <li ng-if="!branches||branches.length===0"><a>无分支信息</a></li>
+        <li ng-if="branches" ng-repeat="branch in branches" class="select-item"><a ng-bind="branch" ng-click="toggleBranch(branch)"></a></li>
+      </ul>
+    </div>
+  </li>
+  <li>
+    <label for="versionName" class="info-name">指定版本名 </label><span style="display:inline-block;vertical-align:top" class="info-txt">
+      <input id="versionName" placeholder="默认由系统自动生成，可不填" ng-model="buildInfo.imageTag" name="imageTag" ng-pattern="/^[a-z0-9]+([._-][a-z0-9]+)*$/" ng-if="projectInfo.hasCodeInfo" class="version-txt input-white"/>
+      <input id="versionName" placeholder="该项目未关联代码仓库，需手动指定版本名" ng-model="buildInfo.imageTag" ng-pattern="/^[a-z0-9]+([._-][a-z0-9]+)*$/" name="imageTag" ng-if="!projectInfo.hasCodeInfo" required="required" class="version-txt input-white"/>
+      <div ng-show="buildForm.imageTag.$dirty&amp;&amp;buildForm.imageTag.$error.pattern" class="txt-error text-left">非法的版本名</div></span>
+  </li>
+</ul>
+<div class="modal-footer text-right">
+  <button ng-click="close()" class="btn btn-sm btn-white">取消</button>
+  <button ng-disabled="isModalLoading&amp;&amp;buildForm.$valid" ng-click="buildForm.$valid&amp;&amp;toBuild()" class="btn btn-sm btn-bright">确定</button>
+</div>

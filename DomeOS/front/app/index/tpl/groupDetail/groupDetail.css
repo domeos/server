@@ -1,0 +1,33 @@
+/*
+ * @description: common css variable and function
+ * @version: 0.1
+ */
+/* line 3, groupDetail.scss */
+.group-detail {
+  margin: 0 -20px 0 -20px;
+}
+/* line 5, groupDetail.scss */
+.group-detail .group-detail-header {
+  display: table;
+  width: 100%;
+}
+/* line 8, groupDetail.scss */
+.group-detail .group-detail-header .mod-option {
+  position: relative;
+  display: table-cell;
+  width: 100%;
+  padding: 12px 20px 12px 20px;
+  vertical-align: middle;
+}
+/* line 14, groupDetail.scss */
+.group-detail .group-detail-header .mod-option p {
+  display: inline-block;
+  width: 85%;
+  margin: 0;
+}
+/* line 19, groupDetail.scss */
+.group-detail .group-detail-header .mod-option .btn-bright {
+  position: absolute;
+  top: 17px;
+  right: 20px;
+}

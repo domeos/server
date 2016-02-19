@@ -1,0 +1,57 @@
+@import "compass/css3";
+@import "common/css/common.scss";
+.member-con{
+	padding-bottom: 200px;
+	text-align: left;
+	overflow: hidden;
+	.title-con{
+		padding:18px $page-padding+$wider-padding 18px $page-padding+$wider-padding;
+		border-bottom: $light-border;
+		overflow: hidden;
+		.member-title{
+			display: inline-block;
+			margin: 6px 28px 0 0;
+			font-size: 18px;
+			vertical-align: top;
+		}
+		.input-search{
+			margin-right:  $page-padding+$wider-padding;
+		}
+	}
+	.member-select{
+		padding:18px $page-padding+$wider-padding 20px $page-padding+$wider-padding;
+			.select-type{
+				margin-right: 26px;
+				&.active{
+					color: dome-color(dome,bright);
+				}
+			}
+		.member-search{
+			padding-top: 18px;
+			.select-con{
+				display: inline-block;
+				width: 70%;
+				margin-right: 40px;
+				&+.select-con{
+					margin-top: 12px;
+				}
+			}
+		}
+	}
+	.member-list{
+		.table-dome{
+			table-layout: fixed;
+			td,th{
+				&:first-child{
+					padding-left: $page-padding+$wider-padding ;
+				}
+			}
+			.edit-role{
+				.select-con{
+					display: inline-block;
+					margin-right: 10px;
+				}
+			}
+		}
+	}
+}

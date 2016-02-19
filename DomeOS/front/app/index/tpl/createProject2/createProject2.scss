@@ -1,0 +1,124 @@
+@import "compass/css3";
+@import "common/css/common.scss";
+.project-create2{
+	padding-bottom: 100px;
+	margin-left: 0-$page-padding;
+	.btn-copy{
+		margin: 20px 0 8px $page-padding;
+	}
+	.project-new{
+		padding: 14px 0 0 $page-padding;
+	}
+	// .info-item{
+	// 	position: relative;
+	// 	margin-top: 30px;
+	// 	.info-title{
+	// 		display: inline-block;
+	// 		padding: 6px 0 0 $title-padding-left;
+	// 		vertical-align: top;
+	// 		// width: 177px;
+	// 		width: 16%;
+	// 		font-weight: bold;
+	// 	}
+	// 	.info-txt{
+	// 		// width: 40%;
+	// 		width:46%;
+	// 	}
+	// }
+	// .project-baseinfo{
+	// 	.info-item{
+	// 		margin-top: 30px;
+	// 		.info-txt{
+	// 			width: 46%;
+	// 		}
+	// 	}
+	// }
+	// .project-moreinfo{
+	// 	.info-item{
+	// 		margin-top: 48px;
+	// 		.info-txt{
+	// 			width: 57%;
+	// 		}
+	// 		.right-item{
+	// 			display: inline-block;
+	// 			padding-top: 9px;
+	// 			width: 57%;
+	// 			&.padding-right{
+	// 				padding-right: 43px;
+	// 				.info-txt{
+	// 					width: 100%;
+	// 				}
+	// 			}
+	// 		}
+	// 		.filename{
+	// 			font-weight: 400;
+	// 		}
+	// 		.upfile{
+	// 			position: absolute;
+	// 			@include opacity(0);
+	// 			top: 0;
+	// 			left:16%;
+	// 			width: 114px;
+	// 			height: 34px;
+	// 			&:active,&:focus{
+	// 				outline: none;
+	// 			}
+	// 			&:hover{
+	// 				cursor: pointer;
+	// 			}
+	// 		}
+	// 	}
+	// 	.list-input{
+	// 		padding-top: 8px;
+	// 		li{
+	// 			display: -webkit-flex; 
+	// 			display: flex;
+	// 			margin-top: 38px;
+	// 			input{
+	// 				@include flex(1);
+	// 				&:not(:first-child){
+	// 					margin-left: 20px;
+	// 				}
+	// 			}
+	// 			.delete-con{
+	// 				padding:6px 0 0 27px;
+	// 			}
+	// 		}
+	// 	}
+	// 	.list-file{
+	// 		display: inline-block;
+	// 		padding-top: 0;
+	// 		width: 50%;
+	// 		li:first-child{
+	// 			margin-top: 0;
+	// 		}
+	// 	}
+	// }
+	// .to-moreinfo{
+	// 	margin: 26px 0-$page-padding 0  0;
+	// 	padding:25px 0 0 $title-padding-left;
+	// 	a{
+	// 		color:dome-color(dome,primary);
+	// 		.icon-down{
+	// 			margin-left: 12px;
+	// 			@include rotate(-90deg);
+	// 			@include transition(.3s);
+	// 		}
+	// 	}
+	// 	&.show-more{
+	// 		border-top: $light-border;
+	// 		margin-top: 25px;
+	// 		a{
+	// 			font-weight: bold;
+	// 			.icon-down{
+	// 				@include rotate(0);
+	// 				@include transition(.3s);
+	// 			}
+	// 		}
+	// 	}
+	// }
+}
+.projectlist-con{
+	max-height: 540px;
+	overflow: auto;
+}

@@ -1,0 +1,189 @@
+/*
+ * @description: common css variable and function
+ * @version: 0.1
+ */
+/* line 45, ../../../common/css/_common.scss */
+.mod-project .projectinfo .image-drop .select-list li a span, .mod-project .projectinfo .filename {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* line 4, projectSetting1Tpl.scss */
+.mod-project .table-info {
+  border: 1px solid #f5f5f5;
+}
+/* line 6, projectSetting1Tpl.scss */
+.mod-project .table-info td, .mod-project .table-info th {
+  vertical-align: top;
+  padding: 8px 6px 8px 14px;
+  border-right: 1px solid #f5f5f5;
+  border-bottom: 1px solid #f5f5f5;
+}
+/* line 11, projectSetting1Tpl.scss */
+.mod-project .table-info td:last-child, .mod-project .table-info th:last-child {
+  border-right: none;
+}
+/* line 15, projectSetting1Tpl.scss */
+.mod-project .table-info td:first-child {
+  padding-top: 15px;
+  font-weight: bold;
+}
+/* line 20, projectSetting1Tpl.scss */
+.mod-project .table-info tr:last-child td {
+  border-bottom: none;
+}
+/* line 25, projectSetting1Tpl.scss */
+.mod-project .list-input {
+  margin-top: 10px;
+}
+/* line 28, projectSetting1Tpl.scss */
+.mod-project .projectinfo {
+  width: 100%;
+}
+/* line 30, projectSetting1Tpl.scss */
+.mod-project .projectinfo .image-drop {
+  position: relative;
+  width: 50%;
+}
+/* line 33, projectSetting1Tpl.scss */
+.mod-project .projectinfo .image-drop .select-list li a span {
+  display: block;
+  float: left;
+  width: 20%;
+  overflow: hidden;
+}
+/* line 39, projectSetting1Tpl.scss */
+.mod-project .projectinfo .image-drop .select-list li a span:first-child {
+  width: 30%;
+}
+/* line 42, projectSetting1Tpl.scss */
+.mod-project .projectinfo .image-drop .select-list li a span:last-child {
+  width: 50%;
+}
+/* line 47, projectSetting1Tpl.scss */
+.mod-project .projectinfo td:first-child {
+  width: 210px;
+  padding-left: 26px;
+}
+/* line 51, projectSetting1Tpl.scss */
+.mod-project .projectinfo .info-txt, .mod-project .projectinfo .setting-group, .mod-project .projectinfo .image-drop {
+  width: 50%;
+}
+/* line 54, projectSetting1Tpl.scss */
+.mod-project .projectinfo .info-show {
+  padding: 8px 12px 8px 12px;
+  min-height: 34px;
+  border: 1px solid #d4d7de;
+  border-radius: 3px;
+}
+/* line 60, projectSetting1Tpl.scss */
+.mod-project .projectinfo .setting-title {
+  line-height: 34px;
+}
+/* line 64, projectSetting1Tpl.scss */
+.mod-project .projectinfo .settting-list li {
+  overflow: hidden;
+  margin-top: 12px;
+}
+/* line 69, projectSetting1Tpl.scss */
+.mod-project .projectinfo .filename {
+  display: inline-block;
+  width: 142px;
+}
+/* line 74, projectSetting1Tpl.scss */
+.mod-project .projectinfo .setting-group {
+  display: -webkit-flex;
+  display: flex;
+  float: left;
+}
+/* line 78, projectSetting1Tpl.scss */
+.mod-project .projectinfo .setting-group .info-txt {
+  flex: 1;
+  margin-right: 10px;
+}
+/* line 81, projectSetting1Tpl.scss */
+.mod-project .projectinfo .setting-group .info-txt:last-child {
+  margin-right: 0;
+}
+/* line 84, projectSetting1Tpl.scss */
+.mod-project .projectinfo .setting-group .info-txt.env-name {
+  flex: 1;
+}
+/* line 87, projectSetting1Tpl.scss */
+.mod-project .projectinfo .setting-group .info-txt.env-value {
+  flex: 2;
+}
+/* line 90, projectSetting1Tpl.scss */
+.mod-project .projectinfo .setting-group .info-txt.env-description {
+  flex: 2;
+}
+/* line 95, projectSetting1Tpl.scss */
+.mod-project .projectinfo .txt-visible {
+  display: inline-block;
+  padding-top: 9px;
+}
+/* line 99, projectSetting1Tpl.scss */
+.mod-project .projectinfo .delete-con {
+  display: inline-block;
+  padding: 6px 0 0 27px;
+}
+/* line 103, projectSetting1Tpl.scss */
+.mod-project .projectinfo .file-list li {
+  display: block;
+  overflow: hidden;
+}
+/* line 107, projectSetting1Tpl.scss */
+.mod-project .projectinfo .fileupload-con {
+  position: relative;
+}
+/* line 109, projectSetting1Tpl.scss */
+.mod-project .projectinfo .fileupload-con .upfile {
+  position: absolute;
+  width: 109px;
+  height: 33px;
+  top: 0;
+  left: 0;
+  filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=0);
+  opacity: 0;
+}
+/* line 120, projectSetting1Tpl.scss */
+.mod-project .showinfo td:last-child {
+  padding: 12px 12px 12px 30px;
+}
+/* line 124, projectSetting1Tpl.scss */
+.mod-project .to-moreinfo {
+  margin: 26px -20px 26px 0;
+  padding-left: 35px;
+}
+/* line 127, projectSetting1Tpl.scss */
+.mod-project .to-moreinfo a {
+  color: #5dabf3;
+}
+/* line 129, projectSetting1Tpl.scss */
+.mod-project .to-moreinfo a .icon-down {
+  margin-left: 12px;
+  -moz-transform: rotate(-90deg);
+  -ms-transform: rotate(-90deg);
+  -webkit-transform: rotate(-90deg);
+  transform: rotate(-90deg);
+  -moz-transition: 0.3s;
+  -o-transition: 0.3s;
+  -webkit-transition: 0.3s;
+  transition: 0.3s;
+}
+/* line 136, projectSetting1Tpl.scss */
+.mod-project .to-moreinfo.show-more a {
+  font-weight: bold;
+}
+/* line 138, projectSetting1Tpl.scss */
+.mod-project .to-moreinfo.show-more a .icon-down {
+  -moz-transform: rotate(0);
+  -ms-transform: rotate(0);
+  -webkit-transform: rotate(0);
+  transform: rotate(0);
+  -moz-transition: 0.3s;
+  -o-transition: 0.3s;
+  -webkit-transition: 0.3s;
+  transition: 0.3s;
+}

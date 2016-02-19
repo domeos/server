@@ -1,0 +1,121 @@
+@import "compass/css3";
+@import "common/css/common.scss";
+.mod-monitor{
+	.monitor-title{
+		font-size: 18px;
+	}
+	.item-title{
+		display: block;
+		margin: 10px 0 10px 0;
+	}
+	.monitor-select{
+		float: left;
+		width: 30%;
+		padding-right:  $page-padding;
+		border-right: 4px solid dome-color(border,light);
+		margin-right: -4px;
+		.select-con{
+			width: 100%;
+		}
+		.search-con{
+			@include display-flex;
+			padding-top: 25px;
+			overflow: hidden;
+			input{
+				@include flex(1);
+			}
+			.btn{
+				margin-left: 12px;
+			}
+		}
+		.monitor-list{
+			margin: 12px 0-$page-padding 0 0-$page-padding;
+			li{
+				padding: 14px $page-padding 14px $page-padding;
+				border-bottom: $light-border;
+				@extend %nowrap;
+				// .popover{
+				// 	left: 10% !important;
+				// }
+				&:first-child{
+					background: dome-color(background,light);
+					a{
+						margin-left: 15px;
+					}
+				}
+				.item-name{
+					margin-left: 40px;
+				}
+			}
+		}
+	}
+	.monitor-counter{
+		float: left;
+		width: 70%;
+		min-height: 1000px;
+		padding-left: $page-padding;
+		border-left: 4px solid dome-color(border,light);
+		.search-con{
+			padding-top: 12px;
+			padding-bottom: 12px;
+			.input-search{
+				width: 56%;
+			}
+			.btn{
+				margin-left: 12px;
+			}
+		}
+		.monitor-option{
+			padding-top: 12px;
+			text-align: right;
+			.select-con{
+				display: inline-block;
+				vertical-align: top;
+				&.type-select{
+					width: 114px;
+					.btn-select{
+						width: 90px;
+					}
+				}
+			}
+		}
+		// .icon-fresh{
+		// 	margin-right: -16px;
+		// 	z-index: 99;
+		// }
+		.counter-list{
+			margin: 0 0-$page-padding 0 0-$page-padding;
+			li{
+				display: table;
+				width: 100%;
+				padding: 14px $page-padding 14px $page-padding;
+				border-bottom: $light-border;
+				table-layout: fixed;
+				.counter-item{
+					display: table-cell;
+					overflow-wrap:break-word;
+					padding-right: 14px;
+					&:first-child{
+						width: 8%;
+					}
+					&:nth-child(2){
+						width: 50%;
+					}
+					&:nth-child(3){
+						width: 30%;
+					}
+					&:nth-child{
+						width: 12%;
+					}
+				}
+				.check-item{
+					// width: 70px;
+					margin-left: $page-padding;
+				}
+				&:first-child{
+					border-top: $light-border;
+				}
+			}
+		}
+	}
+}

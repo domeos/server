@@ -1,0 +1,55 @@
+/*
+ * @description: common css variable and function
+ * @version: 0.1
+ */
+/* line 5, clusterDetail.scss */
+.cluster-detail .cluster-info {
+  margin: 0 -20px 0 -20px;
+}
+/* line 7, clusterDetail.scss */
+.cluster-detail .cluster-info .info-options {
+  padding: 16px 20px 16px 52px;
+  overflow: hidden;
+}
+/* line 10, clusterDetail.scss */
+.cluster-detail .cluster-info .info-options .namespace-title {
+  display: block;
+  float: left;
+  margin-top: 20px;
+  font-weight: bold;
+  width: 150px;
+}
+/* line 17, clusterDetail.scss */
+.cluster-detail .cluster-info .info-options .namespace-con {
+  float: left;
+  width: 50%;
+  margin-top: 20px;
+}
+/* line 21, clusterDetail.scss */
+.cluster-detail .cluster-info .info-options .namespace-con .new-namespace {
+  display: -webkit-flex;
+  display: flex;
+}
+/* line 23, clusterDetail.scss */
+.cluster-detail .cluster-info .info-options .namespace-con .new-namespace .namespace-txt {
+  -webkit-flex: 1;
+  flex: 1;
+  margin-right: 12px;
+}
+/* line 28, clusterDetail.scss */
+.cluster-detail .cluster-info .info-options .namespace-con .namespace-list {
+  margin-top: 28px;
+}
+/* line 32, clusterDetail.scss */
+.cluster-detail .cluster-info .info-options .info-count {
+  display: block;
+  padding-top: 8px;
+}
+/* line 39, clusterDetail.scss */
+.cluster-detail .edit-cluster {
+  margin: 16px 0 10px 58px;
+}
+/* line 42, clusterDetail.scss */
+.cluster-detail .tab-cluster {
+  padding: 6px 20px 40px 20px;
+}

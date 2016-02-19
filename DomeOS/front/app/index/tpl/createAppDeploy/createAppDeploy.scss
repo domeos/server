@@ -1,0 +1,44 @@
+@import "compass/css3";
+@import "common/css/common.scss";
+.app-detail{
+	padding-bottom: 100px;
+	.info-name{
+		width: 155px !important;
+	}
+	.log-content{
+		padding-top: 0 !important;
+		.log-item{
+			width: 70%;
+		}
+		.log-path{
+			font-weight: bold;
+		}
+		.log-detail-txt{
+			padding-top: 6px;
+		}
+	}
+	.host-desciption{
+		padding-top: 16px;
+	}
+	// .port-item{
+	// 	width: 70%;
+	// 	margin-bottom: 10px;
+	// 	&:last-child{
+	// 		margin-bottom: 0;
+	// 	}
+	// }
+	.container-cpu{
+		margin-right: 80px;
+	}
+	.host-info{
+		width: 100%;
+		padding: 12px;
+		max-height: 200px;
+		border-radius: $default-radius;
+		border:$light-border;
+		overflow: auto;
+		li{
+			padding:5px 0 5px 0;
+		}
+	}
+}

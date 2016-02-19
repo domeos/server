@@ -1,0 +1,26 @@
+@import "compass/css3";
+@import "common/css/common.scss";
+.group-detail{
+	margin: 0 0-$page-padding 0 0-$page-padding;
+	.group-detail-header{
+		display: table;
+		width: 100%;
+		.mod-option{
+			position: relative;
+			display: table-cell;
+			width: 100%;
+			padding: 12px $page-padding 12px $page-padding;
+			vertical-align: middle;
+			p{
+				display: inline-block;
+				width: 85%;
+				margin: 0;
+			}
+			.btn-bright{
+				position: absolute;
+				top: 17px;
+				right: $page-padding;
+			}
+		}
+	}
+}

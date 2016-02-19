@@ -1,0 +1,23 @@
+/*
+ * @description: common css variable and function
+ * @version: 0.1
+ */
+/* line 3, createProject2.scss */
+.project-create2 {
+  padding-bottom: 100px;
+  margin-left: -20px;
+}
+/* line 6, createProject2.scss */
+.project-create2 .btn-copy {
+  margin: 20px 0 8px 20px;
+}
+/* line 9, createProject2.scss */
+.project-create2 .project-new {
+  padding: 14px 0 0 20px;
+}
+
+/* line 121, createProject2.scss */
+.projectlist-con {
+  max-height: 540px;
+  overflow: auto;
+}

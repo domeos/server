@@ -1,0 +1,49 @@
+/*
+ * @description: common css variable and function
+ * @version: 0.1
+ */
+/* line 4, imageManage.scss */
+.image-manage .image-option {
+  padding: 16px 20px 16px 52px;
+  border-bottom: 1px solid #f5f5f5;
+  overflow: hidden;
+}
+/* line 8, imageManage.scss */
+.image-manage .image-option .input-search {
+  margin-left: 20px;
+}
+/* line 11, imageManage.scss */
+.image-manage .image-option .registry-address {
+  display: inline-block;
+  margin-top: 6px;
+}
+/* line 16, imageManage.scss */
+.image-manage .add-image {
+  padding: 4px 0 16px 52px;
+}
+/* line 18, imageManage.scss */
+.image-manage .add-image li {
+  padding-top: 14px;
+}
+/* line 20, imageManage.scss */
+.image-manage .add-image li .info-name {
+  display: inline-block;
+  width: 160px;
+  padding-top: 2px;
+}
+/* line 25, imageManage.scss */
+.image-manage .add-image li .input-info {
+  width: 65%;
+}
+/* line 28, imageManage.scss */
+.image-manage .add-image li .btn {
+  margin-left: 16px;
+}
+/* line 33, imageManage.scss */
+.image-manage .table-dome {
+  table-layout: fixed;
+}
+/* line 36, imageManage.scss */
+.image-manage .table-dome td:first-child, .image-manage .table-dome th:first-child {
+  padding-left: 52px;
+}

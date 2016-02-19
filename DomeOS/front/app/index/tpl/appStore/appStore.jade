@@ -1,0 +1,9 @@
+ul.mod-appstore.app-store
+	li(ng-repeat="app in appList")
+		.app-item
+			h3(ng-click="app.appName") Zookeeper
+			.app-img-on(app-img-con)
+				.cover-con
+					p(ng-bind="app.description")
+					a.btn.btn-white.btn-deploy.btn-sm(ui-sref="createAppDeploy({'appName':app.appName})") 部署
+				img(src="{{app.appIcon}}")

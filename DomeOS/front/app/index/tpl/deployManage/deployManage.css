@@ -1,0 +1,45 @@
+/*
+ * @description: common css variable and function
+ * @version: 0.1
+ */
+/* line 4, deployManage.scss */
+.deploy-manage .chose-lists {
+  margin: 0 -20px 0 -20px;
+  padding: 0 0 16px 0;
+  border-top: 1px solid #f5f5f5;
+}
+/* line 8, deployManage.scss */
+.deploy-manage .chose-lists .chose-item {
+  display: table;
+  width: 100%;
+  border-bottom: 1px solid #f5f5f5;
+}
+/* line 12, deployManage.scss */
+.deploy-manage .chose-lists .chose-item .chose-title {
+  display: table-cell;
+  width: 160px;
+  padding-left: 52px;
+  font-weight: bold;
+}
+/* line 18, deployManage.scss */
+.deploy-manage .chose-lists .chose-item .chose-options {
+  display: table-cell;
+  border-left: 1px solid #f5f5f5;
+  padding: 10px 52px 6px 24px;
+  padding-bottom: 8px;
+}
+/* line 22, deployManage.scss */
+.deploy-manage .chose-lists .chose-item .chose-options em {
+  display: inline-block;
+  margin: 0 24px 4px 0;
+  font-style: normal;
+}
+/* line 26, deployManage.scss */
+.deploy-manage .chose-lists .chose-item .chose-options em:hover {
+  color: #666;
+  cursor: pointer;
+}
+/* line 30, deployManage.scss */
+.deploy-manage .chose-lists .chose-item .chose-options em.active {
+  color: #2994e7;
+}

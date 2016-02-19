@@ -1,0 +1,14 @@
+.d-modal-header
+	| 选择容器
+.modal-body.modal-container.text-center
+	.select-con
+		button.btn.btn-select.btn-white.btn-sm
+			| {{currentContainer?currentContainer.shortContainerId:'选择容器'}}
+			i.icon-down
+		ul.select-list
+			li.select-item(ng-if="containerList.length===0") 无容器信息
+			li.select-item(ng-repeat="container in containerList")
+				a(ng-bind="container.pageContainer" ng-click="toggleCurrentContainer($index)")
+.modal-footer
+	button.btn.btn-sm.btn-white(ng-click="cancel()") 取消
+	a.btn.btn-sm.btn-safe(ng-if="containerList.length!==0" href="console?host={{hostIp}}&container={{currentContainer.shortContainerId}}" target="_blank") 进入控制台

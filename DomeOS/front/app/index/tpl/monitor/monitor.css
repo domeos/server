@@ -1,0 +1,150 @@
+/*
+ * @description: common css variable and function
+ * @version: 0.1
+ */
+/* line 45, ../../../common/css/_common.scss */
+.mod-monitor .monitor-select .monitor-list li {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* line 4, monitor.scss */
+.mod-monitor .monitor-title {
+  font-size: 18px;
+}
+/* line 7, monitor.scss */
+.mod-monitor .item-title {
+  display: block;
+  margin: 10px 0 10px 0;
+}
+/* line 11, monitor.scss */
+.mod-monitor .monitor-select {
+  float: left;
+  width: 30%;
+  padding-right: 20px;
+  border-right: 4px solid #eee;
+  margin-right: -4px;
+}
+/* line 17, monitor.scss */
+.mod-monitor .monitor-select .select-con {
+  width: 100%;
+}
+/* line 20, monitor.scss */
+.mod-monitor .monitor-select .search-con {
+  display: -webkit-flex;
+  display: flex;
+  padding-top: 25px;
+  overflow: hidden;
+}
+/* line 24, monitor.scss */
+.mod-monitor .monitor-select .search-con input {
+  -webkit-flex: 1;
+  flex: 1;
+}
+/* line 27, monitor.scss */
+.mod-monitor .monitor-select .search-con .btn {
+  margin-left: 12px;
+}
+/* line 31, monitor.scss */
+.mod-monitor .monitor-select .monitor-list {
+  margin: 12px -20px 0 -20px;
+}
+/* line 33, monitor.scss */
+.mod-monitor .monitor-select .monitor-list li {
+  padding: 14px 20px 14px 20px;
+  border-bottom: 1px solid #f5f5f5;
+}
+/* line 40, monitor.scss */
+.mod-monitor .monitor-select .monitor-list li:first-child {
+  background: #f5f5f5;
+}
+/* line 42, monitor.scss */
+.mod-monitor .monitor-select .monitor-list li:first-child a {
+  margin-left: 15px;
+}
+/* line 46, monitor.scss */
+.mod-monitor .monitor-select .monitor-list li .item-name {
+  margin-left: 40px;
+}
+/* line 52, monitor.scss */
+.mod-monitor .monitor-counter {
+  float: left;
+  width: 70%;
+  min-height: 1000px;
+  padding-left: 20px;
+  border-left: 4px solid #eee;
+}
+/* line 58, monitor.scss */
+.mod-monitor .monitor-counter .search-con {
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+/* line 61, monitor.scss */
+.mod-monitor .monitor-counter .search-con .input-search {
+  width: 56%;
+}
+/* line 64, monitor.scss */
+.mod-monitor .monitor-counter .search-con .btn {
+  margin-left: 12px;
+}
+/* line 68, monitor.scss */
+.mod-monitor .monitor-counter .monitor-option {
+  padding-top: 12px;
+  text-align: right;
+}
+/* line 71, monitor.scss */
+.mod-monitor .monitor-counter .monitor-option .select-con {
+  display: inline-block;
+  vertical-align: top;
+}
+/* line 74, monitor.scss */
+.mod-monitor .monitor-counter .monitor-option .select-con.type-select {
+  width: 114px;
+}
+/* line 76, monitor.scss */
+.mod-monitor .monitor-counter .monitor-option .select-con.type-select .btn-select {
+  width: 90px;
+}
+/* line 86, monitor.scss */
+.mod-monitor .monitor-counter .counter-list {
+  margin: 0 -20px 0 -20px;
+}
+/* line 88, monitor.scss */
+.mod-monitor .monitor-counter .counter-list li {
+  display: table;
+  width: 100%;
+  padding: 14px 20px 14px 20px;
+  border-bottom: 1px solid #f5f5f5;
+  table-layout: fixed;
+}
+/* line 94, monitor.scss */
+.mod-monitor .monitor-counter .counter-list li .counter-item {
+  display: table-cell;
+  overflow-wrap: break-word;
+  padding-right: 14px;
+}
+/* line 98, monitor.scss */
+.mod-monitor .monitor-counter .counter-list li .counter-item:first-child {
+  width: 8%;
+}
+/* line 101, monitor.scss */
+.mod-monitor .monitor-counter .counter-list li .counter-item:nth-child(2) {
+  width: 50%;
+}
+/* line 104, monitor.scss */
+.mod-monitor .monitor-counter .counter-list li .counter-item:nth-child(3) {
+  width: 30%;
+}
+/* line 107, monitor.scss */
+.mod-monitor .monitor-counter .counter-list li .counter-item:nth-child {
+  width: 12%;
+}
+/* line 111, monitor.scss */
+.mod-monitor .monitor-counter .counter-list li .check-item {
+  margin-left: 20px;
+}
+/* line 115, monitor.scss */
+.mod-monitor .monitor-counter .counter-list li:first-child {
+  border-top: 1px solid #f5f5f5;
+}

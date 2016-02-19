@@ -1,0 +1,152 @@
+$lib-sprite-dimensions: true;
+@import "compass/css3";
+@import "compass/utilities/sprites";
+@import "common/css/common.scss";
+@import "index/images/lib/*.png";
+
+.project-create1{
+	$lib-icons: sprite-map("index/images/lib/*.png",$spacing:5px);
+	$first-line-width:127px;
+	min-height: 700px;
+	.opt-title{
+		display: inline-block;
+		width: $first-line-width;
+		font-weight: bold;
+		vertical-align: middle;
+	}
+	.chose-repository{
+		padding-top: 22px;
+	}
+	.chose-account{
+		padding-left: 146px;
+		border-bottom: $light-border;
+		margin: 22px 0-$page-padding 0 0-$page-padding;
+		overflow: hidden;
+		.input-search{
+			margin-right: 53px;
+			margin-bottom: 6px;
+		}
+		.list-acount{
+			display: inline-block;
+			li{
+				display: inline-block;
+				padding-bottom: 20px;
+				margin-right: 34px;
+				font-weight: bold;
+				border-bottom: 2px solid transparent;
+				&.active{
+					color:dome-color(dome,primary);
+					border-bottom: 2px solid dome-color(dome,primary);
+				}
+				&:hover{
+					cursor: pointer;
+					border-bottom: 2px solid dome-color(dome,primary);
+				}
+			}
+		}
+		.related{
+			display: inline-block;
+			font-weight: bold;
+			.icon-add-green{
+				margin-right: 4px;
+			}
+			a{
+				color:dome-color(dome,active);
+			}
+		}
+
+	}
+	.list-project{
+		margin: 0 0-$page-padding 0 0-$page-padding;
+		background-color: dome-color(background,light);
+		li{
+			border-bottom: 1px solid #e9e9e9;
+			font-size: 0;
+			span{
+				display: inline-block;
+				font-size: font-size(default);
+				padding: 20px 15px 20px 15px; 
+				min-height: 60px;
+				&.project-name{
+					position: relative;
+					width: 40%;
+					padding-left: 144px;
+					.icon-check{
+						position: absolute;
+						left: 123px;
+						top: 26px;
+					}
+				}
+				&.project-description{
+					width: 60%;
+				}
+			}
+			.no-result {
+				padding-left: 144px;
+				font-size: 14px;
+			}
+			&:hover{
+				cursor: pointer;
+				color:dome-color(dome,primary);
+			}
+			&.active{
+				color:dome-color(dome,primary);
+				background-color: dome-color(background,primary);
+			}
+
+		}
+	}
+	.branch-setting,.project-info,.dockerfile-setting{
+		border-bottom: $light-border;
+		padding-left: $page-padding;
+		padding-top: 18px;
+		height: 64px;
+		margin:7px 0-$page-padding 0 0-$page-padding;
+		
+	}
+	.branch-setting{
+		.branch{
+			margin-right: 38px;
+			.txt-branch{
+				width: 339px;
+			}
+		}
+	}
+	.project-info{
+		padding-top: 18px;
+		height:85px;
+		border-bottom: $light-border;
+		.input-white{
+			margin-left: 15px;
+		}
+		.icon-down{
+			margin-right: 6px;
+			margin-top: 0px;
+			float: none;
+		}
+		.group-select{
+			position: relative;
+			display: inline-block;
+			width: auto;
+			min-width: 120px;
+			margin-right: 15px;
+		}
+	}
+	.dockerfile-setting{
+		.opt-title{
+			width: auto;
+		}
+		.toggle-dockerfile{
+			display: inline-block;
+			vertical-align: middle;
+			margin-left: 28px;
+			margin-right: 12px;
+		}
+	}
+}
+.modal-gitlab{
+	.txt-failed{
+		text-align: left;
+		padding-left: 42px;
+	}
+}

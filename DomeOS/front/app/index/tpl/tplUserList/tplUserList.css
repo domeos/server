@@ -1,0 +1,66 @@
+/*
+ * @description: common css variable and function
+ * @version: 0.1
+ */
+/* line 3, tplUserList.scss */
+.member-con {
+  padding-bottom: 200px;
+  text-align: left;
+  overflow: hidden;
+}
+/* line 7, tplUserList.scss */
+.member-con .title-con {
+  padding: 18px 52px 18px 52px;
+  border-bottom: 1px solid #f5f5f5;
+  overflow: hidden;
+}
+/* line 11, tplUserList.scss */
+.member-con .title-con .member-title {
+  display: inline-block;
+  margin: 6px 28px 0 0;
+  font-size: 18px;
+  vertical-align: top;
+}
+/* line 17, tplUserList.scss */
+.member-con .title-con .input-search {
+  margin-right: 52px;
+}
+/* line 21, tplUserList.scss */
+.member-con .member-select {
+  padding: 18px 52px 20px 52px;
+}
+/* line 23, tplUserList.scss */
+.member-con .member-select .select-type {
+  margin-right: 26px;
+}
+/* line 25, tplUserList.scss */
+.member-con .member-select .select-type.active {
+  color: #2994e7;
+}
+/* line 29, tplUserList.scss */
+.member-con .member-select .member-search {
+  padding-top: 18px;
+}
+/* line 31, tplUserList.scss */
+.member-con .member-select .member-search .select-con {
+  display: inline-block;
+  width: 70%;
+  margin-right: 40px;
+}
+/* line 35, tplUserList.scss */
+.member-con .member-select .member-search .select-con + .select-con {
+  margin-top: 12px;
+}
+/* line 42, tplUserList.scss */
+.member-con .member-list .table-dome {
+  table-layout: fixed;
+}
+/* line 45, tplUserList.scss */
+.member-con .member-list .table-dome td:first-child, .member-con .member-list .table-dome th:first-child {
+  padding-left: 52px;
+}
+/* line 50, tplUserList.scss */
+.member-con .member-list .table-dome .edit-role .select-con {
+  display: inline-block;
+  margin-right: 10px;
+}

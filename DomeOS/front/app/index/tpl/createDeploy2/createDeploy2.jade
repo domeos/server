@@ -1,0 +1,174 @@
+.mod-deploy.create-project2(ng-form role="form" name="deployForm" ng-class="{'need-valid':needValid}" novalidate)
+	loading(ng-if="loadingsIns.isLoading")
+	ul.list-info
+		li.has-border
+			span.info-name 实例个数
+			.info-content.container-info
+				.line-short
+					input.input-fill.input-sm.container-txt(ng-model="config.replicas" name="replicas" ng-pattern="/^[1-9]\\d*$/" is-over max="999" min="1")
+					span.container-unit 个
+				span.txt-error(ng-if="(needValid||deployForm.replicas.$dirty)&&deployForm.replicas.$invalid") 请填写0~999范围内的数字
+		li.has-border
+			span.info-name 筛选主机
+			.info-content
+				.line-short
+					.select-con.line-element
+						button.btn.btn-white.btn-select
+							| {{deployIns.clusterListIns.cluster.name||'选择集群'}}
+							icon.icon-down
+						ul.select-list
+							li(ng-if="deployIns.clusterList.length===0")
+								a 无相关信息
+							li.select-item(ng-repeat="cluster in deployIns.clusterListIns.clusterList")
+								a(ng-click="deployIns.toggleCluster($index)" ng-bind="cluster.name")
+						input(type="hidden" ng-model="deployIns.clusterListIns.cluster.name" name="clusterName" required)
+						span.txt-error(ng-if="(needValid||validHost)&&deployForm.clusterName.$invalid") 请选择集群
+					.select-con.line-element
+						button.btn.btn-white.btn-select.line-element(ng-cloak)
+							| {{deployIns.envText}}
+							icon.icon-down
+						ul.select-list
+							li.select-item(ng-repeat="env in deployIns.envList")
+								a(ng-bind="env.text" ng-click="deployIns.toggleEnv(env)")
+						input(type="hidden" ng-model="config.hostEnv" name="hostEnv" required)
+						span.txt-error(ng-if="(needValid||validHost)&&deployForm.hostEnv.$invalid") 请选择部署环境
+				.line-long.top-margin
+					.input-white.host-txt-con.select-con(label="true")
+						ul.selected-labels
+							li.select-label(ng-repeat="(label,value) in deployIns.nodeListIns.labelsInfo|search:'isSelected':true|search:'isShow':true" ng-cloak)
+								| {{label}}
+								a.icon-cancel(ng-click="deployIns.nodeListIns.toggleLabel(label,false)")
+							li.select-input
+								input.line-element.btn-select(placeholder="选择主机标签" ng-model="labelKey.key" ng-keydown="labelKeyDown($event,labelKey.key,labelsInfoFiltered);" ng-focus="selectFocus()")
+						ul.select-list
+							li(ng-if="objLength(labelsInfoFiltered)===0")
+								a 无相关信息
+							li.select-item(ng-repeat="(label,value) in labelsInfoFiltered=(deployIns.nodeListIns.labelsInfo| searchKey:labelKey.key|search:'isShow':true)")
+								a(ng-bind="label" ng-click="deployIns.nodeListIns.toggleLabel(label,true);labelKey.key='';")
+					span.txt-wrap
+						a.link-safe(ng-click="deployIns.nodeListIns.showHost()") 查看选中主机
+		li
+			span.info-name namespace
+			.info-content
+				.line-short(ng-if="!deployIns.isNewNamespace")
+					.select-con.line-element
+						button.btn.btn-white.btn-select
+							| {{config.namespace||'选择已有namespace'}}
+							icon.icon-down
+						ul.select-list
+							li(ng-if="deployIns.namespaceList.length===0")
+								a 无相关信息
+							li.select-item(ng-repeat="namespace in deployIns.namespaceList")
+								a(ng-bind="namespace.name" ng-click="deployIns.toggleNamespace(namespace.name)")
+					span.txt-wrap
+						a.link-safe(ng-click="deployIns.toggleIsNewNamespace()") 新建namespace
+					input(type="hidden" name="selectNamespace" ng-model="config.namespace" required)
+				.line-short(ng-if="deployIns.isNewNamespace")
+					input.input-white.line-element(placeholder="新建namespace" ng-model="config.namespace" name="namespace" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" required ng-pattern="/^[a-zA-Z][a-zA-Z0-9_-]*$/" is-namespace-exist clusterid="{{deployIns.clusterListIns.cluster.id}}")
+					span.txt-wrap
+						a.link-safe(ng-click="deployIns.toggleIsNewNamespace()") 选择已有namespace
+				span.txt-error(ng-if="needValid&&deployForm.selectNamespace.$invalid") 请选择namespace
+				span.txt-error(ng-if="(needValid||deployForm.namespace.$dirty)&&deployForm.namespace.$error.required") 请填写namespace
+				span.txt-error(ng-if="(needValid||deployForm.namespace.$dirty)&&!deployForm.namespace.$error.required&&deployForm.namespace.$error.pattern") 非法的namespace
+				span.txt-error(ng-if="(needValid||deployForm.namespace.$dirty)&&!deployForm.namespace.$error.required&&deployForm.namespace.$error.isNamespaceExist") namespace已存在
+		li
+			span.info-name 部署名称
+			.info-content
+				.line-long
+					input.input-fill.line-element(ng-model="config.deployName" name="deployName" required is-deploy-exist namespace="{{config.namespace}}" ng-maxlength="20" clustername="{{deployIns.clusterListIns.cluster.name}}" ng-pattern="/^[0-9a-z]([-.]*[0-9a-z]+)*$/" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" )
+				.txt-error(ng-if="(needValid||deployForm.deployName.$dirty)&&deployForm.deployName.$error.required") 必填
+				.txt-error(ng-if="(needValid||deployForm.deployName.$dirty)&&!deployForm.deployName.$error.required&&deployForm.deployName.$error.isDeployExist") 部署名已存在
+				.txt-error(ng-if="(needValid||deployForm.deployName.$dirty)&&!deployForm.deployName.$error.required&&deployForm.deployName.$error.pattern") 非法的名称
+				span.txt-error(ng-if="(needValid||deployForm.deployName.$dirty)&&!deployForm.deployName.$error.required&&deployForm.deployName.$error.maxlength") 长度超出限制
+		li.has-border
+			span.info-name 创建者
+			.info-content
+				.line-short
+					.select-con.line-element
+						button.btn.btn-white.btn-select
+							| {{deployIns.userGroupListIns.userGroup.name}}
+							icon.icon-down
+						ul.select-list
+							li.select-item(ng-repeat="group in deployIns.userGroupListIns.userGroupList")
+								a(ng-bind="group.name" ng-click="deployIns.userGroupListIns.toggle($index)")
+					input(type="hidden" name="creatorName" ng-model="deployIns.userGroupListIns.userGroup.name" required)
+				span.txt-error(ng-show="needValid&&deployForm.creatorName.$invalid") 请选择创建者
+		li
+			span.info-name 日志
+			.info-content
+				button.btn.btn-sm.btn-active.add-log(ng-click="deployIns.addLogDraft()") 添加
+				div.log-item(ng-form ng-repeat="log in config.logDraft.logItemDrafts" name="childForm")
+					a.icon-cancel.cancel-log(ng-click="deployIns.deleteLogDraft($index)")
+					input.input-fill.element-full(placeholder="请输入日志路径，不能放在根目录下" ng-pattern="/^\/.*[^\/]$/" ng-model="log.logPath" name="logPath" is-required param1="{{log.autoCollect&&log.logTopic}}" param2="{{log.autoCollect&&log.processCmd}}" param3="{{log.autoDelete&&log.logExpired}}")
+					span.txt-error(ng-if="(needValid||childForm.logPath.$dirty)&&childForm.logPath.$error.pattern") 非法的格式
+					div.log-check
+						input.dome-check(id="autoCollect{{$index}}" type="checkbox" name="autoCollect" ng-model="log.autoCollect")
+						label(for="autoCollect{{$index}}") 自动收集日志
+					.line-full(ng-if="log.autoCollect")
+						span.log-title  日志topic
+						input.input-fill.line-element(placeholder="请输入日志topic" name="logTopic" ng-model="log.logTopic" required)
+					.line-full(ng-if="log.autoCollect")
+						span.log-title  预处理命令
+						.line-element
+							input.input-fill.full(placeholder="请输入预处理命令" name="processCmd" ng-model="log.processCmd" required)
+							span.txt-wrap
+								a.icon-help(popover="对收集到的日志做进一步处理，比如筛选或增减字段等，可以用grep和awk命令完成，命令以管道形式执行，因此必须以“|”开始，比如一个典型的处理命令为：   | grep \"ERROR\\\\|WARN\\\\| EXCEPTION\\\\| statistic\" | awk -vnhost=\"$HOSTNAME\" '{print \"[\"nhost\"]--\"$0}'，该命令将只筛选包含四个对应关键字的行，并且会在行首添加\"[hostname]--\"的字符串，参照可完成其他复杂的处理方式")
+					div.log-check
+						input.dome-check(id="autoDelete{{$index}}" type="checkbox" name="autoDelete" ng-model="log.autoDelete")
+						label(for="autoDelete{{$index}}") 自动删除日志
+					.line-full(ng-if="log.autoDelete")
+						span.log-title  过期时间
+						input.input-fill(placeholder="过期则自动删除" name="logExpired" ng-model="log.logExpired" required ng-pattern="/^[1-9]\\d*$/" )
+						span.unit 小时
+					.txt-error.log-error(ng-if="(needValid||deployForm.logExpired.$dirty)&&deployForm.logExpired.$invalid") 请输入大于0的整数
+		li.has-border
+			span.info-name 健康检查
+			.info-content
+				span.check-con
+					input#checkNONE.dome-radio(type="radio" value="NONE" name="healthCheckerType" ng-model="config.healthCheckerDraft.type")
+					label(for="checkNONE") None
+				span.check-con
+					input#checkTCP.dome-radio(type="radio" value="TCP" name="healthCheckerType" ng-model="config.healthCheckerDraft.type")
+					label(for="checkTCP") TCP检查
+				span.check-con
+					input#checkHTTP.dome-radio(type="radio" value="HTTP" name="healthCheckerType" ng-model="config.healthCheckerDraft.type")
+					label(for="checkHTTP") HTTP检查
+				.line-long(ng-if="config.healthCheckerDraft.type=='TCP'||config.healthCheckerDraft.type=='HTTP'")
+					span.child-name 检查端口
+					input.input-fill.line-element(placeholder="请输入端口号" name="port" ng-model="config.healthCheckerDraft.port" required)
+				span.child-error.txt-error(ng-if="(needValid||deployForm.port.$dirty)&&deployForm.port.$invalid") 必填
+				.line-long(ng-if="config.healthCheckerDraft.type=='TCP'||config.healthCheckerDraft.type=='HTTP'")
+					span.child-name 超时时间（s）
+					input.input-fill.line-element(placeholder="" name="timeout" ng-model="config.healthCheckerDraft.timeout" required ng-pattern="/^[1-9]\\d*$/")
+				span.child-error.txt-error(ng-if="(needValid||deployForm.timeout.$dirty)&&deployForm.timeout.$invalid") 请填写数字
+				.line-long(ng-if="config.healthCheckerDraft.type=='HTTP'")
+					span.child-name 检测URL
+					input.input-fill.line-element(placeholder="请输入URL" name="url" ng-model="config.healthCheckerDraft.url" required)
+				span.child-error.txt-error(ng-if="(needValid||deployForm.url.$dirty)&&deployForm.url.$invalid") 必填
+				.line-long(ng-if="config.healthCheckerDraft.type=='HTTP'")
+					span.child-name 允许返回值
+					span.child-txt  200-400(不包含400)
+		li.has-border
+			span.info-name 负载均衡
+			.info-content
+				dome-toggle(ng-class="{'on':deployIns.isOpenLoadBalance}" ng-click="deployIns.isOpenLoadBalance=!deployIns.isOpenLoadBalance")
+				div(ng-if="deployIns.isOpenLoadBalance")
+					div.log-item(ng-form ng-repeat="loadbalance in config.loadBalanceDrafts" name="childForm")
+						.line-full
+							span.log-title  程序服务端口
+							input.input-fill.line-element(placeholder="请输入容器内部端口" name="targetPort" ng-model="loadbalance.targetPort" is-required param1="loadbalance.port")
+						.line-full
+							span.log-title  对外访问端口
+							input.input-fill.line-element(placeholder="请输入端口号" name="port" ng-model="loadbalance.port"  is-required param1="loadbalance.targetPort")
+						.line-full
+							span.log-title  对外访问IP
+							.line-element
+								div.ips(ng-repeat="ips in config.loadBalanceDrafts[$index].externalIPs")
+									input.input-fill.full(placeholder="请输入对外访问IP" name="externalIPs" ng-focus="$last&&deployIns.addExternalIPs($parent.$index)" ng-model="ips.ip")
+									a.txt-wrap.icon-delete(ng-show="loadbalance.externalIPs.length>1" ng-click="deployIns.deleteExternalIPs($parent.$index,$index)")
+	.bottom-option
+		span.bottom-option-con
+			btn.btn.btn-md.btn-bright(ng-click="toLastStep()") 上一步
+			btn.btn.btn-md.btn-bright(ng-disabled="loadingsIns.isLoading" ng-click="needValid=true;deployForm.$valid&&toCreate()") 完成创建
+			span.txt-error(ng-if="needValid&&deployForm.$invalid") 存在不合法数据，请修改后提交！
+

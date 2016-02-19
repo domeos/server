@@ -1,0 +1,36 @@
+
+<table class="table-info projectinfo">
+  <tr>
+    <td>构建目录</td>
+    <td>
+      <input ng-model="config.dockerfileInfo.buildPath" name="buildDir" placeholder="以“/”开头，系统会在该目录下执行构建命令" ng-pattern="/^//" ng-change="changeDockerfilePath(config.dockerfileInfo.buildPath);" class="info-txt input-fill"/><span ng-show="(needValid||proInfoForm.buildDir.$dirty)&amp;&amp;proInfoForm.buildDir.$invalid" class="inline-error">非法的路径</span>
+    </td>
+  </tr>
+  <tr>
+    <td>Dockerfile路径</td>
+    <td>
+      <input ng-model="config.dockerfileInfo.dockerfilePath" name="dockerfilePath" placeholder="/dockerfile" ng-pattern="/^/.*(Dockerfile)$/" required="required" class="info-txt input-fill"/><span ng-show="(needValid||proInfoForm.dockerfilePath.$dirty)&amp;&amp;proInfoForm.dockerfilePath.$error.required" class="inline-error"></span><span ng-show="(needValid||proInfoForm.dockerfilePath.$dirty)&amp;&amp;!proInfoForm.dockerfilePath.$error.required&amp;&amp;proInfoForm.dockerfilePath.$invalid" class="inline-error">非法的路径</span>
+    </td>
+  </tr>
+  <tr>
+    <td>项目可见性</td>
+    <td><span class="txt-visible">
+        <input id="toPublic" type="checkbox" ng-true-value="1" ng-false-value="0" ng-model="config.authority" class="dome-check"/>
+        <label for="toPublic">对所有人可见</label></span></td>
+  </tr>
+  <tr>
+    <td>运行过程环境变量</td>
+    <td>
+      <div class="txt-prompt setting-title">请列出项目需要配置的环境变量，给予默认值并加以描述，用于部署时提示运维人员配置。</div>
+      <ul class="settting-list">
+        <li ng-repeat="envConfDefault in config.envConfDefault">
+          <div class="setting-group">
+            <input placeholder="环境变量名" ng-model="envConfDefault.key" ng-focus="$last&amp;&amp;project.addEnvConfDefault()" is-required="is-required" param1="{{envConfDefault.value}}" class="info-txt input-fill env-name"/>
+            <input placeholder="环境变量值" ng-model="envConfDefault.value" is-required="is-required" param1="{{envConfDefault.key}}" class="info-txt input-fill env-value"/>
+            <input placeholder="环境变量描述" ng-model="envConfDefault.description" class="info-txt input-fill env-description"/>
+          </div><span class="delete-con"><a ng-if="config.envConfDefault.length&gt;1" ng-click="project.deleteArrItem('envConfDefault',$index)" class="icon-delete"></a></span>
+        </li>
+      </ul>
+    </td>
+  </tr>
+</table>

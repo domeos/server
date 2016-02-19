@@ -1,0 +1,96 @@
+
+<div class="mod-monitor clearfix">
+  <loading ng-if="loadingIns.isLoading||(monitorType=='容器'&amp;&amp;deployListIns.isLoading)"></loading>
+  <div class="monitor-select">
+    <h3 class="monitor-title txt-bright">监控对象{{$sce}}</h3><span class="item-title">监控类型</span>
+    <div class="select-con">
+      <button ng-cloak="ng-cloak" class="btn btn-select btn-white">{{monitorType}}<i class="icon-down"></i></button>
+      <ul class="select-list">
+        <li class="select-item"><a ng-click="toggleMonitorType('主机')">主机</a></li>
+        <li class="select-item"><a ng-click="toggleMonitorType('容器')">容器</a></li>
+      </ul>
+    </div><span class="item-title">集群</span>
+    <div class="select-con">
+      <button ng-cloak="ng-cloak" class="btn btn-select btn-white">{{clusterListIns.cluster.name||'选择集群'}}<i class="icon-down"></i></button>
+      <ul class="select-list">
+        <li ng-repeat="cluster in clusterListIns.clusterList track by $index" class="select-item"><a ng-bind="cluster.name" ng-click="toggleCluster($index)"></a></li>
+      </ul>
+    </div><span ng-hide="monitorType!=='容器'" class="item-title">部署</span>
+    <div ng-hide="monitorType!=='容器'" class="select-con">
+      <button ng-cloak="ng-cloak" class="btn btn-select btn-white">{{deployListIns.deploy.name||'选择部署'}}<i class="icon-down"></i></button>
+      <ul class="select-list">
+        <li ng-if="!deployListIns.deployList||deployFiltered.length===0" class="select-item"><a>无相关部署</a></li>
+        <li ng-repeat="deploy in deployFiltered=(deployListIns.deployList|filter:{'clusterFilter':true})" class="select-item"><a ng-bind="deploy.deployName" ng-click="toggleDeploy(deploy.deployId,deploy.deployName)"></a></li>
+      </ul>
+    </div><span ng-if="monitorType=='主机'" class="item-title">主机标签</span>
+    <div label="true" ng-if="monitorType=='主机'" class="input-white select-con">
+      <ul class="selected-labels">
+        <li ng-repeat="(label,value) in nodeListIns.labelsInfo|search:'isSelected':true" ng-cloak="ng-cloak" class="select-label">{{label}}<a ng-click="nodeListIns.toggleLabel(label,false)" class="icon-cancel"></a></li>
+        <li class="select-input">
+          <input placeholder="选择主机标签" ng-model="labelKey.key" ng-keydown="labelKeyDown($event,labelKey.key,labelsInfoFiltered)" class="line-element btn-select"/>
+        </li>
+      </ul>
+      <ul class="select-list">
+        <li ng-if="objLength(labelsInfoFiltered)===0"><a>无相关信息</a></li>
+        <li ng-repeat="(label,value) in labelsInfoFiltered=(nodeListIns.labelsInfo| searchKey:labelKey.key|search:'isShow':true)" class="select-item"><a ng-bind="label" ng-click="nodeListIns.toggleLabel(label,true);labelKey.key=''"></a></li>
+      </ul>
+    </div>
+    <div ng-show="monitorType=='主机'" class="search-con">
+      <input placeholder="请输入关键字" ng-model="keywords1" class="input-white"/>
+      <button ng-click="filterItem()" class="btn btn-sm btn-bright pull-right">搜索</button>
+    </div>
+    <ul ng-hide="monitorType=='主机'||showContainer" class="monitor-list">
+      <li><span class="check-item">
+          <input id="checkAllInstance" type="checkbox" ng-model="deployListIns.deployInstanceListIns.isCheckAll" ng-change="deployListIns.deployInstanceListIns.checkAllInstance()" class="dome-check"/>
+          <label for="checkAllInstance"></label></span><a ng-click="getCounterList()" class="txt-bright pull-right">刷新监控指标列表</a><a ng-click="toggleShowContainer(true)" class="txt-bright pull-right">查看容器</a></li>
+      <li ng-if="!deployListIns.deployInstanceListIns.instanceList||deployListIns.deployInstanceListIns.instanceList.length===0"><span>无实例信息</span></li>
+      <li ng-repeat="instance in deployListIns.deployInstanceListIns.instanceList"><span class="check-item">
+          <input id="{{'instance'+$index}}" type="checkbox" ng-model="instance.isSelected" ng-change="deployListIns.deployInstanceListIns.toggleCheck(instance)" class="dome-check"/>
+          <label for="{{'instance'+$index}}"></label></span><em ng-bind="instance.instanceName" popover="{{instance.instanceName}}" popover-trigger="mouseenter" class="item-name"></em></li>
+    </ul>
+    <ul ng-hide="monitorType=='主机'||!showContainer" class="monitor-list">
+      <li><span class="check-item">
+          <input id="checkAllContainer" type="checkbox" ng-model="deployListIns.deployInstanceListIns.isCheckAllContainer" ng-change="deployListIns.deployInstanceListIns.checkAllContainer()" class="dome-check"/>
+          <label for="checkAllContainer"></label></span><a ng-click="getCounterList()" class="txt-bright pull-right">刷新监控指标列表</a><a ng-click="toggleShowContainer(false)" class="txt-bright pull-right">返回实例列表</a></li>
+      <li ng-if="!deployListIns.deployInstanceListIns.containerList||deployListIns.deployInstanceListIns.containerList.length===0"><span>无Container信息</span></li>
+      <li ng-repeat="container in deployListIns.deployInstanceListIns.containerList"><span class="check-item">
+          <input id="{{'container'+$index}}" type="checkbox" ng-model="container.isSelected" ng-change="deployListIns.deployInstanceListIns.toggleContainerCheck(container)" class="dome-check"/>
+          <label for="{{'container'+$index}}"></label></span><em ng-bind="container.shortContainerId" popover="{{container.shortContainerId+'('+container.imageName+')'}}" popover-trigger="mouseenter" class="item-name"></em></li>
+    </ul>
+    <ul ng-hide="monitorType=='容器'" class="monitor-list">
+      <li><span class="check-item">
+          <input id="checkAllItem" type="checkbox" ng-model="nodeListIns.isCheckAll" ng-change="nodeListIns.checkAllNode()" class="dome-check"/>
+          <label for="checkAllItem"></label></span><a ng-click="getCounterList()" class="txt-bright pull-right">刷新监控指标列表</a></li>
+      <li ng-if="!nodeListIns.nodeList||filteredNodes.length===0"><span>无主机信息</span></li>
+      <li ng-repeat="node in filteredNodes=(nodeListIns.nodeList|filter:{'labelFilter':true,'keyFilter':true})"><span class="check-item">
+          <input id="{{'node'+$index}}" type="checkbox" ng-model="node.isSelected" ng-change="nodeListIns.toggleNodeCheck(node)" class="dome-check"/>
+          <label for="{{'node'+$index}}"></label></span><em ng-bind="node.name" class="item-name"></em></li>
+    </ul>
+  </div>
+  <div class="monitor-counter"> 
+    <h3 class="monitor-title txt-bright">监控指标</h3>
+    <div class="monitor-option pull-right"><a ng-click="getCounterList()" class="icon-fresh"></a>
+      <div class="select-con type-select">
+        <button ng-cloak="ng-cloak" class="btn btn-white btn-select pull-right">看图<i class="icon-down"></i></button>
+        <ul class="select-list">
+          <li class="select-item"><a ng-click="toChart('h')">Endpoint视角</a></li>
+          <li class="select-item"><a ng-click="toChart('k')">Counter视角</a></li>
+          <li class="select-item"><a ng-click="toChart('a')">组合视角</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="search-con">
+      <input placeholder="搜索监控指标" ng-model="monitorKey" class="input-white input-search"/>
+      <button ng-click="searchCount()" class="btn btn-bright btn-sm">搜索</button>
+    </div>
+    <ul class="counter-list">
+      <li><span class="check-item counter-item">
+          <input id="checkAllCounter" type="checkbox" ng-model="counterListIns.isCheckAll" ng-change="counterListIns.checkAllInstance()" class="dome-check"/>
+          <label for="checkAllCounter"></label></span><span class="counter-item">监控指标</span><span class="counter-item">类型</span><span class="counter-item">频率</span></li>
+      <li ng-show="!counterListIns.counterList||counterListIns.counterList.length===0">无相关信息</li>
+      <li ng-repeat="counter in counterListIns.counterList"><span class="check-item counter-item">
+          <input id="counter{{$index}}" type="checkbox" ng-model="counter.isSelected" ng-change="counterListIns.toggleCheck(counter)" class="dome-check"/>
+          <label for="counter{{$index}}"></label></span><a ng-bind="counter.counter" ng-click="toBigChart(counter.counter)" class="counter-item link-bright"></a><span ng-bind="counter.type" class="counter-item"></span><span ng-bind="counter.step" class="counter-item"></span></li>
+    </ul>
+  </div>
+</div>

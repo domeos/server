@@ -1,0 +1,41 @@
+@import "compass/css3";
+@import "common/css/common.scss";
+.image-manage{
+	.image-option{
+		padding:16px $page-padding 16px $page-padding+$wider-padding;
+		border-bottom: $light-border;
+		overflow: hidden;
+		.input-search{
+			margin-left: 20px;
+		}
+		.registry-address{
+			display: inline-block;
+			margin-top: 6px;
+		}
+	}
+	.add-image{
+		padding: 4px 0 16px $page-padding+$wider-padding;
+		li{
+			padding-top: 14px;
+			.info-name {
+				display: inline-block;
+				width: 160px;
+				padding-top: 2px;
+			}
+			.input-info{
+				width: 65%;
+			}
+			.btn{
+				margin-left: 16px;
+			}
+		}
+	}
+	.table-dome{
+		table-layout: fixed;
+		td,th{
+			&:first-child{
+				padding-left: $page-padding+$wider-padding;
+			}
+		}
+	}
+}

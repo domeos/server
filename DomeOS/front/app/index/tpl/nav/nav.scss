@@ -1,0 +1,120 @@
+@import "compass/css3";
+@import "index/images/nav/*.png";
+@import "common/css/common.scss";
+
+$nav-bg:#444;
+$nav-bg-on:#2f2f2f;
+$nav-color:#eeeeee;
+$nav-color-on:#5dabf3;
+
+// @include all-nav-sprites("index/images/nav/*.png");
+$navs :sprite-map("index/images/nav/*.png");
+// @mixin get-nav-sprite($name){
+// 	height: nav-sprite-height($name);
+// 	width: nav-sprite-width($name);
+// }
+.left-nav{
+	position: fixed;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	z-index:98;
+	width: $nav-width;
+	background-color:#fff;
+	overflow: auto;
+	background-color: $nav-bg;
+	.nav-lists{
+		color: $nav-color;
+		li{
+			border-bottom:1px solid $nav-bg-on;
+			.nav-item{
+				display: block;
+				position: relative;
+				height:$nav-width;
+				color: $nav-color;
+				text-align: center;
+				font-size: font-size(prompt);
+				padding-top: 16px;
+				.icon-nav{
+					display: block;
+					margin: 0 auto 12px auto;
+					background: sprite-url($navs) no-repeat 0 0;
+					@include sprite-dimensions($navs, mod-deploy);
+				}
+				&:link,&:hover,&:active{
+					text-decoration: none;
+				}
+				.nav-mod-project{
+					background-position: sprite-position($navs,mod-project);
+				}
+				.nav-mod-deploy{
+					background-position: sprite-position($navs,mod-deploy);
+				}
+				.nav-mod-mirror{
+					background-position: sprite-position($navs,mod-mirror);
+				}
+				.nav-mod-cluster{
+					background-position: sprite-position($navs,mod-cluster);
+				}
+				.nav-mod-monitor{
+					background-position: sprite-position($navs,mod-monitor);
+				}
+				.nav-mod-user{
+					background-position: sprite-position($navs,mod-user);
+				}
+				.nav-mod-global{
+					background-position: sprite-position($navs,mod-global);
+				}
+				.nav-mod-app{
+					background-position: sprite-position($navs,mod-app);
+				}
+			}
+			&.on{
+				background-color: $nav-bg-on;
+				.nav-mod-project{
+					background-position: sprite-position($navs,mod-project-on);
+				}
+				.nav-mod-deploy{
+					background-position: sprite-position($navs,mod-deploy-on);
+				}
+				.nav-mod-mirror{
+					background-position: sprite-position($navs,mod-mirror-on);
+				}
+				.nav-mod-cluster{
+					background-position: sprite-position($navs,mod-cluster-on);
+				}
+				.nav-mod-monitor{
+					background-position: sprite-position($navs,mod-monitor-on);
+				}
+				.nav-mod-user{
+					background-position: sprite-position($navs,mod-user-on);
+				}
+				.nav-mod-global{
+					background-position: sprite-position($navs,mod-global-on);
+				}
+				.nav-mod-app{
+					background-position: sprite-position($navs,mod-app-on);
+				}
+				.nav-item{
+					color: $nav-color-on;
+					.nav-border{
+						position: absolute;
+						left: 0;
+						top: 0;
+						height: $nav-width;
+						width: 2px;
+						background-color: $nav-color-on;
+					}
+				}
+			}
+			&.dome-logo{
+				a{
+					display: block;
+				height: 89px;
+					padding-top: 15px;
+					text-align: center;
+				}
+			}
+		}
+	}
+}

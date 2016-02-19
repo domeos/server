@@ -1,0 +1,75 @@
+
+<div ng-form="ng-form" name="clusterForm" role="form" ng-class="{'need-valid':needValid}">
+  <ul class="list-info">
+    <li ng-if="!creatCluster"><span class="info-name">集群名称</span>
+      <div ng-bind="config.name" class="info-content"></div>
+    </li>
+    <li ng-if="!creatCluster"><span class="info-name">创建者</span>
+      <div ng-bind="config.ownerName" class="info-content"></div>
+    </li>
+    <li ng-if="creatCluster"><span class="info-name">集群名称</span>
+      <div class="info-content">
+        <input ng-model="config.name" is-cluster-exist="is-cluster-exist" cluster-list="clusterList" name="clusterName" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" required="required" class="input-fill line-single"/><span ng-if="(needValid||clusterForm.clusterName.$dirty)&amp;&amp;clusterForm.clusterName.$error.required" class="txt-error">必填</span><span ng-if="(needValid||clusterForm.clusterName.$dirty)&amp;&amp;clusterForm.clusterName.$error.isClusterExist" class="txt-error">集群已存在</span>
+      </div>
+    </li>
+    <li ng-if="creatCluster"><span class="info-name">创建者</span>
+      <div class="info-content">
+        <div class="select-con select-creator">
+          <button ng-cloak="ng-cloak" class="btn btn-white btn-select">{{config.ownerName}} <i class="icon-down"></i></button>
+          <ul class="select-list">
+            <li ng-repeat="user in clusterIns.userList" class="select-item"><a ng-bind="user.name" ng-click="clusterIns.toggleUser(user)"></a></li>
+          </ul>
+        </div>
+      </div>
+    </li>
+    <li><span class="info-name">api server</span>
+      <div class="info-content">
+        <input ng-model="config.api" name="api" placeholder="请输入api server地址" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" is-api-server-exist="is-api-server-exist" current-cluster="{{config.name}}" cluster-list="clusterList" required="required" class="input-fill line-single"/><span ng-if="(needValid||clusterForm.api.$dirty)&amp;&amp;clusterForm.api.$error.required" class="txt-error">必填</span><span ng-if="(needValid||clusterForm.api.$dirty)&amp;&amp;clusterForm.api.$error.isApiServerExist" class="txt-error">api server已存在</span>
+      </div>
+    </li>
+    <li><span class="info-name">dns服务器</span>
+      <div class="info-content">
+        <input ng-model="config.dns" name="dns" placeholder="请输入dns服务器地址" required="required" class="input-fill line-single"/><span ng-if="(needValid||clusterForm.dns.$dirty)&amp;&amp;clusterForm.dns.$error.required" class="txt-error">必填</span>
+      </div>
+    </li>
+    <li><span class="info-name">etcd</span>
+      <div ng-form="ng-form" name="etcdTotalForm" class="info-content">
+        <div ng-form="ng-form" role="form" name="etcdForm" ng-repeat="etcd in config.etcd" class="line-single">
+          <input ng-model="etcd.name" name="etcd" ng-focus="$last&amp;&amp;clusterIns.addEtcd()" ng-keyup="clusterIns.validItem('etcd')" ng-pattern="/^[^\s]*$/" placeholder="请输入etcd地址" class="input-fill single-element"/><a ng-show="config.etcd.length&gt;1" ng-click="clusterIns.deleteArrItem('etcd',$index)" class="txt-wrap icon-delete"></a>
+        </div><span ng-if="etcdTotalForm.$valid&amp;&amp;!clusterIns.etcdValid" class="txt-error">至少填写一个</span>
+      </div>
+    </li>
+    <li><span class="info-name">domain</span>
+      <div class="info-content">
+        <input ng-model="config.domain" name="domain" required="required" class="input-fill line-single"/><span ng-if="(needValid||clusterForm.domain.$dirty)&amp;&amp;clusterForm.domain.$error.required" class="txt-error">必填</span>
+      </div>
+    </li>
+    <li><span class="info-name">日志自动收集</span>
+      <div class="info-content">
+        <dome-toggle ng-class="{1:'on'}[config.logConfig]" ng-click="clusterIns.toggleLogConfig()"></dome-toggle><span class="txt-prompt">请在启用前确认您的集群配置了kafka</span>
+      </div>
+    </li>
+    <li ng-if="config.logConfig===1"><span class="info-name">kafka</span>
+      <div ng-form="ng-form" name="kafkaTotalForm" class="info-content">
+        <div ng-form="ng-form" role="form" name="kafkaForm" ng-repeat="kafka in config.clusterLog.kafka" class="line-single">
+          <input ng-model="kafka.name" name="kafka" ng-focus="$last&amp;&amp;clusterIns.addKafka()" ng-keyup="clusterIns.validItem('kafka')" ng-pattern="/^[^\s]*$/" placeholder="请输入kafka地址" class="input-fill single-element"/><a ng-show="config.clusterLog.kafka.length&gt;1" ng-click="clusterIns.deleteLogArrItem('kafka',$index)" class="txt-wrap icon-delete"></a>
+        </div><span ng-if="kafkaTotalForm.$valid&amp;&amp;!clusterIns.kafkaValid" class="txt-error">至少填写一个</span>
+      </div>
+    </li>
+    <li ng-if="config.logConfig===1"><span class="info-name">zookeeper</span>
+      <div ng-form="ng-form" name="zookeeperTotalForm" class="info-content">
+        <div ng-form="ng-form" role="form" name="zookeeperForm" ng-repeat="zookeeper in config.clusterLog.zookeeper" class="line-single">
+          <input ng-model="zookeeper.name" ng-focus="$last&amp;&amp;clusterIns.addZookeeper()" name="zookeeper" ng-keyup="clusterIns.validItem('zookeeper')" ng-pattern="/^[^\s]*$/" placeholder="请输入zookeeper地址" class="input-fill single-element"/><a ng-show="config.clusterLog.zookeeper.length&gt;1" ng-click="clusterIns.deleteLogArrItem('zookeeper',$index)" class="txt-wrap icon-delete"></a>
+        </div><span ng-if="zookeeperTotalForm.$valid&amp;&amp;!clusterIns.zookeeperValid" class="txt-error">至少填写一个</span>
+      </div>
+    </li>
+    <li ng-if="config.logConfig===1"><span class="info-name">日志容器</span>
+      <div class="info-content">
+        <div class="cluster-log-con">
+          <input placeholder="请输入容器镜像名" name="imageName" ng-model="config.clusterLog.imageName" required="required" class="input-fill cluster-log"/><span ng-if="(needValid||clusterForm.imageName.$dirty)&amp;&amp;clusterForm.imageName.$invalid" class="txt-error">必填</span>
+          <input placeholder="请输入容器镜像版本" name="imageTag" ng-model="config.clusterLog.imageTag" class="input-fill cluster-log"/>
+        </div>
+      </div>
+    </li>
+  </ul>
+</div>

@@ -1,0 +1,49 @@
+doctype html
+html(ng-app="loginApp")
+	head
+		meta(http-equiv="Content-Type",content="text/html; charset=utf-8")
+		title 登录-DomeOs
+		link(rel="stylesheet" href='/common/css/base.css' type="text/css")
+		link(rel="stylesheet" href='css/login.css' type="text/css")
+	body(ng-controller="loginCtr")
+		.login-detail
+			h1.t-title DomeOS
+			span.t-welcome.txt-primary 欢迎来到DomeOS！
+			p.t-produce DomeOS是基于docker的企业级应用编排运维管理系统，为企业级用户打造持续集成、持续交付和自动运维平台。
+			span.t-feature-title 在DomeOS上，您可以：
+			.feature-list
+				h3.t-h1 创建项目并构建
+				p 支持不同的代码仓库，可实现持续集成，支持代码push自动构建。
+				p 私有registry存储构建的镜像，升级回滚简单易行。
+				h3.t-h2 进行全方位应用部署管理
+				p 通过简单的配置即可快速实现项目部署。
+				p 支持升级/回滚、灰度发布、扩容/缩容等运维管理功能。
+				h3.t-h3 全方位监控服务和物理资源
+				p 容器和主机级别的完整监控，灵活的日志系统和事件记录，运行状况一目了然。
+			span.t-document 想了解更多，请查看
+				a.link-primary(href="http://doc.domeos.org" target="_blank") 用户文档
+		.login-info
+			.login-container
+				.border-top
+				form.login-body(name="loginForm" novalidate ng-class="{'need-valid':needValid}")
+					.login-type
+						span.account-type(ng-class="{'active':loginType=='LDAP'}" ng-click="loginType='LDAP'") LDAP登录
+						span.account-type(ng-class="{'active':loginType=='USER'}" ng-click="loginType='USER'") 普通账户
+					.login-form
+						input.login-txt(placeholder="用户名" name="username" ng-model="username" required ng-change="hideError()")
+						span.txt-error(ng-show="(needValid||loginForm.username.$dirty)&&loginForm.username.$error.required") 必填
+						input.login-txt(placeholder="密码" type="password" name="password" ng-model="password" required ng-change="hideError()")
+						span.txt-error(ng-show="(needValid||loginForm.password.$dirty)&&loginForm.password.$error.required") 必填
+						span.txt-error(ng-bind="hasError" ng-if="hasError!==''")
+						//- span.login-auto
+							input#autoLogin.login-check(type="checkbox")
+							label(for="autoLogin") 自动登录
+						button.btn.btn-login(ng-click="needValid=true;loginForm.$valid&&login()") 登录
+					.login-bottom
+						span 提示：
+						p 申请新账户或找回账户密码请联系管理员。
+		script(type="text/javascript" src="/lib/js/jquery.min.js")
+		script(type="text/javascript" src="/lib/js/angular.min.js")
+		script(type="text/javascript" src="js/loginApp.js")
+		script(type="text/javascript" src="js/loginCtr.js")
+

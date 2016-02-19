@@ -1,0 +1,42 @@
+
+<ul class="list-info border-info">
+  <li><span class="info-name">集群名称</span>
+    <div ng-bind="config.name" class="info-content"></div>
+  </li>
+  <li><span class="info-name">创建者</span>
+    <div ng-bind="config.ownerName" class="info-content"></div>
+  </li>
+  <li><span class="info-name">api server</span>
+    <div ng-bind="config.api" class="info-content"></div>
+  </li>
+  <li><span class="info-name">dns服务器</span>
+    <div ng-bind="isStrNull(config.dns)" class="info-content"></div>
+  </li>
+  <li><span class="info-name">etcd</span>
+    <div class="info-content">
+      <div ng-hide="$last" ng-repeat="etcd in config.etcd" class="line-single"><span ng-bind="etcd.name" class="input-white input-txt single-element"></span></div>
+    </div>
+  </li>
+  <li><span class="info-name">domain</span>
+    <div class="info-content"><span ng-bind="isStrNull(config.domain)"></span></div>
+  </li>
+  <li><span class="info-name">日志自动收集</span>
+    <div ng-switch="config.logConfig" class="info-content"><span ng-switch-when="1">On</span><span ng-switch-default="ng-switch-default">Off</span></div>
+  </li>
+  <li ng-if="config.logConfig===1"><span class="info-name">kafka</span>
+    <div class="info-content">
+      <div ng-hide="$last" ng-repeat="kafka in config.clusterLog.kafka" class="line-single"><span ng-bind="kafka.name" class="input-white input-txt single-element"></span></div><span ng-if="config.clusterLog.kafka.length&lt;=1">未设置</span>
+    </div>
+  </li>
+  <li ng-if="config.logConfig===1"><span class="info-name">zookeeper</span>
+    <div class="info-content">
+      <div ng-hide="$last" ng-repeat="zookeeper in config.clusterLog.zookeeper" class="line-single"><span ng-bind="zookeeper.name" class="input-white input-txt single-element"></span></div><span ng-if="config.clusterLog.zookeeper.length&lt;=1">未设置</span>
+    </div>
+  </li>
+  <li ng-if="config.logConfig===1"><span class="info-name">日志容器</span>
+    <div class="info-content">
+      <div class="line-singgle"><span>镜像名 : </span><span ng-bind="config.clusterLog.imageName" class="cluster-log"></span></div>
+      <div class="line-singgle"><span>镜像版本 : </span><span ng-bind="isStrNull(config.clusterLog.imageTag)" class="cluster-log"></span></div>
+    </div>
+  </li>
+</ul>

@@ -1,0 +1,140 @@
+/* line 168, index/images/nav/*.png */
+.nav-sprite {
+  background-image: url('../../../index/images/nav-s489985784d.png');
+  background-repeat: no-repeat;
+}
+
+/*
+ * @description: common css variable and function
+ * @version: 0.1
+ */
+/* line 16, nav.scss */
+.left-nav {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 98;
+  width: 79px;
+  background-color: #fff;
+  overflow: auto;
+  background-color: #444;
+}
+/* line 26, nav.scss */
+.left-nav .nav-lists {
+  color: #eeeeee;
+}
+/* line 28, nav.scss */
+.left-nav .nav-lists li {
+  border-bottom: 1px solid #2f2f2f;
+}
+/* line 30, nav.scss */
+.left-nav .nav-lists li .nav-item {
+  display: block;
+  position: relative;
+  height: 79px;
+  color: #eeeeee;
+  text-align: center;
+  font-size: 12px;
+  padding-top: 16px;
+}
+/* line 38, nav.scss */
+.left-nav .nav-lists li .nav-item .icon-nav {
+  display: block;
+  margin: 0 auto 12px auto;
+  background: url('../../../index/images/nav-sbf89ad1640.png') no-repeat 0 0;
+  height: 24px;
+  width: 24px;
+}
+/* line 44, nav.scss */
+.left-nav .nav-lists li .nav-item:link, .left-nav .nav-lists li .nav-item:hover, .left-nav .nav-lists li .nav-item:active {
+  text-decoration: none;
+}
+/* line 47, nav.scss */
+.left-nav .nav-lists li .nav-item .nav-mod-project {
+  background-position: 0 -312px;
+}
+/* line 50, nav.scss */
+.left-nav .nav-lists li .nav-item .nav-mod-deploy {
+  background-position: 0 -120px;
+}
+/* line 53, nav.scss */
+.left-nav .nav-lists li .nav-item .nav-mod-mirror {
+  background-position: 0 -216px;
+}
+/* line 56, nav.scss */
+.left-nav .nav-lists li .nav-item .nav-mod-cluster {
+  background-position: 0 -72px;
+}
+/* line 59, nav.scss */
+.left-nav .nav-lists li .nav-item .nav-mod-monitor {
+  background-position: 0 -264px;
+}
+/* line 62, nav.scss */
+.left-nav .nav-lists li .nav-item .nav-mod-user {
+  background-position: 0 -360px;
+}
+/* line 65, nav.scss */
+.left-nav .nav-lists li .nav-item .nav-mod-global {
+  background-position: 0 -168px;
+}
+/* line 68, nav.scss */
+.left-nav .nav-lists li .nav-item .nav-mod-app {
+  background-position: 0 -24px;
+}
+/* line 72, nav.scss */
+.left-nav .nav-lists li.on {
+  background-color: #2f2f2f;
+}
+/* line 74, nav.scss */
+.left-nav .nav-lists li.on .nav-mod-project {
+  background-position: 0 -288px;
+}
+/* line 77, nav.scss */
+.left-nav .nav-lists li.on .nav-mod-deploy {
+  background-position: 0 -96px;
+}
+/* line 80, nav.scss */
+.left-nav .nav-lists li.on .nav-mod-mirror {
+  background-position: 0 -192px;
+}
+/* line 83, nav.scss */
+.left-nav .nav-lists li.on .nav-mod-cluster {
+  background-position: 0 -48px;
+}
+/* line 86, nav.scss */
+.left-nav .nav-lists li.on .nav-mod-monitor {
+  background-position: 0 -240px;
+}
+/* line 89, nav.scss */
+.left-nav .nav-lists li.on .nav-mod-user {
+  background-position: 0 -336px;
+}
+/* line 92, nav.scss */
+.left-nav .nav-lists li.on .nav-mod-global {
+  background-position: 0 -144px;
+}
+/* line 95, nav.scss */
+.left-nav .nav-lists li.on .nav-mod-app {
+  background-position: 0 0;
+}
+/* line 98, nav.scss */
+.left-nav .nav-lists li.on .nav-item {
+  color: #5dabf3;
+}
+/* line 100, nav.scss */
+.left-nav .nav-lists li.on .nav-item .nav-border {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 79px;
+  width: 2px;
+  background-color: #5dabf3;
+}
+/* line 111, nav.scss */
+.left-nav .nav-lists li.dome-logo a {
+  display: block;
+  height: 89px;
+  padding-top: 15px;
+  text-align: center;
+}

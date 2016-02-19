@@ -1,0 +1,90 @@
+/*
+ * @description: common css variable and function
+ * @version: 0.1
+ */
+/* line 3, addHost.scss */
+.add-host {
+  margin: 0 -20px 0 -20px;
+}
+/* line 6, addHost.scss */
+.add-host .host-info li {
+  display: table;
+  border-bottom: 1px solid #f5f5f5;
+  width: 100%;
+}
+/* line 10, addHost.scss */
+.add-host .host-info li .num-con {
+  display: table-cell;
+  width: 200px;
+  text-align: center;
+  vertical-align: middle;
+}
+/* line 15, addHost.scss */
+.add-host .host-info li .num-con .info-num {
+  display: inline-block;
+  height: 40px;
+  width: 40px;
+  padding-top: 9px;
+  color: #2994e7;
+  text-align: center;
+  border: 1px solid #f5f5f5;
+  border-radius: 3px;
+}
+/* line 26, addHost.scss */
+.add-host .host-info li .info-con {
+  display: table-cell;
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+/* line 30, addHost.scss */
+.add-host .host-info li .info-con .info-descrip {
+  margin-bottom: 16px;
+}
+/* line 33, addHost.scss */
+.add-host .host-info li .info-con .info-line {
+  width: 62%;
+}
+/* line 36, addHost.scss */
+.add-host .host-info li .info-con .info-cmd {
+  position: relative;
+  display: -webkit-flex;
+  display: flex;
+  overflow: hidden;
+}
+/* line 40, addHost.scss */
+.add-host .host-info li .info-con .info-cmd textarea {
+  -webkit-flex: 1;
+  flex: 1;
+  min-height: 85px;
+  padding-right: 85px;
+  border-radius: 3px 0 0 3px;
+}
+/* line 46, addHost.scss */
+.add-host .host-info li .info-con .info-cmd .cmd-copy {
+  display: block;
+  height: 85px;
+  width: 70px;
+  padding-top: 18px;
+  text-align: center;
+  border: 1px solid #d4d7de;
+  border-left: none;
+  border-radius: 0 3px 3px 0;
+}
+/* line 57, addHost.scss */
+.add-host .host-info li .info-con .line-con {
+  display: -webkit-flex;
+  display: flex;
+}
+/* line 59, addHost.scss */
+.add-host .host-info li .info-con .line-con .line-element {
+  -webkit-flex: 1;
+  flex: 1;
+}
+/* line 63, addHost.scss */
+.add-host .host-info li .info-con .input-sibling {
+  margin-top: 6px;
+}
+/* line 67, addHost.scss */
+.add-host .host-info li .env-check {
+  margin-right: 50px;
+}

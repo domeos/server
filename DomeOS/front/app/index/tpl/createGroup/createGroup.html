@@ -1,0 +1,83 @@
+
+<div ng-form="ng-form" name="groupFrom" ng-class="{'need-valid':needValid}" novalidate="novalidate" class="mod-group create-group">
+  <loading ng-if="isWaitingCreate"></loading>
+  <ul class="info-list group-info">
+    <li><span class="info-name">组名称</span>
+      <div class="info-content">
+        <div class="line-long">
+          <input ng-model="group.name" name="groupName" required="required" ng-pattern="/^[a-z0-9]+([._-][a-z0-9]+)*$/" is-group-exist="is-group-exist" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" class="input-fill line-element"/>
+        </div><span ng-if="(needValid||groupFrom.groupName.$dirty)&amp;&amp;groupFrom.groupName.$error.required" class="txt-error">必填</span><span ng-if="(needValid||groupFrom.groupName.$dirty)&amp;&amp;!groupFrom.groupName.$error.required&amp;&amp;groupFrom.groupName.$error.pattern" class="txt-error">非法的名称</span><span ng-if="(needValid||groupFrom.groupName.$dirty)&amp;&amp;!groupFrom.groupName.$error.required&amp;&amp;!groupFrom.groupName.$error.pattern&amp;&amp;groupFrom.groupName.$invalid" class="txt-error">组名已存在</span>
+      </div>
+    </li>
+    <li><span class="info-name">组描述</span>
+      <div class="info-content">
+        <div class="line-long">
+          <textarea ng-model="group.description" class="input-fill line-element"></textarea>
+        </div>
+      </div>
+    </li>
+    <li><span class="info-name">组成员</span>
+      <div class="info-content">
+        <div class="line-long">
+          <div label="true" class="select-con line-element">
+            <ul class="selected-labels">
+              <li ng-repeat="user in selectedUsers" ng-cloak="ng-cloak" class="select-label">{{user.username}}<a ng-click="cancelUser($index)" class="icon-cancel"></a></li>
+              <li class="select-input">
+                <input placeholder="搜索成员" ng-model="userKey.key" ng-keydown="userKeyDown($event,userKey.key,userListFiltered[0])" class="line-element btn-select"/>
+              </li>
+            </ul>
+            <ul class="select-list">
+              <li ng-if="!userList||userListFiltered.length===0"><a>无相关用户信息</a></li>
+              <li ng-repeat="user in userListFiltered=(userList| filter:{'username':userKey.key})" class="select-item"><a ng-bind="user.username" ng-click="selectUser(user.id,user.username);"></a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="line-long">
+          <div class="select-con line-element">
+            <button ng-cloak="ng-cloak" class="btn btn-select btn-white">{{role}}<i class="icon-down"></i></button>
+            <ul class="select-list">
+              <li class="select-item"><a ng-click="toggleRole('reporter')">reporter</a></li>
+              <li class="select-item"><a ng-click="toggleRole('developer')">developer</a></li>
+              <li class="select-item"><a ng-click="toggleRole('master')">master</a></li>
+            </ul>
+          </div>
+          <button ng-click="addUser()" class="btn btn-sm btn-primary btn-add">添加</button>
+        </div>
+        <div class="line-long line-member">
+          <table class="table-primary">
+            <thead>
+              <tr>
+                <th>成员名</th>
+                <th>组权限</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td ng-bind="myself.username"></td>
+                <td ng-bind="myself.role"></td>
+                <td></td>
+              </tr>
+              <tr ng-repeat="user in selectedUsersList">
+                <td ng-bind="user.username"></td>
+                <td>
+                  <div class="select-con">
+                    <button ng-cloak="ng-cloak" class="btn btn-white btn-select">{{user.role}}<i class="icon-down"></i></button>
+                    <ul class="select-list">
+                      <li class="select-item"><a ng-click="user.role='reporter'">reporter</a></li>
+                      <li class="select-item"><a ng-click="user.role='developer'">developer</a></li>
+                      <li class="select-item"><a ng-click="user.role='master'">master</a></li>
+                    </ul>
+                  </div>
+                </td>
+                <td><a ng-click="deleteUser($index)" class="icon-delete"></a></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </li>
+  </ul>
+  <div class="bottom-option"><span class="bottom-option-con">
+      <button ng-disabled="isWaitingCreate" ng-click="needValid=true;groupFrom.$valid&amp;&amp;createGroup()" class="btn btn-md btn-bright">完成创建</button><span ng-if="needValid&amp;&amp;groupFrom.$invalid" class="txt-error">您有不合法数据，请修改后重试。</span></span></div>
+</div>

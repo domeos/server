@@ -1,0 +1,26 @@
+/*
+ * @description: common css variable and function
+ * @version: 0.1
+ */
+/* line 4, hostDetail.scss */
+.host-detail .host-info {
+  margin: 0 -20px 0 -20px;
+}
+/* line 6, hostDetail.scss */
+.host-detail .host-info .info-options {
+  padding: 16px 20px 16px 52px;
+  overflow: hidden;
+}
+/* line 11, hostDetail.scss */
+.host-detail .add-label {
+  margin-left: 16px;
+}
+/* line 14, hostDetail.scss */
+.host-detail .check-con {
+  margin-right: 40px;
+}
+/* line 17, hostDetail.scss */
+.host-detail .host-label-con {
+  width: 40%;
+  margin-top: 28px;
+}

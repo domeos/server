@@ -1,0 +1,11 @@
+/target
+/lib
+*.iml
+.idea
+.DS_Store
+src/main/webapp/api/
+src/main/webapp/common/
+src/main/webapp/index/
+src/main/webapp/lib/
+src/main/webapp/login/
+src/main/webapp/index.html

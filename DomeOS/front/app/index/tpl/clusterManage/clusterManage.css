@@ -1,0 +1,87 @@
+/*
+ * @description: common css variable and function
+ * @version: 0.1
+ */
+/* line 5, clusterManage.scss */
+.cluster-manage .cluster-list {
+  padding-top: 20px;
+}
+/* line 7, clusterManage.scss */
+.cluster-manage .cluster-list li {
+  float: left;
+  width: 33.3%;
+  max-width: 550px;
+  padding-left: 20px;
+  margin-top: 20px;
+}
+/* line 13, clusterManage.scss */
+.cluster-manage .cluster-list li .cluster-item {
+  border: 1px solid #d4d7de;
+  border-radius: 3px;
+}
+/* line 16, clusterManage.scss */
+.cluster-manage .cluster-list li .cluster-item .cluster-header {
+  padding: 8px 12px 8px;
+  text-align: left;
+  border-bottom: 1px solid #f5f5f5;
+  overflow: hidden;
+}
+/* line 21, clusterManage.scss */
+.cluster-manage .cluster-list li .cluster-item .cluster-header .cluster-name {
+  display: block;
+  margin-top: 7px;
+  color: #444;
+  font-size: 16px;
+}
+/* line 27, clusterManage.scss */
+.cluster-manage .cluster-list li .cluster-item .cluster-header .btn-white {
+  color: #2994e7;
+}
+/* line 31, clusterManage.scss */
+.cluster-manage .cluster-list li .cluster-item .cluster-content {
+  padding: 20px 0 26px 0;
+  height: 90px;
+  font-size: 0;
+  text-align: center;
+}
+/* line 36, clusterManage.scss */
+.cluster-manage .cluster-list li .cluster-item .cluster-content .cluster-info {
+  display: inline-block;
+  width: 50%;
+  font-size: 14px;
+}
+/* line 40, clusterManage.scss */
+.cluster-manage .cluster-list li .cluster-item .cluster-content .cluster-info .cluster-embed {
+  margin-top: 8px;
+  font-size: 18px;
+  letter-spacing: 2px;
+}
+/* line 46, clusterManage.scss */
+.cluster-manage .cluster-list li .cluster-item .cluster-content .no-host {
+  display: block;
+  margin-top: 9px;
+  padding-left: 10%;
+  font-size: 14px;
+  text-align: left;
+}
+/* line 54, clusterManage.scss */
+.cluster-manage .cluster-list li .cluster-item .addhost {
+  margin-bottom: 20px;
+  padding-top: 12px;
+}
+/* line 59, clusterManage.scss */
+.cluster-manage .cluster-list li:nth-child(3n+1) {
+  padding-left: 0;
+}
+/* line 62, clusterManage.scss */
+.cluster-manage .cluster-list li.no-cluster {
+  height: 208px;
+  text-align: center;
+  border: 1px dashed #999;
+  border-radius: 3px;
+}
+/* line 67, clusterManage.scss */
+.cluster-manage .cluster-list li.no-cluster span {
+  display: inline-block;
+  margin-top: 90px;
+}

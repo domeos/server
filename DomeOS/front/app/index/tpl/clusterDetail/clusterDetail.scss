@@ -1,0 +1,45 @@
+@import "compass/css3";
+@import "common/css/common.scss";
+
+.cluster-detail{
+	.cluster-info{
+		margin:0 0-$page-padding 0 0-$page-padding;
+		.info-options{
+			padding :16px $page-padding 16px $page-padding+$wider-padding;
+			overflow: hidden;
+			.namespace-title{
+				display: block;
+				float: left;
+				margin-top: 20px;
+				font-weight: bold;
+				width: 150px;
+			}
+			.namespace-con{
+				float: left;
+				width: 50%;
+				margin-top: 20px;
+				.new-namespace{
+					@include display-flex;
+					.namespace-txt{
+						@include flex(1);
+						margin-right: 12px;
+					}
+				}
+				.namespace-list{
+					margin-top: 28px;
+				}
+			}
+			.info-count{
+				display: block;
+				// padding-left:  $wider-padding;
+				padding-top: 8px;
+			}
+		}
+	}
+	.edit-cluster{
+		margin: 16px 0 10px 58px;
+	}
+	.tab-cluster{
+		padding:6px $page-padding 40px $page-padding;
+	}
+}

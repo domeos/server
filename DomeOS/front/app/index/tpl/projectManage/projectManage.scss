@@ -1,0 +1,24 @@
+@import "compass/css3";
+@import "index/images/nav/*.png";
+@import "common/css/common.scss";
+
+.project-manage{
+	.project-options{
+		padding-top: 16px;
+		height: 82px;
+		.btn-lg{
+			height: 43px;
+			width: 158px;
+			color: #fff;
+			font-size:14px;
+			font-weight: bold;
+			background-color:#2994e7;
+			.icon-add-white{
+				margin-right: 4px;
+			}
+		}
+		.input-search{
+			margin-left: 34px;
+		}
+	}
+}

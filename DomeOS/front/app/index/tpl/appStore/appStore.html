@@ -1,0 +1,13 @@
+
+<ul class="mod-appstore app-store">
+  <li ng-repeat="app in appList">
+    <div class="app-item">
+      <h3 ng-click="app.appName">Zookeeper</h3>
+      <div app-img-con="app-img-con" class="app-img-on">
+        <div class="cover-con">
+          <p ng-bind="app.description"></p><a ui-sref="createAppDeploy({'appName':app.appName})" class="btn btn-white btn-deploy btn-sm">部署</a>
+        </div><img src="{{app.appIcon}}"/>
+      </div>
+    </div>
+  </li>
+</ul>

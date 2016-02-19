@@ -1,0 +1,233 @@
+
+<div class="mod-global global-setting">
+  <tabset class="mod-tab">
+    <tab heading="用户管理">
+      <div class="user-list-title">
+        <input placeholder="输入用户名称查找" ng-model="userKey.key" class="input-fill input-search pull-right"/>
+        <h3>用户列表</h3>
+        <div class="select-con">
+          <button ng-cloak="ng-cloak" class="btn btn-select btn-white">{{currentUserType=='USER'?'普通用户':currentUserType}}<i class="icon-down"></i></button>
+          <ul class="select-list">
+            <li class="select-item"><a ng-click="toggleUserType('LDAP');">LDAP</a></li>
+            <li class="select-item"><a ng-click="toggleUserType('USER');">普通用户</a></li>
+          </ul>
+        </div>
+        <div ng-if="currentUserType=='USER'" class="to-add">
+          <button ng-if="!isShowAdd" ng-click="toggleShowAdd()" class="btn btn-primary btn-sm">创建用户<i class="icon-down-white up"></i></button>
+          <button ng-if="isShowAdd" ng-click="toggleShowAdd()" class="btn btn-primary btn-sm">取消<i class="icon-down-white"></i></button>
+        </div>
+      </div>
+      <ul ng-form="ng-form" name="userForm" role="form" ng-class="{'need-valid':needValidUser.valid}" ng-show="isShowAdd" class="list-info add-user">
+        <li><span class="info-name">用户名</span>
+          <div class="info-content">
+            <input placeholder="由小写字母和数字组成" name="username" ng-model="newUser.username" is-user-exist="userListIns.userList" required="required" ng-pattern="/^[0-9a-z]+$/" class="input-white line-single"/><span ng-if="(needValidUser.valid||userForm.username.$dirty)&amp;&amp;userForm.username.$error.pattern" class="txt-error">非法的名称</span><span ng-if="(needValidUser.valid||userForm.username.$dirty)&amp;&amp;userForm.username.$error.isUserExist" class="txt-error">用户已存在</span>
+          </div>
+        </li>
+        <li><span class="info-name">密码</span>
+          <div class="info-content">
+            <input placeholder="8-20位" type="password" ng-model="newUser.password" name="password" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" required="required" ng-minlength="8" ng-maxlength="20" class="input-white line-single"/><span ng-if="(needValidUser.valid||userForm.password.$dirty)&amp;&amp;(userForm.password.$error.minlength||userForm.password.$error.maxlength)" class="txt-error">长度必须为8-20位</span>
+          </div>
+        </li>
+        <li><span class="info-name">再次输入密码</span>
+          <div class="info-content">
+            <input placeholder="重新输入密码" type="password" ng-model="newUser.rePassword" name="password" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" required="required" equal="newUser.password" class="input-white line-single"/><span ng-if="(needValidUser.valid||userForm.password.$dirty)&amp;&amp;userForm.password.$error.equal" class="txt-error">两次密码不一致</span>
+          </div>
+        </li>
+        <li><span class="info-name">电子邮箱</span>
+          <div class="info-content">
+            <input ng-model="newUser.email" name="email" required="required" class="input-white line-single"/>
+            <div class="txt-wrap">
+              <button ng-click="needValidUser.valid=true;userForm.$valid&amp;&amp;addUser(userForm);" class="btn btn-primary btn-sm">确认创建</button>
+            </div>
+          </div>
+        </li>
+      </ul>
+      <table ng-if="currentUserType=='LDAP'" class="table-dome full table-users">
+        <thead>
+          <tr>
+            <th>用户名</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-if="!userList||userListFiltered1.length===0">
+            <td>无相关用户信息</td>
+          </tr>
+          <tr ng-repeat="user in userListFiltered1=(userList|filter:{'username':userKey.key})">
+            <td ng-bind="user.username"></td>
+          </tr>
+        </tbody>
+      </table>
+      <table ng-if="currentUserType!='LDAP'" class="table-dome full table-users">
+        <thead>
+          <tr>
+            <th>用户名</th>
+            <th>电子邮箱</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-if="!userListIns.userList||userFiltered.length===0">
+            <td colspan="3">无相关用户信息</td>
+          </tr>
+          <tr ng-repeat="user in userFiltered=(userListIns.userList|filter:{'username':userKey.key})">
+            <td ng-bind="user.username"></td>
+            <td><span ng-if="!user.isEdit"><span ng-bind="user.email" class="useremail nowrap"></span><a ng-click="userListIns.toggleEdit(user,true)" class="icon-edit"></a></span><span ng-if="user.isEdit">
+                <input ng-model="user.newEmail" class="useremail input-white"/>
+                <button ng-click="userListIns.saveSingle(user)" class="btn btn-primary btn-sm">保存</button>
+                <button ng-click="userListIns.toggleEdit(user,false)" class="btn btn-white btn-sm">取消</button></span></td>
+            <td>
+              <button ng-click="userListIns.modifyPw(user)" class="btn btn-primary btn-sm">修改密码</button><a ng-click="userListIns.deleteUser(user)" ng-if="user.username!='admin'" class="icon-delete"></a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </tab>
+    <tab heading="LDAP" ng-click="getLdap()">
+      <ul ng-form="ng-form" name="ladpForm" ng-class="{'need-valid':needValidLdap}" class="list-info ldap-info">
+        <li><span class="info-name">OpenLDAP服务器地址</span>
+          <div class="info-content">
+            <input placeholder="IP或域名" name="ladpUrl" ng-model="ldapInfo.url" required="required" ng-pattern="/^[^\s]*$/" class="input-white line-single"/>
+            <input placeholder="端口，如：389" name="ladpPort" ng-model="ldapInfo.port" required="required" ng-pattern="/^[^\s]*$/" class="input-white line-single"/>
+          </div>
+        </li>
+        <li><span class="info-name">email后缀</span>
+          <div class="info-content">
+            <input ng-model="ldapInfo.emailSuffix" name="ladpEmail" required="required" ng-pattern="/^[^\s]*$/" class="input-white line-single"/>
+          </div>
+        </li>
+      </ul>
+      <div class="bottom-option">
+        <button ng-click="needValidLdap=true;ladpForm.$valid&amp;&amp;saveLdap()" class="btn btn-bright btn-md">保存配置</button>
+      </div>
+    </tab>
+    <tab heading="代码仓库" ng-click="getGitInfo()">
+      <ul ng-form="ng-form" name="gitForm" ng-class="{'need-valid':needValidGit}" class="list-info">
+        <li><span class="info-name">选择类型</span>
+          <div class="info-content chose-repository"><span class="repository active"><i class="icon-gitlab"></i>GitLab</span>
+            <p class="txt-prompt">每种类型可分别配置一个代码仓库</p>
+          </div>
+        </li>
+        <li><span class="info-name">代码仓库地址</span>
+          <div class="info-content">
+            <input ng-model="gitInfo.url" name="gitUrl" required="required" ng-pattern="/^[^\s]*$/" class="input-white line-single"/>
+          </div>
+        </li>
+      </ul>
+      <div class="bottom-option">
+        <button ng-click="needValidGit=true;gitForm.$valid&amp;&amp;saveGit()" class="btn btn-bright btn-md">保存配置</button>
+      </div>
+    </tab>
+    <tab heading="私有仓库" ng-click="getRegistryInfo()">
+      <ul ng-form="ng-form" name="registryForm" ng-class="{'need-valid':needValidRegistry}" class="list-info">
+        <li><span class="info-name">私有仓库地址</span>
+          <div class="info-content">
+            <input ng-model="registryInfo.url" name="registryUrl" required="required" ng-pattern="/^[^\s]*$/" style="display:inline-block" class="input-white line-single"/><span>
+              <input type="checkbox" name="isHttps" id="isHttps" ng-model="registryInfo.status" ng-true-value="1" ng-false-value="0" class="dome-check"/>
+              <label for="isHttps">https</label></span>
+          </div>
+        </li>
+        <li><span class="info-name">描述</span>
+          <div class="info-content">
+            <input ng-model="registryInfo.description" class="input-white line-single"/>
+          </div>
+        </li>
+        <li ng-if="registryInfo.status===1"><span class="info-name">证书信息</span>
+          <div class="info-content">
+            <textarea ng-model="registryInfo.certification" placeholder="请将证书文本粘贴至文本框" class="input-white line-single certification-txt"></textarea>
+          </div>
+        </li>
+      </ul>
+      <div class="bottom-option">
+        <button ng-click="needValidRegistry=true;registryForm.$valid&amp;&amp;saveRegistry()" class="btn btn-bright btn-md">保存配置</button>
+      </div>
+    </tab>
+    <tab heading="服务器" ng-click="getServerInfo()">
+      <ul ng-form="ng-form" name="serverForm" ng-class="{'need-valid':needValidServer}" class="list-info">
+        <li><span class="info-name not-align-input">服务器地址</span>
+          <div class="info-content"><span class="txt-prompt">DomeOS API服务器访问地址</span>
+            <input placeholder="https协议url请用“https://”开头" ng-model="serverInfo.url" name="serverUrl" required="required" ng-pattern="/^[^\s]*$/" class="input-white line-single"/>
+          </div>
+        </li>
+      </ul>
+      <div class="bottom-option">
+        <button ng-click="needValidServer=true;serverForm.$valid&amp;&amp;saveServer()" class="btn btn-bright btn-md">保存配置</button>
+      </div>
+    </tab>
+    <tab heading="监控配置" ng-click="getMonitorInfo()">
+      <ul ng-form="ng-form" name="monitorForm" ng-class="{'need-valid':needValidMonitor}" class="list-info">
+        <li><span class="info-name">监控控制台地址</span>
+          <div class="info-content">
+            <input placeholder="https协议url请用“https://”开头" name="serverUrl" ng-model="monitorConfig.url" required="required" ng-pattern="/^[^\s]*$/" class="input-white line-single"/>
+          </div>
+        </li>
+        <li><span class="info-name not-align-input">transfer</span>
+          <div class="info-content"><span class="txt-prompt">agent上报信息组件</span>
+            <div ng-repeat="tansfer in monitorConfig.transfer" class="line-single">
+              <input placeholder="请输入ip：port" name="serverUrl" ng-model="tansfer.text" ng-focus="$last&amp;&amp;monitorIns.addItem('transfer')" class="input-white full"/>
+              <div ng-if="monitorConfig.transfer.length&gt;1" class="txt-wrap"><a ng-click="monitorIns.deleteArrItem('transfer',$index)" class="icon-delete"></a></div>
+            </div>
+          </div>
+        </li>
+        <li><span class="info-name not-align-input">graph</span>
+          <div class="info-content"><span class="txt-prompt">监控数据存储组件</span>
+            <div ng-repeat="graph in monitorConfig.graph" class="line-single">
+              <input placeholder="请输入ip：port" name="serverUrl" ng-model="graph.text" ng-focus="$last&amp;&amp;monitorIns.addItem('graph')" class="input-white full"/>
+              <div ng-if="monitorConfig.graph.length&gt;1" class="txt-wrap"><a ng-click="monitorIns.deleteArrItem('graph',$index)" class="icon-delete"></a></div>
+            </div>
+          </div>
+        </li>
+        <li><span class="info-name not-align-input">query</span>
+          <div class="info-content"><span class="txt-prompt">监控数据查询组件</span>
+            <div class="line-single">
+              <input placeholder="请输入ip：port" name="query" ng-model="monitorConfig.query" class="input-white full"/>
+            </div>
+          </div>
+        </li>
+      </ul>
+      <div class="bottom-option">
+        <button ng-click="needValidMonitor=true;monitorForm.$valid&amp;&amp;saveMonitor()" class="btn btn-bright btn-md">保存配置</button>
+      </div>
+    </tab>
+    <tab heading="Web SSH" ng-click="getWebSsh()">
+      <ul ng-form="ng-form" name="sshForm" ng-class="{'need-valid':needValidSsh}" class="list-info">
+        <li><span class="info-name not-align-input webssh-txt">Web SSH服务地址</span>
+          <div class="info-content"><span class="txt-prompt">Web SSH登录服务访问地址（对应容器的访问地址）</span>
+            <input placeholder="请输入ip：port" name="sshUrl" ng-model="sshInfo.url" required="required" class="input-white line-single"/>
+          </div>
+        </li>
+      </ul>
+      <div class="bottom-option">
+        <button ng-click="needValidSsh=true;sshForm.$valid&amp;&amp;saveSsh()" class="btn btn-bright btn-md">保存配置</button>
+      </div>
+    </tab>
+    <tab heading="构建集群" ng-click="getClusterInfo()">
+      <ul ng-form="ng-form" name="clusterForm" ng-class="{'need-valid':needValidCluster}" class="list-info">
+        <li><span class="info-name not-align-input">api server</span>
+          <div class="info-content"><span class="txt-prompt">集群的Kubernetes api server地址。请确保该集群内有能用来构建的主机。</span>
+            <input placeholder="请输入ip：port" name="apiServer" ng-model="clusterInfo.host" required="required" class="input-white line-single"/>
+          </div>
+        </li>
+        <li><span class="info-name">namespace</span>
+          <div class="info-content">
+            <input placeholder="请指定一个namespace" name="namespace" ng-model="clusterInfo.namespace" required="required" class="input-white line-single"/>
+          </div>
+        </li>
+      </ul>
+      <div class="bottom-option">
+        <button ng-click="needValidCluster=true;clusterForm.$valid&amp;&amp;saveCluster()" class="btn btn-bright btn-md">保存配置</button>
+      </div>
+    </tab>
+  </tabset>
+</div>
+<script type="text/ng-template" id="newPasswdModal.html">
+  <div class="d-modal-header">修改密码</div>
+  <div ng-form="ng-form" role="form" name="pwForm" class="modal-body text-center modal-newpw"><span class="info-name">新密码</span>
+    <div class="info-content text-left">
+      <input placeholder="8-20位" type="password" name="newPassword" ng-model="passwd" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" required="required" ng-minlength="8" ng-maxlength="20" class="input-white full"/><span ng-if="pwForm.newPassword.$dirty&amp;&amp;(pwForm.newPassword.$error.minlength||pwForm.newPassword.$error.maxlength)" class="txt-error">长度必须为8-20位</span>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button ng-click="cancel()" class="btn btn-sm btn-white">取消</button>
+    <button ng-click="pwForm.$valid&amp;&amp;subPw()" class="btn btn-sm btn-safe">确定</button>
+  </div>
+</script>

@@ -1,0 +1,77 @@
+.mod-group.create-group(ng-form name="groupFrom" ng-class="{'need-valid':needValid}" novalidate)
+	loading(ng-if="isWaitingCreate")
+	ul.info-list.group-info
+		li
+			span.info-name 组名称
+			.info-content
+				.line-long
+					input.input-fill.line-element(ng-model="group.name" name="groupName" required ng-pattern="/^[a-z0-9]+([._-][a-z0-9]+)*$/" is-group-exist ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" )
+				span.txt-error(ng-if="(needValid||groupFrom.groupName.$dirty)&&groupFrom.groupName.$error.required") 必填
+				span.txt-error(ng-if="(needValid||groupFrom.groupName.$dirty)&&!groupFrom.groupName.$error.required&&groupFrom.groupName.$error.pattern") 非法的名称
+				span.txt-error(ng-if="(needValid||groupFrom.groupName.$dirty)&&!groupFrom.groupName.$error.required&&!groupFrom.groupName.$error.pattern&&groupFrom.groupName.$invalid") 组名已存在
+		li
+			span.info-name 组描述
+			.info-content
+				.line-long
+					textarea.input-fill.line-element(ng-model="group.description")
+		li
+			span.info-name 组成员
+			.info-content
+				.line-long
+					.select-con.line-element(label="true")
+						ul.selected-labels
+							li.select-label(ng-repeat="user in selectedUsers" ng-cloak)
+								| {{user.username}}
+								a.icon-cancel(ng-click="cancelUser($index)")
+							li.select-input
+								input.line-element.btn-select(placeholder="搜索成员" ng-model="userKey.key" ng-keydown="userKeyDown($event,userKey.key,userListFiltered[0])")
+						ul.select-list
+							li(ng-if="!userList||userListFiltered.length===0")
+								a 无相关用户信息
+							li.select-item(ng-repeat="user in userListFiltered=(userList| filter:{'username':userKey.key})")
+								a(ng-bind="user.username" ng-click="selectUser(user.id,user.username);")
+				.line-long
+					.select-con.line-element
+						button.btn.btn-select.btn-white(ng-cloak)
+							| {{role}}
+							i.icon-down
+						ul.select-list
+							li.select-item
+								a(ng-click="toggleRole('reporter')") reporter
+							li.select-item
+								a(ng-click="toggleRole('developer')") developer
+							li.select-item
+								a(ng-click="toggleRole('master')") master
+					button.btn.btn-sm.btn-primary.btn-add(ng-click="addUser()") 添加
+				.line-long.line-member
+					table.table-primary
+						thead
+							tr
+								th 成员名
+								th 组权限
+								th
+						tbody
+							tr
+								td(ng-bind="myself.username")
+								td(ng-bind="myself.role")
+								td
+							tr(ng-repeat="user in selectedUsersList")
+								td(ng-bind="user.username")
+								td
+									.select-con
+										button.btn.btn-white.btn-select(ng-cloak)
+											| {{user.role}}
+											i.icon-down
+										ul.select-list
+											li.select-item
+												a(ng-click="user.role='reporter'") reporter
+											li.select-item
+												a(ng-click="user.role='developer'") developer
+											li.select-item
+												a(ng-click="user.role='master'") master
+								td
+									a.icon-delete(ng-click="deleteUser($index)")
+	.bottom-option
+		span.bottom-option-con
+			button.btn.btn-md.btn-bright(ng-disabled="isWaitingCreate" ng-click="needValid=true;groupFrom.$valid&&createGroup()") 完成创建
+			span.txt-error(ng-if="needValid&&groupFrom.$invalid") 您有不合法数据，请修改后重试。

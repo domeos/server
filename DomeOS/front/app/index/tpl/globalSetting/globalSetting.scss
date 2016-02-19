@@ -1,0 +1,72 @@
+@import "compass/css3";
+@import "common/css/common.scss";
+.global-setting{
+	.list-info{
+		padding-top: 20px;
+	}
+	.ldap-info .info-name{
+		width: 202px !important;
+	}
+	.txt-prompt{
+		margin-top: 16px;
+	}
+	.certification-txt{
+		min-height: 300px;
+	}
+	.webssh-txt{
+		width: 168px !important;
+	}
+	.add-user{
+		.info-name{
+			padding-top: 14px;
+		}
+		.info-content{
+			position: relative;
+			padding-top: 10px;
+			padding-bottom: 10px;
+			.line-single{
+				width: 50%;
+			}
+			.txt-wrap{
+				left: 52%;
+				top: 10px;
+			}
+		}
+	}
+	.user-list-title{
+		padding: 0 $page-padding 12px 40px;
+		border-bottom: $light-border;
+		height: 69px;
+		.input-search{
+			margin-top: 14px;
+		}
+		h3{
+			display: inline-block;
+			font-size: 20px;
+			margin-right: 16px;
+		}
+		.select-con{
+			display: inline-block;
+			font-size: 14px;
+		}
+		.to-add{
+			display: inline-block;
+			padding: 20px 0 0 40px;
+			.icon-down-white{
+				margin-left: 4px;
+			}
+		}
+	}
+	.table-users{
+		table-layout: fixed;
+		.useremail{
+			display: inline-block;
+			width: 250px;
+			margin-right: 12px;
+			vertical-align: middle;
+		}
+		.icon-delete{
+			margin-left: 16px;
+		}
+	}
+}

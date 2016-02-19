@@ -1,0 +1,353 @@
+/*
+ * @description: dome system common stylesheet 
+ * @version: 0.1
+ */
+ 
+ @import "compass/css3";
+ @import "common.scss";
+/* common style or recover style of bootstrap*/
+body{
+	min-width: 1050px;
+	font-size: 14px;
+	color:dome-color(font,default);
+	font-family:"microsoft yahei","Arail";
+	-webkit-text-size-adjust: 100%;
+}
+ul{
+	list-style-type: none;
+	padding:0;
+	margin:0;
+}
+* {
+	outline: none;
+}
+h1,h2,h3,h4,h5,h6{
+	font-family: "Arail","microsoft yahei";
+	font-weight: 400;
+}
+a{
+	cursor: pointer;
+	font-family: "Arail","microsoft yahei";
+	color:dome-color(font,default);
+	text-decoration: none;
+	&:hover{
+		color: dome-color(dome,bright);
+		text-decoration: none;
+	}
+	&.link,&.link:hover{
+		color:dome-color(dome,primary);
+		text-decoration: underline;
+	}
+	&.link-safe,&.link-safe:hover{
+		color:dome-color(dome,safe);
+	}
+	&.link-primary,&.link-primary:hover{
+		color:dome-color(dome,primary);
+	}
+	&:focus{
+		outline: none;
+	}
+	&.disabled{
+		color:#cdcdcf; 
+		cursor: default;
+	}
+}
+label{
+	font-weight: 400;
+}
+em,i{
+	font-style: normal;
+}
+*{
+	outline: none;
+}
+// error text
+.txt-error{
+	display: block;
+	color: dome-color(dome,error);
+}
+/* style of input */
+// error input stylesheet
+input:not(.ng-pristine).ng-invalid,textarea:not(.ng-pristine).ng-invalid,.need-valid input.ng-invalid,.need-valid textarea.ng-invalid,
+input:not(.ng-pristine).ng-invalid-pattern,textarea:not(.ng-pristine).ng-invalid-pattern,.need-valid input.ng-invalid-pattern,.need-valid textarea.ng-invalid-pattern{
+	border:1px solid dome-color(dome,error) !important;
+	&:focus{
+		border:1px solid dome-color(dome,error) !important;
+	}
+}
+// input with white background
+.input-white{
+	height: 34px;
+	padding-left: 12px;
+	padding-right: 20px;
+	border:1px solid dome-color(border,default);
+	border-radius: $default-radius;
+}
+textarea.input-white{
+	min-height: 66px;
+	resize:none;
+}
+// input with fill background
+.input-fill{
+	padding-left: 12px;
+	background-color: dome-color(background,light) !important;
+	border:none;
+	border-radius: $default-radius;
+	border: 1px solid transparent;
+	&:focus{
+		border: 1px solid dome-color(dome,primary);
+	}
+}
+
+.input-txt{
+	padding-top: 5px;
+}
+input.input-fill{
+	height: 34px; 
+}
+textarea.input-fill{
+	min-height: 56px; 
+}
+// small input
+.input-sm{
+	width: 60px;
+	font-size: 14px;
+}
+/* style of input end */
+
+/* style of button */
+.btn,.btn:hover,.btn:focus{
+	color: #fff;
+	font-size: 14px;
+	border:none;
+	border-radius: $default-radius;
+}
+.btn-sm{
+	min-width: 60px;
+	height: 34px;
+}
+.btn-md{
+	min-width: 114px;
+	height: 34px;
+	font-weight: bold;
+}
+.btn-lg{
+	width: 152px;
+	height: 43px;
+	font-weight: bold;
+}
+// the link that has class .btn
+.btn-link{
+	padding-top: 12px;
+	&:hover{
+		text-decoration: none;
+	}
+}
+.btn-none{
+	height: auto !important;
+	border:none;
+	background: none;
+	padding: 0 !important;
+	a:hover,&:active,&:focus,&:link,&:visited{
+		outline: none;
+		background: none;
+		@include box-shadow(none);
+	}
+}
+.btn-safe{
+	background-color: dome-color(dome,safe);
+}
+.btn-primary,.btn-primary:hover,.btn-primary:focus{
+	background-color: dome-color(dome,primary);
+}
+.btn-bright,.btn-bright:hover,.btn-bright:focus{
+	background-color: dome-color(dome,bright);
+}
+.btn-active{
+	background-color: dome-color(dome,active);
+}
+.btn-white{
+	background-color: #fff;
+	color:dome-color(font,default);
+	border:1px solid dome-color(border,default);
+	&:hover,&:focus,&:active{
+		color:dome-color(font,default);
+		border:1px solid dome-color(border,default);
+	}
+}
+.btn-select{
+	text-align: left;
+	height: 34px;
+	.icon-down{
+		float: right;
+		margin-top: 7px;
+	}
+}
+.btn-error{
+	background-color: dome-color(dome,error);
+}
+.btn+.btn{
+	margin-left: 12px;
+}
+/* style of button end */
+
+// common modal header style
+.d-modal-header{
+	height: 58px;
+	padding-left: 38px;
+	padding-right: 38px;
+	line-height: 58px;
+	border-radius: $default-radius $default-radius 0 0;
+	color:#fff;
+	font-size: font-size(large);
+	@extend %dome-background;
+	overflow: hidden;
+	.model-prompt{
+		float: right;
+	}
+}
+// common modal content style
+.modal-content{
+	border-radius:$default-radius;
+	.d-modal-full{
+		max-height: 500px;
+		overflow-y:auto;
+		&>.table-dome{
+			width: 100%;
+			th,td{
+				&:first-child{
+					padding-left: $page-padding+$wider-padding;
+				}
+				&:last-child{
+					padding-right: $page-padding+$wider-padding;
+				}
+			}
+		}
+	}
+	.loading{
+		margin-top: 10px;
+	}
+}
+// common modal content info style(Especially in the form)
+ul.modal-info{
+	text-align: center;
+	&>li{
+		padding-top: 18px;
+		.info-name{
+			display: inline-block;
+			width: 120px;
+			padding-top: 6px;
+			text-align: left;
+			vertical-align: top;
+		}
+
+		.info-txt{
+			display: inline-block;
+			width: 362px;
+		}
+	}
+}
+// common modal body 
+.modal-body{
+	word-break:break-word;
+}
+.modal-footer{
+	border-top: none;
+}
+
+// user dropdown list
+.user-option{
+	position: absolute;
+	top: 28px;
+	right:0;
+	width: 120px;
+	background-color: #fff;
+	border-radius: $default-radius;
+	border:$light-border;
+	@include box-shadow(0 0 2px 2px rgba(0,0,0,.2));
+	li{
+		&.arrow{
+			position: absolute;
+			width: 0;
+			height: 0;
+			top: -9px;
+			right: 19px;
+			border-left: 8px solid transparent;
+			border-right: 8px solid transparent;
+			border-bottom: 9px solid #fff;
+		}
+		a{
+			display: block;
+			padding:4px 10px 4px 10px;
+			border-bottom: $light-border;
+		}
+		&:last-child{
+			a{
+				border-bottom: none;
+			}
+		}
+	}
+}
+// dropdown list 
+.select-con{
+	position: relative;
+	width: 240px;
+	.btn-select{
+		width: 100%;
+	}
+	.select-list{
+		position: absolute;
+		top:34px;
+		left:0;
+		width:100%;
+		margin-top: 2px;
+		z-index:99;
+		max-height:300px;
+		overflow:auto;
+		border:$deep-border;
+		border-radius:$default-radius;
+		background-color:#fff;
+		text-align: left;
+		li{
+			a{
+				display: block;
+				line-height: 30px;
+				margin-top: 6px;
+				margin-bottom: 6px;
+				padding-left: 8px;
+				font-weight: 400;
+				text-decoration: none;
+				overflow: hidden;
+				&:hover,&:focus{
+					background-color: dome-color(background,light);
+				}
+			}
+		}
+	}
+	&[label]{
+		border: $deep-border;
+		border-radius: $default-radius;
+		padding-left: 12px;
+		height: auto;
+		.select-list{
+			top: 100%;
+		}
+	}
+	.selected-labels{
+		@include display-flex;
+		@include flex-wrap(wrap);
+		li.select-label{
+			margin: 4px 8px 4px 0;
+			padding: 4px;
+			width: auto;
+			background-color: dome-color(background,light);
+			border-radius: $default-radius;
+		}
+		li.select-input{
+			width: 120px;
+			input{
+				border:none;
+			}
+		}
+	}
+}
