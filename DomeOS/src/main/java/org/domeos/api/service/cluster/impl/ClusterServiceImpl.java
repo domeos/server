@@ -362,7 +362,9 @@ public class ClusterServiceImpl implements ClusterService {
             nodeInfo.setLabels(node.getMetadata().getLabels());
             nodeInfo.setName(node.getMetadata().getName());
             nodeInfo.setRunningPods(getRunningPods(nodeWrapper, nodeInfo.getName()));
-            nodeInfo.setDiskInfo(node.getMetadata().getAnnotations().get(GlobalConstant.DISK_STR));
+            if (node.getMetadata().getAnnotations() != null) {
+                nodeInfo.setDiskInfo(node.getMetadata().getAnnotations().get(GlobalConstant.DISK_STR));
+            }
             nodeInfo.setCreateTime(DateManager.string2timestamp(node.getMetadata().getCreationTimestamp(), TimeZone.getTimeZone(GlobalConstant.UTC_TIME)));
         }
         if (node.getStatus() != null && node.getStatus().getAddresses() != null) {
