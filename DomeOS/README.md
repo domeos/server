@@ -1,1 +1,1 @@
-this is test for auto build
+This project will start a h2 database in memory for test. If you want use your own mysql database, you should set following envionment variables, MYSQL_USERNAME, MYSQL_PASSWORD, MYSQL_HOST, MYSQL_PORT and MYSQL_DB.
