@@ -99,8 +99,8 @@ STEP 03: 配置和启动docker registry
 ------------------------------------------------------------------------
 STEP 04: 配置和启动MySQL，并创建所需数据库和表结构
 ------------------------------------------------------------------------
-数据库: dashboard, domeos, graph
-表结构: create-db.sql, dashboard-db-schema.sql, graph-db-schema.sql (https://github.com/domeos/server/tree/master/DomeOS/src/main/resources)
+数据库: domeos, graph
+表结构: create-db.sql, graph-db-schema.sql (https://github.com/domeos/server/tree/master/DomeOS/src/main/resources)
 初始用户: insert-data.sql (https://github.com/domeos/server/tree/master/DomeOS/src/main/resources)，会创建一个DomeOS系统的管理员用户，user: admin  pwd: admin
 说明: 如果以非容器形式启动MySQL，需要在数据库中给172的IP段（容器的IP地址段）以及启动kubernetes master时设置的--service-cluster-ip-rangeIP地址段授权。
 
@@ -112,7 +112,6 @@ STEP 05: 配置和启动监控相关组件
   1. graph: pub.domeos.org/domeos/falcon-graph:0.5.6
   2. transfer: pub.domeos.org/domeos/falcon-transfer:0.0.14
   3. query: pub.domeos.org/domeos/falcon-query:1.4.3
-  4. dashboard: pub.domeos.org/domeos/falcon-dashboard:0.2
 命令:
   ===============================
   graph: sudo docker run -d -v <_graph>:/home/work/data/6070 -e DB_DSN="\"<_graph_db_user>:<_graph_db_passwd>@tcp(<_graph_db_addr>)/graph?loc=Local&parseTime=true\"" --name graph -p <_graph_http_port>:6070 -p <_graph_rpc_port>:6071 --restart=always pub.domeos.org/domeos/falcon-graph:0.5.6
@@ -120,8 +119,7 @@ STEP 05: 配置和启动监控相关组件
   transfer: sudo docker run -d -e JUDGE_ENABLE="false" -e GRAPH_CLUSTER=<_graph_cluster> -p <_transfer_port>:8433 --name transfer --restart=always pub.domeos.org/domeos/falcon-transfer:0.0.14
 
   query: sudo docker run -d -e GRAPH_CLUSTER=<_graph_cluster> -p <_query_port>:9966 --name query --restart=always pub.domeos.org/domeos/falcon-query:1.4.3
-
-  dashboard: sudo docker run -d --name=dashboard -e DASHBOARD_DB_HOST="\"<_dashboard_db_host>\""  -e DASHBOARD_DB_PORT="<_dashboard_db_port>" -e DASHBOARD_DB_USER="\"<_dashboard_db_user>\"" -e DASHBOARD_DB_PASSWD="\"<_dashboard_db_password>\"" -e GRAPH_DB_HOST="\"<_graph_db_host>\"" -e GRAPH_DB_PORT="<_graph_db_port>" -e GRAPH_DB_USER="\"<_graph_db_user>\"" -e GRAPH_DB_PASSWD="\"<_graph_db_passwd>\"" -e QUERY_ADDR="\"<_query_addr>\"" -p <_dashboard_port>:8080 --restart=always pub.domeos.org/domeos/falcon-dashboard:0.2
+  
   ===============================
 参数说明:
   _graph: 数据文件存储路径。
@@ -133,16 +131,11 @@ STEP 05: 配置和启动监控相关组件
   _graph_cluster: graph服务数据结点，格式为键值对，多个结点间以逗号分隔。
   _transfer_port: transfer服务端口。
   _query_port: query服务端口。
-  _dashboard_db_host:
-  _dashboard_db_port:
-  _dashboard_db_user:
-  _dashboard_db_password: 以上4个配置参数为服务于dashboard的MySQL数据库的相关参数。
   _graph_db_host:
   _graph_db_port:
   _graph_db_user:
   _graph_db_passwd: 以上4个配置参数为服务于graph的MySQL数据库的相关参数。
   _query_addr: query服务地址，格式必须为http://<IP>:<Port>，如http://10.11.10.12:9967
-  _dashboard_port: dashboard服务端口。
 说明:
   1. 参数中需要转义双引号的地方不能省略。
   2. transfer和graph可以启动多个。
@@ -155,8 +148,6 @@ STEP 05: 配置和启动监控相关组件
   transfer: sudo docker run -d -e JUDGE_ENABLE="false" -e GRAPH_CLUSTER="\"node-00\":\"10.11.54.13:6070\",\"node-01\":\"10.11.54.14:6070\"" -p 8433:8433 --name transfer --restart=always pub.domeos.org/domeos/falcon-transfer:0.0.14
 
   query: sudo docker run -d -e GRAPH_CLUSTER="\"node-00\":\"10.11.54.13:6070\",\"node-01\":\"10.11.54.14:6070\"" -p 9967:9966 --name query --restart=always pub.domeos.org/domeos/falcon-query:1.4.3
-
-  dashboard: sudo docker run -d --name=dashboard -e DASHBOARD_DB_HOST="\"10.11.10.10\""  -e DASHBOARD_DB_PORT="3307" -e DASHBOARD_DB_USER="\"domeos\"" -e DASHBOARD_DB_PASSWD="\"xxxx\"" -e GRAPH_DB_HOST="\"10.11.10.10\"" -e GRAPH_DB_PORT="3307" -e GRAPH_DB_USER="\"domeos\"" -e GRAPH_DB_PASSWD="\"xxxx\"" -e QUERY_ADDR="\"http://10.11.10.12:9967\"" -p 8090:8080 --restart=always pub.domeos.org/domeos/falcon-dashboard:0.2
   ===============================
 
 ------------------------------------------------------------------------
@@ -187,8 +178,6 @@ STEP 08: DomeOS系统录入参数
     如果使用https访问的私有仓库，则勾选"https"并将registry.crt证书文件内容粘贴至"证书信息"中
   全局配置->"服务器"->服务器地址
     DomeOS Server的地址，样例:http://10.11.150.76:8080
-  全局配置->"监控配置"-> 控制台地址
-    dashboard服务地址，样例 http://10.11.150.76:8081
   全局配置->"监控配置"-> transfer
     transfer服务地址，样例 10.11.150.76:8082
   全局配置->"监控配置"-> graph
