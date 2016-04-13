@@ -106,6 +106,6 @@ public class ResourceBizImpl extends BaseBizImpl implements ResourceBiz {
 
     @Override
     public void modifyResource(Resource resource) {
-
+        resourcesMapper.modifyResource(resource);
     }
 }
