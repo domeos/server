@@ -2,7 +2,6 @@
 @import "common/css/common.scss";
 .project-detail{
 	$tab-padding:48px;
-	margin: 0 0-$page-padding 0 0-$page-padding;
 	.tab-pane{
 		padding-left: $tab-padding;
 		overflow: hidden;
@@ -11,16 +10,16 @@
 		margin: 0 0-$tab-padding 0 0-$tab-padding;
 	}
 	.proInfo-form{
-		margin-left: 0-$tab-padding+$page-padding;
+		margin-left: -$page-padding;
 		margin-right: $page-padding;
 	}
 	.project-options{
 		background-color: dome-color(background,primary);
 		padding:18px 0 18px $page-padding;
-		.btn{
+		.ui-btn{
 			margin-right: 12px;
 		}
-		.btn-delete{
+		.ui-btn-delete{
 			display: inline-block;
 			width: 34px;
 			padding: 6px 0 7px 0;
@@ -56,11 +55,11 @@
 	}
 	.dockerfile-options{
 		padding: 23px 0;
-		.btn-dockerfile{
+		.ui-btn-dockerfile{
 			color: dome-color(dome,bright);
 		}
 	}
-	.btn-options{
+	.ui-btn-options{
 		text-align: center;
 		padding-top: 32px;
 	}
@@ -74,7 +73,7 @@
 		.branch-check{
 			display: inline-block;
 			margin-right: 64px;
-			.input-white{
+			.ui-input-white{
 				width: 350px;
 			}
 		}
@@ -100,7 +99,7 @@
 	.build-log{
 		margin-left: -$tab-padding;
 		border-top: $light-border;
-		.table-dome{
+		.ui-table-dome{
 			td{
 				padding-top: 30px;
 				padding-bottom: 30px;

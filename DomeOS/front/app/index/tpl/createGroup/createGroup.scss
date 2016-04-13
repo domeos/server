@@ -8,7 +8,7 @@
 			.info-name{
 				display: table-cell;
 				width: 10%;
-				padding: 16px 12px 10px $page-padding+$wider-padding;
+				padding: 16px 12px 10px $wider-padding;
 				font-weight: bold;
 				vertical-align: top;
 			}
@@ -27,7 +27,7 @@
 				.line-element{
 					@include flex(1);
 				}
-				.btn-add{
+				.ui-btn-add{
 					position: absolute;
 					left: 100%;
 					top: 0;

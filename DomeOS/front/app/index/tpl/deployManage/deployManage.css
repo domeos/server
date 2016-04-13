@@ -2,44 +2,37 @@
  * @description: common css variable and function
  * @version: 0.1
  */
-/* line 4, deployManage.scss */
 .deploy-manage .chose-lists {
-  margin: 0 -20px 0 -20px;
   padding: 0 0 16px 0;
-  border-top: 1px solid #f5f5f5;
-}
-/* line 8, deployManage.scss */
-.deploy-manage .chose-lists .chose-item {
-  display: table;
-  width: 100%;
-  border-bottom: 1px solid #f5f5f5;
-}
-/* line 12, deployManage.scss */
-.deploy-manage .chose-lists .chose-item .chose-title {
-  display: table-cell;
-  width: 160px;
-  padding-left: 52px;
-  font-weight: bold;
-}
-/* line 18, deployManage.scss */
-.deploy-manage .chose-lists .chose-item .chose-options {
-  display: table-cell;
-  border-left: 1px solid #f5f5f5;
-  padding: 10px 52px 6px 24px;
-  padding-bottom: 8px;
-}
-/* line 22, deployManage.scss */
-.deploy-manage .chose-lists .chose-item .chose-options em {
-  display: inline-block;
-  margin: 0 24px 4px 0;
-  font-style: normal;
-}
-/* line 26, deployManage.scss */
-.deploy-manage .chose-lists .chose-item .chose-options em:hover {
-  color: #666;
-  cursor: pointer;
-}
-/* line 30, deployManage.scss */
-.deploy-manage .chose-lists .chose-item .chose-options em.active {
-  color: #2994e7;
-}
+  border-top: 1px solid #f5f5f5; }
+  .deploy-manage .chose-lists .chose-item {
+    display: table;
+    width: 100%;
+    border-bottom: 1px solid #f5f5f5; }
+    .deploy-manage .chose-lists .chose-item .chose-title {
+      display: table-cell;
+      width: 160px;
+      padding-left: 52px;
+      font-weight: bold; }
+    .deploy-manage .chose-lists .chose-item .chose-options {
+      display: table-cell;
+      border-left: 1px solid #f5f5f5;
+      padding: 10px 52px 6px 24px;
+      padding-bottom: 8px; }
+      .deploy-manage .chose-lists .chose-item .chose-options em {
+        display: inline-block;
+        margin: 0 24px 4px 0;
+        font-style: normal; }
+        .deploy-manage .chose-lists .chose-item .chose-options em:hover {
+          color: #666;
+          cursor: pointer; }
+        .deploy-manage .chose-lists .chose-item .chose-options em.active {
+          color: #2994e7; }
+.deploy-manage .dns-name {
+  width: 200px; }
+
+
+
+/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJtYXBwaW5ncyI6IkFBQUE7OztHQUdHO0FDQUYsMkJBQVk7RUFDWCxPQUFPLEVBQUUsVUFBVTtFQUNuQixVQUFVLEVEa0NFLGlCQUFpQjtFQ2pDN0IsdUNBQVc7SUFDVixPQUFPLEVBQUUsS0FBSztJQUNkLEtBQUssRUFBRSxJQUFJO0lBQ1gsYUFBYSxFRDhCRixpQkFBaUI7SUM3QjVCLG9EQUFZO01BQ1gsT0FBTyxFQUFFLFVBQVU7TUFDbkIsS0FBSyxFQUFFLEtBQUs7TUFDWixZQUFZLEVETEQsSUFBSTtNQ01mLFdBQVcsRUFBRSxJQUFJO0lBRWxCLHNEQUFjO01BQ2IsT0FBTyxFQUFFLFVBQVU7TUFDbkIsV0FBVyxFRHFCRCxpQkFBaUI7TUNwQjNCLE9BQU8sRUFBRSxrQkFBNEI7TUFhckMsY0FBYyxFQUFFLEdBQUc7TUFabkIseURBQUU7UUFDRCxPQUFPLEVBQUUsWUFBWTtRQUNyQixNQUFNLEVBQUMsWUFBWTtRQUNuQixVQUFVLEVBQUUsTUFBTTtRQUNsQiwrREFBTztVQUNOLEtBQUssRUFBRSxJQUFJO1VBQ1gsTUFBTSxFQUFFLE9BQU87UUFFaEIsZ0VBQVE7VUFDUCxLQUFLLEVEYkYsT0FBTztBQ29CZix3QkFBUztFQUNSLEtBQUssRUFBRSxLQUFLIiwic291cmNlcyI6WyJjb21tb24vY3NzL19jb21tb24uc2NzcyIsImluZGV4L3RwbC9kZXBsb3lNYW5hZ2UvZGVwbG95TWFuYWdlLnNjc3MiXSwibmFtZXMiOltdLCJmaWxlIjoiaW5kZXgvdHBsL2RlcGxveU1hbmFnZS9kZXBsb3lNYW5hZ2UuY3NzIiwic291cmNlUm9vdCI6Ii9zb3VyY2UvIiwic291cmNlc0NvbnRlbnQiOlsiLypcbiAqIEBkZXNjcmlwdGlvbjogY29tbW9uIGNzcyB2YXJpYWJsZSBhbmQgZnVuY3Rpb25cbiAqIEB2ZXJzaW9uOiAwLjFcbiAqL1xuXG4kZGVmYXVsdC1yYWRpdXM6M3B4O1xuJG5hdi13aWR0aDo3OXB4O1xuJHBhZ2UtcGFkZGluZzoyMHB4O1xuJHdpZGVyLXBhZGRpbmc6NTJweDtcbiRkb21lLWNvbG9yczooXG5cdGRvbWU6KFxuXHRcdGFjdGl2ZTojNzdiZjRmLFxuXHRcdHdhcm5pbmc6I2ZmYWIwMCxcblx0XHRlcnJvcjojZWM2ZDUxLFxuXHRcdHNhZmU6IzRlZDZiMixcblx0XHRwcmltYXJ5OiM1ZGFiZjMsXG5cdFx0YnJpZ2h0OiMyOTk0ZTdcblx0XHQpLFxuXHRib3JkZXI6KFxuXHRcdGRlZXA6Izk5OSxcblx0XHRkZWZhdWx0OiNjZmNmY2YsXG5cdFx0bGlnaHQ6I2VlZVxuXHRcdCksXG5cdGZvbnQ6KFxuXHRcdHByb21wdDojY2NjLFxuXHRcdGRlZmF1bHQ6Izg4OCxcblx0XHRlbWJlZDojNDQ0XG5cdFx0KSxcblx0YmFja2dyb3VuZDooXG5cdFx0bGlnaHQ6I2Y1ZjVmNSxcblx0XHRwcmltYXJ5OiNkZWYwZmVcblx0XHQpXG5cdCk7XG4kZm9udC1zaXplOihcblx0dGl0bGU6MjJweCxcblx0bGFyZ2U6MTZweCxcblx0ZGVmYXVsdDoxNHB4LFxuXHRwcm9tcHQ6MTJweFxuXHQpO1xuJGxpZ2h0LWJvcmRlcjoxcHggc29saWQgI2Y1ZjVmNTtcbiRkZWVwLWJvcmRlcjoxcHggc29saWQgI2Q0ZDdkZTtcbiVkb21lLWJhY2tncm91bmR7XG5cdEBpbmNsdWRlIGJhY2tncm91bmQobGluZWFyLWdyYWRpZW50KGxlZnQsIzVkYWJmMywgIzRlZDZiMikpOyBcbn1cbiVub3dyYXB7XG5cdG92ZXJmbG93OiBoaWRkZW47XG5cdHRleHQtb3ZlcmZsb3c6ZWxsaXBzaXM7XG5cdHdoaXRlLXNwYWNlOiBub3dyYXA7XG59XG4lbm9iYWNre1xuXHQmLCY6Zm9jdXMsJjpsaW5rLCY6dmlzaXRlZCwmOmhvdmVyLCY6YWN0aXZle1xuXHRcdGJhY2tncm91bmQ6bm9uZTtcblx0XHRib3JkZXI6bm9uZTtcblx0XHRvdXRsaW5lOiBub25lICFpbXBvcnRhbnQ7XG5cdFx0Ym94LXNoYWRvdzogbm9uZTtcblx0fVxufVxuJWN1cnNvcntcblx0Jjpob3Zlcntcblx0XHRjdXJzb3I6IHBvaW50ZXI7XG5cdH1cbn1cbiV2ZXJ0aWNhbC1taWRkbGV7XG5cdGRpc3BsYXk6IGlubGluZS1ibG9jaztcblx0dmVydGljYWwtYWxpZ246IG1pZGRsZTtcbn1cbi8vIGNvbW1vbiAgZnVuY3Rpb25cbkBmdW5jdGlvbiBmb250LXNpemUoJGZvcm1hdCl7XG5cdEBpZiBtYXAtaGFzLWtleSgkZm9udC1zaXplLCRmb3JtYXQpe1xuXHRcdEByZXR1cm4gbWFwLWdldCgkZm9udC1zaXplLCRmb3JtYXQpO1xuXHR9XG5cdEB3YXJuIFwiTm8gY29sb3IgZm91bmQgZm9yICRmb250LXNpemUgaW4gI3skZm9ybWF0fSBtYXAuXCI7XG59XG5AZnVuY3Rpb24gZG9tZS1jb2xvcigkbWFwLCRjb2xvcil7XG5cdEBpZiBtYXAtaGFzLWtleSgkZG9tZS1jb2xvcnMsJG1hcCl7XG5cdFx0QGlmIG1hcC1oYXMta2V5KG1hcC1nZXQoJGRvbWUtY29sb3JzLCRtYXApLCRjb2xvcil7XG5cdFx0XHRAcmV0dXJuIG1hcC1nZXQobWFwLWdldCgkZG9tZS1jb2xvcnMsJG1hcCksJGNvbG9yKTtcblx0XHR9XG5cdFx0QHdhcm4gXCJObyBjb2xvciBmb3VuZCBmb3IgI3skY29sb3J9IGluICN7JG1hcH0gbWFwLlwiO1xuXHR9XG5cdEB3YXJuIFwiTm8gY29sb3IgZm91bmQgZm9yICN7JG1hcH0gaW4gJGRvbWUtY29sb3JzIG1hcC5cIjtcbn1cbkBmdW5jdGlvbiBjb2xvcigkbWFwLCRjb2xvcil7XG5cdEBpZiBtYXAtaGFzLWtleSgkbWFwLCRjb2xvcil7XG5cdFx0QHJldHVybiBtYXAtZ2V0KCRtYXAsJGNvbG9yKTtcblx0fVxuXHRAd2FybiBcIk5vIGNvbG9yIGZvdW5kIGZvciAjeyRjb2xvcn0gaW4gI3skbWFwfSBtYXAuXCI7XG59XG5AbWl4aW4gZ2V0LXNwcml0ZSgkaWNvbiwkbmFtZSwkaXMtYmxvY2spe1xuXHRiYWNrZ3JvdW5kOiBzcHJpdGUtdXJsKCRpY29uKSBuby1yZXBlYXQgc3ByaXRlLXBvc2l0aW9uKCRpY29uLCAkbmFtZSk7XG5cdEBpZiAkaXMtYmxvY2t7XG5cdFx0QGV4dGVuZCAldmVydGljYWwtbWlkZGxlO1xuXHRcdEBpbmNsdWRlIHNwcml0ZS1kaW1lbnNpb25zKCRpY29uLCAkbmFtZSk7XG5cdH1cbn1cblxuLy8ga2V5ZnJhbWVzIG1peGluXG5AbWl4aW4gc2V0S2V5ZnJhbWVzKCRuYW1lKSB7XG5cdEBpbmNsdWRlIGtleWZyYW1lcygkbmFtZSl7XG5cdFx0QGNvbnRlbnQ7XG5cdH1cbn1cbiIsIkBpbXBvcnQgXCJjb21wYXNzL2NzczNcIjtcbkBpbXBvcnQgXCJjb21tb24vY3NzL2NvbW1vbi5zY3NzXCI7XG4uZGVwbG95LW1hbmFnZXtcblx0LmNob3NlLWxpc3Rze1xuXHRcdHBhZGRpbmc6IDAgMCAxNnB4IDA7XG5cdFx0Ym9yZGVyLXRvcDogJGxpZ2h0LWJvcmRlcjtcblx0XHQuY2hvc2UtaXRlbXtcblx0XHRcdGRpc3BsYXk6IHRhYmxlO1xuXHRcdFx0d2lkdGg6IDEwMCU7XG5cdFx0XHRib3JkZXItYm90dG9tOiAkbGlnaHQtYm9yZGVyO1xuXHRcdFx0LmNob3NlLXRpdGxle1xuXHRcdFx0XHRkaXNwbGF5OiB0YWJsZS1jZWxsO1xuXHRcdFx0XHR3aWR0aDogMTYwcHg7XG5cdFx0XHRcdHBhZGRpbmctbGVmdDogJHdpZGVyLXBhZGRpbmc7XG5cdFx0XHRcdGZvbnQtd2VpZ2h0OiBib2xkO1xuXHRcdFx0fVxuXHRcdFx0LmNob3NlLW9wdGlvbnN7XG5cdFx0XHRcdGRpc3BsYXk6IHRhYmxlLWNlbGw7XG5cdFx0XHRcdGJvcmRlci1sZWZ0OiAkbGlnaHQtYm9yZGVyO1xuXHRcdFx0XHRwYWRkaW5nOiAxMHB4ICR3aWRlci1wYWRkaW5nIDZweCAyNHB4O1xuXHRcdFx0XHRlbXtcblx0XHRcdFx0XHRkaXNwbGF5OiBpbmxpbmUtYmxvY2s7XG5cdFx0XHRcdFx0bWFyZ2luOjAgMjRweCA0cHggMDtcblx0XHRcdFx0XHRmb250LXN0eWxlOiBub3JtYWw7XG5cdFx0XHRcdFx0Jjpob3Zlcntcblx0XHRcdFx0XHRcdGNvbG9yOiAjNjY2O1xuXHRcdFx0XHRcdFx0Y3Vyc29yOiBwb2ludGVyO1xuXHRcdFx0XHRcdH1cblx0XHRcdFx0XHQmLmFjdGl2ZXtcblx0XHRcdFx0XHRcdGNvbG9yOiBkb21lLWNvbG9yKGRvbWUsYnJpZ2h0KTtcblx0XHRcdFx0XHR9XG5cdFx0XHRcdH1cblx0XHRcdFx0cGFkZGluZy1ib3R0b206IDhweDtcblx0XHRcdH1cblx0XHR9XG5cdH1cblx0LmRucy1uYW1le1xuXHRcdHdpZHRoOiAyMDBweDtcblx0fVxufSJdfQ== */
+
+/*# sourceMappingURL=../../../maps/index/tpl/deployManage/deployManage.css.map */

@@ -18,6 +18,6 @@ table.table-info.projectinfo.showinfo
 			ul.settting-list(ng-if="config.envConfDefault[0].key!==''")
 				li(ng-repeat="envConfDefault in config.envConfDefault")
 					.setting-group
-						span.info-txt.info-show.env-name(ng-bind="envConfDefault.key")
-						span.info-txt.info-show.env-value(ng-bind="envConfDefault.value")
-						span.info-txt.info-show.env-description(ng-bind="envConfDefault.description" )
+						span.info-txt.info-show.env-name.tool-wrap-break(ng-bind="envConfDefault.key")
+						span.info-txt.info-show.env-value.tool-wrap-break(ng-bind="envConfDefault.value")
+						span.info-txt.info-show.env-description.tool-wrap-break(ng-bind="envConfDefault.description" )

@@ -1,14 +1,15 @@
 domeApp.controller('createProjectCtr1', ['$scope', '$state', '$domeData', '$modal', '$domeProject', '$domeUser', '$domePublic', function($scope, $state, $domeData, $modal, $domeProject, $domeUser, $domePublic) {
+		'use strict';
 		$scope.$emit('pageTitle', {
 			title: '新建项目',
 			descrition: '在这里把您的代码仓库和DomeOS对接即可创建新项目。此外，您还可以对现有项目进行查询和管理。',
 			mod: 'projectManage'
 		});
 		$scope.pageNo = 1;
-		$scope.projectList = [];
 		$scope.pageSize = 8;
+		$scope.projectList = [];
 		$scope.codeManager = 'gitlab';
-		$scope.useDockerFile = false;
+		$scope.userDefineDockerfile = false;
 		$scope.autoBuildInfo = {
 			tag: 0,
 			master: false,
@@ -22,7 +23,7 @@ domeApp.controller('createProjectCtr1', ['$scope', '$state', '$domeData', '$moda
 		var createProjectInfo1 = angular.copy($domeData.getData('createProjectInfo1'));
 		if (createProjectInfo1) {
 			$domeData.delData('createProjectInfo1');
-			$scope.projectName = createProjectInfo1.info.projectName;
+			$scope.projectName = createProjectInfo1.info.name;
 			if (createProjectInfo1.info.autoBuildInfo) {
 				$scope.autoBuildInfo = createProjectInfo1.info.autoBuildInfo;
 			} else {
@@ -39,7 +40,7 @@ domeApp.controller('createProjectCtr1', ['$scope', '$state', '$domeData', '$moda
 			} else {
 				$scope.codeManager = null;
 			}
-			$scope.useDockerFile = createProjectInfo1.useDockerFile;
+			$scope.userDefineDockerfile = createProjectInfo1.userDefineDockerfile;
 		}
 		$scope.setProjectList = function(info) {
 			$scope.pageNo = 1;
@@ -79,11 +80,16 @@ domeApp.controller('createProjectCtr1', ['$scope', '$state', '$domeData', '$moda
 		};
 		getGitLabInfo();
 		$scope.toggleDockerFile = function() {
-			$scope.useDockerFile = !$scope.useDockerFile;
+			$scope.userDefineDockerfile = !$scope.userDefineDockerfile;
 		};
 		$scope.toggleGroup = function(group) {
 			$scope.currentGroup.projectBelong = group.name;
 			$scope.currentGroup.type = group.type;
+			$scope.currentGroup.id = group.id;
+		};
+		$scope.toggleCodeManager=function(codeManager){
+			$scope.codeManager=codeManager;
+			$scope.$broadcast('changeScrollList',new Date());
 		};
 		$domeUser.getGroupList().then(function(res) {
 			$scope.groupList = res.data.result ? res.data.result : [];
@@ -113,27 +119,34 @@ domeApp.controller('createProjectCtr1', ['$scope', '$state', '$domeData', '$moda
 				$domePublic.openWarning('请选择一个项目！');
 				return;
 			}
-			var proInfo = {
-				projectName: $scope.projectName,
-				projectBelong: $scope.currentGroup.projectBelong,
-				type: $scope.currentGroup.type
+			var creatorInfo = {
+				creatorType: $scope.currentGroup.type,
+				creatorId:$scope.currentGroup.id
 			};
+			var proInfo = {
+				name : $scope.projectName,
+				projectBelong : $scope.currentGroup.projectBelong
+			};
+			
+			//使用gitlab
 			if ($scope.codeManager) {
+				//自动构建
 				proInfo.autoBuildInfo = $scope.autoBuildInfo;
 				proInfo.codeInfo = {
 					codeManager: $scope.codeManager,
-					codeSource: $scope.currentProject.nameWithNamespace,
+					nameWithNamespace: $scope.currentProject.nameWithNamespace,
 					codeSshUrl: $scope.currentProject.sshUrl,
 					codeHttpUrl: $scope.currentProject.httpUrl,
 					codeId: $scope.currentProject.projectId,
-					userInfo: $scope.currentUserId
+					codeManagerUserId: $scope.currentUserId
 				};
-			} else if ($scope.useDockerFile) {
-				$scope.useDockerFile = false;
+			} else if ($scope.userDefineDockerfile) {
+				$scope.userDefineDockerfile = false;
 			}
 			$domeData.setData('projectInfo', {
+				creatorDraft:creatorInfo,
 				info: proInfo,
-				useDockerFile: $scope.useDockerFile
+				userDefineDockerfile: $scope.userDefineDockerfile
 			});
 			$state.go('createProject/2');
 		};

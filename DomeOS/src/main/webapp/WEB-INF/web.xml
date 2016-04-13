@@ -72,7 +72,7 @@
     <filter>
         <display-name>JsessionIdFilter</display-name>
         <filter-name>jsessionIdAvoiderFilter</filter-name>
-        <filter-class>org.domeos.shiro.filter.JsessionIdAvoiderFilter</filter-class>
+        <filter-class>org.domeos.framework.shiro.filter.JsessionIdAvoiderFilter</filter-class>
     </filter>
     <filter-mapping>
         <filter-name>jsessionIdAvoiderFilter</filter-name>

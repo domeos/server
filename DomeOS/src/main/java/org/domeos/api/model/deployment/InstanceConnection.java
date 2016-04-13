@@ -1,10 +1,10 @@
 package org.domeos.api.model.deployment;
 
-import org.domeos.api.model.ci.Connection;
-import org.domeos.api.model.ci.ContainerLogHandler;
+import org.domeos.framework.engine.websocket.Connection;
+import org.domeos.framework.api.model.ci.ContainerLogHandler;
 import org.domeos.exception.JobLogException;
 import org.domeos.exception.JobNotFoundException;
-import org.domeos.node.NodeWrapper;
+import org.domeos.framework.engine.k8s.NodeWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

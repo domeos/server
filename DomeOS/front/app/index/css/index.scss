@@ -4,12 +4,11 @@
  */
  @import "compass/css3";
  @import "common/css/common.scss";
- @import "index/images/icon/*.png";
- @import "index/images/lib/*.png";
-// @include all-icon-sprites;
+ @import "/index/images/icon/*.png";
+ @import "/index/images/lib/*.png";
 
-$icons: sprite-map("index/images/icon/*.png",$spacing:12px);
-$lib-icons: sprite-map("index/images/lib/*.png",$spacing:5px);
+$icons: sprite-map("/index/images/icon/*.png",$spacing:12px);
+$lib-icons: sprite-map("/index/images/lib/*.png",$spacing:5px);
 .container{
 	width: 100%;
 }
@@ -59,6 +58,10 @@ $lib-icons: sprite-map("index/images/lib/*.png",$spacing:5px);
 	&.up{
 		@include rotate(-90deg);
 	}
+	&.top{
+		margin-left: 8px;
+		@include rotate(180deg);
+	}
 }
 .icon-delete{
 	@include get-sprite($icons,delete,true);
@@ -105,7 +108,11 @@ $lib-icons: sprite-map("index/images/lib/*.png",$spacing:5px);
 }
 .icon-memory{
 	@include get-sprite($icons,memory,true);
-	margin-right: 4px;
+	margin-left: 4px;
+}
+.icon-order{
+	@include get-sprite($icons,order,true);
+	margin-left: 4px;
 }
 .icon-fresh{
 	@include get-sprite($icons,fresh,true);
@@ -121,21 +128,27 @@ $lib-icons: sprite-map("index/images/lib/*.png",$spacing:5px);
 		@include sprite-background-position($icons, copy-hover)
 	}
 }
-/* dome system icon end*/
-/* common style */
-// no wrap (eg:there is text with class '.nowrap'...)
-.nowrap{
-	@extend %nowrap;
+.icon-tool{
+	@include get-sprite($icons,tool,true);
 }
+.icon-config{
+	@include get-sprite($icons,config,true);
+	margin-right: 4px;
+}
+
+/* dome system icon end*/
+
+/* common style */
+
 // search input
-.input-search{
+.ui-input-search{
 	width: 274px;
 	padding-left: 38px;
 	@include get-sprite($icons,search,false);
 	@include sprite-background-position($icons, search ,10px,7px);
 	background-origin:padding-box;
 }
-.input-full{
+.ui-input-full{
 	width: 100%;
 }
 /* text style */
@@ -172,16 +185,32 @@ $lib-icons: sprite-map("index/images/lib/*.png",$spacing:5px);
 		background-color: dome-color(background,primary);
 	}
 }
+/* text style end*/
 
-.inline-error{
+.font-size-16{
+	font-size: 16px;
+}
+.font-size-18{
+	font-size: 18px;
+}
+.tool-wrap-break{
+	word-break:break-all;
+}
+.tool-inline-error{
 	color: dome-color(dome,error);
 	margin-left: 10px;
 }
+// no wrap (eg:there is text with class '.tool-nowrap'...)
+.tool-nowrap{
+	@extend %nowrap;
+}
 // text align input
-.align-input{
+.tool-align-input{
 	padding-top: 6px;
 }
-/* text style end*/
+.tool-enable-click:hover{
+	cursor: pointer;
+}
 .full{
 	width: 100%;
 }
@@ -189,59 +218,68 @@ $lib-icons: sprite-map("index/images/lib/*.png",$spacing:5px);
 	word-wrap:break-word;
 }
 // checkbox/radio's parent container
-.check-con{
+.com-check-con{
 	margin-right: 40px;
 }
-
-.table-dome{
-	width: 100%;
-	thead{
-		background-color: dome-color(background,light);
-		th{
-			font-weight: bold;
-		}
-	}
-	tbody tr:hover{
-		background-color: #def0fe;
-		a.table-link{
-			color:dome-color(dome,bright);
-		}
-	}
-	&.full{
-		th,td{
-			&:first-child{
-				padding-left: $page-padding+$wider-padding;
-			}
-			&:last-child{
-				padding-right: $page-padding+$wider-padding;
-			}
-		}
+// list like tabset
+.com-tabset-scroll{
+	position: relative;
+	display: inline-block;
+	margin-right: 10px;
+	height: 42px;
+	font-size: 14px;
+	max-width: 0;
+	overflow: hidden;
+	.list-back{
+		width: 10000px;
 	}
 }
-// table with border
-.table-primary{
-	border:$light-border;
-	thead{
-		th{
-			font-weight: 400;
+ul.com-list-tab{ 
+	display: inline-block;
+	li{
+		display: inline-block;
+		padding-bottom: 20px;
+		margin-right: 34px;
+		border-bottom: 2px solid transparent;
+		&:last-child{
+			margin-right: 0;
 		}
-	}
-}
-.table-dome,.table-primary{
-	td,th{
-		vertical-align: middle;
-		height: 60px;
-		padding: 8px 6px 8px 14px;
-		border-bottom:$light-border;
+		&.active{
+			color:dome-color(dome,primary);
+			border-bottom: 2px solid dome-color(dome,primary);
+		}
+		&.txt-error{
+			color:dome-color(dome,error);
+		}
+		&:hover{
+			cursor: pointer;
+			border-bottom: 2px solid dome-color(dome,primary);
+		}
+		&.nav-option{
+			position: absolute;
+			right: 0;
+			top: 0;
+			width: 48px;
+			height: 42px;
+			margin-right: 0;
+			padding-top: 8px;
+			background-color: #fff;
+			.icon-next{
+				margin-left: 8px;
+			}
+			&:hover{
+				border-bottom: none;
+			}
+		}
 	}
 }
 // bottom div include button
-.bottom-option{
+.com-bottom-option{
 	padding-top: 50px;
 	padding-bottom: 30px;
 	text-align: center;
 	// container of buttons with error info
-	.bottom-option-con{
+	.com-bottom-option-con{
 		position: relative;
 		display: inline-block;
 		.txt-error{
@@ -255,7 +293,7 @@ $lib-icons: sprite-map("index/images/lib/*.png",$spacing:5px);
 	}
 }
 // chose registry 
-.chose-repository{
+.com-chose-repository{
 	padding-top: 22px;
 	.repository{
 		display: inline-block;
@@ -289,7 +327,7 @@ $lib-icons: sprite-map("index/images/lib/*.png",$spacing:5px);
 	}
 }
 // page no
-.page-list{
+.com-page-list{
 	text-align: right;
 	padding: 12px $page-padding 12px 0;
 	.pageno{
@@ -309,7 +347,7 @@ $lib-icons: sprite-map("index/images/lib/*.png",$spacing:5px);
 	}
 }
 // style like label
-.label-list{
+.com-label-list{
 	li{
 		float: left;
 		margin-right: 16px;
@@ -325,7 +363,21 @@ $lib-icons: sprite-map("index/images/lib/*.png",$spacing:5px);
 		}
 	}
 }
-
+.com-list-table{
+	li.head{
+		background-color: dome-color(background,light);
+	}
+	li{
+		padding: 10px 12px 10px 15px;
+		border-bottom: $light-border;
+		&:last-child{
+			border-bottom: none;
+		}
+		&:hover .ui-table-link{
+			color: dome-color(dome,bright);
+		}
+	}
+}
 .nav-tabs{
 	border-bottom: $light-border;
 	padding-left: 16px;
@@ -357,58 +409,15 @@ $lib-icons: sprite-map("index/images/lib/*.png",$spacing:5px);
 	}
 }
 
-.loading {
-	margin: 100px auto;
-	position: absolute;
-	width: 70px;
-	height: 70px;
-	left: 50%;
-	margin-left: -35px;
-	text-align: center;
-	@include animation(rotate 1.8s infinite linear);
-	z-index: 99;
-	&.ng-leave{
-		display: none;
-	}
-	.dot1, .dot2 {
-		width: 60%;
-		height: 60%;
-		display: inline-block;
-		position: absolute;
-		top: 0;
-		left:0;
-		background-color: #67CF22;
-		border-radius: 100%;
-		@include animation(bounce 2s infinite ease-in-out);
-	}
-
-	.dot2 {
-		top: auto;
-		bottom: 0px;
-		@include animation-delay(-1.0s);
-	}
-	@include setKeyframes(bounce){
-		0%, 100% {
-			@include transform(scale(0.0));
-		} 50% {
-			@include transform(scale(1.0));
-		}
-	}
-	@include setKeyframes(rotate){
-		100% { 
-			@include transform(rotate(360deg));
-		}
-	}
-}
-.noinfo{
+.tool-noinfo{
 	padding: 30px 0;
 }
 
 
 
 /* dome custom input */
-input.dome-radio,
-input.dome-check{
+input.ui-radio,
+input.ui-check{
 	display:none; 
 	cursor:pointer; 
 	vertical-align: middle;
@@ -474,7 +483,7 @@ input.dome-check{
 }
 
 /*Radio Specific styles*/
-input.dome-radio{
+input.ui-radio{
 	& + label:before{
 		@include border-radius(50%);
 	}
@@ -504,7 +513,7 @@ input.dome-radio{
 
 
 /*Checkbox Specific styles*/
-input.dome-check{
+input.ui-check{
 	& + label:before{
 		@include border-radius(3px); 
 	}
@@ -525,7 +534,7 @@ input.dome-check{
 }
 
 
-.check-toggle{
+.ui-toggle{
 	display:inline-block;
 	width:51px;
 	height:24px;

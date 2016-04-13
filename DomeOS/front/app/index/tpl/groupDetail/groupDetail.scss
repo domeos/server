@@ -1,7 +1,6 @@
 @import "compass/css3";
 @import "common/css/common.scss";
 .group-detail{
-	margin: 0 0-$page-padding 0 0-$page-padding;
 	.group-detail-header{
 		display: table;
 		width: 100%;
@@ -16,7 +15,7 @@
 				width: 85%;
 				margin: 0;
 			}
-			.btn-bright{
+			.ui-btn-bright{
 				position: absolute;
 				top: 17px;
 				right: $page-padding;

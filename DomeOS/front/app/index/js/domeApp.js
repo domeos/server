@@ -1,15 +1,15 @@
-var domeApp = angular.module('domeApp', ['ui.router', 'ncy-angular-breadcrumb', 'ngAnimate', 'pasvaz.bindonce', 'ngLocale', 'ui.bootstrap', 'angularFileUpload', 'ngScrollbar', 'pubServices']);
+var domeApp = angular.module('domeApp', ['ui.router', 'ncy-angular-breadcrumb', 'oc.lazyLoad', 'ngAnimate', 'pasvaz.bindonce', 'ngLocale', 'ui.bootstrap',  'ngScrollbar', 'publicModule', 'domeModule', 'deployModule', 'imageModule', 'userModule', 'projectModule']);
 
-domeApp.run(function($rootScope) {
+domeApp.run(['$rootScope', function($rootScope) {
 	// 修改页面title，采用ng-bind的方法会使页面闪烁
 	$rootScope.$on("pageTitle", function(event, msg) {
 		if (msg.title && msg.title !== '') {
 			$('title').html('DomeOS-' + msg.title);
 		}
 	});
-});
+}]);
 
-domeApp.config(function($stateProvider, $urlRouterProvider) {
+domeApp.config(['$stateProvider', '$urlRouterProvider', function($stateProvider, $urlRouterProvider) {
 		$urlRouterProvider.when('', '/projectManage');
 		$stateProvider.state('projectManage', {
 				url: '/projectManage',
@@ -44,6 +44,11 @@ domeApp.config(function($stateProvider, $urlRouterProvider) {
 				ncyBreadcrumb: {
 					label: '项目详情',
 					parent: 'projectManage'
+				},
+				resolve: {
+					loadMyCtrl: ['$ocLazyLoad', function($ocLazyLoad) {
+						return $ocLazyLoad.load('/lib/js/jquery.zclip.js');
+					}]
 				}
 			}).state('deployManage', {
 				url: '/deployManage',
@@ -146,6 +151,14 @@ domeApp.config(function($stateProvider, $urlRouterProvider) {
 				ncyBreadcrumb: {
 					label: '镜像管理'
 				}
+			}).state('mirrorCustom', {
+				url: '/mirrorCustom',
+				templateUrl: 'index/tpl/mirrorCustom/mirrorCustom.html',
+				controller: 'mirrorCustomCtr',
+				ncyBreadcrumb: {
+					label: '镜像定制',
+					parent: 'imageManage'
+				}
 			}).state('globalSetting', {
 				url: '/globalSetting',
 				templateUrl: 'index/tpl/globalSetting/globalSetting.html',
@@ -179,31 +192,7 @@ domeApp.config(function($stateProvider, $urlRouterProvider) {
 					label: '应用商店'
 				}
 			});
-	})
-	.config(['$httpProvider', function($httpProvider) {
-		$httpProvider.defaults.headers.post['Content-Type'] = 'application/json;charset=UTF-8';
-		$httpProvider.interceptors.push(function($rootScope, $q) {
-			return {
-				'response': function(response) {
-					if (typeof(response.data) == 'string' && response.data.indexOf('<html ng-app="loginApp">') >= 0) {
-						if (response.config.url.indexOf('api/user/logout') !== -1) {
-							location.href = '/login/login.html';
-						} else {
-							location.href = '/login/login.html?redirect=' + encodeURIComponent(location.href);
-						}
-					}
-					// 判断是否需要自动将resultCode!=200的请求默认为失败 可以设置请求的config:{notIntercept:true},使其不对resultCode!==200的进行拦截
-					if (!response.config.notIntercept) {
-						if (!response.data.resultCode || response.data.resultCode == 200) {
-							return response || $q.resolve(response);
-						}
-						return $q.reject(response);
-					}
-					return response;
-				}
-			};
-		});
 	}])
-	.config(function($compileProvider) {
+	.config(['$compileProvider', function($compileProvider) {
 		$compileProvider.debugInfoEnabled(false);
-	});
+	}]);

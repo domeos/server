@@ -30,19 +30,117 @@ domeApp.directive('domeNav', ['$compile', function($compile) { //导航栏
 			}
 		};
 	}])
-	.directive('loading', function() {
+	//  列表--左右滚动
+	//  <ul list-scroll="list-scroll" width-offset="150">
+	//	  <li disabled="true" class="nav-option"><span><a class="icon-last to-last"></a><a class="icon-next to-next"></a></span></li>
+	//	  <li ng-repeat="image in editConfig.containerDrafts" ng-cloak="ng-cloak" ng-click="currentContainerDraft.index=$index;" ng-class="{'active':currentContainerDraft.index===$index,'txt-error':needValid.valid&amp;&amp;mirrorsListFrom['Form'+$index].$invalid}">{{image.image}}<a ng-click="deleteImage($index);fresh()" class="icon-cancel"></a></li>
+	//	</ul>
+	.directive('listScroll', ['$window', '$document', function($window, $document) {
 		return {
-			restrict: 'AE',
-			template: '<div class="loading"><div class="dot1"></div><div class="dot2"></div></div>',
-			replace: true
+			restrict: 'A',
+			template: '<div class="com-tabset-scroll"><div class="list-back"><ul class="com-list-tab list-scroll" ng-transclude></ul></div></div>',
+			replace: true,
+			transclude: true,
+			link: function(scope, ele, attrs) {
+				var w = angular.element($window),
+					docEle = angular.element($document),
+					listEle = ele.find('ul'),
+					optEle = ele.find('.nav-option'),
+					nextEle = ele.find('.icon-next'),
+					lastEle = ele.find('.icon-last'),
+					currentPage = 0,
+					totalPage = 1,
+					eleWidth = 0,
+					// 除去ele元素以外的宽度
+					widthOffset = parseInt(attrs.widthOffset || 0);
+				// 下一页
+				nextEle.bind('click', function() {
+					if (totalPage <= 1 || currentPage === totalPage - 1) return;
+					listEle.stop().animate({
+						marginLeft: (eleWidth - 48) * -(++currentPage)
+					}, 600);
+				});
+				// 上一页
+				lastEle.bind('click', function() {
+					if (currentPage === 0) return;
+					listEle.stop().animate({
+						marginLeft: (eleWidth - 48) * -(--currentPage)
+					}, 600);
+				});
+				scope.safeApply = function(fn) {
+					var phase = this.$root.$$phase;
+					if (phase == '$apply' || phase == '$digest') {
+						if (fn && (typeof(fn) === 'function')) {
+							fn();
+						}
+					} else {
+						this.$apply(fn);
+					}
+				};
+				// 刷新列表
+				scope.$on('changeScrollList', function(event, msg) {
+					scope.fresh();
+				});
+				// TODO:无法及时触发ul的宽度改变事件，此处采用手动触发
+				scope.fresh = function() {
+					setTimeout(function() {
+						scope.safeApply();
+					}, 100);
+				};
+				scope.$watch(function() {
+					return {
+						windowWidth: w.width(),
+						listWidth: listEle.width()
+					};
+				}, function(newValue, oldValue) {
+					// 如果没有元素，则不显示
+					if (ele.find('li').length === 1) {
+						ele.height(0);
+					} else {
+						ele.height('auto');
+					}
+					eleWidth = docEle.width() - widthOffset;
+					totalPage = Math.ceil(newValue.listWidth / (eleWidth - 48));
+					if (currentPage + 1 > totalPage) {
+						lastEle.trigger('click');
+					}
+					if (totalPage <= 1) {
+						optEle.hide();
+					} else {
+						optEle.show();
+					}
+					// console.(eleWidth,newValue.listWidth,totalPage)
+					ele.css('max-width', (eleWidth > newValue.listWidth ? newValue.listWidth : eleWidth) + 'px');
+					if (oldValue.windowWidth !== newValue.windowWidth) {
+						currentPage = 0;
+						listEle.css('margin-left', 0);
+					}
+				}, true);
+				w.bind('resize', function() {
+					scope.$apply();
+				});
+			}
 		};
-	})
+	}])
 	.directive('logInfo', function() {
 		return {
 			restrict: 'A',
 			link: function(scope, element, attrs) {
+				var scrollTop = 0;
+				var isNeedScroll = true;
+				element.bind('scroll', function(event) {
+					if (isNeedScroll) {
+						var topPositon = element.find('.log').position().top;
+						if (topPositon > scrollTop) {
+							isNeedScroll = false;
+						}
+						scrollTop = topPositon;
+					}
+				});
 				scope.$watch('log', function(newValue, oldValue) {
-					element.scrollTop(element.find('.log').height());
+					if (isNeedScroll) {
+						element.scrollTop(element.find('.log').height());
+					}
 				});
 			}
 		};
@@ -51,7 +149,7 @@ domeApp.directive('domeNav', ['$compile', function($compile) { //导航栏
 	.directive('domeToggle', function() {
 		return {
 			restrict: 'AE',
-			template: '<button class="check-toggle"></button>',
+			template: '<button class="ui-toggle"></button>',
 			replace: true
 		};
 	})
@@ -78,73 +176,50 @@ domeApp.directive('domeNav', ['$compile', function($compile) { //导航栏
 			}
 		};
 	}])
+	// 项目构建记录
 	.directive('loglist', ['$util', '$domeProject', function($util, $domeProject) {
-		var htmlTpLArr = [];
-		htmlTpLArr.push('        <table class="table-dome">');
-		htmlTpLArr.push('          <tbody>');
-		htmlTpLArr.push('    	     <tr ng-if="logFilterList.length===0">');
-		htmlTpLArr.push('    	    	 <td colspan="5">无相关信息</td>');
-		htmlTpLArr.push('    	     </tr>');
-		htmlTpLArr.push('            <tr ng-repeat="log in logFilterList = (logLists|filter:{\'autoBuild\':autoBuildKey,\'status\':statusKey})" ng-click="showDetail($index)">');
-		htmlTpLArr.push('              <td ng-cloak><i class="icon-label" tooltip="镜像版本" ></i>{{isNull(log.imageTag)}}</td>');
-		htmlTpLArr.push('              <td ng-cloak ng-if="log.autoBuild!==1"><i class="icon-user" tooltip="构建者"></i>{{log.userName}}</td>');
-		htmlTpLArr.push('              <td ng-if="log.autoBuild==1">自动构建</td>');
-		htmlTpLArr.push('              <td ng-switch="log.status">');
-		htmlTpLArr.push('             	 <span ng-switch-when="Success" class="txt-success">成功</span>');
-		htmlTpLArr.push('             	 <span ng-switch-when="Fail" class="txt-warning">失败</span>');
-		htmlTpLArr.push('             	 <span ng-switch-when="Preparing" class="txt-normal">准备中</span>');
-		htmlTpLArr.push('             	 <span ng-switch-default class="txt-normal">构建中</span>');
-		htmlTpLArr.push('              </td>');
-		htmlTpLArr.push('              <td ng-bind="parseDate(log.createTime)"></td>');
-		htmlTpLArr.push('              <td ng-bind="getInterval($index)"></td>');
-		htmlTpLArr.push('              <td><a class="link-safe" ng-click="getBuildLog({projectId:log.projectId,builId:log.id,status:log.status,event:$event.stopPropagation()})">日志</a></td>');
-		htmlTpLArr.push('              <td><i class="icon-down up" ng-class="{\'up\':$index!==currentIndex}"></i></td>');
-		htmlTpLArr.push('            </tr>');
-		htmlTpLArr.push('          </tbody></table>');
 		return {
 			restrict: 'AE',
-			scope: {
-				currentIndex: '@',
-				autoBuildKey: '=autobuildKey',
-				statusKey: '=statusKey',
-				logLists: '=list',
-				getBuildLog: '&getbuildlog'
-			},
-			template: htmlTpLArr.join(''),
+			template: '<div ng-transclude></div>',
+			transclude: true,
 			link: function(scope, element) {
-				var isZclipLoaded = false;
+				scope.currentIndex = -1;
 				var getLogDetailTpl = function(index) {
+					var buildInfo = scope.buildList[index];
 					var tplArr = [];
 					tplArr.push('<tr class="log-detail">');
 					tplArr.push('	<td colspan="7">');
 					tplArr.push('		<ul class="detail-list">');
 					tplArr.push('			<li class="detail-row">');
 					tplArr.push('				<span class="detail-title">镜像大小</span>');
-					tplArr.push('				<span class="detail-content">{#imageSize}MB</span>');
+					tplArr.push('				<span class="detail-content">'+buildInfo.imageInfo.imageSize+'MB</span>');
 					tplArr.push('			</li>');
-					tplArr.push('			<li class="detail-row">');
-					tplArr.push('				<span class="detail-title">拉取命令</span>');
-					tplArr.push('				<span class="detail-content">');
-					tplArr.push('					<input class="cmd-txt input-white" disabled="true" value="docker pull {#registry}/{#imageName}:{#imageTag}"/><a class="link-safe link-copy" data-text="docker pull {#registry}/{#imageName}:{#imageTag}">复制</a>');
-					tplArr.push('					<p class="cmd-prompt"> 拉取镜像前请登录：docker login domeos.io</p>');
-					tplArr.push('				</span>');
-					tplArr.push('			</li>');
-					if (!!scope.logLists[index].codeBranch) {
+					if(buildInfo.state=='Success'){
+						tplArr.push('			<li class="detail-row">');
+						tplArr.push('				<span class="detail-title">拉取命令</span>');
+						tplArr.push('				<span class="detail-content">');
+						// tplArr.push('					<input class="cmd-txt ui-input-white" disabled="true" value="docker pull {#registry}/{#imageName}:{#imageTag}"/><a class="link-safe link-copy" data-text="docker pull {#registry}/{#imageName}:{#imageTag}">复制</a>');
+						tplArr.push('					<input class="cmd-txt ui-input-white" disabled="true" value="docker pull '+buildInfo.imageInfo.registry+'/'+buildInfo.imageInfo.imageName+':'+buildInfo.imageInfo.imageTag+'"/><a class="link-safe link-copy" data-text="docker pull '+buildInfo.imageInfo.registry+'/'+buildInfo.imageInfo.imageName+':'+buildInfo.imageInfo.imageTag+'">复制</a>');
+						tplArr.push('					<p class="cmd-prompt"> 拉取镜像前请登录：docker login domeos.io</p>');
+						tplArr.push('				</span>');
+						tplArr.push('			</li>');
+					}
+					if (!!buildInfo.codeInfo) {
 						tplArr.push('			<li class="detail-row">');
 						tplArr.push('				<span class="detail-title">Branch名称</span>');
-						tplArr.push('				<span class="detail-content">{#codeBranch}</span>');
+						tplArr.push('				<span class="detail-content">'+buildInfo.codeInfo.codeBranch+'</span>');
 						tplArr.push('			</li>');
 						tplArr.push('			<li class="detail-row">');
 						tplArr.push('				<span class="detail-title">author</span>');
-						tplArr.push('				<span class="detail-content">{#cmtAuthorName}</span>');
+						tplArr.push('				<span class="detail-content">'+buildInfo.commitInfo.authorName+'</span>');
 						tplArr.push('			</li>');
 						tplArr.push('			<li class="detail-row">');
 						tplArr.push('				<span class="detail-title">committer</span>');
-						tplArr.push('				<span class="detail-content">{#cmtCommitterName}</span>');
+						tplArr.push('				<span class="detail-content">'+buildInfo.commitInfo.committerName+'</span>');
 						tplArr.push('			</li>');
 						tplArr.push('			<li class="detail-row">');
 						tplArr.push('				<span class="detail-title">commit info</span>');
-						tplArr.push('				<span class="detail-content">{#cmtMessage}</span>');
+						tplArr.push('				<span class="detail-content">'+buildInfo.commitInfo.message+'</span>');
 						tplArr.push('			</li>');
 					}
 					tplArr.push('			<li class="detail-row">');
@@ -154,50 +229,25 @@ domeApp.directive('domeNav', ['$compile', function($compile) { //导航栏
 					tplArr.push('		</ul>');
 					tplArr.push('	</td>');
 					tplArr.push('</tr>');
-					return $util.parseTpl(tplArr.join(''), scope.logLists[index]);
-				};
-				$util.loadJs('/lib/js/jquery.zclip.js').then(function() {
-					isZclipLoaded = true;
-				});
-				var getDateInterval = function(start, end) {
-					var res = {};
-					var interval = end - start;
-					res.day = Math.floor(interval / (24 * 3600 * 1000));
-					interval -= res.day * 24 * 3600 * 1000;
-					res.hours = Math.floor(interval / (3600 * 1000));
-					interval -= res.hours * 3600 * 1000;
-					res.mimutes = Math.floor(interval / (60 * 1000));
-					interval -= res.mimutes * 60 * 1000;
-					res.seconds = Math.floor(interval / 1000);
-					return res;
-				};
-				var bindCopy = function() {
-					angular.element('.link-copy').zclip({
-						path: '/lib/media/ZeroClipboard.swf',
-						copy: function() {
-							return angular.element(this).data('text');
-						}
-					});
+					return $util.parseTpl(tplArr.join(''), scope.buildList[index]);
 				};
 				scope.showDetail = function(index) {
 					if (index != scope.currentIndex) {
 						element.find('.log-detail').remove();
 						element.find('tr:eq(' + index + ')').after(getLogDetailTpl(index));
-						if (isZclipLoaded) {
-							bindCopy();
-						} else {
-							$util.loadJs('/lib/js/jquery.zclip.js').then(function() {
-								isZclipLoaded = true;
-								bindCopy();
-							});
-						}
-						$domeProject.getBuildDockerfile(scope.logLists[index].projectId, scope.logLists[index].id).then(function(res) {
+						element.find('.link-copy').zclip({
+							path: '/lib/media/ZeroClipboard.swf',
+							copy: function() {
+								return angular.element(this).data('text');
+							}
+						});
+						$domeProject.getBuildDockerfile(scope.buildList[index].projectId, scope.buildList[index].id).then(function(res) {
 							var dockerfile = res.data.result;
 							if (dockerfile) {
 								dockerfile = dockerfile.replace(/[\n\r]/g, '<br/>');
-								angular.element(element).find('#dockerfile').html(dockerfile);
+								element.find('#dockerfile').html(dockerfile);
 							} else {
-								angular.element(element).find('#dockerfile').html('无');
+								element.find('#dockerfile').html('无');
 							}
 						});
 						scope.currentIndex = index;
@@ -212,28 +262,7 @@ domeApp.directive('domeNav', ['$compile', function($compile) { //导航栏
 					return $util.getPageDate(seconds);
 				};
 				scope.getInterval = function(index) {
-					var str;
-					if (scope.logLists[index].finishTime === 0) {
-						str = '0秒';
-					} else {
-						var intervalTime = getDateInterval(scope.logLists[index].createTime, scope.logLists[index].finishTime);
-						if (intervalTime.day !== 0) {
-							str = intervalTime.day + '天';
-						}
-						if (intervalTime.hours !== 0) {
-							str = intervalTime.hours + '小时';
-						}
-						if (intervalTime.mimutes !== 0) {
-							str = intervalTime.mimutes + '分钟';
-						}
-						if (intervalTime.seconds !== 0) {
-							str = intervalTime.seconds + '秒';
-						}
-						if (str === '') {
-							str = '0秒';
-						}
-					}
-					return str;
+					return $util.getPageInterval(scope.buildList[index].createTime, scope.buildList[index].finishTime);
 				};
 				scope.isNull = function(str) {
 					var resTxt = str;
@@ -328,166 +357,197 @@ domeApp.directive('domeNav', ['$compile', function($compile) { //导航栏
 			}
 		};
 	})
-	// 下拉选择框
-	// <div class="select-con">
-	// 		<button class="btn btn-select btn-white">{{deployIns.config.version?'version'+deployIns.config.version:'选择版本'}}<i class="icon-down"></i></button>
-	// 		<ul class="select-list">
-	// 			<li ng-repeat="version in deployIns.versionList" class="select-item"><a ng-click="toggleVersion(version.version)" ng-cloak="ng-cloak">version{{version.version}}</a></li>
-	// 		</ul>
-	// </div>
-	// 
-	// btn-select：触发下拉的按钮或输入框
-	.directive('selectCon', function() {
+	.directive('fileCollapse', function() {
 		return {
-			restrict: 'AEC',
-			scope: true,
-			controller: function($scope, $element, $attrs) {
-				$scope.showSelect = false;
-				this.hideSelect = function() {
-					$scope.showSelect = false;
-				};
-			},
+			restrict: 'A',
 			link: function(scope, element, attrs) {
-				var dropEle = attrs.$$element.find('.select-list');
-				var selectEle = attrs.$$element.find('.btn-select');
-				if (selectEle.length === 0) {
-					return;
-				}
-				var blurFun = function(event) {
-					scope.showSelect = false;
-					scope.$digest();
-					return event.stopPropagation();
+				scope.showFile = false;
+				scope.showContent = false;
+				scope.toggleFile = function() {
+					scope.showFile = true;
 				};
-				selectEle.bind('blur', blurFun);
-				dropEle.on('mouseenter', function() {
-					selectEle.off('blur', blurFun);
-				}).on('mouseleave', function() {
-					selectEle.on('blur', blurFun);
-				});
-				if (selectEle[0].tagName === 'INPUT') {
-					selectEle.on('focus', function() {
-						scope.showSelect = true;
-						scope.$digest();
-					});
-				} else {
-					selectEle.on('click', function() {
-						scope.showSelect = !scope.showSelect;
-						scope.$digest();
-					});
-				}
-				if (attrs.label == "true") {
-					element.on('click', function() {
-						selectEle.focus();
-					}).on('click', 'li.select-label', function(event) {
-						return event.stopPropagation();
-					});
-				}
-				scope.$watch(function() {
-					return scope.showSelect;
-				}, function(showSelect) {
-					if (showSelect) {
-						dropEle.show();
-						$('.drop').removeClass('up');
+				scope.toggleContent = function() {
+					scope.showContent = !scope.showContent;
+					scope.showFile = true;
+					if (!scope.showContent && scope.fileInfo.fileName === '' && scope.fileInfo.filePath === '') {
+						scope.showFile = false;
+					}
+
+				};
+
+			}
+		};
+	})
+	//镜像构建记录
+	.directive('customlist', ['$util', '$domeProject', '$domeImage', function($util, $domeProject, $domeImage) {
+		return {
+			restrict: 'AE',
+			template: '<div ng-transclude></div>',
+			transclude: true,
+			link: function(scope, element) {
+				var isZclipLoaded = false;
+				scope.currentIndex = -1;
+				var getLogDetailTpl = function(index) {
+					var tplArr = [];
+					var type = scope.customDetailInfo.autoCustom === 0 ? 'Dockerfile' : '配置文件';
+					var ispublic = scope.customDetailInfo.publish === 0 ? '否' : '是';
+					tplArr.push('<tr class="custom-detail">');
+					tplArr.push('	<td colspan="9" class="td-detail">');
+					tplArr.push('		<ul class="com-list-info detail-list">');
+					tplArr.push('			<li>');
+					tplArr.push('				<span class="info-name">定制详情</span>');
+					tplArr.push('				<span class="info-simple">' + type + '</span>');
+					tplArr.push('			</li>');
+					//成功才显示镜像大小和拉取命令
+					if (scope.customDetailInfo.state == 'Success') {
+						tplArr.push('			<li>');
+						tplArr.push('				<span class="info-name">镜像大小</span>');
+						tplArr.push('				<span class="info-simple">{#imageSize}MB</span>');
+						tplArr.push('			</li>');
+						tplArr.push('			<li>');
+						tplArr.push('				<span class="info-name">拉取命令</span>');
+						tplArr.push('				<div class="info-content cmd-wrap">');
+						tplArr.push('					<input class="ui-input-fill" disabled="true" value="docker pull {#registry}/{#imageName}:{#imageTag}"/><button class="ui-btn ui-btn-sm ui-btn-active link-copy" data-text="docker pull {#registry}/{#imageName}:{#imageTag}">复制</button>');
+						tplArr.push('					<p class="txt-prompt"> 拉取镜像前请登录：docker login domeos.io</p>');
+						tplArr.push('				</div>');
+						tplArr.push('			</li>');
+					}
+					
+					if(scope.customDetailInfo.autoCustom===1){
+						tplArr.push('			<li>');
+						tplArr.push('				<span class="info-name">环境变量</span>');
+						//环境变量
+						var evnList = scope.customDetailInfo.envSettings;
+						var evnLength = evnList.length;
+						if (evnLength === 0) {
+							tplArr.push('				<span class="info-simple">' + '无' + '</span>');
+						} else {
+							tplArr.push('				<div class="info-content">');
+							tplArr.push('					<table class="ui-table-primary">');
+							tplArr.push('						<tr>');
+							tplArr.push('							<td>名称</td>');
+							tplArr.push('							<td>值</td>');
+							tplArr.push('							<td>描述</td>');
+							tplArr.push('						</tr>');
+							for (var i = 0; i < evnLength; i++) {
+
+								tplArr.push('						<tr>');
+								tplArr.push('							<td>' + evnList[i].key + '</td>');
+								tplArr.push('							<td>' + evnList[i].value + '</td>');
+								tplArr.push('							<td>' + evnList[i].description + '</td>');
+								tplArr.push('						</tr>');
+
+							}
+							tplArr.push('					</table>');
+							tplArr.push('				</div>');
+						}
+						tplArr.push('			</li>');
+					}
+					
+					tplArr.push('			<li>');
+					tplArr.push('				<span class="info-name">定制镜像是否作为基础镜像</span>');
+					tplArr.push('				<span class="info-simple">' + ispublic + '</span>');
+					tplArr.push('			</li>');
+					tplArr.push('			<li>');
+					tplArr.push('				<span class="info-name">定制镜像描述</span>');
+					if (scope.customDetailInfo.description === null || scope.customDetailInfo.description === '') {
+						tplArr.push('				<span class="info-simple">' + '无' + '</span>');
 					} else {
-						dropEle.hide();
-						$('.drop').addClass('up');
+						tplArr.push('				<span class="info-simple">{#description}</span>');
 					}
+
+					tplArr.push('			</li>');
+					tplArr.push('			<li>');
+					tplArr.push('				<span class="info-name">Dockerfile</span>');
+					if (scope.customDetailInfo.dockerfileContent === null || scope.customDetailInfo.dockerfileContent === '') {
+						tplArr.push('				<span class="info-simple">' + '无' + '</span>');
+					} else {
+						tplArr.push('				<div class="info-content">');
+						tplArr.push('					<textarea readonly="true" class="ui-input-fill file-txt">{#dockerfileContent}</textarea>');
+						tplArr.push('				</div>');
+					}
+
+					tplArr.push('			</li>');
+					//配置文件(autoCustom === 1)
+					if (scope.customDetailInfo.autoCustom === 1 && scope.customDetailInfo.files) {
+						tplArr.push('			<li>');
+						tplArr.push('				<span class="info-name">配置文件</span>');
+
+						var fileJson = scope.customDetailInfo.files;
+						var length = fileJson.length;
+						if (length && length !== 0) {
+							tplArr.push('				<div class="info-content">');
+							for (var j = 0; j < length; j++) {
+								tplArr.push('					<div class="line-long">');
+								tplArr.push('						<p class="con-num">' + (j + 1) + '</p>');
+								tplArr.push('						<span class="config-title">名称:' + fileJson[j].fileName + '</span>');
+								tplArr.push('						<span class="config-title">容器内路径:' + fileJson[j].filePath + '</span>');
+								tplArr.push('					</div>');
+								tplArr.push('					<textarea readonly="true" class="ui-input-fill file-txt">' + fileJson[j].content + '</textarea>');
+							}
+							tplArr.push('				</div>');
+						} else {
+							tplArr.push('					<span class="info-simple">' + '无' + '</span>');
+						}
+						tplArr.push('			</li>');
+					}
+					tplArr.push('			<li>');
+					tplArr.push('				<button class="ui-btn ui-btn-none btn-pack" >收起<i class="icon-down top"></i></button>');
+					tplArr.push('			</li>');
+					tplArr.push('		</ul>');
+					tplArr.push('	</td>');
+					tplArr.push('</tr>');
+					return $util.parseTpl(tplArr.join(''), scope.customDetailInfo);
+				};
+				$util.loadJs('/lib/js/jquery.zclip.js').then(function() {
+					isZclipLoaded = true;
 				});
-			}
-		};
-	}).directive('selectItem', ['$compile', function($compile) {
-		return {
-			restrict: 'AEC',
-			require: '^?selectCon',
-			link: function(scope, element, attrs, controller) {
-				scope.hideSelect = function() {
-					controller.hideSelect();
-				};
-				var linkEle = angular.element(attrs.$$element.find('>a')[0]);
-				var clickEvent = linkEle.attr('ng-click');
-				if (!clickEvent) {
-					clickEvent = 'hideSelect($event.stopPropagation())';
-				} else {
-					clickEvent += ';hideSelect($event.stopPropagation());';
-				}
-				linkEle.attr('ng-click', clickEvent);
-				element.html($compile(element.html())(scope));
-			}
-		};
-	}])
-	.directive('scrollResize', ['$window', function($window) {
-		return {
-			scope: true,
-			controller: function($scope, $element, $attrs) {
-				$scope.totalWidth = 0;
-				$scope.eleVisibleWidth = $element.width() - 157;
-				$scope.pageCount = 1;
-				this.addSigWidth = function(width) {
-					$scope.totalWidth += width;
-				};
-				this.changeWidth = function(newWidth, oldWidth) {
-					$scope.totalWidth = $scope.totalWidth - oldWidth + newWidth;
-					$attrs.$$element.find('.nav-tabs').width($scope.totalWidth + 8);
-					$scope.pageCount = Math.ceil($scope.totalWidth / $scope.eleVisibleWidth);
-				};
-			},
-			link: function(scope, element, attrs) {
-				var w = angular.element($window);
-				var navOptionEle = attrs.$$element.find('.nav-option');
-				var listEle = attrs.$$element.find('ul.nav');
-				var currentPage = 1;
-				scope.$watch(function() {
-					return {
-						'windowWidth': w.width(),
-						'totalWidth': scope.totalWidth
-					};
-				}, function(newValue) {
-					scope.eleVisibleWidth = element.width() - 157;
-					navOptionEle.css({
-						left: element.width() - 57
+				var bindCopy = function() {
+					element.find('.link-copy').zclip({
+						path: '/lib/media/ZeroClipboard.swf',
+						copy: function() {
+							return angular.element(this).data('text');
+						}
 					});
-					if (newValue.totalWidth > element.width() && !navOptionEle.is(':visible')) {
-						navOptionEle.show();
-					} else if (newValue.totalWidth <= element.width() && navOptionEle.is(':visible')) {
-						navOptionEle.hide();
+				};
+				var bindPickUp = function() {
+					element.find('.btn-pack').click(function(event) {
+						scope.$apply(function() {
+							scope.currentIndex = -1;
+							element.find('.custom-detail').remove();
+						});
+					});
+				};
+				scope.showDetail = function(index, id) {
+					if (index !== scope.currentIndex) {
+						$domeImage.getCustomDetail(id).then(function(res) {
+							scope.customDetailInfo = res.data.result || {};
+							element.find('.custom-detail').remove();
+							element.find('tr:eq(' + index + ')').after(getLogDetailTpl(index));
+							bindPickUp();
+							if (isZclipLoaded) {
+								bindCopy();
+							} else {
+								$util.loadJs('/lib/js/jquery.zclip.js').then(function() {
+									isZclipLoaded = true;
+									bindCopy();
+								});
+							}
+						});
+						scope.currentIndex = index;
+					} else {
+						if (element.find('.custom-detail').length !== 0) {
+							element.find('.custom-detail').remove();
+						}
+						scope.currentIndex = -1;
 					}
-					scope.pageCount = Math.ceil(newValue.totalWidth / scope.eleVisibleWidth);
-				}, true);
-				w.bind('resize', function() {
-					scope.$apply();
-				});
-				listEle.find('.to-last').on('click', function() {
-					if (currentPage > 1) {
-						currentPage--;
-						listEle.stop().animate({
-							marginLeft: scope.eleVisibleWidth * (-1) * (currentPage - 1)
-						}, 600);
-					}
-				});
-				listEle.find('.to-next').on('click', function() {
-					if (currentPage < scope.pageCount) {
-						listEle.stop().animate({
-							marginLeft: scope.eleVisibleWidth * (-1) * (currentPage++)
-						}, 600);
-					}
-				});
+				};
+				scope.getInterval = function(index) {
+					return $util.getPageInterval(scope.customList[index].createTime, scope.customList[index].finishTime);
+				};
+				scope.parseDate = function(seconds) {
+					return $util.getPageDate(seconds);
+				};
 			}
 		};
-	}])
-	.directive('resizeItem', function() {
-		return {
-			require: "^scrollResize",
-			link: function(scope, element, attrs, controller) {
-				var width = 0;
-				controller.addSigWidth(element.innerWidth());
-				scope.$watch(function() {
-					return element.innerWidth();
-				}, function(newValue, oldValue) {
-					controller.changeWidth(newValue, oldValue);
-				});
-				scope.$on('$destroy', function() {
-					controller.changeWidth(0, element.innerWidth());
-				});
-			}
-		};
-	});
+	}]);

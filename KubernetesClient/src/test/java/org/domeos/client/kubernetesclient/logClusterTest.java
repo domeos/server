@@ -8,6 +8,7 @@ import org.domeos.client.kubernetesclient.definitions.v1.PodList;
 import org.domeos.client.kubernetesclient.definitions.v1beta1.Job;
 import org.domeos.client.kubernetesclient.exception.KubeInternalErrorException;
 import org.domeos.client.kubernetesclient.exception.KubeResponseException;
+import org.domeos.client.kubernetesclient.util.JobUtils;
 import org.domeos.client.kubernetesclient.util.KubeClientUtils;
 import org.domeos.client.kubernetesclient.util.TimeoutResponseHandler;
 import org.junit.After;
@@ -35,18 +36,18 @@ public class logClusterTest extends TestCase {
         // create job
         long createJobTimeout = 60 * 1000; // one minute
         podList = null;
-//        try {
-//            boolean isCreated = JobUtils.createJobUntilReadyFor(client, job, createJobTimeout);
-//        } catch (KubeResponseException e) {
-//            e.printStackTrace();
-//            Assert.assertTrue("rest client response error in create job:" + e.getMessage(), false);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//            Assert.assertTrue("io error error in create job:" + e.getMessage(), false);
-//        } catch (KubeInternalErrorException e) {
-//            e.printStackTrace();
-//            Assert.assertTrue("kubeclient internal error in create job:" + e.getMessage(), false);
-//        }
+        try {
+            boolean isCreated = JobUtils.createJobUntilReadyFor(client, job, createJobTimeout);
+        } catch (KubeResponseException e) {
+            e.printStackTrace();
+            Assert.assertTrue("rest client response error in create job:" + e.getMessage(), false);
+        } catch (IOException e) {
+            e.printStackTrace();
+            Assert.assertTrue("io error error in create job:" + e.getMessage(), false);
+        } catch (KubeInternalErrorException e) {
+            e.printStackTrace();
+            Assert.assertTrue("kubeclient internal error in create job:" + e.getMessage(), false);
+        }
 
         // log pod
         System.out.println("podlist =\n" + podList);

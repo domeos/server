@@ -5,7 +5,7 @@
 	text-align: left;
 	overflow: hidden;
 	.title-con{
-		padding:18px $page-padding+$wider-padding 18px $page-padding+$wider-padding;
+		padding:18px $wider-padding 18px $wider-padding;
 		border-bottom: $light-border;
 		overflow: hidden;
 		.member-title{
@@ -14,12 +14,12 @@
 			font-size: 18px;
 			vertical-align: top;
 		}
-		.input-search{
-			margin-right:  $page-padding+$wider-padding;
+		.ui-input-search{
+			margin-right:  $wider-padding;
 		}
 	}
 	.member-select{
-		padding:18px $page-padding+$wider-padding 20px $page-padding+$wider-padding;
+		padding:18px $wider-padding 20px $wider-padding;
 			.select-type{
 				margin-right: 26px;
 				&.active{
@@ -28,26 +28,26 @@
 			}
 		.member-search{
 			padding-top: 18px;
-			.select-con{
+			.com-select-con{
 				display: inline-block;
 				width: 70%;
 				margin-right: 40px;
-				&+.select-con{
+				&+.com-select-con{
 					margin-top: 12px;
 				}
 			}
 		}
 	}
 	.member-list{
-		.table-dome{
+		.ui-table-dome{
 			table-layout: fixed;
 			td,th{
 				&:first-child{
-					padding-left: $page-padding+$wider-padding ;
+					padding-left: $wider-padding ;
 				}
 			}
 			.edit-role{
-				.select-con{
+				.com-select-con{
 					display: inline-block;
 					margin-right: 10px;
 				}

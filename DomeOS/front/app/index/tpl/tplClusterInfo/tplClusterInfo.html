@@ -1,5 +1,5 @@
 
-<ul class="list-info border-info">
+<ul class="com-list-info border-info">
   <li><span class="info-name">集群名称</span>
     <div ng-bind="config.name" class="info-content"></div>
   </li>
@@ -14,7 +14,7 @@
   </li>
   <li><span class="info-name">etcd</span>
     <div class="info-content">
-      <div ng-hide="$last" ng-repeat="etcd in config.etcd" class="line-single"><span ng-bind="etcd.name" class="input-white input-txt single-element"></span></div>
+      <div ng-hide="$last" ng-repeat="etcd in config.etcd" class="line-single"><span ng-bind="etcd.name" class="ui-input-white ui-input-txt single-element"></span></div>
     </div>
   </li>
   <li><span class="info-name">domain</span>
@@ -25,12 +25,12 @@
   </li>
   <li ng-if="config.logConfig===1"><span class="info-name">kafka</span>
     <div class="info-content">
-      <div ng-hide="$last" ng-repeat="kafka in config.clusterLog.kafka" class="line-single"><span ng-bind="kafka.name" class="input-white input-txt single-element"></span></div><span ng-if="config.clusterLog.kafka.length&lt;=1">未设置</span>
+      <div ng-hide="$last" ng-repeat="kafka in config.clusterLog.kafka" class="line-single"><span ng-bind="kafka.name" class="ui-input-white ui-input-txt single-element"></span></div><span ng-if="config.clusterLog.kafka.length&lt;=1">未设置</span>
     </div>
   </li>
   <li ng-if="config.logConfig===1"><span class="info-name">zookeeper</span>
     <div class="info-content">
-      <div ng-hide="$last" ng-repeat="zookeeper in config.clusterLog.zookeeper" class="line-single"><span ng-bind="zookeeper.name" class="input-white input-txt single-element"></span></div><span ng-if="config.clusterLog.zookeeper.length&lt;=1">未设置</span>
+      <div ng-hide="$last" ng-repeat="zookeeper in config.clusterLog.zookeeper" class="line-single"><span ng-bind="zookeeper.name" class="ui-input-white ui-input-txt single-element"></span></div><span ng-if="config.clusterLog.zookeeper.length&lt;=1">未设置</span>
     </div>
   </li>
   <li ng-if="config.logConfig===1"><span class="info-name">日志容器</span>

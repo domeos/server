@@ -38,15 +38,15 @@ table.table-info.projectinfo(ng-if="showMoreInfo")
 		td 构建目录
 		td
 			.right-item.padding-right
-				input.info-txt.info-show.input-fill(ng-model="config.dockerfileInfo.buildPath" name="buildDir" placeholder="以“/”开头，系统会在该目录下执行构建命令" ng-pattern="/^\/.+/" ng-change="changeDockerfilePath(config.dockerfileInfo.buildPath);")
-			span.inline-error(ng-show="(needValid||proInfoForm.buildDir.$dirty)&&proInfoForm.buildDir.$invalid") 非法的路径
+				input.info-txt.info-show.ui-input-fill(ng-model="config.dockerfileInfo.buildPath" name="buildDir" placeholder="以“/”开头，系统会在该目录下执行构建命令" ng-pattern="/^\/.+/" ng-change="changeDockerfilePath(config.dockerfileInfo.buildPath);")
+			span.tool-inline-error(ng-show="(needValid||proInfoForm.buildDir.$dirty)&&proInfoForm.buildDir.$invalid") 非法的路径
 	//- tr(ng-if="userDockerFile")
 		td dockerfile路径 *
 		td
 			.right-item.padding-right
-				input.info-txt.info-show.input-fill(ng-model="config.dockerfileInfo.dockerfilePath" name="dockerfilePath" placeholder="/dockerfile" ng-pattern="/^\/.*(dockerfile)$/" required)
-			span.inline-error(ng-show="(needValid||proInfoForm.dockerfilePath.$dirty)&&proInfoForm.dockerfilePath.$error.required")
-			span.inline-error(ng-show="(needValid||proInfoForm.dockerfilePath.$dirty)&&!proInfoForm.dockerfilePath.$error.required&&proInfoForm.dockerfilePath.$invalid") 非法的路径
+				input.info-txt.info-show.ui-input-fill(ng-model="config.dockerfileInfo.dockerfilePath" name="dockerfilePath" placeholder="/dockerfile" ng-pattern="/^\/.*(dockerfile)$/" required)
+			span.tool-inline-error(ng-show="(needValid||proInfoForm.dockerfilePath.$dirty)&&proInfoForm.dockerfilePath.$error.required")
+			span.tool-inline-error(ng-show="(needValid||proInfoForm.dockerfilePath.$dirty)&&!proInfoForm.dockerfilePath.$error.required&&proInfoForm.dockerfilePath.$invalid") 非法的路径
 	tr
 		td 项目可见性
 		td(ng-switch="config.authority")
@@ -70,13 +70,13 @@ table.table-info.projectinfo(ng-if="showMoreInfo")
 			ul.settting-list(ng-if="config.envConfDefault[0].key!==''")
 				li(ng-repeat="envConfDefault in config.envConfDefault")
 					.setting-group
-						span.info-txt.info-show.env-name(ng-bind="envConfDefault.key")
-						span.info-txt.info-show.env-value(ng-bind="envConfDefault.value")
-						span.info-txt.info-show.env-description(ng-bind="envConfDefault.description" )
-	tr
-		td 上传本地文件
-		td
-			p(ng-if="config.uploadFile.length!==0") 点击下载
-			ul.settting-list
-				li(ng-repeat="file in config.uploadFile")
-					a.link(href="/api/project/download/file?md5={{file.md5}}&file={{file.location.split('/').pop()}}" target="_blank" ng-bind="file.location")
+						span.info-txt.info-show.env-name.tool-wrap-break(ng-bind="envConfDefault.key")
+						span.info-txt.info-show.env-value.tool-wrap-break(ng-bind="envConfDefault.value")
+						span.info-txt.info-show.env-description.tool-wrap-break(ng-bind="envConfDefault.description" )
+	//- tr
+	//- 	td 上传本地文件
+	//- 	td
+	//- 		p(ng-if="config.uploadFile.length!==0") 点击下载
+	//- 		ul.settting-list
+	//- 			li(ng-repeat="file in config.uploadFile")
+	//- 				a.link(href="/api/project/download/file?md5={{file.md5}}&file={{file.location.split('/').pop()}}" target="_blank" ng-bind="file.location")

@@ -10,10 +10,10 @@ import org.apache.shiro.subject.Subject;
 import org.apache.shiro.subject.support.SubjectThreadState;
 import org.apache.shiro.util.LifecycleUtils;
 import org.apache.shiro.util.ThreadState;
-import org.domeos.api.model.user.UserLoginType;
-import org.domeos.api.model.user.UserPassword;
-import org.domeos.api.service.user.UserService;
 import org.domeos.basemodel.HttpResponseTemp;
+import org.domeos.framework.api.consolemodel.auth.UserPassword;
+import org.domeos.framework.api.model.auth.related.LoginType;
+import org.domeos.framework.api.service.auth.UserService;
 import org.junit.AfterClass;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,8 +30,8 @@ import java.io.FileInputStream;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration(value = "src/main/webapp")
-//@ContextConfiguration(loader = WebContextLoader.class, value ={"classpath:/META-INF/test-config.xml"})
-@ContextConfiguration(locations = {"file:src/main/webapp/WEB-INF/mvc-dispatcher-servlet.xml"})
+@ContextConfiguration(loader = WebContextLoader.class, value ={"classpath:/META-INF/test-config.xml"})
+//@ContextConfiguration(locations = {"file:src/main/webapp/WEB-INF/mvc-dispatcher-servlet.xml"})
 
 
 //@Transactional  // this is for mysql rollback
@@ -127,7 +127,7 @@ public class BaseTestCase extends TestCase {
 
     protected void login(String username, String password) {
         UserPassword userPassword = new UserPassword(username, password);
-        userPassword.setLoginType(UserLoginType.USER);
+        userPassword.setLoginType(LoginType.USER);
         HttpResponseTemp<?> res = userService.normalLogin(userPassword);
         displayInfo(res);
     }

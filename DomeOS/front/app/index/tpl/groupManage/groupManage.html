@@ -1,14 +1,14 @@
 
 <div class="mod-group group-manage">
   <div class="mod-option">
-    <button ui-sref="createGroup" class="btn btn-lg"><i class="icon-add-white"></i>创建组</button>
+    <button ui-sref="createGroup" class="ui-btn ui-btn-lg ui-btn-bright"><i class="icon-add-white"></i>创建组</button>
     <div class="pull-right right-option"><span ng-cloak="ng-cloak">共{{groupListFiltered.length}}个组</span>
-      <input type="text" placeholder="输入组名称查询" ng-model="groupKey" class="input-search input-fill"/>
+      <input type="text" placeholder="输入组名称查询" ng-model="groupKey" class="ui-input-search ui-input-fill"/>
     </div>
   </div>
   <div class="mod-list">
     <loading ng-if="isLoading"></loading>
-    <table class="table-dome">
+    <table class="ui-table-dome">
       <thead>
         <tr>
           <th>组名称</th>
@@ -29,7 +29,7 @@
           <td ng-bind="group.countMap.projectCount"></td>
           <td ng-bind="group.countMap.deployCount"></td>
           <td ng-bind="group.countMap.clusterCount"></td>
-          <td ng-bind="group.create_time.split(' ')[0]"></td>
+          <td ng-bind="group.createTime.split(' ')[0]"></td>
         </tr>
       </tbody>
     </table>

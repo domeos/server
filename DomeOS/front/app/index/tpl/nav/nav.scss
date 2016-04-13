@@ -1,5 +1,5 @@
 @import "compass/css3";
-@import "index/images/nav/*.png";
+@import "/index/images/nav/*.png";
 @import "common/css/common.scss";
 
 $nav-bg:#444;
@@ -8,7 +8,7 @@ $nav-color:#eeeeee;
 $nav-color-on:#5dabf3;
 
 // @include all-nav-sprites("index/images/nav/*.png");
-$navs :sprite-map("index/images/nav/*.png");
+$navs :sprite-map("/index/images/nav/*.png");
 // @mixin get-nav-sprite($name){
 // 	height: nav-sprite-height($name);
 // 	width: nav-sprite-width($name);

@@ -1,4 +1,5 @@
 domeApp.controller('createGroupCtr', ['$scope', '$domeUser', '$domePublic', '$state', function($scope, $domeUser, $domePublic, $state) {
+	'use strict';
 	$scope.$emit('pageTitle', {
 		title: '新建组',
 		descrition: '在这里您可以新建一个组。',
@@ -6,7 +7,7 @@ domeApp.controller('createGroupCtr', ['$scope', '$domeUser', '$domePublic', '$st
 	});
 	$scope.selectedUsers = [];
 	$scope.userList = [];
-	$scope.role = 'reporter';
+	$scope.role = 'REPORTER';
 	$scope.selectedUsersList = [];
 	$scope.group = {};
 	$scope.userKey = {
@@ -16,14 +17,14 @@ domeApp.controller('createGroupCtr', ['$scope', '$domeUser', '$domePublic', '$st
 	$domeUser.getCurrentUser().then(function(res) {
 		var loginUser = res.data.result;
 		$scope.myself = {
-			user_id: loginUser.id,
+			userId: loginUser.id,
 			username: loginUser.username,
-			role: 'master'
+			role: 'MASTER'
 		};
 		$domeUser.getUserList().then(function(res) {
 			$scope.userList = res.data.result || [];
 			for (var i = 0; i < $scope.userList.length; i++) {
-				if ($scope.userList[i].id === $scope.myself.user_id) {
+				if ($scope.userList[i].id === $scope.myself.userId) {
 					$scope.userList.splice(i, 1);
 					break;
 				}
@@ -34,17 +35,17 @@ domeApp.controller('createGroupCtr', ['$scope', '$domeUser', '$domePublic', '$st
 	$scope.selectUser = function(id, username) {
 		var i = 0;
 		for (i = 0; i < $scope.selectedUsers.length; i++) {
-			if ($scope.selectedUsers[i].user_id === id) {
+			if ($scope.selectedUsers[i].userId === id) {
 				return;
 			}
 		}
 		for (i = 0; i < $scope.selectedUsersList.length; i++) {
-			if ($scope.selectedUsersList[i].user_id === id) {
+			if ($scope.selectedUsersList[i].userId === id) {
 				return;
 			}
 		}
 		$scope.selectedUsers.push({
-			user_id: id,
+			userId: id,
 			username: username
 		});
 		$scope.userKey.key = '';
@@ -57,7 +58,7 @@ domeApp.controller('createGroupCtr', ['$scope', '$domeUser', '$domePublic', '$st
 	$scope.addUser = function() {
 		for (var i = 0; i < $scope.selectedUsers.length; i++) {
 			$scope.selectedUsersList.push({
-				user_id: $scope.selectedUsers[i].user_id,
+				userId: $scope.selectedUsers[i].userId,
 				username: $scope.selectedUsers[i].username,
 				role: $scope.role
 			});
@@ -84,12 +85,12 @@ domeApp.controller('createGroupCtr', ['$scope', '$domeUser', '$domePublic', '$st
 		var usersList = [];
 		for (var i = 0; i < $scope.selectedUsersList.length; i++) {
 			usersList.push({
-				user_id: $scope.selectedUsersList[i].user_id,
+				userId: $scope.selectedUsersList[i].userId,
 				role: $scope.selectedUsersList[i].role
 			});
 		}
 		usersList.push({
-			user_id: $scope.myself.user_id,
+			userId: $scope.myself.userId,
 			role: $scope.myself.role
 		});
 		$domeUser.createGroup($scope.group).then(function(res) {

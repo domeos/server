@@ -1,12 +1,11 @@
 @import "compass/css3";
-@import "index/images/nav/*.png";
 @import "common/css/common.scss";
 
 .project-manage{
 	.project-options{
-		padding-top: 16px;
+		padding:16px $page-padding 0 $page-padding;
 		height: 82px;
-		.btn-lg{
+		.ui-btn-lg{
 			height: 43px;
 			width: 158px;
 			color: #fff;
@@ -17,7 +16,7 @@
 				margin-right: 4px;
 			}
 		}
-		.input-search{
+		.ui-input-search{
 			margin-left: 34px;
 		}
 	}

@@ -1,14 +1,14 @@
 .mod-group.group-manage
 	.mod-option
-		button.btn.btn-lg(ui-sref="createGroup")
+		button.ui-btn.ui-btn-lg.ui-btn-bright(ui-sref="createGroup")
 			i.icon-add-white
 			| 创建组
 		.pull-right.right-option
 			span(ng-cloak) 共{{groupListFiltered.length}}个组
-			input.input-search.input-fill(type="text" placeholder="输入组名称查询" ng-model="groupKey")
+			input.ui-input-search.ui-input-fill(type="text" placeholder="输入组名称查询" ng-model="groupKey")
 	.mod-list
 		loading(ng-if="isLoading")
-		table.table-dome
+		table.ui-table-dome
 			thead
 				tr
 					th 组名称
@@ -27,4 +27,4 @@
 					td(ng-bind="group.countMap.projectCount")
 					td(ng-bind="group.countMap.deployCount")
 					td(ng-bind="group.countMap.clusterCount")
-					td(ng-bind="group.create_time.split(' ')[0]")
+					td(ng-bind="group.createTime.split(' ')[0]")

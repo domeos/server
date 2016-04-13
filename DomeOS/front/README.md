@@ -2,7 +2,7 @@
 
 ## 搭建环境
 
-系统采用grunt构建工具，bower包依赖管理工具
+系统采用gulp构建工具，bower包依赖管理工具
 
  **！！！注意：** 
 
@@ -16,7 +16,9 @@
 	3. 安装compass：`gem install compass`
 
 *****
-## 开发
+## 开发  (目录DomeOS/front/app)
+
+执行`gulp watch` 
 
 本系统 css采用sass预处理器，采用compass辅助sass开发；html采用jade模板引擎。
 
@@ -27,6 +29,12 @@
  &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; 不要随意更改domeApp.js里module的注入顺序。
 
 
-* 运行`grunt live` :监听文件修改，并编译scss、jade文件。
+* 运行`gulp watch` :监听文件修改，并编译scss、jade文件。
 
-（ `DomeOS/front/index.html`为`DomeOS/front/index/index.jade`编译的后的结果 ）
+（ `DomeOS/front/app/index.html`为`DomeOS/front/app/index/_index.jade`编译的后的结果 ）
+
+
+## 上线  (目录：DomeOS/front/dist)
+
+执行`gulp package` 
+会将代码压缩合并，并加上MD5字符串 

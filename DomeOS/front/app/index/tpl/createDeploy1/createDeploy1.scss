@@ -5,9 +5,8 @@
 	$deploy1-back:#e5e5e5;
 	min-height: 1000px;
 	background-color: $deploy1-back;
-	margin:0 0-$page-padding 0 0-$page-padding ;
 	.mirror-con{
-		padding: 30px $wider-padding 10px $wider-padding;
+		padding: 30px $page-padding 10px $page-padding;
 		background-color: #fff;
 		.mirrror{
 			position: relative;
@@ -68,26 +67,19 @@
 		}
 	}
 	.nomirror{
-		padding-left: $wider-padding;
+		padding-left: $page-padding;
 		padding-bottom: 16px;
 		background-color: #fff;
+		margin-bottom: 0;
+	}
+	.containerdrafts-con{
+		padding-top: 10px;
+		padding-left: $page-padding;
+		background-color: #fff;
+		font-size: 0;
 	}
 	.tabset{
 		background-color: #fff;
-	}
-	.nav-tabs{
-		padding-left: 6px;
-		min-width: 300px;
-		li{
-			.icon-cancel{
-				@include opacity(0);
-			}
-			&:hover,&.active{
-				.icon-cancel{
-					@include opacity(1);
-				}
-			}
-		}
 	}
 	.tab-content{
 		background-color: $deploy1-back;
@@ -95,32 +87,13 @@
 	ng-form{
 		display: block;
 	}
-	.tab-content{
-		margin: 0 0-$page-padding 0 0-$page-padding;
-	}
-	.nav-option{
-		position:absolute; 
-		width: 136px;
-		border-bottom: 2px solid transparent;
-		background-color:#fff;
-		z-index: 99;
-		span{
-			display: inline-block;
-			padding: 22px 5px 20px 5px;
-			text-align: center;
-			.icon-next{
-				margin-left: 20px;
-			}
-			
-		}
-	}
 	.mirror-info-con{
-		padding:34px $page-padding+$wider-padding 0  $page-padding+$wider-padding;
+		padding:34px $wider-padding 0  $wider-padding;
 		.mirror-info{
 			padding-bottom: 14px;
 			background-color: #fff;
 			border-radius: $default-radius;
-			li{
+			&>li{
 				display: table;
 				width: 100%;
 				&:not(:first-child){
@@ -138,27 +111,21 @@
 				display: table-cell;
 				padding-left: $page-padding;
 				padding-bottom: 20px;
-				// .mirror-version{
-				// 	.icon-down{
-				// 		float: right;
-				// 		margin-top: 8px;
-				// 	}
-				// }
-				.table-mirror,.env-line,.add-env{
+				.ui-table-mirror,.env-line,.add-env{
 					width: 70%;
 				}
-				.select-con{
+				.com-select-con{
 					width: 50%;
 					.txt-prompt{
 						float: right;
 						margin-right: 12px;
 					}
 				}
-				.table-mirror{
+				.ui-table-mirror{
 					table-layout: fixed;
 					.tb-value{
 						padding-left: 4px;
-						.input-fill{
+						.ui-input-fill{
 							width: 100%;
 						}
 					}
@@ -184,7 +151,7 @@
 						margin-left: 14px;
 					}
 				}
-				.input-sm{
+				.ui-input-sm{
 					margin-right:50px; 
 				}
 				.add-env{

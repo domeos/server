@@ -1,0 +1,27 @@
+{
+  "deployId": 1,
+  "containerDrafts": [
+    {
+      "image": "xiaoshengxu/domeos-block-02",
+      "registry": "http://10.11.150.76:5000",
+      "tag": "dev_quit_d049916",
+      "cpu": "1.0",
+      "mem": "512",
+      "envs": [
+        {
+          "key": "TESTENV",
+          "value": "test env second time",
+          "description": "002"
+        }
+      ]
+    }
+  ],
+  "labelSelectors": [
+    {
+      "name": "TESTENV",
+      "content": "HOSTENVTYPE"
+    }
+  ],
+  "volumes": [],
+  "hostList": []
+}

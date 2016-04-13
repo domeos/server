@@ -2,16 +2,15 @@
 @import "common/css/common.scss";
 .host-detail{
 	.host-info{
-		margin:0 0-$page-padding 0 0-$page-padding;
 		.info-options{
-			padding :16px $page-padding 16px $page-padding+$wider-padding;
+			padding :16px $page-padding 16px $wider-padding;
 			overflow: hidden;
 		}
 	}
 	.add-label{
 		margin-left: 16px;
 	}
-	.check-con{
+	.com-check-con{
 		margin-right: 40px;
 	}
 	.host-label-con{

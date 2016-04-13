@@ -1,4 +1,5 @@
 domeApp.controller('deployManageCtr', ['$scope', '$domeDeploy', '$domeCluster', '$interval', function($scope, $domeDeploy, $domeCluster, $interval) {
+	'use strict';
 	$scope.$emit('pageTitle', {
 		title: '部署',
 		descrition: '在这里您可以把项目镜像部署到运行环境中。此外，您还可以对现有部署进行监控和管理。',
@@ -12,9 +13,15 @@ domeApp.controller('deployManageCtr', ['$scope', '$domeDeploy', '$domeCluster', 
 		ALL: true,
 		DEPLOYING: false,
 		RUNNING: false,
-		AB_TEST: false,
+		// AB_TEST: false,
 		STOP: false,
-		ERROR: false
+		ERROR: false,
+		STOPPING: false,
+		BACKROLLING: false,
+		UPDATING: false,
+		UPSCALING: false,
+		DOWNSCALING: false
+
 	};
 	$scope.selectOption.env = {
 		ALL: true,
@@ -32,12 +39,18 @@ domeApp.controller('deployManageCtr', ['$scope', '$domeDeploy', '$domeCluster', 
 	$scope.deloyList = [];
 	var init = function() {
 		$domeDeploy.getDeployList().then(function(res) {
+			var thisDeploy, cpuPercent, memPercent;
 			if (res.data.result) {
 				$scope.deloyList = res.data.result;
 				for (i = 0; i < $scope.deloyList.length; i++) {
-					var thisDeploy = $scope.deloyList[i];
-					var cpuPercent = thisDeploy.cpuTotal > 0 ? (thisDeploy.cpuUsed / thisDeploy.cpuTotal * 100).toFixed(2) : (0).toFixed(2);
-					var memPercent = thisDeploy.memoryTotal > 0 ? (thisDeploy.memoryUsed / thisDeploy.memoryTotal * 100).toFixed(2) : (0).toFixed(2);
+					thisDeploy = $scope.deloyList[i];
+					cpuPercent = thisDeploy.cpuTotal > 0 ? (thisDeploy.cpuUsed / thisDeploy.cpuTotal * 100).toFixed(2) : '0.00';
+					memPercent = thisDeploy.memoryTotal > 0 ? (thisDeploy.memoryUsed / thisDeploy.memoryTotal * 100).toFixed(2) : '0.00';
+					if (thisDeploy.serviceDnsName && thisDeploy.serviceDnsName !== '') {
+						thisDeploy.dnsName = thisDeploy.serviceDnsName;
+					} else {
+						thisDeploy.dnsName = '无';
+					}
 					if (cpuPercent > memPercent) {
 						thisDeploy.compare = 'cpu';
 						thisDeploy.comparePercent = cpuPercent;

@@ -18,7 +18,7 @@ domeApp.controller('tplUserListCtr', ['$scope', '$domeUser', '$domePublic', func
 	}
 	$scope.isEdit = false;
 	$scope.selectWay = 'member';
-	$scope.selectedRole = 'reporter';
+	$scope.selectedRole = 'REPORTER';
 	$scope.userKey = {
 		key: ''
 	};
@@ -66,7 +66,7 @@ domeApp.controller('tplUserListCtr', ['$scope', '$domeUser', '$domePublic', func
 	function getMasterCount() {
 		var masterCount = 0;
 		for (var i = 0; i < $scope.userInfos.length; i++) {
-			if ($scope.userInfos[i].role == 'master') {
+			if ($scope.userInfos[i].role == 'MASTER') {
 				masterCount++;
 				if (masterCount > 1) {
 					break;
@@ -86,8 +86,8 @@ domeApp.controller('tplUserListCtr', ['$scope', '$domeUser', '$domePublic', func
 		if (!isExsit) {
 			$scope.selectedUsers.push({
 				username: user.username,
-				owner_id: user.id,
-				owner_type: 'USER'
+				ownerId: user.id,
+				ownerType: 'USER'
 			});
 		}
 		$scope.userKey.key = '';
@@ -135,7 +135,7 @@ domeApp.controller('tplUserListCtr', ['$scope', '$domeUser', '$domePublic', func
 	};
 	$scope.saveRole = function(user) {
 		$scope.getLoginUser().then(function(loginUser) {
-			if (loginUser.username === user.user_name && user.role == 'master' && getMasterCount() <= 1) {
+			if (loginUser.username === user.username && user.role == 'MASTER' && getMasterCount() <= 1) {
 				$domePublic.openWarning('您是最后一个master，不能降低权限！');
 			} else {
 				$scope.resourceInfo.saveRole(user);
@@ -144,8 +144,8 @@ domeApp.controller('tplUserListCtr', ['$scope', '$domeUser', '$domePublic', func
 	};
 	$scope.addMember = function() {
 		var requestData = {
-			resource_id: $scope.resourceInfo.resourceInfo.resourceId,
-			resource_type: $scope.resourceInfo.resourceInfo.resourceType
+			resourceId: $scope.resourceInfo.resourceInfo.resourceId,
+			resourceType: $scope.resourceInfo.resourceInfo.resourceType
 		};
 		var ownerInfos = [],
 			i = 0,
@@ -171,8 +171,8 @@ domeApp.controller('tplUserListCtr', ['$scope', '$domeUser', '$domePublic', func
 				}
 				for (i = 0; i < userList.length; i++) {
 					ownerInfos.push({
-						owner_id: userList[i].user_id,
-						owner_type: 'USER',
+						ownerId: userList[i].userId,
+						ownerType: 'USER',
 						role: $scope.selectedRole == '保留原有组权限' ? userList[i].role : $scope.selectedRole
 					});
 				}
@@ -188,7 +188,7 @@ domeApp.controller('tplUserListCtr', ['$scope', '$domeUser', '$domePublic', func
 				var membersArr = [];
 				for (i = 0; i < $scope.selectedUsers.length; i++) {
 					membersArr.push({
-						user_id: $scope.selectedUsers[i].owner_id,
+						userId: $scope.selectedUsers[i].ownerId,
 						role: $scope.selectedRole
 					});
 				}
@@ -198,13 +198,16 @@ domeApp.controller('tplUserListCtr', ['$scope', '$domeUser', '$domePublic', func
 					$domePublic.openPrompt('添加成功！');
 					init();
 				}, function(res) {
-					$domePublic.openWarning('添加失败，请重试！');
+					$domePublic.openWarning({
+						title: '添加失败！',
+						msg: 'Message:' + res.data.resultMsg
+					});
 				});
 			} else {
 				for (i = 0; i < $scope.selectedUsers.length; i++) {
 					ownerInfos.push({
-						owner_id: $scope.selectedUsers[i].owner_id,
-						owner_type: 'USER',
+						ownerId: $scope.selectedUsers[i].ownerId,
+						ownerType: 'USER',
 						role: $scope.selectedRole
 					});
 				}
@@ -224,8 +227,8 @@ domeApp.controller('tplUserListCtr', ['$scope', '$domeUser', '$domePublic', func
 			for (i = 0; i < $scope.selectResource.userInfos.length; i++) {
 				var userInfo = $scope.selectResource.userInfos[i];
 				ownerInfos.push({
-					owner_id: userInfo.user_id,
-					owner_type: 'USER',
+					ownerId: userInfo.userId,
+					ownerType: 'USER',
 					role: $scope.selectedRole == '保留原有' + $scope.resourceName + '权限' ? userInfo.role : $scope.selectedRole
 				});
 			}
@@ -236,7 +239,7 @@ domeApp.controller('tplUserListCtr', ['$scope', '$domeUser', '$domePublic', func
 	$scope.deleteUser = function(user) {
 		if ($scope.resourceType == 'group') {
 			$scope.getLoginUser().then(function(loginUser) {
-				if (user.user_id === loginUser.id) {
+				if (user.userId === loginUser.id) {
 					if (getMasterCount() > 1) {
 						$domePublic.openDelete('确定要离开该组吗？').then(function(res) {
 							$scope.resourceInfo.deleteUser(user);

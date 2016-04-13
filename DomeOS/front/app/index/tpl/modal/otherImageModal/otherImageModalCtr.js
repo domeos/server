@@ -1,4 +1,5 @@
 domeApp.controller('otherImageModalCtr', ['$scope', '$modalInstance', function($scope, $modalInstance) {
+	'use strict';
 	$scope.imageInfo = {
 		name: '',
 		tag: '',

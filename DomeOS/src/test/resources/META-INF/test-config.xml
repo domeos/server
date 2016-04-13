@@ -4,14 +4,14 @@
        xmlns:p="http://www.springframework.org/schema/p"
        xmlns:mvc="http://www.springframework.org/schema/mvc"
        xmlns:jdbc="http://www.springframework.org/schema/jdbc"
-       xmlns:cache="http://www.springframework.org/schema/cache"
+       xmlns:cache="http://www.springframework.org/schema/cache" xmlns:aop="http://www.springframework.org/schema/aop"
 
        xsi:schemaLocation="http://www.springframework.org/schema/beans
         http://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
         http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
         http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd
-        http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache-3.1.xsd">
+        http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache-3.1.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
 
     <context:annotation-config/>
     <context:component-scan base-package="org.domeos">
@@ -19,7 +19,16 @@
         <context:include-filter type="annotation" expression="org.springframework.stereotype.Repository"/>
         <context:include-filter type="annotation" expression="org.springframework.stereotype.Component"/>
     </context:component-scan>
-    <mvc:annotation-driven/>
+    <aop:aspectj-autoproxy/>
+    <mvc:annotation-driven>
+        <mvc:message-converters>
+            <bean class="org.springframework.http.converter.StringHttpMessageConverter"/>
+            <bean class="org.springframework.http.converter.ResourceHttpMessageConverter"/>
+            <bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter" p:objectMapper-ref="modelObjectMapper"/>
+        </mvc:message-converters>
+    </mvc:annotation-driven>
+    <bean id="modelObjectMapper" class="org.domeos.framework.engine.model.ModelObjectMapper" />
+
     <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
         <property name="prefix" value="/WEB-INF/pages/"/>
         <property name="suffix" value=".jsp"/>
@@ -33,13 +42,13 @@
     <bean id="jdbcTemplate"
           class="org.springframework.jdbc.core.JdbcTemplate"
           p:dataSource-ref="dataSource"/>
-    <bean id="credentialsMatcher" class="org.domeos.shiro.credentials.RetryLimitHashedCredentialsMatcher">
+    <bean id="credentialsMatcher" class="org.domeos.framework.shiro.credentials.RetryLimitHashedCredentialsMatcher">
         <property name="hashAlgorithmName" value="md5"/>
         <property name="hashIterations" value="2"/>
         <property name="storedCredentialsHexEncoded" value="true"/>
     </bean>
 
-    <bean id="jdbcRealm" class="org.domeos.shiro.realm.JdbcRealm">
+    <bean id="jdbcRealm" class="org.domeos.framework.shiro.realm.JdbcRealm">
         <property name="userService" ref="userService"/>
         <property name="credentialsMatcher" ref="credentialsMatcher"/>
         <property name="cachingEnabled" value="true"/>
@@ -53,9 +62,9 @@
     <!--<bean id="ldapContextFactory" class="org.apache.shiro.realm.ldap.JndiLdapContextFactory">-->
         <!--<property name="url" value="ldap://${ldap.server}:389"/>-->
     <!--</bean>-->
-    <bean id="ldapContextFactory" class="org.domeos.shiro.realm.NewLdapContextFactory">
+    <bean id="ldapContextFactory" class="org.domeos.framework.shiro.realm.NewLdapContextFactory">
     </bean>
-    <bean id="ldapRealm" class="org.domeos.shiro.realm.LdapRealm">
+    <bean id="ldapRealm" class="org.domeos.framework.shiro.realm.LdapRealm">
         <property name="contextFactory" ref="ldapContextFactory"/>
         <property name="name" value="LDAP"/>
     </bean>
@@ -90,7 +99,7 @@
 
     <bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
         <property name="authenticator">
-            <bean class="org.domeos.shiro.authenticator.MultiLoginAuthenticator"/>
+            <bean class="org.domeos.framework.shiro.authenticator.MultiLoginAuthenticator"/>
         </property>
         <property name="realms">
             <list>
@@ -110,6 +119,7 @@
         <property name="loginUrl" value="/login/login.html"/>
     </bean>
 
+
     <bean id="logoutFilter" class="org.apache.shiro.web.filter.authc.LogoutFilter">
         <property name="redirectUrl" value="/login/login.html"/>
     </bean>
@@ -126,7 +136,19 @@
         </property>
         <property name="filterChainDefinitions">
             <value>
-                /api/** = anon
+                /api/ci/build/autobuild = anon
+                /api/ci/build/builddockerfile/** = anon
+                /api/ci/build/status = anon
+                /api/ci/build/upload/** = anon
+                /api/ci/build/log/** = anon
+                /api/image/custom/download/** = anon
+                /api/image/custom/status = anon
+                /api/image/custom/upload/** = anon
+                /api/image/custom/log/** = anon
+                /api/image/custom/getfilejson/** = anon
+                /api/agent/** = anon
+                /api/user/login = anon
+                /api/global/registry/private/certification = anon
                 /anon/* = anon
                 /anon/js/* = anon
 
@@ -147,17 +169,25 @@
         </property>
     </bean>
     <bean id="lifecycleBeanPostProcessor" class="org.apache.shiro.spring.LifecycleBeanPostProcessor"/>
-    <bean id="connectionManager" class="org.domeos.tools.ConnectionManager">
-        <constructor-arg index="0" value="6000"/>
-    </bean>
+    <!--<bean id="connectionManager" class="org.domeos.tools.ConnectionManager">-->
+        <!--<constructor-arg index="0" value="6000"/>-->
+    <!--</bean>-->
     <bean id="objectMapper" class="com.fasterxml.jackson.databind.ObjectMapper">
     </bean>
+    <bean id="userIdAspect" class="org.domeos.framework.engine.aop.UserIdAspect"/>
+    <bean id="loggerAspect" class="org.domeos.framework.engine.aop.LoggerAspect"/>
     <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
         <property name="dataSource" ref="dataSource"/>
         <property name="configLocation" value="/WEB-INF/conf/mybatis-config.xml"/>
     </bean>
     <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
         <property name="basePackage" value="org.domeos.api.mapper"/>
+    </bean>
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="org.domeos.framework.engine.mapper"/>
+    </bean>
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="org.domeos.framework.api.mapper"/>
     </bean>
     <bean id="configProperties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
         <property name="locations">
@@ -166,13 +196,13 @@
             </list>
         </property>
     </bean>
-    <bean id="domeosProperties" class="org.domeos.global.DomeosPropertyConfigurer">
-        <property name="locations">
-            <list>
-                <value>/WEB-INF/domeos.properties</value>
-            </list>
-        </property>
-    </bean>
+    <!--<bean id="domeosProperties" class="org.domeos.global.DomeosPropertyConfigurer">-->
+        <!--<property name="locations">-->
+            <!--<list>-->
+                <!--<value>/WEB-INF/domeos.properties</value>-->
+            <!--</list>-->
+        <!--</property>-->
+    <!--</bean>-->
     <bean id="multipartResolver"
           class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
         <property name="defaultEncoding" value="utf-8"/>
@@ -182,11 +212,13 @@
     <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PreferencesPlaceholderConfigurer">
         <property name="properties" ref="configProperties"/>
     </bean>
-    <bean id="authUtil" class="org.domeos.shiro.AuthUtil" init-method="init" />
-    <bean id="updateBuildStatusInfo" class="org.domeos.api.service.ci.impl.UpdateBuildStatusInfo" init-method="init" />
-    <bean id="kubeServiceInfo" class="org.domeos.api.service.ci.impl.KubeServiceInfo" init-method="init" />
-    <bean id="gitlabInfo" class="org.domeos.util.code.GitlabInfo" init-method="init" />
-    <bean id="deployResourceStatusManager" class="org.domeos.api.service.deployment.impl.updater.DeployResourceStatusManager" depends-on="kubeServiceInfo" init-method="init"/>
+    <bean id="authUtil" class="org.domeos.framework.engine.AuthUtil"/>
+    <bean id="updateBuildStatusInfo" class="org.domeos.framework.api.service.project.impl.UpdateBuildStatusInfo"/>
+    <bean id="kubeServiceInfo" class="org.domeos.framework.api.service.project.impl.KubeServiceInfo"/>
+    <bean id="gitlabInfo" class="org.domeos.framework.engine.coderepo.GitlabInfo"/>
+    <bean id="eventUpdater" class="org.domeos.framework.engine.k8s.updater.EventUpdater" init-method="init"/>
+    <bean id="deployResourceStatusManager" class="org.domeos.framework.engine.runtime.DeployResourceStatusManager" depends-on="kubeServiceInfo" init-method="init"/>
+    <bean id="subversionInfo" class="org.domeos.framework.engine.coderepo.SubversionInfo"/>
     <bean class="org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor"/>
-    <bean id="buildStatusManager" class="org.domeos.api.service.ci.impl.BuildStatusManager" init-method="init"/>
+    <bean id="buildStatusManager" class="org.domeos.framework.engine.k8s.BuildStatusManager" init-method="init"/>
 </beans>

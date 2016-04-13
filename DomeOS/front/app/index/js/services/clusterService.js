@@ -2,42 +2,60 @@
  * @description: 集群管理service 
  * @version: 0.1
  */
-domeApp.factory('$domeCluster', ['CONSTANT', '$http', '$domeUser', '$q', '$modal', function(CONSTANT, $http, $domeUser, $q, $modal) {
-	var commonUrl = CONSTANT.COMMON_ADDRESS;
+domeApp.factory('$domeCluster', ['$http', '$domeUser', '$q', '$modal', '$domePublic', function($http, $domeUser, $q, $modal, $domePublic) {
 	var getClusterList = function() {
-		return $http.get(commonUrl + '/api/cluster');
+		return $http.get('/api/cluster');
 	};
 	var getClusterDetail = function(clusterId) {
-		return $http.get(commonUrl + '/api/cluster/' + clusterId);
+		return $http.get('/api/cluster/' + clusterId);
+	};
+	var deleteCluster = function(id) {
+		var defered = $q.defer();
+		$domePublic.openDelete().then(function() {
+			$http.delete('/api/cluster/' + id).then(function() {
+				$domePublic.openPrompt('删除成功！');
+				defered.resolve();
+			}, function(res) {
+				$domePublic.openWarning({
+					title: '删除失败！',
+					msg: res.data.resultMsg
+				});
+				defered.reject();
+			});
+		}, function() {
+			defered.reject();
+		});
+		return defered.promise;
 	};
 	var getNodeList = function(clusterId) {
-		return $http.get(commonUrl + '/api/cluster/' + clusterId + '/nodelist');
+		return $http.get('/api/cluster/' + clusterId + '/nodelist');
 	};
 	var getNodeInfo = function(clusterId, hostname) {
-		return $http.get(commonUrl + '/api/cluster/' + clusterId + '/node/' + hostname);
+		return $http.get('/api/cluster/' + clusterId + '/node/' + hostname);
 	};
 	var getNamespace = function(clusterId) {
-		return $http.get(commonUrl + '/api/cluster/' + clusterId + '/namespace');
+		return $http.get('/api/cluster/' + clusterId + '/namespace');
 	};
 	var createNamespace = function(clusterId, namespaceList) {
-		return $http.post(commonUrl + '/api/cluster/' + clusterId + '/namespace', angular.toJson(namespaceList));
+		return $http.post('/api/cluster/' + clusterId + '/namespace', angular.toJson(namespaceList));
 	};
 	var getHostInstance = function(clusterId, hostname) {
-		return $http.get(commonUrl + '/api/cluster/' + clusterId + '/nodelist/' + hostname);
+		return $http.get('/api/cluster/' + clusterId + '/nodelist/' + hostname);
 	};
 	var modifyDisk = function(clusterId, nodeName, path) {
-		return $http.post(commonUrl + '/api/cluster/' + clusterId + '/' + nodeName + '/disk?path=' + path);
+		return $http.post('/api/cluster/' + clusterId + '/' + nodeName + '/disk?path=' + path);
 	};
 	var addLabel = function(clusterId, labelInfo) {
-		return $http.post(commonUrl + '/api/cluster/' + clusterId + '/nodelabels', angular.toJson(labelInfo));
+		return $http.post('/api/cluster/' + clusterId + '/nodelabels', angular.toJson(labelInfo));
 	};
 	var deleteLabel = function(clusterId, nodeName, label) {
-		return $http.delete(commonUrl + '/api/cluster/' + clusterId + '/' + nodeName + '/' + label);
+		return $http.delete('/api/cluster/' + clusterId + '/' + nodeName + '/' + label);
 	};
 	// nodeList Class
 	var NodeList = function() {
 		this.isCheckAll = false;
 		this.nodeList = [];
+		this.selectedCount = 0;
 		this.labelsInfo = {};
 	};
 	NodeList.prototype = {
@@ -149,6 +167,7 @@ domeApp.factory('$domeCluster', ['CONSTANT', '$http', '$domeUser', '$q', '$modal
 		toggleNodeCheck: function(node) {
 			var isAllHasChange = true;
 			if (node.isSelected) {
+				this.selectedCount++;
 				// 是否为全选
 				for (var i = 0; i < this.nodeList.length; i++) {
 					// 过滤的node中有node未选中
@@ -161,12 +180,14 @@ domeApp.factory('$domeCluster', ['CONSTANT', '$http', '$domeUser', '$q', '$modal
 					this.isCheckAll = true;
 				}
 			} else {
+				this.selectedCount--;
 				this.isCheckAll = false;
 			}
 		},
 		// 关键字过滤node
 		filterWithKey: function(keywords) {
 			this.isCheckAll = false;
+			this.selectedCount = 0;
 			for (var i = 0; i < this.nodeList.length; i++) {
 				this.nodeList[i].isSelected = false;
 				this.nodeList[i].keyFilter = this.nodeList[i].name.indexOf(keywords) !== -1 ? true : false;
@@ -175,8 +196,14 @@ domeApp.factory('$domeCluster', ['CONSTANT', '$http', '$domeUser', '$q', '$modal
 		// 全选/全不选 node
 		checkAllNode: function(isCheckAll) {
 			this.isCheckAll = isCheckAll === undefined ? this.isCheckAll : isCheckAll;
+			this.selectedCount = 0;
 			for (var i = 0; i < this.nodeList.length; i++) {
-				this.nodeList[i].isSelected = this.isCheckAll;
+				if (this.nodeList[i].keyFilter && this.nodeList[i].labelFilter && this.isCheckAll) {
+					this.nodeList[i].isSelected = true;
+					this.selectedCount++;
+				} else {
+					this.nodeList[i].isSelected = false;
+				}
 			}
 		},
 		// 切换单个label选中状态，label:labelkey，isSelect:true/false
@@ -201,6 +228,7 @@ domeApp.factory('$domeCluster', ['CONSTANT', '$http', '$domeUser', '$q', '$modal
 			var isHasLabelSelected = false;
 			var i = 0;
 			that.isCheckAll = false;
+			this.selectedCount = 0;
 			angular.forEach(that.labelsInfo, function(value, key) {
 				if (!isHasLabelSelected && value.isSelected) {
 					isHasLabelSelected = true;
@@ -341,10 +369,11 @@ domeApp.factory('$domeCluster', ['CONSTANT', '$http', '$domeUser', '$q', '$modal
 			if (!clusterInfo.logConfig) {
 				clusterInfo.logConfig = 0;
 			}
+
 			// 初始化creator
 			$domeUser.getGroupList().then(function(res) {
 				that.userList = res.data.result || [];
-				if (!clusterInfo.ownerName) {
+				if (clusterInfo.id === undefined && !clusterInfo.ownerName) {
 					that.toggleUser(that.userList[0]);
 				}
 			});
@@ -373,7 +402,10 @@ domeApp.factory('$domeCluster', ['CONSTANT', '$http', '$domeUser', '$q', '$modal
 		},
 		toggleUser: function(user) {
 			this.config.ownerName = user.name;
-			this.config.ownerType = user.type;
+			this.creatorDraft = {
+				creatorType: user.type,
+				creatorId: user.id
+			};
 		},
 		toggleLogConfig: function() {
 			this.config.logConfig = this.config.logConfig === 1 ? 0 : 1;
@@ -413,7 +445,7 @@ domeApp.factory('$domeCluster', ['CONSTANT', '$http', '$domeUser', '$q', '$modal
 			return valid;
 		},
 		modify: function() {
-			return $http.put(commonUrl + '/api/cluster', angular.toJson(this._formartCluster()));
+			return $http.put('/api/cluster', angular.toJson(this._formartCluster()));
 		},
 		// 转换为于后台交互的cluster的数据结构
 		_formartCluster: function() {
@@ -450,9 +482,18 @@ domeApp.factory('$domeCluster', ['CONSTANT', '$http', '$domeUser', '$q', '$modal
 			}
 			return clusterConfig;
 		},
+		_formartNewCluster: function(cluster) {
+			var formartNewCluster = {};
+
+			formartNewCluster.clusterInfo = cluster;
+			formartNewCluster.creatorDraft = this.creatorDraft;
+			return formartNewCluster;
+
+		},
 		create: function() {
 			var cluster = this._formartCluster();
-			return $http.post(commonUrl + '/api/cluster', angular.toJson(cluster));
+			var newCluster = this._formartNewCluster(cluster);
+			return $http.post('/api/cluster', angular.toJson(newCluster));
 		}
 	};
 	// ClusterList Class
@@ -495,6 +536,7 @@ domeApp.factory('$domeCluster', ['CONSTANT', '$http', '$domeUser', '$q', '$modal
 	return {
 		getClusterList: getClusterList,
 		getClusterDetail: getClusterDetail,
+		deleteCluster: deleteCluster,
 		getNodeList: getNodeList,
 		getNodeInfo: getNodeInfo,
 		getNamespace: getNamespace,

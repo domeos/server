@@ -1,14 +1,12 @@
 
 <div class="mod-project project-create1">
-  <div ng-if="isLoading" class="loading">
-    <div class="dot1"></div>
-    <div class="dot2"></div>
-  </div>
-  <div class="chose-repository"><span class="opt-title">选择代码仓库</span><span ng-click="codeManager='gitlab'" ng-class="{active:codeManager=='gitlab'}" class="repository"><i class="icon-gitlab"></i>GitLab</span><span ng-click="codeManager=null" ng-class="{active:!codeManager}" class="repository nohub">不使用代码仓库</span>
+  <loading ng-if="isLoading"></loading>
+  <div class="com-chose-repository"><span class="opt-title">选择代码仓库</span><span ng-click="toggleCodeManager('gitlab')" ng-class="{active:codeManager=='gitlab'}" class="repository"><i class="icon-gitlab"></i>GitLab</span><span ng-click="toggleCodeManager(null)" ng-class="{active:!codeManager}" class="repository nohub">不使用代码仓库</span>
   </div>
   <div ng-show="codeManager" class="chose-account">
-    <input placeholder="请输入项目名称查询" ng-model="pronameKey" class="pull-right input-search input-fill"/>
-    <ul class="list-acount">
+    <input placeholder="请输入项目名称查询" ng-model="pronameKey" class="pull-right ui-input-search ui-input-fill"/>
+    <ul list-scroll="list-scroll" width-offset="680">
+      <li disabled="true" class="nav-option"><span><a class="icon-last to-last"></a><a class="icon-next to-next"></a></span></li>
       <li ng-repeat="user in gitLabInfo" ng-bind="user.userName" ng-click="setProjectList(user)" ng-class="{'active':currentUserId===user.id}"></li>
     </ul><span class="related"><a ng-click="toRelated()"><i class="icon-add-green"></i>关联新账户</a></span>
   </div>
@@ -16,29 +14,29 @@
     <li ng-if="!projectListFilter||projectListFilter.length===0"><span class="no-result">无项目信息</span></li>
     <li ng-repeat="pro in projectListFilter=(projectList|filter:{'nameWithNamespace':pronameKey}|listPage:pageSize:pageNo)" ng-click="setCurrentProject(pro)" ng-class="{'active':currentProject.projectId===pro.projectId}"><span ng-cloak="ng-cloak" class="project-name"><i ng-if="currentProject.projectId===pro.projectId" class="icon-check"></i>{{pro.nameWithNamespace}}</span><span ng-bind="isDescriptionNull(pro.description)" class="project-description"></span></li>
   </ul>
-  <div list-no="list-no" length="projectList.length" pageno="pageNo" size="{{pageSize}}" ng-show="codeManager" class="page-list"></div>
+  <div list-no="list-no" length="projectList.length" pageno="pageNo" size="{{pageSize}}" ng-show="codeManager" class="com-page-list"></div>
   <div ng-show="codeManager" class="branch-setting"><span class="opt-title">自动构建</span><span class="branch">
-      <input id="master" type="checkbox" name="branches" ng-model="autoBuildInfo.master" class="dome-check"/>
+      <input id="master" type="checkbox" name="branches" ng-model="autoBuildInfo.master" class="ui-check"/>
       <label for="master">master</label></span><span class="branch">
-      <input id="tag" type="checkbox" name="branches" ng-true-value="1" ng-false-value="0" ng-model="autoBuildInfo.tag" class="dome-check"/>
+      <input id="tag" type="checkbox" name="branches" ng-true-value="1" ng-false-value="0" ng-model="autoBuildInfo.tag" class="ui-check"/>
       <label for="tag">tag</label></span><span class="branch">
-      <input id="other" type="checkbox" name="branches" ng-model="autoBuildInfo.other" class="dome-check"/>
+      <input id="other" type="checkbox" name="branches" ng-model="autoBuildInfo.other" class="ui-check"/>
       <label for="other" ng-if="!autoBuildInfo.other">指定其他分支</label>
       <label for="other" ng-if="autoBuildInfo.other"></label>
-      <input placeholder="请输入分支名称，用逗号分隔 e.g. dev,fix-bug" ng-show="autoBuildInfo.other" ng-model="autoBuildInfo.branches" class="input-white txt-branch"/></span></div>
+      <input placeholder="请输入分支名称，用逗号分隔 e.g. dev,fix-bug" ng-show="autoBuildInfo.other" ng-model="autoBuildInfo.branches" class="ui-input-white txt-branch"/></span></div>
   <div ng-show="codeManager" class="dockerfile-setting"><span class="opt-title">使用代码项目内dockerfile</span><span class="toggle-dockerfile">
-      <dome-toggle ng-click="useDockerFile=!useDockerFile" ng-class="{'on':useDockerFile}"></dome-toggle></span><span class="txt-prompt">使用前请确保项目内代码存在dockerfile</span></div>
+      <dome-toggle ng-click="userDefineDockerfile=!userDefineDockerfile" ng-class="{'on':userDefineDockerfile}"></dome-toggle></span><span class="txt-prompt">使用前请确保项目内代码存在dockerfile</span></div>
   <div ng-form="ng-form" role="form" name="projectNameForm" novalidate="novalidate" ng-class="{'need-valid':needValid}" class="project-info"><span class="opt-title">项目名称 *</span>
-    <div class="group-select select-con">
-      <button ng-cloak="ng-cloak" class="btn btn-white btn-select"><i class="icon-down"></i>{{currentGroup.projectBelong}}</button>
+    <div select-con="select-con" class="group-select com-select-con">
+      <button ng-cloak="ng-cloak" class="ui-btn ui-btn-white ui-btn-select"><i class="icon-down"></i>{{currentGroup.projectBelong}}</button>
       <ul class="select-list">
         <li ng-repeat="group in groupList" class="select-item"><a ng-bind="group.name" ng-click="toggleGroup(group)"></a></li>
       </ul>
     </div>/
-    <input placeholder="输入项目名称" is-project-exist="is-project-exist" group-name="{{currentGroup.projectBelong}}" name="proname" ng-pattern="/^[a-z0-9]+([._-][a-z0-9]+)*$/" ng-model="projectName" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" required="required" class="input-white"/><span ng-if="(needValid||projectNameForm.proname.$dirty)&amp;&amp;projectNameForm.proname.$error.required" class="inline-error">必填</span><span ng-if="(needValid||projectNameForm.proname.$dirty)&amp;&amp;!projectNameForm.proname.$error.required&amp;&amp;projectNameForm.proname.$error.isProjectExist" class="inline-error">项目已存在</span><span ng-if="(needValid||projectNameForm.proname.$dirty)&amp;&amp;!projectNameForm.proname.$error.required&amp;&amp;projectNameForm.proname.$error.pattern" class="inline-error">非法的名称</span>
+    <input placeholder="输入项目名称" is-project-exist="is-project-exist" group-name="{{currentGroup.projectBelong}}" name="proname" ng-pattern="/^[a-z0-9]+([._-][a-z0-9]+)*$/" ng-model="projectName" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" required="required" class="ui-input-white"/><span ng-if="(needValid||projectNameForm.proname.$dirty)&amp;&amp;projectNameForm.proname.$error.required" class="tool-inline-error">必填</span><span ng-if="(needValid||projectNameForm.proname.$dirty)&amp;&amp;!projectNameForm.proname.$error.required&amp;&amp;projectNameForm.proname.$error.isProjectExist" class="tool-inline-error">项目已存在</span><span ng-if="(needValid||projectNameForm.proname.$dirty)&amp;&amp;!projectNameForm.proname.$error.required&amp;&amp;projectNameForm.proname.$error.pattern" class="tool-inline-error">非法的名称</span>
   </div>
-  <div class="bottom-option">
-    <button ng-click="needValid=true;projectNameForm.$valid&amp;&amp;toNext()" class="btn btn-bright btn-md">下一步</button>
+  <div class="com-bottom-option">
+    <button ng-click="needValid=true;projectNameForm.$valid&amp;&amp;toNext()" class="ui-btn ui-btn-bright ui-btn-md">下一步</button>
   </div>
 </div>
 <script type="text/ng-template" id="loginModal.html">
@@ -47,19 +45,19 @@
     <li>
       <label for="username" class="info-name">用户名</label>
       <div class="info-txt text-left">
-        <input id="username" placeholder="用户名" name="username" ng-model="username" required="required" class="full input-white"/><span ng-show="loginForm.username.$dirty&amp;&amp;loginForm.username.$invalid" class="txt-error">必填</span>
+        <input id="username" placeholder="用户名" name="username" ng-model="username" required="required" class="full ui-input-white"/><span ng-show="loginForm.username.$dirty&amp;&amp;loginForm.username.$invalid" class="txt-error">必填</span>
       </div>
     </li>
     <li>
       <label for="password" class="info-name">密码</label>
       <div class="info-txt text-left">
-        <input id="password" placeholder="密码" name="password" type="password" ng-model="password" required="required" class="full input-white"/><span ng-show="loginForm.password.$dirty&amp;&amp;loginForm.password.$invalid" class="txt-error">必填</span>
+        <input id="password" placeholder="密码" name="password" type="password" ng-model="password" required="required" class="full ui-input-white"/><span ng-show="loginForm.password.$dirty&amp;&amp;loginForm.password.$invalid" class="txt-error">必填</span>
       </div>
     </li>
     <div ng-bind="errorTxt" class="txt-error txt-failed"></div>
   </ul>
   <div class="modal-footer text-right">
-    <button ng-click="close()" class="btn btn-sm btn-white">取消</button>
-    <button ng-disabled="loginForm.$invalid||isWaiting" ng-click="toLogin()" class="btn btn-sm btn-bright">确定</button>
+    <button ng-click="close()" class="ui-btn ui-btn-sm ui-btn-white">取消</button>
+    <button ng-disabled="loginForm.$invalid||isWaiting" ng-click="toLogin()" class="ui-btn ui-btn-sm ui-btn-bright">确定</button>
   </div>
 </script>

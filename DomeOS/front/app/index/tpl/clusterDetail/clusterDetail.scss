@@ -2,10 +2,12 @@
 @import "common/css/common.scss";
 
 .cluster-detail{
+	.mod-option .icon-delete{
+		margin-left: 20px;
+	}
 	.cluster-info{
-		margin:0 0-$page-padding 0 0-$page-padding;
 		.info-options{
-			padding :16px $page-padding 16px $page-padding+$wider-padding;
+			padding :16px $page-padding 16px $wider-padding;
 			overflow: hidden;
 			.namespace-title{
 				display: block;

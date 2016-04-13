@@ -1,6 +1,3 @@
 {
-  "name":"build",
-  "tag":"1.0",
-  "registry":"10.11.150.76:5000",
-  "description":"this is test"
+  "name":"build"
 }

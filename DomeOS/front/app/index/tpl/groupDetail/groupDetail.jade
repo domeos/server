@@ -1,7 +1,7 @@
 div.mod-group.group-detail
 	.group-detail-header
 		.mod-option.hasborder
-			button.btn.btn-md.btn-bright(ng-click="deleteGroup()") 删除该部门
+			button.ui-btn.ui-btn-md.ui-btn-bright(ng-click="deleteGroup()") 删除该组
 			p.txt-prompt {{groupInfo.description}}
 	div.tab-member(ng-include="'index/tpl/tplUserList/tplUserList.html'")
 	//- tabset

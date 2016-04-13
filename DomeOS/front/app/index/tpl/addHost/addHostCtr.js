@@ -1,4 +1,5 @@
 domeApp.controller('addHostCtr', ['$scope', '$state', '$stateParams', '$domeCluster', '$domeMonitor', '$domeGlobal', '$domePublic', function($scope, $state, $stateParams, $domeCluster, $domeMonitor, $domeGlobal, $domePublic) {
+	'use strict';
 	$scope.$emit('pageTitle', {
 		title: '添加主机',
 		descrition: '请按照步骤操作，将您的主机添加到DomeOS上。',
@@ -39,7 +40,7 @@ domeApp.controller('addHostCtr', ['$scope', '$state', '$stateParams', '$domeClus
 	};
 
 	function genarateCmd() {
-		var cmdArr = ['curl -o start_node.sh http://cutexxs.bjcnc.scs.sohucs.com/start_node.sh && sudo sh start_node.sh '];
+		var cmdArr = ['curl -o start_node_centos.sh http://deploy-domeos.bjcnc.scs.sohucs.com/start_node_centos.sh && sudo sh start_node_centos.sh'];
 		if (cmdInfo.api_servers) {
 			cmdArr.push(' --api-server ' + cmdInfo.api_servers);
 		}
@@ -75,12 +76,15 @@ domeApp.controller('addHostCtr', ['$scope', '$state', '$stateParams', '$domeClus
 		cmdInfo.cluster_dns = cluster.dns;
 		cmdInfo.cluster_domain = cluster.domain;
 		cmdInfo.etcd_server = cluster.etcd;
+		// 某些etcd最后一个符号为”,“，需去掉
+		if (cmdInfo.etcd_server && cmdInfo.etcd_server.slice(-1) == ',') {
+			cmdInfo.etcd_server = cmdInfo.etcd_server.slice(0, -1);
+		}
 		$scope.getCmdLabels();
 		$domeMonitor.getMonitorInfo().then(function(res) {
 			var resData = res.data.result;
 			if (resData && resData.transfer && resData.transfer !== '') {
-				var arr = resData.transfer.split(',');
-				cmdInfo.monitor_transfer = arr[parseInt(Math.random() * arr.length)];
+				cmdInfo.monitor_transfer = resData.transfer;
 			}
 			genarateCmd();
 		});

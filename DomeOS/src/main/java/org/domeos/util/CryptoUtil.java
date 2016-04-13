@@ -4,7 +4,7 @@ import org.apache.shiro.crypto.RandomNumberGenerator;
 import org.apache.shiro.crypto.SecureRandomNumberGenerator;
 import org.apache.shiro.crypto.hash.SimpleHash;
 import org.apache.shiro.util.ByteSource;
-import org.domeos.api.model.user.User;
+import org.domeos.framework.api.model.auth.User;
 
 /**
  * Created by zhenfengchen on 15-11-16.
@@ -20,18 +20,18 @@ public class CryptoUtil {
 
     public static String encryptPassword(String password, String salt) {
         return new SimpleHash(
-            algorithmName,
-            password,
-            ByteSource.Util.bytes(salt),
-            hashIterations).toHex();
+                algorithmName,
+                password,
+                ByteSource.Util.bytes(salt),
+                hashIterations).toHex();
     }
 
     public static void encryptPassword(User user) {
         String newPassword = new SimpleHash(
-            algorithmName,
-            user.getPassword(),
-            ByteSource.Util.bytes(user.getSalt()),
-            hashIterations).toHex();
+                algorithmName,
+                user.getPassword(),
+                ByteSource.Util.bytes(user.getSalt()),
+                hashIterations).toHex();
         user.setPassword(newPassword);
     }
 }

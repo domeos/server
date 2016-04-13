@@ -1,4 +1,4 @@
-ul.list-info.border-info
+ul.com-list-info.border-info
 	li
 		span.info-name 集群名称
 		.info-content(ng-bind="config.name")
@@ -15,7 +15,7 @@ ul.list-info.border-info
 		span.info-name etcd
 		.info-content
 			div.line-single(ng-hide="$last" ng-repeat="etcd in config.etcd")
-				span.input-white.input-txt.single-element(ng-bind="etcd.name")
+				span.ui-input-white.ui-input-txt.single-element(ng-bind="etcd.name")
 	li
 		span.info-name domain
 		.info-content
@@ -29,13 +29,13 @@ ul.list-info.border-info
 		span.info-name kafka
 		.info-content
 			div.line-single(ng-hide="$last" ng-repeat="kafka in config.clusterLog.kafka")
-				span.input-white.input-txt.single-element(ng-bind="kafka.name")
+				span.ui-input-white.ui-input-txt.single-element(ng-bind="kafka.name")
 			span(ng-if="config.clusterLog.kafka.length<=1") 未设置
 	li(ng-if="config.logConfig===1")
 		span.info-name zookeeper
 		.info-content
 			div.line-single(ng-hide="$last" ng-repeat="zookeeper in config.clusterLog.zookeeper")
-				span.input-white.input-txt.single-element(ng-bind="zookeeper.name")
+				span.ui-input-white.ui-input-txt.single-element(ng-bind="zookeeper.name")
 			span(ng-if="config.clusterLog.zookeeper.length<=1") 未设置
 	li(ng-if="config.logConfig===1")
 		span.info-name 日志容器

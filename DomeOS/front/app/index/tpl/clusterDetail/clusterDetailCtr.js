@@ -1,4 +1,5 @@
 domeApp.controller('clusterDetailCtr', ['$scope', '$domeCluster', '$stateParams', '$state', '$domePublic', function($scope, $domeCluster, $stateParams, $state, $domePublic) {
+	'use strict';
 	if (!$stateParams.id) {
 		$state.go('clusterManage');
 	}
@@ -16,9 +17,7 @@ domeApp.controller('clusterDetailCtr', ['$scope', '$domeCluster', '$stateParams'
 	$scope.$on('memberPermisson', function(event, hasPermisson) {
 		$scope.hasMemberPermisson = hasPermisson;
 	});
-	$domeCluster.getClusterList().then(function(res) {
-		$scope.clusterList = res.data.result || [];
-	});
+
 	$domeCluster.getNodeList(clusterId).then(function(res) {
 		var nodeList = res.data.result || [];
 		for (var i = 0; i < nodeList.length; i++) {
@@ -32,8 +31,8 @@ domeApp.controller('clusterDetailCtr', ['$scope', '$domeCluster', '$stateParams'
 	});
 	var init = function() {
 		$domeCluster.getClusterDetail(clusterId).then(function(res) {
-			clusterConfig = $domeCluster.getInstance('Cluster', res.data.result);
-			$scope.clusterIns = angular.copy(clusterConfig);
+			$scope.clusterIns = $domeCluster.getInstance('Cluster', res.data.result);
+			clusterConfig = angular.copy($scope.clusterIns.config);
 			$scope.config = $scope.clusterIns.config;
 			$scope.$emit('pageTitle', {
 				title: $scope.config.name,
@@ -84,9 +83,14 @@ domeApp.controller('clusterDetailCtr', ['$scope', '$domeCluster', '$stateParams'
 	$scope.checkEdit = function() {
 		$scope.isEdit = !$scope.isEdit;
 		if (!$scope.isEdit) {
-			$scope.clusterIns = angular.copy(clusterConfig);
+			$scope.clusterIns.config = angular.copy(clusterConfig);
 			$scope.config = $scope.clusterIns.config;
 		}
+	};
+	$scope.deleteCluster = function() {
+		$domeCluster.deleteCluster(clusterId).then(function() {
+			$state.go('clusterManage');
+		});
 	};
 	$scope.modifyCluster = function() {
 		var validEtcd = $scope.clusterIns.validItem('etcd');
@@ -100,8 +104,11 @@ domeApp.controller('clusterDetailCtr', ['$scope', '$domeCluster', '$stateParams'
 			$domePublic.openPrompt('修改成功！');
 			init();
 			$scope.checkEdit();
-		}, function() {
-			$domePublic.openWarning('修改失败！');
+		}, function(res) {
+			$domePublic.openWarning({
+				title: '修改失败！',
+				msg: 'Message:' + res.data.resultMsg
+			});
 		}).finally(function() {
 			$scope.isWaitingModify = false;
 		});

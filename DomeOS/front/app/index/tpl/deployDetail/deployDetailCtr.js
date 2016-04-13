@@ -1,4 +1,5 @@
 domeApp.controller('deployDetailCtr', ['$scope', '$domeDeploy', '$domeCluster', '$domePublic', '$stateParams', '$state', '$modal', '$interval', function($scope, $domeDeploy, $domeCluster, $domePublic, $stateParams, $state, $modal, $interval) {
+	'use strict';
 	$scope.$emit('pageTitle', {
 		title: '部署',
 		descrition: '',
@@ -34,47 +35,68 @@ domeApp.controller('deployDetailCtr', ['$scope', '$domeDeploy', '$domeCluster', 
 	var loadingsIns = $scope.loadingsIns = $domePublic.getLoadingInstance();
 	var getEvent = function() {
 		$domeDeploy.getDeployEvents(deployId).then(function(res) {
-			$scope.eventsList = res.data.result;
+			$scope.eventsList = res.data.result || [];
+
+			function formartProcessStatusArr(statusList) {
+				var formartedStatus = [];
+				if (!statusList || statusList.length === 0) {
+					return [{
+						version: '无状态',
+						replicas: '0实例'
+					}];
+				}
+				for (var i = 0; i < statusList.length; i++) {
+					formartedStatus.push({
+						version: 'version' + statusList[i].version,
+						replicas: statusList[i].replicas + '实例'
+					});
+				}
+				return formartedStatus;
+			}
 			for (var i = 0; i < $scope.eventsList.length; i++) {
-				$scope.eventsList[i].date = $scope.parseDate($scope.eventsList[i].startTime);
-				switch ($scope.eventsList[i].operation) {
+				var thisEvent = $scope.eventsList[i];
+				thisEvent.date = $scope.parseDate(thisEvent.startTime);
+				thisEvent.primarySnapshot = formartProcessStatusArr(thisEvent.primarySnapshot);
+				thisEvent.targetSnapshot = formartProcessStatusArr(thisEvent.targetSnapshot);
+				thisEvent.currentSnapshot = formartProcessStatusArr(thisEvent.currentSnapshot);
+				switch (thisEvent.operation) {
 					case 'UPDATE':
-						$scope.eventsList[i].optTxt = '升级';
+						thisEvent.optTxt = '升级';
 						break;
 					case 'ROLLBACK':
-						$scope.eventsList[i].optTxt = '回滚';
+						thisEvent.optTxt = '回滚';
 						break;
 					case 'SCALE_UP':
-						$scope.eventsList[i].optTxt = '扩容';
+						thisEvent.optTxt = '扩容';
 						break;
 					case 'SCALE_DOWN':
-						$scope.eventsList[i].optTxt = '缩容';
+						thisEvent.optTxt = '缩容';
 						break;
 					case 'CREATE':
-						$scope.eventsList[i].optTxt = '创建';
+						thisEvent.optTxt = '创建';
 						break;
 					case 'START':
-						$scope.eventsList[i].optTxt = '启动';
+						thisEvent.optTxt = '启动';
 						break;
 					case 'STOP':
-						$scope.eventsList[i].optTxt = '停止';
+						thisEvent.optTxt = '停止';
 						break;
 					case 'DELETE':
-						$scope.eventsList[i].optTxt = '删除';
+						thisEvent.optTxt = '删除';
 						break;
 				}
-				switch ($scope.eventsList[i].eventStatus) {
+				switch (thisEvent.eventStatus) {
 					case 'START':
-						$scope.eventsList[i].statusTxt = '开始';
+						thisEvent.statusTxt = '开始';
 						break;
 					case 'PROCESSING':
-						$scope.eventsList[i].statusTxt = '处理中';
+						thisEvent.statusTxt = '处理中';
 						break;
 					case 'SUCCESS':
-						$scope.eventsList[i].statusTxt = '成功';
+						thisEvent.statusTxt = '成功';
 						break;
 					case 'FAILED':
-						$scope.eventsList[i].statusTxt = '失败';
+						thisEvent.statusTxt = '失败';
 						break;
 				}
 			}
@@ -98,9 +120,10 @@ domeApp.controller('deployDetailCtr', ['$scope', '$domeDeploy', '$domeCluster', 
 		getEvent();
 		getDeployInstance();
 		$domeDeploy.getDeployInfo(deployId).then(function(res) {
+			var data = res.data.result;
 			$scope.$emit('pageTitle', {
-				title: res.data.result.deployName,
-				descrition: '',
+				title: data.deployName,
+				descrition: data.serviceDnsName,
 				mod: 'deployManage'
 			});
 			$scope.deployIns = $domeDeploy.getInstance('EditDeploy', angular.copy(res.data.result));
@@ -115,6 +138,25 @@ domeApp.controller('deployDetailCtr', ['$scope', '$domeDeploy', '$domeCluster', 
 			$scope.deployEditIns.clusterListIns.init(angular.copy(clusterList));
 			$scope.deployEditIns.toggleCluster();
 
+			$scope.showdeploy = angular.copy(data);
+			if ($scope.showdeploy.networkMode === 'HOST') {
+				$scope.showdeploy.serviceDnsName = 'Host网络下没有内网域名';
+				if ($scope.showdeploy.exposePortNum !== 0) {
+					$scope.showdeploy.visitSet = '允许访问';
+				} else {
+					$scope.showdeploy.visitSet = '禁止访问';
+				}
+
+			} else {
+				if ($scope.showdeploy.loadBalanceDrafts && $scope.showdeploy.loadBalanceDrafts.length !== 0) {
+					$scope.showdeploy.visitSet = '对外服务开启';
+				} else if ($scope.showdeploy.innerServiceDrafts && $scope.showdeploy.innerServiceDrafts.length !== 0) {
+					$scope.showdeploy.visitSet = '对内服务开启';
+				} else {
+					$scope.showdeploy.visitSet = '禁止访问';
+					$scope.showdeploy.serviceDnsName = '未开启访问设置，不提供内网域名';
+				}
+			}
 		}, function() {
 			$domePublic.openWarning('请求失败！');
 			$state.go('deployManage');

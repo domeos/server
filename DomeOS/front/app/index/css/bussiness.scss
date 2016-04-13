@@ -10,7 +10,7 @@
 	overflow: hidden;
 	.content{
 		.module{
-			padding:0 $page-padding 0 $page-padding;
+			padding:0;
 		}
 	}
 }
@@ -88,23 +88,24 @@
 .mod-option{
 	height: 79px;
 	padding-top: 16px;
+	padding:16px $page-padding 16px;
 	&.hasborder{
 		border-bottom: 10px solid dome-color(background,primary);
 	}
-	.btn-lg{
+	.ui-btn-lg{
 		height: 43px;
 		width: 158px;
 		color: #fff;
 		font-size:14px;
 		font-weight: bold;
-		background-color:#2994e7;
+		// background-color:#2994e7;
 		.icon-add-white{
 			margin-right: 4px;
 		}
 	}
 	.right-option{
 		padding-top: 10px;
-		.input-search{
+		.ui-input-search{
 			margin-left: 34px;
 			margin-right: 10px;
 		}
@@ -115,29 +116,21 @@
 }
 // content div --> common info list
 .mod-list{
-	margin:0 0-$page-padding 0 0-$page-padding;
-	.table-dome{
-		tr:hover a{
-			color: dome-color(dome,bright);
+	.ui-table-dome{
+		&>tbody>tr>td:first-child,&>thead>tr>th:first-child{
+			padding-left: $wider-padding;
 		}
-		td:first-child,th:first-child{
-			padding-left: $page-padding+$wider-padding;
+		&>tbody>tr>td:last-child,&>thead>tr>th:last-child{
+			padding-right: $wider-padding;
 		}
-		td:last-child,th:last-child{
-			padding-right: $page-padding+$wider-padding;
-		}
-		.btn:not(:first-child){
+		.ui-btn:not(:first-child){
 			margin-left: 10px;
 		}
 	}
 }
-// content div --> common info tab
-.mod-tab{
-	margin:0 0-$page-padding 0 0-$page-padding;
-}
+
 // (eg: deploy detail header) 
 .detail-header{
-	margin: 0 0-$page-padding 0  0-$page-padding;
 	padding: 20px $page-padding 24px $page-padding;
 	border-bottom: 10px solid dome-color(background,primary);
 	overflow: hidden;
@@ -172,7 +165,7 @@
 	margin: 18px 0 18px 42px;
 }
 // list info display.(eg: create deploy、create cluster) 
-.list-info{
+.com-list-info{
 	&>li{
 		display: table;
 		width: 100%;
@@ -197,12 +190,12 @@
 			&.nochild{
 				padding-top: 23px;
 			}
-			.check-con{
+			.com-check-con{
 				margin-right: 40px;
 			}
 			.log-topic{
 				@include display-flex;
-				.input-fill{
+				.ui-input-fill{
 					@include flex(1);
 					margin-right: 0;
 				}
@@ -222,7 +215,7 @@
 				height: auto;
 				min-height: 34px;
 			}
-			.select-con{
+			.com-select-con{
 				&:not(:first-child){
 					margin-left: 10px;
 				}
@@ -264,7 +257,7 @@
 				line-height: 30px;
 			}
 			.child-info{
-				.input-fill{
+				.ui-input-fill{
 					width: 100%;
 					margin-bottom: 16px;
 				}
@@ -340,6 +333,10 @@
 					padding-top: 0;
 				}
 			}
+			.serlog-title {
+				width: 130px;
+				padding-top: 6px;
+			}
 		}
 		.unit{
 			display: inline-block;
@@ -375,7 +372,7 @@
 }
 // modal: /index/tpl/modal/selectContainerModal/selectContainerModal.html
 .modal-container{
-	.select-con{
+	.com-select-con{
 		display: inline-block;
 		width: 400px;
 	}
@@ -386,6 +383,14 @@
 		input{
 			width:100%;
 		}
+	}
+}
+// modal: /index/tpl/modal/instanceLogModal/instanceLogModal.html
+.modal-instance{
+	.com-list-table{
+		margin: 0 -15px 0 -15px;
+		max-height: 300px;
+		overflow-y:auto;
 	}
 }
 // modal: /index/tpl/deployDetail/deployDetail.html --> scaleModal
@@ -402,7 +407,7 @@
 	}
 	.info-content{
 		display: inline-block;
-		.input-white{
+		.ui-input-white{
 			width: 126px;
 			margin-right: 10px;
 		}

@@ -230,7 +230,7 @@
             var members = new Array();
             for(var i=0; i< ids.length;i++){
                 var tmp = {
-                    user_id: Number(ids[i]),
+                    userId: Number(ids[i]),
                     role: role
                 };
                 members.push(tmp);
@@ -260,7 +260,7 @@
             var userId = $('#addUserId').val();
             var role = $('#userRole').val();
             var data = {
-                user_id: userId,
+                userId: userId,
                 group_id: groupId,
                 role: role
             };

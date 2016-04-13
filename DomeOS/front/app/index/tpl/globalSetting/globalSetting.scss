@@ -1,7 +1,7 @@
 @import "compass/css3";
 @import "common/css/common.scss";
 .global-setting{
-	.list-info{
+	.com-list-info{
 		padding-top: 20px;
 	}
 	.ldap-info .info-name{
@@ -37,7 +37,7 @@
 		padding: 0 $page-padding 12px 40px;
 		border-bottom: $light-border;
 		height: 69px;
-		.input-search{
+		.ui-input-search{
 			margin-top: 14px;
 		}
 		h3{
@@ -45,7 +45,7 @@
 			font-size: 20px;
 			margin-right: 16px;
 		}
-		.select-con{
+		.com-select-con{
 			display: inline-block;
 			font-size: 14px;
 		}
@@ -57,16 +57,19 @@
 			}
 		}
 	}
-	.table-users{
+	.ui-table-users{
 		table-layout: fixed;
 		.useremail{
 			display: inline-block;
-			width: 250px;
+			width: 210px;
 			margin-right: 12px;
 			vertical-align: middle;
 		}
 		.icon-delete{
 			margin-left: 16px;
+		}
+		th:last-child,td:last-child{
+			width: 200px;
 		}
 	}
 }

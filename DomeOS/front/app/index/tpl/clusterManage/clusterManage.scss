@@ -3,7 +3,7 @@
 
 .cluster-manage{
 	.cluster-list{
-		padding-top: 20px;
+		padding: 20px $page-padding 20px $page-padding;
 		li{
 			float: left;
 			width: 33.3%;
@@ -24,7 +24,7 @@
 						color: dome-color(font,embed);
 						font-size: 16px;
 					}
-					.btn-white{
+					.ui-btn-white{
 						color: dome-color(dome,bright);
 					}
 				}

@@ -1,4 +1,5 @@
 domeApp.controller('hostDetailCtr', ['$scope', '$stateParams', '$domeCluster', '$domePublic', '$modal', '$state', function($scope, $stateParams, $domeCluster, $domePublic, $modal, $state) {
+	'use strict';
 	$scope.loading = true;
 	var loadingItems = {
 		host: true,

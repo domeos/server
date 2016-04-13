@@ -1,38 +1,38 @@
 
 <form role="form" name="proInfoForm" ng-class="{'need-valid':needValid}" novalidate="novalidate" class="mod-project project-create2">
-  <button ng-click="toCopy()" ng-if="!useDockerFile" class="btn btn-bright btn-lg btn-copy">复制已有项目</button>
+  <button ng-click="toCopy()" class="ui-btn ui-btn-bright ui-btn-lg ui-btn-copy">复制已有项目</button>
   <div class="project-new">
-    <ng-include src="'index/tpl/tplProjectSetting/projectSettingTpl1.html'" ng-if="!useDockerFile"></ng-include>
-    <ng-include src="'index/tpl/tplProjectSetting/projectSettingTpl2.html'" ng-if="useDockerFile"></ng-include>
+    <ng-include src="'index/tpl/tplProjectSetting/projectSettingTpl1.html'" ng-if="!config.userDefineDockerfile"></ng-include>
+    <ng-include src="'index/tpl/tplProjectSetting/projectSettingTpl2.html'" ng-if="config.userDefineDockerfile"></ng-include>
   </div>
-  <div class="bottom-option">
-    <button ng-click="toLastPage();" class="btn btn-bright btn-md btn-last">上一步</button>
-    <button ng-click="needValid=true;proInfoForm.$valid&amp;&amp;createProject()" class="btn btn-bright btn-md">完成创建</button>
+  <div class="com-bottom-option">
+    <button ng-click="toLastPage();" class="ui-btn ui-btn-bright ui-btn-md ui-btn-last">上一步</button>
+    <button ng-click="needValid=true;proInfoForm.$valid&amp;&amp;createProject()" class="ui-btn ui-btn-bright ui-btn-md">完成创建</button>
   </div>
   <script type="text/ng-template" id="projectListModal.html">
     <div class="d-modal-header">选择复制的项目</div>
     <div class="projectlist-con">
-      <table class="table-dome">
+      <table class="ui-table-dome">
         <thead>
           <tr>
             <th>项目名称</th>
             <th>构建时间</th>
             <th>构建状态</th>
             <th>代码源</th>
-            <th>复制项目</th>
+            <th>复制项目{{isUseDefineDockerfile}}</th>
           </tr>
         </thead>
         <tbody>
           <tr>
             <td colspan="6" ng-if="!filteredProjectList||filteredProjectList.length===0" class="text-center">暂无相关项目</td>
           </tr>
-          <tr ng-repeat="project in filteredProjectList =  (projectList|filter:{projectName:proKeywards})">
-            <td><a ng-bind="project.projectName"></a></td>
+          <tr ng-repeat="project in filteredProjectList =  (projectList|filter:{name:proKeywards,userDefineDockerfile:isUseDefineDockerfile})">
+            <td><a ng-bind="project.name"></a></td>
             <td ng-bind="parseDate(project.buildTime)"></td>
-            <td ng-switch="project.buildStatus"><span ng-switch-when="Success" class="txt-success">成功</span><span ng-switch-when="Fail" class="txt-warning">失败</span><span ng-switch-when="Building" class="txt-normal">构建中</span><span ng-switch-when="Preparing" class="txt-normal">准备中</span><span ng-switch-default="ng-switch-default">未启动</span></td>
-            <td ng-cloak="ng-cloak" ng-switch="project.codeManager"><span ng-if="!project.codeSource">无</span><a href="{{project.codeHttpUrl}}" target="_blank" ng-show="project.codeSource"><i ng-switch-when="gitlab" class="icon-gitlab"></i><i ng-switch-when="github" class="icon-github"></i>{{project.codeSource}}</a></td>
+            <td ng-switch="project.buildStatus"><span ng-switch-when="Success" class="txt-success">成功</span><span ng-switch-when="Fail" class="txt-warning">失败</span><span ng-switch-when="Building" class="txt-normal">构建中</span><span ng-switch-when="Preparing" class="txt-normal">准备中</span><span ng-switch-when="Send" class="txt-normal">准备中</span><span ng-switch-default="ng-switch-default">未启动</span></td>
+            <td ng-cloak="ng-cloak" ng-switch="project.codeManager"><span ng-if="!project.nameWithNamespace">无</span><a href="{{project.codeHttpUrl}}" target="_blank" ng-show="project.nameWithNamespace"><i ng-switch-when="gitlab" class="icon-gitlab"></i><i ng-switch-when="github" class="icon-github"></i>{{project.nameWithNamespace}}</a></td>
             <td>
-              <button ng-click="copy(project.id)" class="btn btn-sm btn-primary">复制</button>
+              <button ng-click="copy(project.id)" class="ui-btn ui-btn-sm ui-btn-primary">复制</button>
             </td>
           </tr>
         </tbody>

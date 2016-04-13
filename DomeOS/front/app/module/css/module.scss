@@ -1,6 +1,6 @@
 @import "compass/css3";
 @import "common/css/common.scss";
-@import "module/images/icon/*.png";
+@import "/module/images/icon/*.png";
 @include all-icon-sprites;
 
 .icon-sprite, .icon-app, .icon-cluster, .icon-deploy, .icon-global, .icon-image, .icon-monitor, .icon-project, .icon-user{
@@ -74,7 +74,7 @@ body{
 		top: $padding;
 		width: 260px;
 		margin-left: 8%;
-		.user-option{
+		.com-user-option{
 			.arrow{
 				left: 19px;
 			}
@@ -88,7 +88,7 @@ body{
 			.username {
 				color: #fff;
 			}
-			.user-option{
+			.com-user-option{
 				left: 0;
 			}
 		}

@@ -1,4 +1,5 @@
-domeApp.controller('createProjectCtr2', ['$scope', '$modal', 'FileUploader', '$domeProject', '$domeImage', '$domeData', '$domePublic', '$state', function($scope, $modal, FileUploader, $domeProject, $domeImage, $domeData, $domePublic, $state) {
+domeApp.controller('createProjectCtr2', ['$scope', '$modal', '$domeProject', '$domeImage', '$domeData', '$domePublic', '$state', function($scope, $modal, $domeProject, $domeImage, $domeData, $domePublic, $state) {
+		'use strict';
 		$scope.$emit('pageTitle', {
 			title: '新建项目',
 			descrition: '在这里把您的代码仓库和DomeOS对接即可创建新项目。此外，您还可以对现有项目进行查询和管理。',
@@ -11,41 +12,28 @@ domeApp.controller('createProjectCtr2', ['$scope', '$modal', 'FileUploader', '$d
 			return;
 		}
 		$scope.showMoreInfo = false;
-		$scope.uploader = new FileUploader({
-			url: '/api/project/upload/file'
-		});
-		$scope.useDockerFile = lastPageInfo.useDockerFile;
+
 		$scope.project = $domeProject.getProjectInstance();
 		$scope.config = $scope.project.config;
+		$scope.config.userDefineDockerfile = lastPageInfo.userDefineDockerfile;
 		$scope.config.dockerfileInfo.buildPath = '/';
 		$scope.config.dockerfileInfo.dockerfilePath = '/Dockerfile';
-		var fileMap = {};
+		$scope.config.authority = 0;
+		$scope.creatorDraft = $scope.project.creatorDraft;
 		var create = function() {
 			$scope.project.create().then(function() {
 				$domePublic.openPrompt('新建成功！');
 				$state.go('projectManage');
-			}, function() {
-				$domePublic.openWarning('新建失败！');
+			}, function(res) {
+				$domePublic.openWarning({
+					title: '新建失败！',
+					msg: 'Message:' + res.data.resultMsg
+				});
 			});
 		};
 		$domeImage.getBaseImageList().then(function(res) {
 			$scope.imageList = res.data.result;
 		});
-		$scope.uploader.onCompleteItem = function(fileItem, response, status, headers) {
-			var fileData = response.result;
-			for (var fileName in fileData) {
-				$scope.config.uploadFile.push({
-					md5: fileData[fileName],
-					location: fileMap[fileName]
-				});
-			}
-			console.info('onCompleteItem', $scope.config.uploadFile);
-		};
-		$scope.uploader.onCompleteAll = function() {
-			create();
-			$scope.uploader.queue = [];
-			console.info('onCompleteAll');
-		};
 		$scope.changeDockerfilePath = function(txt) {
 			if (txt == '/') {
 				$scope.config.dockerfileInfo.dockerfilePath = '/Dockerfile';
@@ -58,7 +46,10 @@ domeApp.controller('createProjectCtr2', ['$scope', '$modal', 'FileUploader', '$d
 				animation: true,
 				templateUrl: 'projectListModal.html',
 				controller: 'projectListModalCtr',
-				size: 'lg'
+				size: 'lg',
+				resolve: {
+					isUseDefineDockerfile: $scope.config.userDefineDockerfile
+				}
 			});
 			modalInstance.result.then(function(projectId) {
 				$domeProject.getProjectInfo(projectId).then(function(res) {
@@ -66,6 +57,8 @@ domeApp.controller('createProjectCtr2', ['$scope', '$modal', 'FileUploader', '$d
 					delete pro.id;
 					$scope.project = $domeProject.getProjectInstance(pro);
 					$scope.config = $scope.project.config;
+					$scope.project.creatorDraft.creatorType = lastPageInfo.creatorDraft.creatorType;
+					$scope.project.creatorDraft.creatorId = lastPageInfo.creatorDraft.creatorId;
 				}, function() {});
 
 			});
@@ -75,25 +68,19 @@ domeApp.controller('createProjectCtr2', ['$scope', '$modal', 'FileUploader', '$d
 			$state.go('createProject/1');
 		};
 		$scope.createProject = function() {
-			$scope.config.projectName = lastPageInfo.info.projectBelong + '/' + lastPageInfo.info.projectName;
+			$scope.config.name = lastPageInfo.info.projectBelong + '/' + lastPageInfo.info.name;
 			$scope.config.codeInfo = lastPageInfo.info.codeInfo;
 			$scope.config.autoBuildInfo = lastPageInfo.info.autoBuildInfo;
-			$scope.config.type = lastPageInfo.info.type;
-			$scope.project.useDockerfile = $scope.useDockerFile;
-			if ($scope.uploader.queue && $scope.uploader.queue.length !== 0) {
-				for (var i = 0; i < $scope.uploader.queue.length; i++) {
-					var location = $scope.uploader.queue[i].file.location;
-					location = location.substr(-1) === '/' ? location : location + '/';
-					fileMap[$scope.uploader.queue[i].file.name] = location + $scope.uploader.queue[i].file.name;
-				}
-				$scope.uploader.uploadAll();
-			} else {
-				create();
-			}
+			// $scope.project.userDefineDockerfile = $scope.userDefineDockerfile;
+
+			$scope.creatorDraft.creatorType = lastPageInfo.creatorDraft.creatorType;
+			$scope.creatorDraft.creatorId = lastPageInfo.creatorDraft.creatorId;
+			create();
 		};
 
 	}])
-	.controller('projectListModalCtr', ['$scope', '$modalInstance', '$domeProject', function($scope, $modalInstance, $domeProject) {
+	.controller('projectListModalCtr', ['$scope', '$modalInstance', '$domeProject', 'isUseDefineDockerfile', function($scope, $modalInstance, $domeProject, isUseDefineDockerfile) {
+		$scope.isUseDefineDockerfile = isUseDefineDockerfile;
 		$domeProject.getProjectList().then(function(res) {
 			$scope.projectList = res.data.result;
 		});

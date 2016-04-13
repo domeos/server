@@ -23,7 +23,7 @@ domeApp.controller('domeCtr', ['$scope', '$modal', '$util', '$domeUser', '$q', f
 	};
 	$scope.getLoginUser();
 	$scope.parseDate = function(seconds) {
-		$util.getPageDate(seconds);
+		return $util.getPageDate(seconds);
 	};
 	$scope.objLength = $util.objLength;
 	$scope.logout = function() {
@@ -49,6 +49,9 @@ domeApp.controller('domeCtr', ['$scope', '$modal', '$util', '$domeUser', '$q', f
 		}
 		return resTxt;
 	};
+	$scope.stopPropagation = function(event) {
+		return event.stopPropagation();
+	};
 }]).controller('sureDeleteCtrl', ['$scope', '$modalInstance', function($scope, $modalInstance) {
 	$scope.delete = function() {
 		$modalInstance.close();
@@ -66,7 +69,12 @@ domeApp.controller('domeCtr', ['$scope', '$modal', '$util', '$domeUser', '$q', f
 		$modalInstance.dismiss('cancel');
 	};
 }]).controller('warningModalCtrl', ['$scope', '$modalInstance', 'promptTxt', function($scope, $modalInstance, promptTxt) {
-	$scope.promptTxt = promptTxt;
+	if (typeof promptTxt === 'string') {
+		$scope.titleInfo = promptTxt;
+	} else {
+		$scope.titleInfo = promptTxt.title;
+		$scope.detailInfo = promptTxt.msg;
+	}
 	$scope.cancel = function() {
 		$modalInstance.dismiss('cancel');
 	};
@@ -82,27 +90,6 @@ domeApp.controller('domeCtr', ['$scope', '$modal', '$util', '$domeUser', '$q', f
 	$scope.promptTxt = promptTxt || '确定要删除吗？';
 	$scope.delete = function() {
 		$modalInstance.close();
-	};
-
-	$scope.cancel = function() {
-		$modalInstance.dismiss('cancel');
-	};
-}]).controller('modifyPwModalCtr', ['$scope', 'loginUser', '$modalInstance', '$domePublic', '$domeUser', function($scope, loginUser, $modalInstance, $domePublic, $domeUser) {
-	$scope.pwObj = {
-		username: loginUser.username,
-		oldpassword: '',
-		newpassword: ''
-	};
-	$scope.newPwAgain = '';
-	$scope.modiftPw = function() {
-		$domeUser.userModifyPw($scope.pwObj).then(function() {
-			$domePublic.openPrompt('修改成功，请重新登录！').finally(function() {
-				location.href = '/login/login.html?redirect=' + encodeURIComponent(location.href);
-			});
-
-		}, function() {
-			$domePublic.openWarning('修改失败，请重试！');
-		});
 	};
 
 	$scope.cancel = function() {

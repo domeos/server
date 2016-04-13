@@ -1,4 +1,5 @@
 domeApp.controller('clusterManageCtr', ['$scope', '$domeCluster', function($scope, $domeCluster) {
+	'use strict';
 	$scope.$emit('pageTitle', {
 		title: '集群管理',
 		descrition: '在这里您可以查看和管理自己的物理集群，并随时添加主机到集群中。',

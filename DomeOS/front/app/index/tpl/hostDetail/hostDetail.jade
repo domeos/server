@@ -25,9 +25,9 @@
 			tab(heading="实例列表")
 				loading(ng-if="isWaitingHost")
 				.info-options
-					input.input-fill.input-white.input-search.pull-right(placeholder="输入实例名称查找" ng-model="insKey")
+					input.ui-input-fill.ui-input-white.ui-input-search.pull-right(placeholder="输入实例名称查找" ng-model="insKey")
 					span.info-count(ng-cloak) 共{{instanceListFiltered.length}}个实例
-				table.table-dome.full
+				table.ui-table-dome.full
 					thead
 						tr
 							th 实例名称
@@ -50,24 +50,24 @@
 							td
 								a.link-safe(ng-click="toConsole($index)") 进入
 			tab(heading="主机设置")
-				ul.list-info(ng-form role="form" name="hostForm" ng-class="{'need-valid':needValidHost}")
+				ul.com-list-info(ng-form role="form" name="hostForm" ng-class="{'need-valid':needValidHost}")
 					li
 						span.info-name 工作场景
 						.info-content
-							span.check-con
-								input#productionEnv.dome-check(type="checkbox" ng-model="envData.prodEnv")
+							span.com-check-con
+								input#productionEnv.ui-check(type="checkbox" ng-model="envData.prodEnv")
 								label(for="productionEnv") 生产环境
-							span.check-con
-								input#testEnv.dome-check(type="checkbox" ng-model="envData.testEnv")
+							span.com-check-con
+								input#testEnv.ui-check(type="checkbox" ng-model="envData.testEnv")
 								label(for="testEnv") 测试环境
-							button.btn.btn-sm.btn-primary(ng-click="modifyEnv()") 保存
+							button.ui-btn.ui-btn-sm.ui-btn-primary(ng-click="modifyEnv()") 保存
 					li
 						span.info-name 主机标签
 						.info-content
 							.line-short
-								input.input-white.line-element(ng-model="hostSetting.labelTxt" name="labelTxt")
-								button.btn.btn-primary.btn-sm.add-label(ng-click="needValidHost=true;hostForm.$valid&&addLabel()") 添加标签
-							ul.label-list.host-label-con
+								input.ui-input-white.line-element(ng-model="hostSetting.labelTxt" name="labelTxt")
+								button.ui-btn.ui-btn-primary.ui-btn-sm.add-label(ng-click="needValidHost=true;hostForm.$valid&&addLabel()") 添加标签
+							ul.com-label-list.host-label-con
 								li(ng-repeat="(label,value) in labelsList")
 									span.label-item(ng-cloak)
 										a.icon-cancel(ng-click="deleteLable(label)")
@@ -81,5 +81,5 @@
 						span.info-name 磁盘挂载点
 						.info-content
 							.line-short
-								input.input-white.line-element(placeholder="请输入磁盘路径，用于保存有状态服务数据" ng-model="hostSetting.diskTxt" name="labelTxt")
-								button.btn.btn-primary.btn-sm.add-label(ng-click="saveDisk()") 保存
+								input.ui-input-white.line-element(placeholder="请输入磁盘路径，用于保存有状态服务数据" ng-model="hostSetting.diskTxt" name="labelTxt")
+								button.ui-btn.ui-btn-primary.ui-btn-sm.add-label(ng-click="saveDisk()") 保存

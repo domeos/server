@@ -2,9 +2,12 @@ doctype html
 html(ng-app="loginApp")
 	head
 		meta(http-equiv="Content-Type",content="text/html; charset=utf-8")
-		title 登录-DomeOs
-		link(rel="stylesheet" href='/common/css/base.css' type="text/css")
+		title 登录-DomeOS
+		<!-- build:css /login/css/login.min.css -->
+		link(rel="stylesheet" href='../common/css/base.css' type="text/css")
 		link(rel="stylesheet" href='css/login.css' type="text/css")
+		link(rel="stylesheet" type="text/css")
+		<!-- endbuild -->
 	body(ng-controller="loginCtr")
 		.login-detail
 			h1.t-title DomeOS
@@ -38,12 +41,17 @@ html(ng-app="loginApp")
 						//- span.login-auto
 							input#autoLogin.login-check(type="checkbox")
 							label(for="autoLogin") 自动登录
-						button.btn.btn-login(ng-click="needValid=true;loginForm.$valid&&login()") 登录
+						button.ui-btn.ui-btn-login(ng-click="needValid=true;loginForm.$valid&&login()") 登录
 					.login-bottom
 						span 提示：
 						p 申请新账户或找回账户密码请联系管理员。
-		script(type="text/javascript" src="/lib/js/jquery.min.js")
-		script(type="text/javascript" src="/lib/js/angular.min.js")
+		<!-- build:js /login/js/lib.min.js -->
+		script(type="text/javascript" src="../lib/js/jquery.min.js")
+		script(type="text/javascript" src="../lib/js/angular.min.js")
+		script(type="text/javascript" src="")
+		<!-- endbuild -->
+		<!-- build:js /login/js/loginApp.min.js -->
 		script(type="text/javascript" src="js/loginApp.js")
 		script(type="text/javascript" src="js/loginCtr.js")
-
+		script(type="text/javascript" src="")
+		<!-- endbuild -->

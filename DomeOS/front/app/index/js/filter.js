@@ -44,4 +44,17 @@ domeApp.filter('listPage', function() { // 分页过滤
 		});
 		return tmp;
 	};
+}).filter('mirrorOptions', function() { // 过滤镜像
+	// @param statusObj {status1:true/false(是否被选中),status2:true/false(是否被选中)}
+	// @params  builduserObj, typeObj stateObj
+	return function(input, stateObj, builduserObj, typeObj,userName) {
+		var newInput = [];
+		for (var i = 0; i < input.length; i++) {
+			var type=input[i].autoCustom===0?'dockerfile':'configfile';
+			if ((stateObj.All || stateObj[input[i].state]) && (builduserObj.All || (builduserObj.own&&input[i].username==userName)) && (typeObj.All || typeObj[type])) {
+				newInput.push(input[i]);
+			}
+		}
+		return newInput;
+	};
 });

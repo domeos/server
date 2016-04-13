@@ -1,4 +1,5 @@
 domeApp.controller('createDeployCtr2', ['$scope', '$state', '$domeData', '$modal', '$domeDeploy', '$domeCluster', '$domePublic', '$domeUser', function($scope, $state, $domeData, $modal, $domeDeploy, $domeCluster, $domePublic, $domeUser) {
+	'use strict';
 	$scope.$emit('pageTitle', {
 		title: '新建部署',
 		descrition: '在这里您可以选择一个或多个项目镜像同时部署。',
@@ -9,10 +10,16 @@ domeApp.controller('createDeployCtr2', ['$scope', '$state', '$domeData', '$modal
 		$state.go('createDeploy/1');
 		return;
 	}
-	$scope.isExternalIPsValid = false;
+	
+	$scope.isExternalIPsValid = true;
 	$scope.deployIns = angular.copy(createDeployInfo);
 	$domeData.delData('createDeployInfo');
 	$scope.config = $scope.deployIns.config;
+	$scope.visitMode = $scope.deployIns.visitMode;
+	$scope.externalIsnull={
+		date:true
+	};
+
 	$scope.labelKey = {
 		key: ''
 	};
@@ -39,6 +46,20 @@ domeApp.controller('createDeployCtr2', ['$scope', '$state', '$domeData', '$modal
 	$scope.selectFocus = function() {
 		$scope.validHost = true;
 	};
+	$scope.$watch('config.loadBalanceDrafts[0].externalIPs', function(newValue, oldValue) {
+	  	var lenth=newValue.length;
+	  	var flag=lenth;
+	  	for(var i=0;i<lenth;i++){
+	  		if(newValue[i].ip&&newValue[i].ip!==''){
+	  			$scope.externalIsnull.date=false;
+	  			flag--;
+	  		}
+	  	}
+	  	if(lenth==flag){
+	  		$scope.externalIsnull.date=true;
+	  	}
+	},true);
+  
 	$scope.labelKeyDown = function(event, str, labelsInfoFiltered) {
 		var lastSelectLabelKey;
 		var labelsInfo = $scope.deployIns.nodeListIns.labelsInfo;
@@ -64,14 +85,22 @@ domeApp.controller('createDeployCtr2', ['$scope', '$state', '$domeData', '$modal
 	};
 	$scope.toCreate = function() {
 		loadingsIns.startLoading('create');
+		// console.log($scope.config);
+		// console.log($scope.visitMode);
 		$scope.deployIns.create().then(function() {
 			$domePublic.openPrompt('创建成功！');
 			$state.go('deployManage');
 		}, function(res) {
-			if (res == 'namespace') {
-				$domePublic.openWarning('创建namespace失败，请重试！');
+			if (res.type == 'namespace') {
+				$domePublic.openWarning({
+					title: '创建namespace失败！',
+					msg: 'Message:' + res.msg
+				});
 			} else {
-				$domePublic.openWarning('创建失败，请重试！');
+				$domePublic.openWarning({
+					title: '创建失败！',
+					msg: 'Message:' + res.msg
+				});
 			}
 		}).finally(function() {
 			loadingsIns.finishLoading('create');

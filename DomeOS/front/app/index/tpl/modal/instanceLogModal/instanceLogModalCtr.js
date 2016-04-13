@@ -1,60 +1,16 @@
-domeApp.controller('instanceLogModalCtr', ['$scope', '$sce', 'instanceInfo', '$location', '$interval', function($scope, $sce, instanceInfo, $location, $interval) {
-	var logSocket, strLog = '',
-		interval;
+domeApp.controller('instanceLogModalCtr', ['$scope', 'instanceInfo', '$location', function($scope, instanceInfo, $location) {
+	'use strict';
+	var requestUrl = 'ws://' + $location.host();
+	if ($location.port()) {
+		requestUrl += ':' + $location.port();
+	}
 	if (!instanceInfo.containers) {
 		instanceInfo.containers = [];
 	}
 	for (var i = 0; i < instanceInfo.containers.length; i++) {
+		var url = encodeURIComponent(requestUrl + '/api/deploy/instance/log/realtime?clusterid=' + instanceInfo.clusterId + '&namespace=' + instanceInfo.namespace + '&instancename=' + instanceInfo.instanceName + '&containername=' + instanceInfo.containers[i].containerName);
 		instanceInfo.containers[i].pageTxt = instanceInfo.containers[i].containerId.substring(0, 12) + '(' + instanceInfo.containers[i].imageName + ')';
+		instanceInfo.containers[i].href = '/log/log.html?url=' + url;
 	}
 	$scope.instanceInfo = instanceInfo;
-	if ($scope.instanceInfo.containers[0]) {
-		$scope.currentContainer = $scope.instanceInfo.containers[0];
-		openSocket();
-	} else {
-		return;
-	}
-	interval = $interval(function() {
-		$scope.log = $sce.trustAsHtml(strLog);
-	}, 1500);
-	var onMessage = function(event) {
-		strLog = (strLog + event.data).replace(/[\n]/g, '<br>');
-	};
-
-	var onOpen = function(event) {
-		console.log("连接打开！");
-	};
-
-	function openSocket() {
-		if (logSocket) {
-			$scope.log = $sce.trustAsHtml('');
-			strLog = '';
-			logSocket.close();
-		}
-		logSocket = new WebSocket('ws://' + $location.$$host + '/api/deploy/instance/log/realtime?clusterid=' + instanceInfo.clusterId + '&namespace=' + instanceInfo.namespace + '&instancename=' + instanceInfo.instanceName + '&containername=' + $scope.currentContainer.containerName);
-
-		logSocket.onopen = function(event) {
-			onOpen(event);
-		};
-		logSocket.onmessage = function(event) {
-			onMessage(event);
-		};
-		logSocket.onclose = function() {
-			console.log('连接被关闭！');
-		};
-	}
-	$scope.toggleContainer = function(index) {
-		if ($scope.instanceInfo.containers[index].containerId === $scope.currentContainer.containerId) {
-			return;
-		}
-		$scope.currentContainer = $scope.instanceInfo.containers[index];
-		openSocket();
-	};
-	$scope.$on("$destroy", function() {
-		$interval.cancel(interval);
-		if (logSocket) {
-			logSocket.close();
-			return false;
-		}
-	});
 }]);

@@ -1,4 +1,5 @@
 domeApp.controller('groupDetailCtr', ['$scope', '$stateParams', '$state', '$domeUser', '$domePublic', function($scope, $stateParams, $state, $domeUser, $domePublic) {
+	'use strict';
 	if (!$stateParams.id) {
 		$state.go('groupManage');
 	}
@@ -22,8 +23,11 @@ domeApp.controller('groupDetailCtr', ['$scope', '$stateParams', '$state', '$dome
 			$domeUser.deleteGroup(groupId).then(function(res) {
 				$domePublic.openPrompt('删除成功！');
 				$state.go('groupManage');
-			}, function() {
-				$domePublic.openWarning('删除失败！');
+			}, function(res) {
+				$domePublic.openWarning({
+					title: '删除失败！',
+					msg: 'Message:' + res.data.resultMsg
+				});
 			});
 		});
 	};

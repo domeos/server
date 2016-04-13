@@ -38,11 +38,10 @@
  			link: function(scope, iElm, iAttrs, controller) {
  				var projects = {};
  				$domeProject.getProjectList().then(function(res) {
- 					var data = res.data.result,
+ 					var data = res.data.result || [],
  						groupName = iAttrs.groupName;
  					for (var i = 0; i < data.length; i++) {
- 						projects[data[i].projectName] = 1;
- 						// projects.push(data[i].projectName);
+ 						projects[data[i].name] = 1;
  					}
  					scope.$watch(function() {
  						return iAttrs.groupName;
@@ -73,10 +72,12 @@
  			},
  			link: function(scope, element, attrs, controller) {
  				controller.$parsers.unshift(function(viewValue) {
- 					for (var i = 0; i < scope.userList.length; i++) {
- 						if (scope.userList[i].username === viewValue) {
- 							controller.$setValidity('isUserExist', false);
- 							return undefined;
+ 					if (scope.userList) {
+ 						for (var i = 0; i < scope.userList.length; i++) {
+ 							if (scope.userList[i].username === viewValue) {
+ 								controller.$setValidity('isUserExist', false);
+ 								return undefined;
+ 							}
  						}
  					}
  					controller.$setValidity('isUserExist', true);
@@ -94,10 +95,12 @@
  			},
  			link: function(scope, element, attrs, controller) {
  				controller.$parsers.unshift(function(viewValue) {
- 					for (var i = 0; i < scope.clusterList.length; i++) {
- 						if (scope.clusterList[i].name === viewValue) {
- 							controller.$setValidity('isClusterExist', false);
- 							return undefined;
+ 					if (scope.clusterList) {
+ 						for (var i = 0; i < scope.clusterList.length; i++) {
+ 							if (scope.clusterList[i].name === viewValue) {
+ 								controller.$setValidity('isClusterExist', false);
+ 								return undefined;
+ 							}
  						}
  					}
  					controller.$setValidity('isClusterExist', true);
@@ -116,10 +119,12 @@
  			},
  			link: function(scope, element, attrs, controller) {
  				controller.$parsers.unshift(function(viewValue) {
- 					for (var i = 0; i < scope.clusterList.length; i++) {
- 						if (scope.currentCluster !== scope.clusterList[i].name && scope.clusterList[i].api === viewValue) {
- 							controller.$setValidity('isApiServerExist', false);
- 							return undefined;
+ 					if (scope.clusterList) {
+ 						for (var i = 0; i < scope.clusterList.length; i++) {
+ 							if (scope.currentCluster !== scope.clusterList[i].name && scope.clusterList[i].api === viewValue) {
+ 								controller.$setValidity('isApiServerExist', false);
+ 								return undefined;
+ 							}
  						}
  					}
  					controller.$setValidity('isApiServerExist', true);
@@ -198,11 +203,9 @@
  			link: function(scope, iElm, iAttrs, controller) {
  				var groupMap = {};
  				$domeUser.getGroup().then(function(res) {
- 					var groupList = res.data.result;
- 					if (groupList) {
- 						for (var i = 0; i < groupList.length; i++) {
- 							groupMap[groupList[i].name] = 1;
- 						}
+ 					var groupList = res.data.result || [];
+ 					for (var i = 0; i < groupList.length; i++) {
+ 						groupMap[groupList[i].name] = 1;
  					}
  				});
  				controller.$parsers.unshift(function(viewValue) {
@@ -248,36 +251,31 @@
  			}
  		};
  	})
- 	// 验证不等于某个字符串。eg:<input not-equal="equalModel">
- 	.directive('notEqual', function() {
+ 	.directive('diyPattern', function() {
  		return {
  			restrict: 'A',
  			require: 'ngModel',
  			scope: {
- 				notEqual: '=notEqual'
+ 				pattern: '=diyPattern'
  			},
  			link: function(scope, element, attrs, controller) {
  				controller.$parsers.unshift(function(viewValue) {
- 					var isEqual = scope.notEqual.toString() === viewValue;
- 					controller.$setValidity('notEqual', !isEqual);
- 					return viewValue;
+ 					viewValue = viewValue || '';
+ 					if (scope.pattern && scope.pattern !== '') {
+ 						var reg = new RegExp(scope.pattern);
+ 						controller.$setValidity('diyPattern', reg.test(viewValue));
+ 						return viewValue;
+ 					} else {
+ 						controller.$setValidity('diyPattern', true);
+ 						return viewValue;
+ 					}
  				});
- 			}
- 		};
- 	})
- 	// 验证等于某个字符串。eg:<input equal="equalModel">
- 	.directive('equal', function() {
- 		return {
- 			restrict: 'A',
- 			require: 'ngModel',
- 			scope: {
- 				equal: '=equal'
- 			},
- 			link: function(scope, element, attrs, controller) {
- 				controller.$parsers.unshift(function(viewValue) {
- 					var isEqual = scope.equal.toString() === viewValue;
- 					controller.$setValidity('equal', isEqual);
- 					return viewValue;
+ 				scope.$watch(function() {
+ 					return scope.pattern;
+ 				}, function(newValue) {
+ 					if (controller.$parsers[0] && typeof controller.$parsers[0] === 'function') {
+ 						controller.$parsers[0]();
+ 					}
  				});
  			}
  		};

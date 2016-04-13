@@ -1,8 +1,8 @@
 @import "compass/css3";
 @import "common/css/common.scss";
 .app-store{
-	padding-left: -10px;
-	padding-right: -10px;
+	padding-left: $page-padding - 10;
+	padding-right: $page-padding - 10;
 	font-size: 0;
 	li{
 		display: inline-block;
@@ -34,7 +34,7 @@
 					@media (min-width: 1400px) {
 						font-size: 14px;
 					}
-					.btn-deploy{
+					.ui-btn-deploy{
 						position: absolute;
 						bottom: 26px;
 						left:50%;

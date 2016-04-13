@@ -1,4 +1,5 @@
 domeApp.controller('globalSettingCtr', ['$scope', '$domeGlobal', '$state', '$domeUser', '$modal', '$domePublic', '$q', function($scope, $domeGlobal, $state, $domeUser, $modal, $domePublic, $q) {
+	'use strict';
 	$scope.$emit('pageTitle', {
 		title: '全局配置',
 		descrition: '在这里您可以进行一些全局配置，保证domeos能够正常运行和使用。',
@@ -164,7 +165,7 @@ domeApp.controller('globalSettingCtr', ['$scope', '$domeGlobal', '$state', '$dom
 	$domeUser.getUserList().then(function(res) {
 		var userList = res.data.result || [];
 		for (var i = 0; i < userList.length; i++) {
-			if (userList[i].login_type == 'LDAP') {
+			if (userList[i].loginType == 'LDAP') {
 				$scope.userList.push(userList[i]);
 				userList.splice(i, 1);
 				i--;
@@ -215,12 +216,15 @@ domeApp.controller('globalSettingCtr', ['$scope', '$domeGlobal', '$state', '$dom
 		}
 	};
 	$scope.getMonitorInfo = function() {
+		function initMonitorInfo(info) {
+			$scope.monitorIns = new Monitor();
+			$scope.monitorIns.init(info);
+			$scope.monitorConfig = $scope.monitorIns.config;
+		}
 		if (!$scope.monitorConfig) {
 			monitorOptions.getData().then(function(info) {
-				$scope.monitorIns = new Monitor();
-				$scope.monitorIns.init(info);
-				$scope.monitorConfig = $scope.monitorIns.config;
-			});
+				initMonitorInfo(info);
+			}, initMonitorInfo());
 		}
 	};
 	$scope.getWebSsh = function() {

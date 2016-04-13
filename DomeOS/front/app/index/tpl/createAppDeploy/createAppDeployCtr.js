@@ -1,4 +1,5 @@
 domeApp.controller('createAppDeployCtr', ['$scope', '$domeAppStore', '$domeCluster', '$domeUser', '$state', '$stateParams', '$domePublic', function($scope, $domeAppStore, $domeCluster, $domeUser, $state, $stateParams, $domePublic) {
+	'use strict';
 	if (!$stateParams.appName) {
 		$state.go('appStore');
 	}
@@ -43,6 +44,7 @@ domeApp.controller('createAppDeployCtr', ['$scope', '$domeAppStore', '$domeClust
 				$scope.appInfoIns = $domeAppStore.getInstance('AppInfo', appData);
 				$scope.config = $scope.appInfoIns.config;
 				$scope.deployIns = $scope.appInfoIns.deployIns;
+				$scope.deployConfig = $scope.deployIns.config;
 				$domeCluster.getClusterList().then(function(res) {
 					$scope.deployIns.clusterListIns.init(res.data.result);
 					$scope.deployIns.toggleCluster();
@@ -66,10 +68,16 @@ domeApp.controller('createAppDeployCtr', ['$scope', '$domeAppStore', '$domeClust
 			$domePublic.openPrompt('创建成功！');
 			$state.go('deployManage');
 		}, function(res) {
-			if (res == 'namespace') {
-				$domePublic.openWarning('创建namespace失败，请重试！');
+			if (res.type == 'namespace') {
+				$domePublic.openWarning({
+					title: '创建namespace失败！',
+					msg: 'Msg:' + res.msg
+				});
 			} else {
-				$domePublic.openWarning('创建失败，请重试！');
+				$domePublic.openWarning({
+					title: '创建失败！',
+					msg: 'Msg:' + res.msg
+				});
 			}
 		}).finally(function() {
 			$scope.isLoading = false;

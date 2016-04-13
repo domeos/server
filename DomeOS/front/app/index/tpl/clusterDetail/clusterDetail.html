@@ -1,14 +1,14 @@
 
 <div class="mod-cluster cluster-detail">
-  <div class="mod-option"><a ui-sref="addHost({id:clusterId})" class="btn btn-lg btn-link"><i class="icon-add-white"></i>添加主机</a></div>
+  <div class="mod-option"><a ui-sref="addHost({id:clusterId})" class="ui-btn ui-btn-lg ui-btn-link ui-btn-bright"><i class="icon-add-white"></i>添加主机</a><a ng-click="deleteCluster()" class="icon-delete"></a></div>
   <div class="cluster-info">
     <tabset>
       <tab heading="主机列表">
         <loading ng-if="isWaitingHost"></loading>
         <div class="info-options">
-          <input placeholder="输入主机名查找" ng-model="hostKey" class="input-fill input-white input-search pull-right"/><span ng-cloak="ng-cloak" class="info-count">共{{nodelistFiltered.length}}台主机</span>
+          <input placeholder="输入主机名查找" ng-model="hostKey" class="ui-input-fill ui-input-white ui-input-search pull-right"/><span ng-cloak="ng-cloak" class="info-count">共{{nodelistFiltered.length}}台主机</span>
         </div>
-        <table class="table-dome full">
+        <table class="ui-table-dome full">
           <thead>
             <tr>
               <th>主机名称</th>
@@ -35,15 +35,15 @@
         </table>
       </tab>
       <tab heading="集群设置">
-        <button ng-click="checkEdit()" ng-if="!isEdit" class="btn btn-white edit-cluster">编辑</button>
-        <button ng-click="checkEdit()" ng-if="isEdit" class="btn btn-primary edit-cluster">取消编辑</button>
+        <button ng-click="checkEdit()" ng-if="!isEdit" class="ui-btn ui-btn-sm ui-btn-white edit-cluster">编辑</button>
+        <button ng-click="checkEdit()" ng-if="isEdit" class="ui-btn ui-btn-sm ui-btn-primary edit-cluster">取消编辑</button>
         <div ng-form="ng-form" name="modifyclusterFrom">
           <div ng-include="'index/tpl/tplClusterInfo/tplClusterInfo.html'" ng-if="!isEdit" class="tab-cluster"></div>
           <div ng-include="'index/tpl/tplClusterInfo/tplClusterInfoEdit.html'" ng-if="isEdit" class="tab-cluster"></div>
         </div>
-        <div ng-if="isEdit" class="bottom-option">
-          <div class="bottom-option-con">
-            <button ng-disabled="isWaitingModify" ng-click="needValid=true;modifyclusterFrom.$valid&amp;&amp;modifyCluster()" class="btn btn-bright btn-md">保存设置</button><span ng-if="needValid&amp;&amp;(modifyclusterFrom.$invalid||!clusterIns.etcdValid||!clusterIns.zookeeperValid||!clusterIns.kafkaValid)" class="txt-error">存在不合法数据，请修改后提交。</span>
+        <div ng-if="isEdit" class="com-bottom-option">
+          <div class="com-bottom-option-con">
+            <button ng-disabled="isWaitingModify" ng-click="needValid=true;modifyclusterFrom.$valid&amp;&amp;modifyCluster()" class="ui-btn ui-btn-bright ui-btn-md">保存设置</button><span ng-if="needValid&amp;&amp;(modifyclusterFrom.$invalid||!clusterIns.etcdValid||!clusterIns.zookeeperValid||!clusterIns.kafkaValid)" class="txt-error">存在不合法数据，请修改后提交。</span>
           </div>
         </div>
       </tab>
@@ -52,10 +52,10 @@
         <div ng-form="ng-form" role="form" name="namespaceForm" ng-class="{'need-valid':needValidNamespace}" class="info-options"><span class="namespace-title">namespace</span>
           <div class="namespace-con">
             <div class="new-namespace">
-              <input ng-model="namespaceTxt.namespace" name="namespace" ng-pattern="/^[a-zA-Z][a-zA-Z0-9_-]*$/" class="input-white namespace-txt"/>
-              <button ng-disabled="isLoadingNamespace" ng-click="needValidNamespace=true;namespaceForm.$valid&amp;&amp;addNamespace()" class="btn btn-sm btn-primary">添加namespace</button>
+              <input ng-model="namespaceTxt.namespace" name="namespace" ng-pattern="/^[a-zA-Z][a-zA-Z0-9_-]*$/" class="ui-input-white namespace-txt"/>
+              <button ng-disabled="isLoadingNamespace" ng-click="needValidNamespace=true;namespaceForm.$valid&amp;&amp;addNamespace()" class="ui-btn ui-btn-sm ui-btn-primary">添加namespace</button>
             </div><span ng-if="(needValid||namespaceForm.namespace.$dirty)&amp;&amp;namespaceForm.namespace.$invalid" class="txt-error"></span>
-            <ul class="label-list namespace-list">
+            <ul class="com-label-list namespace-list">
               <li ng-repeat="namespace in namespaceList"><span class="label-item">{{namespace}}</span></li>
             </ul>
           </div>

@@ -1,16 +1,17 @@
 .mod-cluster.cluster-detail
 	.mod-option
-		a.btn.btn-lg.btn-link(ui-sref="addHost({id:clusterId})")
+		a.ui-btn.ui-btn-lg.ui-btn-link.ui-btn-bright(ui-sref="addHost({id:clusterId})")
 			i.icon-add-white
 			| 添加主机
+		a.icon-delete(ng-click="deleteCluster()")
 	.cluster-info
 		tabset
 			tab(heading="主机列表")
 				loading(ng-if="isWaitingHost")
 				.info-options
-					input.input-fill.input-white.input-search.pull-right(placeholder="输入主机名查找" ng-model="hostKey")
+					input.ui-input-fill.ui-input-white.ui-input-search.pull-right(placeholder="输入主机名查找" ng-model="hostKey")
 					span.info-count(ng-cloak) 共{{nodelistFiltered.length}}台主机
-				table.table-dome.full
+				table.ui-table-dome.full
 					thead
 						tr
 							th 主机名称
@@ -33,14 +34,14 @@
 								span(ng-switch-when="Ready").txt-safe 在线
 								span(ng-switch-default).txt-prompt 离线
 			tab(heading="集群设置")
-				button.btn.btn-white.edit-cluster(ng-click="checkEdit()" ng-if="!isEdit") 编辑
-				button.btn.btn-primary.edit-cluster(ng-click="checkEdit()" ng-if="isEdit") 取消编辑
+				button.ui-btn.ui-btn-sm.ui-btn-white.edit-cluster(ng-click="checkEdit()" ng-if="!isEdit") 编辑
+				button.ui-btn.ui-btn-sm.ui-btn-primary.edit-cluster(ng-click="checkEdit()" ng-if="isEdit") 取消编辑
 				div(ng-form name="modifyclusterFrom")
 					div.tab-cluster(ng-include="'index/tpl/tplClusterInfo/tplClusterInfo.html'" ng-if="!isEdit")
 					div.tab-cluster(ng-include="'index/tpl/tplClusterInfo/tplClusterInfoEdit.html'" ng-if="isEdit")
-				.bottom-option(ng-if="isEdit")
-					.bottom-option-con
-						button.btn.btn-bright.btn-md(ng-disabled="isWaitingModify" ng-click="needValid=true;modifyclusterFrom.$valid&&modifyCluster()") 保存设置
+				.com-bottom-option(ng-if="isEdit")
+					.com-bottom-option-con
+						button.ui-btn.ui-btn-bright.ui-btn-md(ng-disabled="isWaitingModify" ng-click="needValid=true;modifyclusterFrom.$valid&&modifyCluster()") 保存设置
 						span.txt-error(ng-if="needValid&&(modifyclusterFrom.$invalid||!clusterIns.etcdValid||!clusterIns.zookeeperValid||!clusterIns.kafkaValid)") 存在不合法数据，请修改后提交。
 			tab(heading="namespace" ng-click="getNamespace()")
 				loading(ng-if="isWaitingNamespace")
@@ -48,10 +49,10 @@
 					span.namespace-title namespace
 					.namespace-con
 						.new-namespace
-							input.input-white.namespace-txt(ng-model="namespaceTxt.namespace" name="namespace" ng-pattern="/^[a-zA-Z][a-zA-Z0-9_-]*$/")
-							button.btn.btn-sm.btn-primary(ng-disabled="isLoadingNamespace" ng-click="needValidNamespace=true;namespaceForm.$valid&&addNamespace()") 添加namespace
+							input.ui-input-white.namespace-txt(ng-model="namespaceTxt.namespace" name="namespace" ng-pattern="/^[a-zA-Z][a-zA-Z0-9_-]*$/")
+							button.ui-btn.ui-btn-sm.ui-btn-primary(ng-disabled="isLoadingNamespace" ng-click="needValidNamespace=true;namespaceForm.$valid&&addNamespace()") 添加namespace
 						span.txt-error(ng-if="(needValid||namespaceForm.namespace.$dirty)&&namespaceForm.namespace.$invalid")
-						ul.label-list.namespace-list
+						ul.com-label-list.namespace-list
 							li(ng-repeat="namespace in namespaceList")
 								span.label-item
 									| {{namespace}}

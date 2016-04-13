@@ -1,4 +1,5 @@
 domeApp.controller('projectManageCtr', ['$scope', '$modal', '$domeProject', '$domePublic', '$interval', function($scope, $modal, $domeProject, $domePublic, $interval) {
+	'use strict';
 	$scope.projectList = [];
 	$scope.isLoading = true;
 	$scope.$emit('pageTitle', {

@@ -1,4 +1,5 @@
 domeApp.controller('selectContainerModalCtr', ['$scope', 'containerList', 'hostIp', '$modalInstance', function($scope, containerList, hostIp, $modalInstance) {
+	'use strict';
 	$scope.containerList = containerList || [];
 	$scope.hostIp = hostIp;
 	for (var i = 0; i < $scope.containerList.length; i++) {

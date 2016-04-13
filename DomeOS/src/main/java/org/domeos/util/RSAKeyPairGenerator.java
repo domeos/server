@@ -3,7 +3,7 @@ package org.domeos.util;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.KeyPair;
-import org.domeos.api.model.ci.RSAKeyPair;
+import org.domeos.framework.api.model.ci.related.RSAKeyPair;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;

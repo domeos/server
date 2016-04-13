@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.domeos.global.GlobalConstant;
 
 import javax.servlet.http.HttpServletRequest;
+
 /**
  * Created by zhenfengchen on 15-11-18.
  */

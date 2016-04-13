@@ -1,6 +1,7 @@
 package org.domeos.api.model.deployment;
 
-import org.apache.commons.lang.StringUtils;
+import org.domeos.framework.api.model.LoadBalancer.LoadBalancer;
+import org.domeos.framework.api.model.deployment.related.LoadBalanceType;
 import sun.net.util.IPAddressUtil;
 
 import java.util.List;
@@ -15,7 +16,23 @@ public class LoadBalanceDraft {
     long deployId;
     List<String> externalIPs;
     LoadBalanceType type; // tcp or http
-    String clusterName;
+    int clusterId;
+
+    public LoadBalanceDraft() {
+    }
+    public LoadBalanceDraft(LoadBalancer loadBalancer) {
+        id = loadBalancer.getId();
+        name = loadBalancer.getName();
+        port = loadBalancer.getPort();
+        targetPort = loadBalancer.getTargetPort();
+        externalIPs = loadBalancer.getExternalIPs();
+        if (loadBalancer.getType() == org.domeos.framework.api.model.LoadBalancer.related.LoadBalanceType.NGINX) {
+            type = LoadBalanceType.HTTP;
+        } else {
+            type = LoadBalanceType.TCP;
+        }
+        clusterId = loadBalancer.getClusterId();
+    }
 
     public int getId() {
         return id;
@@ -73,17 +90,17 @@ public class LoadBalanceDraft {
         this.type = type;
     }
 
-    public String getClusterName() {
-        return clusterName;
+    public int getClusterId() {
+        return clusterId;
     }
 
-    public void setClusterName(String clusterName) {
-        this.clusterName = clusterName;
+    public void setClusterId(int clusterId) {
+        this.clusterId = clusterId;
     }
 
     public String checkLegality() {
-        if (StringUtils.isBlank(clusterName)) {
-            return "cluster name is empty";
+        if (clusterId <= 0) {
+            return "cluster id less than 0";
         } else if (externalIPs == null || externalIPs.size() == 0) {
         //     return "do not have external ip info";
             return "";  // for stateful deployment
@@ -93,6 +110,13 @@ public class LoadBalanceDraft {
                     return ip + " is not a valid ip address";
                 }
             }
+        }
+        return "";
+    }
+
+    public String checkExternalIPs() {
+        if (externalIPs == null || externalIPs.size() < 1) {
+            return "externalIPs is empty";
         }
         return "";
     }

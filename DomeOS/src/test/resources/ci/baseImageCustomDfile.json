@@ -1,0 +1,8 @@
+{
+  "autoCustom" : 0,
+  "imageName":"dfiletest",
+  "imageTag":"1.0",
+  "publish": 1,
+  "description":"this one only for dockerfile build test, cannot use",
+  "dockerfileContent":"From centos:7\n ADD test1 /root/test1\n ADD test2 /root/test2"
+}

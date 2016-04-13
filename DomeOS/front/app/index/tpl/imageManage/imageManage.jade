@@ -1,35 +1,40 @@
 .mod-image.image-manage
 	loading(ng-if="isLoading")
+	.detail-header
+		button.ui-btn.ui-btn-lg.ui-btn-imgtool(ui-sref="mirrorCustom") 
+			i.icon-tool
+			| 镜像定制工具
 	tabset.mod-tab
 		tab(heading="基础镜像")
 			.image-option
-				button.btn.btn-bright.btn-sm(ng-if="!isShowAdd" ng-click="toggleShowAdd(true)") 添加
-				button.btn.btn-bright.btn-sm(ng-if="isShowAdd" ng-click="toggleShowAdd(false)") 取消
+				button.ui-btn.ui-btn-bright.ui-btn-sm(ng-if="!isShowAdd" ng-click="toggleShowAdd(true)") 添加
+				button.ui-btn.ui-btn-bright.ui-btn-sm(ng-if="isShowAdd" ng-click="toggleShowAdd(false)") 取消
 				.pull-right
 					| 共{{baseImagesFiltered.length}}个镜像
-					input.input-fill.input-search(placeholder="输入镜像名称查找" ng-model="baseImageKey")
+					input.ui-input-fill.ui-input-search(placeholder="输入镜像名称查找" ng-model="baseImageKey")
 			ul.add-image(ng-form ng-class="{'need-valid':needValid.value}" name="imageForm" ng-show="isShowAdd")
 				li
 					span.info-name 镜像名称
-					input.input-info.input-white(ng-model="newImageInfo.imageName" ng-pattern="/^[^\\s]*$/" name="imageName" required)
+					input.ui-input-info.ui-input-white(ng-model="newImageInfo.imageName" ng-pattern="/^[^\\s]*$/" name="imageName" required)
 				li
 					span.info-name 镜像版本
-					input.input-info.input-white(ng-model="newImageInfo.imageTag" is-tag-exist baseimages="baseImages" imagename="newImageInfo.imageName" ng-pattern="/^[^\\s]*$/" name="imageTag" required)
-					span.inline-error(ng-if="imageForm.imageTag.$error.isTagExist") 已存在
+					input.ui-input-info.ui-input-white(ng-model="newImageInfo.imageTag" is-tag-exist baseimages="baseImages" imagename="newImageInfo.imageName" ng-pattern="/^[^\\s]*$/" name="imageTag" required)
+					span.tool-inline-error(ng-if="imageForm.imageTag.$error.isTagExist") 已存在
 				li
 					span.info-name 镜像所在仓库
-					input.input-info.input-white(ng-model="newImageInfo.registry" ng-pattern="/^[^\\s]*$/" name="registry" required)
+					input.ui-input-info.ui-input-white(ng-model="newImageInfo.registry" ng-pattern="/^[^\\s]*$/" name="registry" required)
 				li
 					span.info-name 镜像描述
-					input.input-info.input-white(ng-model="newImageInfo.description" name="description")
-					button.btn.btn-primary.btn-sm(ng-disabled="isLoading" ng-click="needValid.value=true;imageForm.$valid&&createImage(imageForm);") 添加镜像
-			table.table-dome
+					input.ui-input-info.ui-input-white(ng-model="newImageInfo.description" name="description")
+					button.ui-btn.ui-btn-primary.ui-btn-sm(ng-disabled="isLoading" ng-click="needValid.value=true;imageForm.$valid&&createImage(imageForm);") 添加镜像
+			table.ui-table-dome
 				thead
 					tr
 						th 镜像名称
 						th 镜像版本
 						th 仓库地址
 						th 镜像描述
+						th 操作
 				tbody
 					tr(ng-if="!baseImages||baseImagesFiltered.length===0")
 						td(colspan="4") 无相关镜像信息
@@ -38,13 +43,15 @@
 						td(ng-bind="img.imageTag")
 						td(ng-bind="img.registry")
 						td(ng-bind="img.description")
+						td
+							a.icon-delete(ng-click="deleteBaseImage(img.id)")
 		tab(heading="项目镜像")
 			.image-option
 				span.registry-address 仓库地址：{{projectRegistry}}
 				.pull-right
 					| 共{{projectImagesFiltered.length}}个镜像
-					input.input-fill.input-search(placeholder="输入镜像名称查找" ng-model="projectImageKey")
-			table.table-dome
+					input.ui-input-fill.ui-input-search(placeholder="输入镜像名称查找" ng-model="projectImageKey")
+			table.ui-table-dome
 				thead
 					tr
 						th 镜像名称
@@ -63,8 +70,8 @@
 				span.registry-address 仓库地址：{{projectRegistry}}
 				.pull-right
 					| 共{{otherImageFilterd.length}}个镜像
-					input.input-fill.input-search(placeholder="输入镜像名称查找" ng-model="otherImageKey")
-			table.table-dome
+					input.ui-input-fill.ui-input-search(placeholder="输入镜像名称查找" ng-model="otherImageKey")
+			table.ui-table-dome
 				thead
 					tr
 						th 镜像名称
@@ -80,7 +87,7 @@ script(type="text/ng-template" id="imageTagModal.html")
 	.d-modal-header(ng-bind="imageName")
 	.d-modal-full
 		loading(ng-if="isLoading")
-		table.table-dome.modal-full-table
+		table.ui-table-dome.modal-full-table
 			thead
 				tr
 					th 版本名

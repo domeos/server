@@ -10,7 +10,7 @@ body{
 	min-width: 1050px;
 	font-size: 14px;
 	color:dome-color(font,default);
-	font-family:"microsoft yahei","Arail";
+	font-family:Helvetica,Arial,"Helvetica Neue","Hiragino Sans GB","Microsoft YaHei",Simsun,sans-self;
 	-webkit-text-size-adjust: 100%;
 }
 ul{
@@ -22,12 +22,10 @@ ul{
 	outline: none;
 }
 h1,h2,h3,h4,h5,h6{
-	font-family: "Arail","microsoft yahei";
 	font-weight: 400;
 }
 a{
 	cursor: pointer;
-	font-family: "Arail","microsoft yahei";
 	color:dome-color(font,default);
 	text-decoration: none;
 	&:hover{
@@ -58,6 +56,11 @@ label{
 em,i{
 	font-style: normal;
 }
+button,input[type="button"],input[type="text"]{
+	&:disabled{
+		cursor: not-allowed;
+	}
+}
 *{
 	outline: none;
 }
@@ -75,20 +78,23 @@ input:not(.ng-pristine).ng-invalid-pattern,textarea:not(.ng-pristine).ng-invalid
 		border:1px solid dome-color(dome,error) !important;
 	}
 }
+ input[required]:invalid, input:focus:invalid, textarea[required]:invalid, textarea:focus:invalid{
+ 	@include box-shadow(none);
+ }
 // input with white background
-.input-white{
+.ui-input-white{
 	height: 34px;
 	padding-left: 12px;
 	padding-right: 20px;
 	border:1px solid dome-color(border,default);
 	border-radius: $default-radius;
 }
-textarea.input-white{
+textarea.ui-input-white{
 	min-height: 66px;
 	resize:none;
 }
 // input with fill background
-.input-fill{
+.ui-input-fill{
 	padding-left: 12px;
 	background-color: dome-color(background,light) !important;
 	border:none;
@@ -99,51 +105,59 @@ textarea.input-white{
 	}
 }
 
-.input-txt{
+.ui-input-txt{
 	padding-top: 5px;
 }
-input.input-fill{
+input.ui-input-fill{
 	height: 34px; 
 }
-textarea.input-fill{
+textarea.ui-input-fill{
 	min-height: 56px; 
 }
 // small input
-.input-sm{
+.ui-input-sm{
 	width: 60px;
 	font-size: 14px;
 }
 /* style of input end */
 
 /* style of button */
-.btn,.btn:hover,.btn:focus{
+.ui-btn{
+	display: inline-block;
+	text-align: center;
+	vertical-align: middle;
+}
+.ui-btn,.ui-btn:hover,.ui-btn:focus{
 	color: #fff;
 	font-size: 14px;
 	border:none;
 	border-radius: $default-radius;
 }
-.btn-sm{
+.ui-btn-sm{
 	min-width: 60px;
 	height: 34px;
 }
-.btn-md{
+.ui-btn-sm.ui-btn-link{
+	padding: 6px 6px 3px;
+}
+.ui-btn-md{
 	min-width: 114px;
 	height: 34px;
 	font-weight: bold;
 }
-.btn-lg{
+.ui-btn-lg{
 	width: 152px;
 	height: 43px;
 	font-weight: bold;
 }
-// the link that has class .btn
-.btn-link{
+// the link that has class .ui-btn
+.ui-btn-link{
 	padding-top: 12px;
 	&:hover{
 		text-decoration: none;
 	}
 }
-.btn-none{
+.ui-btn-none{
 	height: auto !important;
 	border:none;
 	background: none;
@@ -154,19 +168,19 @@ textarea.input-fill{
 		@include box-shadow(none);
 	}
 }
-.btn-safe{
+.ui-btn-safe{
 	background-color: dome-color(dome,safe);
 }
-.btn-primary,.btn-primary:hover,.btn-primary:focus{
+.ui-btn-primary,.ui-btn-primary:hover,.ui-btn-primary:focus{
 	background-color: dome-color(dome,primary);
 }
-.btn-bright,.btn-bright:hover,.btn-bright:focus{
+.ui-btn-bright,.ui-btn-bright:hover,.ui-btn-bright:focus{
 	background-color: dome-color(dome,bright);
 }
-.btn-active{
+.ui-btn-active{
 	background-color: dome-color(dome,active);
 }
-.btn-white{
+.ui-btn-white{
 	background-color: #fff;
 	color:dome-color(font,default);
 	border:1px solid dome-color(border,default);
@@ -175,7 +189,7 @@ textarea.input-fill{
 		border:1px solid dome-color(border,default);
 	}
 }
-.btn-select{
+.ui-btn-select{
 	text-align: left;
 	height: 34px;
 	.icon-down{
@@ -183,19 +197,110 @@ textarea.input-fill{
 		margin-top: 7px;
 	}
 }
-.btn-error{
+.ui-btn-error{
 	background-color: dome-color(dome,error);
 }
-.btn+.btn{
+.ui-btn+.ui-btn{
 	margin-left: 12px;
 }
+table{
+	tr:hover{
+		.ui-table-link{
+			color:dome-color(dome,bright);
+		}
+	}
+}
+
+.ui-table-dome{
+	width: 100%;
+	&>thead{
+		background-color: dome-color(background,light);
+		th{
+			font-weight: bold;
+		}
+	}
+	&.full{
+		th,td{
+			&:first-child{
+				padding-left: $wider-padding;
+			}
+			&:last-child{
+				padding-right: $wider-padding;
+			}
+		}
+	}
+}
+// table with border
+.ui-table-primary{
+	border:$light-border;
+	thead{
+		th{
+			font-weight: 400;
+		}
+	}
+}
+.ui-table-dome,.ui-table-primary{
+	&>tbody>tr>td,&>thead>tr>th{
+		vertical-align: middle;
+		height: 60px;
+		padding: 8px 6px 8px 14px;
+		border-bottom:$light-border;
+	}
+}
+
+.com-loading {
+	margin: 100px auto;
+	position: absolute;
+	width: 70px;
+	height: 70px;
+	left: 50%;
+	margin-left: -35px;
+	text-align: center;
+	@include animation(rotate 1.8s infinite linear);
+	z-index: 99;
+	&.ng-leave{
+		display: none;
+	}
+	.dot1, .dot2 {
+		width: 60%;
+		height: 60%;
+		display: inline-block;
+		position: absolute;
+		top: 0;
+		left:0;
+		background-color: #67CF22;
+		border-radius: 100%;
+		@include animation(bounce 2s infinite ease-in-out);
+	}
+
+	.dot2 {
+		top: auto;
+		bottom: 0px;
+		@include animation-delay(-1.0s);
+	}
+	@include setKeyframes(bounce){
+		0%, 100% {
+			@include transform(scale(0.0));
+		} 50% {
+			@include transform(scale(1.0));
+		}
+	}
+	@include setKeyframes(rotate){
+		100% { 
+			@include transform(rotate(360deg));
+		}
+	}
+}
+
 /* style of button end */
 
 // common modal header style
-.d-modal-header{
+.d-modal-header,.d-modal-footer{
 	height: 58px;
 	padding-left: 38px;
 	padding-right: 38px;
+}
+.d-modal-header{	
 	line-height: 58px;
 	border-radius: $default-radius $default-radius 0 0;
 	color:#fff;
@@ -206,13 +311,16 @@ textarea.input-fill{
 		float: right;
 	}
 }
+.d-modal-footer{
+	padding-top: 12px;padding-bottom: 12px;
+}
 // common modal content style
 .modal-content{
 	border-radius:$default-radius;
 	.d-modal-full{
 		max-height: 500px;
 		overflow-y:auto;
-		&>.table-dome{
+		&>.ui-table-dome{
 			width: 100%;
 			th,td{
 				&:first-child{
@@ -224,7 +332,7 @@ textarea.input-fill{
 			}
 		}
 	}
-	.loading{
+	.com-loading{
 		margin-top: 10px;
 	}
 }
@@ -256,7 +364,7 @@ ul.modal-info{
 }
 
 // user dropdown list
-.user-option{
+.com-user-option{
 	position: absolute;
 	top: 28px;
 	right:0;
@@ -289,10 +397,10 @@ ul.modal-info{
 	}
 }
 // dropdown list 
-.select-con{
+.com-select-con{
 	position: relative;
 	width: 240px;
-	.btn-select{
+	.ui-btn-select{
 		width: 100%;
 	}
 	.select-list{
@@ -347,6 +455,7 @@ ul.modal-info{
 			width: 120px;
 			input{
 				border:none;
+				min-width: 120px;
 			}
 		}
 	}

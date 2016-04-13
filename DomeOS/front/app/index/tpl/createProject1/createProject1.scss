@@ -1,20 +1,17 @@
-$lib-sprite-dimensions: true;
 @import "compass/css3";
-@import "compass/utilities/sprites";
 @import "common/css/common.scss";
-@import "index/images/lib/*.png";
 
 .project-create1{
-	$lib-icons: sprite-map("index/images/lib/*.png",$spacing:5px);
 	$first-line-width:127px;
 	min-height: 700px;
+	padding:0 $page-padding 100px $page-padding;
 	.opt-title{
 		display: inline-block;
 		width: $first-line-width;
 		font-weight: bold;
 		vertical-align: middle;
 	}
-	.chose-repository{
+	.com-chose-repository{
 		padding-top: 22px;
 	}
 	.chose-account{
@@ -22,31 +19,16 @@ $lib-sprite-dimensions: true;
 		border-bottom: $light-border;
 		margin: 22px 0-$page-padding 0 0-$page-padding;
 		overflow: hidden;
-		.input-search{
+		.ui-input-search{
 			margin-right: 53px;
 			margin-bottom: 6px;
-		}
-		.list-acount{
-			display: inline-block;
-			li{
-				display: inline-block;
-				padding-bottom: 20px;
-				margin-right: 34px;
-				font-weight: bold;
-				border-bottom: 2px solid transparent;
-				&.active{
-					color:dome-color(dome,primary);
-					border-bottom: 2px solid dome-color(dome,primary);
-				}
-				&:hover{
-					cursor: pointer;
-					border-bottom: 2px solid dome-color(dome,primary);
-				}
-			}
 		}
 		.related{
 			display: inline-block;
 			font-weight: bold;
+			margin-right: 10px;
+			line-height: 35px;
+			vertical-align: top;
 			.icon-add-green{
 				margin-right: 4px;
 			}
@@ -54,7 +36,9 @@ $lib-sprite-dimensions: true;
 				color:dome-color(dome,active);
 			}
 		}
-
+	}
+	ul.com-list-tab{
+		font-weight: bold;
 	}
 	.list-project{
 		margin: 0 0-$page-padding 0 0-$page-padding;
@@ -102,7 +86,7 @@ $lib-sprite-dimensions: true;
 		padding-top: 18px;
 		height: 64px;
 		margin:7px 0-$page-padding 0 0-$page-padding;
-		
+
 	}
 	.branch-setting{
 		.branch{
@@ -116,7 +100,7 @@ $lib-sprite-dimensions: true;
 		padding-top: 18px;
 		height:85px;
 		border-bottom: $light-border;
-		.input-white{
+		.ui-input-white{
 			margin-left: 15px;
 		}
 		.icon-down{
@@ -130,6 +114,10 @@ $lib-sprite-dimensions: true;
 			width: auto;
 			min-width: 120px;
 			margin-right: 15px;
+			.select-list{
+				max-height: 180px;
+				overflow-y:auto;
+			}
 		}
 	}
 	.dockerfile-setting{

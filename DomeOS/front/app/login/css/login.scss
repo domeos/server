@@ -6,7 +6,7 @@ $light:#a1d2ff;
 body{
 	padding: 51px;
 	color: #999;
-	font-family:"microsoft yahei","Arail";
+	font-family: Helvetica,Arial,"Helvetica Neue","Hiragino Sans GB","Microsoft YaHei",Simsun,sans-self;
 	background: url(../../login/images/s3.png) no-repeat center left;
 	background-size:cover;
 	background-attachment: fixed;
@@ -133,7 +133,7 @@ body{
 					margin-top: 25px;
 					font-size: 14px;
 				}
-				.btn-login{
+				.ui-btn-login{
 					display: block;
 					margin: 64px auto;
 					width: 152px;
