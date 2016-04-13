@@ -57,7 +57,7 @@ public class ResourceOwnerInfo {
         boolean contain = false;
         if (userInfos.size() > 0) {
             for (ResourceUserInfo tmp : userInfos) {
-                if (tmp.getOwnertype() == ResourceOwnerType.USER && tmp.getUserid() == userInfo.getUserid()) {
+                if (tmp.getOwnerType() == ResourceOwnerType.USER && tmp.getUserId() == userInfo.getUserId()) {
                     tmp.setRole(Role.getMaxRoleType(tmp.getRole(), userInfo.getRole()));
                     contain = true;
                     break;

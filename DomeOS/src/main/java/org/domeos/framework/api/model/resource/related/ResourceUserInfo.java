@@ -7,8 +7,8 @@ import org.domeos.framework.api.model.auth.related.Role;
  * Created by feiliu206363 on 2015/12/15.
  */
 public class ResourceUserInfo {
-    private int userid;
-    private ResourceOwnerType ownertype;
+    private int userId;
+    private ResourceOwnerType ownerType;
     private Role role;
     private long updatetime;
     private String username;
@@ -18,9 +18,9 @@ public class ResourceUserInfo {
     public ResourceUserInfo() {
     }
 
-    public ResourceUserInfo(int userid, ResourceOwnerType ownertype, Role role, long updatetime, String username, String email, String phone) {
-        this.userid = userid;
-        this.ownertype = ownertype;
+    public ResourceUserInfo(int userId, ResourceOwnerType ownerType, Role role, long updatetime, String username, String email, String phone) {
+        this.userId = userId;
+        this.ownerType = ownerType;
         this.role = role;
         this.updatetime = updatetime;
         this.username = username;
@@ -28,20 +28,20 @@ public class ResourceUserInfo {
         this.phone = phone;
     }
 
-    public int getUserid() {
-        return userid;
+    public int getUserId() {
+        return userId;
     }
 
-    public void setUserid(int userid) {
-        this.userid = userid;
+    public void setUserId(int userId) {
+        this.userId = userId;
     }
 
-    public ResourceOwnerType getOwnertype() {
-        return ownertype;
+    public ResourceOwnerType getOwnerType() {
+        return ownerType;
     }
 
-    public void setOwnertype(ResourceOwnerType ownertype) {
-        this.ownertype = ownertype;
+    public void setOwnerType(ResourceOwnerType ownerType) {
+        this.ownerType = ownerType;
     }
 
     public Role getRole() {
