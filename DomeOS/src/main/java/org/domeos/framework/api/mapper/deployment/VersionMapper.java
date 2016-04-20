@@ -15,24 +15,25 @@ import java.util.List;
 public interface VersionMapper {
 
 
-    @Insert("INSERT INTO " + VersionBiz.versionTableName +
-        " (name, description, state, createTime, removeTime, removed, data, deployId, version) values (" +
-        " #{item.name}, #{item.description}, #{item.state}, #{item.createTime}, #{item.removeTime}, #{item.removed}, #{data}, #{item.deployId}, #{item.version})")
+    @Insert("INSERT INTO " + VersionBiz.VERSION_TABLE_NAME +
+            " (name, description, state, createTime, removeTime, removed, data, deployId, version) values (" +
+            " #{item.name}, #{item.description}, #{item.state}, #{item.createTime}, #{item.removeTime}, #{item.removed}," +
+            " #{data}, #{item.deployId}, #{item.version})")
     @Options(useGeneratedKeys = true, keyProperty = "item.id", keyColumn = "id")
     int insertRow(@Param("item") Version item, @Param("data") String data);
 
-    @Update("update " + VersionBiz.versionTableName + " set state = 'INAVTIVE', removed = 1 where deployId = ${deployId}")
+    @Update("update " + VersionBiz.VERSION_TABLE_NAME + " set state = 'INAVTIVE', removed = 1 where deployId = ${deployId}")
     int disableAllVersion(@Param("deployId") int deployId);
 
-    @Select("select " + RowMapper.basicColumns + " from " + VersionBiz.versionTableName
-        + " where deployId = ${deployId} and version=${version} AND removed = 0")
+    @Select("select " + RowMapper.BASIC_COLUMNS + " from " + VersionBiz.VERSION_TABLE_NAME
+            + " where deployId = ${deployId} and version=${version} AND removed = 0")
     RowMapperDao getVersion(@Param("deployId") int deployId, @Param("version") long version);
 
-    @Select("select " + RowMapper.basicColumns + " from " + VersionBiz.versionTableName
-        + " where deployId = ${deployId} AND removed = 0")
+    @Select("select " + RowMapper.BASIC_COLUMNS + " from " + VersionBiz.VERSION_TABLE_NAME
+            + " where deployId = ${deployId} AND removed = 0")
     List<RowMapperDao> getAllVersionByDeployId(@Param("deployId") int deployId);
 
-    @Select("SELECT MAX(version) FROM " + VersionBiz.versionTableName + " WHERE deployId = ${deployId} AND removed = 0")
+    @Select("SELECT MAX(version) FROM " + VersionBiz.VERSION_TABLE_NAME + " WHERE deployId = ${deployId} AND removed = 0")
     Long getMaxVersion(@Param("deployId") int deployId);
 //
 //    @Select("SELECT * FROM version WHERE deployId=#{deployId} AND version=#{version}")

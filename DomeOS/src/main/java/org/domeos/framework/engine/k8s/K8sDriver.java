@@ -14,15 +14,10 @@ import org.domeos.client.kubernetesclient.util.RCUtils;
 import org.domeos.client.kubernetesclient.util.filter.Filter;
 import org.domeos.exception.DataBaseContentException;
 import org.domeos.exception.DeploymentEventException;
-import org.domeos.framework.api.biz.cluster.ClusterBiz;
 import org.domeos.framework.api.biz.deployment.DeploymentStatusBiz;
-import org.domeos.framework.api.biz.deployment.impl.DeployEventBiz;
-import org.domeos.framework.api.biz.deployment.impl.DeployEventBizImpl;
-import org.domeos.framework.api.consolemodel.deployment.EnvDraft;
-import org.domeos.framework.api.consolemodel.deployment.InnerServiceDraft;
+import org.domeos.framework.api.biz.deployment.DeployEventBiz;
 import org.domeos.framework.api.controller.exception.ApiException;
 import org.domeos.framework.api.model.LoadBalancer.LoadBalancer;
-import org.domeos.framework.api.model.LoadBalancer.related.LoadBalanceType;
 import org.domeos.framework.api.model.auth.User;
 import org.domeos.framework.api.model.cluster.Cluster;
 import org.domeos.framework.api.model.deployment.DeployEvent;
@@ -36,7 +31,6 @@ import org.domeos.framework.engine.k8s.judgement.FailedJudgement;
 import org.domeos.framework.engine.k8s.updater.DeploymentUpdater;
 import org.domeos.framework.engine.k8s.updater.DeploymentUpdaterManager;
 import org.domeos.global.GlobalConstant;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -120,7 +114,7 @@ public class K8sDriver implements RuntimeDriver {
                         String message = "no node found for " + version.getHostList().get(i);
                         deploymentStatusManager.failedEventForDeployment(deploymentId, queryCurrentSnapshot(client, deployment),
                             message);
-                        throw new ApiException(ResultStat.DEPLOYMENT_START_FAILED, message);
+                        throw ApiException.wrapMessage(ResultStat.DEPLOYMENT_START_FAILED, message);
                     } else if (node.getMetadata() == null || node.getMetadata().getAnnotations() == null
                         || !node.getMetadata().getAnnotations().containsKey(GlobalConstant.DISK_STR)) {
                         String message = "no disk found on node";
@@ -129,13 +123,13 @@ public class K8sDriver implements RuntimeDriver {
                         }
                         deploymentStatusManager.failedEventForDeployment(deploymentId, queryCurrentSnapshot(client, deployment),
                             message);
-                        throw new ApiException(ResultStat.DEPLOYMENT_START_FAILED, message);
+                        throw ApiException.wrapMessage(ResultStat.DEPLOYMENT_START_FAILED, message);
                     } else if (node.getStatus().getAddresses() == null
                         || node.getStatus().getAddresses().length == 0) {
                         String message = "no ip found for node=" + node.getMetadata().getName();
                         deploymentStatusManager.failedEventForDeployment(deploymentId, queryCurrentSnapshot(client, deployment),
                             message);
-                        throw new ApiException(ResultStat.DEPLOYMENT_START_FAILED, message);
+                        throw ApiException.wrapMessage(ResultStat.DEPLOYMENT_START_FAILED, message);
                     }
                     // ** found node ip
                     nodeList.add(i, node);

@@ -7,6 +7,7 @@ import org.domeos.framework.api.biz.auth.AuthBiz;
 import org.domeos.framework.api.biz.resource.ResourceBiz;
 import org.domeos.framework.api.consolemodel.auth.GroupInfo;
 import org.domeos.framework.api.consolemodel.auth.ResourceCountKey;
+import org.domeos.framework.api.controller.exception.ApiException;
 import org.domeos.framework.api.model.auth.Group;
 import org.domeos.framework.api.model.auth.UserGroupMap;
 import org.domeos.framework.api.model.operation.OperationType;
@@ -34,15 +35,15 @@ public class GroupServiceImpl implements GroupService {
     @Override
     public HttpResponseTemp<?> createGroup(Group group) {
         if (group == null) {
-            return ResultStat.GROUP_NOT_LEGAL.wrap(null, "group info is null");
+            throw ApiException.wrapMessage(ResultStat.GROUP_NOT_LEGAL, "group info is null");
         }
 
         if (!StringUtils.isBlank(group.checkLegality())) {
-            return ResultStat.GROUP_NOT_LEGAL.wrap(null, group.checkLegality());
+            throw ApiException.wrapMessage(ResultStat.GROUP_NOT_LEGAL, group.checkLegality());
         }
 
         if (authBiz.getGroupByName(group.getName()) != null) {
-            return ResultStat.GROUP_EXISTED.wrap(null);
+            throw ApiException.wrapResultStat(ResultStat.GROUP_EXISTED);
         }
         group.setCreateTime(System.currentTimeMillis());
         group.setUpdateTime(System.currentTimeMillis());
@@ -53,12 +54,10 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     public HttpResponseTemp<?> deleteGroup(int userId, int groupId) {
-        if (!AuthUtil.groupVerify(userId, groupId, OperationType.DELETE, -1)) {
-            return ResultStat.FORBIDDEN.wrap(null);
-        }
+        AuthUtil.groupVerify(userId, groupId, OperationType.DELETE, -1);
         Group group = authBiz.getGroupById(groupId);
         if (group == null) {
-            return ResultStat.GROUP_NOT_EXIST.wrap(null);
+            throw ApiException.wrapResultStat(ResultStat.GROUP_NOT_EXIST);
         }
         group.setUpdateTime(System.currentTimeMillis());
         group.setState(0);
@@ -85,7 +84,7 @@ public class GroupServiceImpl implements GroupService {
     public HttpResponseTemp<?> getGroup(int groupId) {
         Group group = authBiz.getGroupById(groupId);
         if (group == null) {
-            return ResultStat.GROUP_NOT_EXIST.wrap(null);
+            throw ApiException.wrapResultStat(ResultStat.GROUP_NOT_EXIST);
         }
         return ResultStat.OK.wrap(group);
     }

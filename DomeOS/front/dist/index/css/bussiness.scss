@@ -1,0 +1,415 @@
+/*
+ * @description: dome console bussiness stylesheet 
+ * @version: 0.1
+ */
+ @import "compass/css3";
+ @import "common/css/common.scss";
+// page keyframe
+.page{
+	padding-left: $nav-width;
+	overflow: hidden;
+	.content{
+		.module{
+			padding:0;
+		}
+	}
+}
+// top header
+.header{
+	width: 100%;
+	padding: 6px 40px 0 $page-padding;
+	color: #fff;
+	@extend %dome-background;
+	.breadcrunmbs{
+		padding-top: 4px;
+		padding-bottom: 10px;
+		.breadcrumb{
+			display: inline-block;
+			background: none;
+			padding: 0;
+			margin: 0;
+			a,span{
+				color:#fff;
+			}
+		}
+	}
+	.header-item{
+		$icon-distance:10px;
+		&>li{
+			// float: right;
+			margin-left: 24px;
+			display: inline-block;
+			vertical-align:top;
+			line-height: 26px;
+			&.header-doc{
+				a{
+					color: #fff;
+				}
+				.icon-doc{
+					margin-right:$icon-distance;
+
+				}
+			}
+			&.header-user{
+				position: relative;
+				min-width: 80px;
+				.user-header{
+					height: 26px;
+					width: 26px;
+					border-radius: 50%;
+					margin-right: $icon-distance;
+				}
+				.username{
+					display: block;
+					text-align: right;
+					color: #fff;
+					line-height: 26px;
+					.icon-down-white{
+						margin-left: 8px;
+					}
+				}
+			}
+		}
+	}
+	.page-info{
+		overflow: hidden;
+		.page-title{
+			float: left;
+			margin: 5px 40px 21px 0;
+			font-size:font-size(title);
+		}
+		.page-detail{
+			display: block;
+			margin-top: 8px;
+		}
+	}
+}
+// content div --> common top option
+.mod-option{
+	height: 79px;
+	padding-top: 16px;
+	padding:16px $page-padding 16px;
+	&.hasborder{
+		border-bottom: 10px solid dome-color(background,primary);
+	}
+	.ui-btn-lg{
+		height: 43px;
+		width: 158px;
+		color: #fff;
+		font-size:14px;
+		font-weight: bold;
+		// background-color:#2994e7;
+		.icon-add-white{
+			margin-right: 4px;
+		}
+	}
+	.right-option{
+		padding-top: 10px;
+		.ui-input-search{
+			margin-left: 34px;
+			margin-right: 10px;
+		}
+		.icon-down-white{
+			margin-left: 4px;
+		}
+	}
+}
+// content div --> common info list
+.mod-list{
+	.ui-table-dome{
+		&>tbody>tr>td:first-child,&>thead>tr>th:first-child{
+			padding-left: $wider-padding;
+		}
+		&>tbody>tr>td:last-child,&>thead>tr>th:last-child{
+			padding-right: $wider-padding;
+		}
+		.ui-btn:not(:first-child){
+			margin-left: 10px;
+		}
+	}
+}
+
+// (eg: deploy detail header) 
+.detail-header{
+	padding: 20px $page-padding 24px $page-padding;
+	border-bottom: 10px solid dome-color(background,primary);
+	overflow: hidden;
+	.detail-item{
+		float: left;
+		.item-name{
+			display: block;
+			font-size: 12px;
+		}
+		.item-content{
+			display: inline-block;
+			margin-top: 4px;
+			color: dome-color(font,embed);
+			&+.item-content{
+				margin-left: 8px;
+			}
+		}
+	}
+	.detail-sep{
+		float: left;
+		display: block;
+		height: 30px;
+		width: 2px;
+		margin: 13px 30px 0 30px;
+		background-color: dome-color(border,light);
+	}
+
+}
+.mod-title{
+	font-weight: bold;
+	font-size: 14px;
+	margin: 18px 0 18px 42px;
+}
+// list info display.(eg: create deploy、create cluster) 
+.com-list-info{
+	&>li{
+		display: table;
+		width: 100%;
+		.info-name{
+			display: table-cell;
+			width: 148px;
+			padding: 22px 0 0 42px;
+			vertical-align: top;
+			font-weight: bold;
+			&.not-align-input{
+				padding-top: 16px;
+			}
+		}
+		.info-simple{
+			display: inline-block;
+			width: 70%;
+			padding: 23px 0 16px 45px;
+		}
+		.info-content{
+			display: table-cell;
+			padding:16px 0 16px 45px;
+			&.nochild{
+				padding-top: 23px;
+			}
+			.com-check-con{
+				margin-right: 40px;
+			}
+			.log-topic{
+				@include display-flex;
+				.ui-input-fill{
+					@include flex(1);
+					margin-right: 0;
+				}
+			}
+			.auto-collect{
+				display: inline-block;
+				padding-top: 8px;
+				top: 0 !important;
+			}
+			.container-unit{
+				display: inline-block;
+				margin-top: 8px;
+			}
+			.host-txt-con{
+				@include display-flex;
+				width: 100%;
+				height: auto;
+				min-height: 34px;
+			}
+			.com-select-con{
+				&:not(:first-child){
+					margin-left: 10px;
+				}
+			}
+			.line-short,.line-long,.line-single,.line-longer{
+				position: relative;
+				width: 40%;
+				@include display-flex;
+				&:not(:first-child){
+					margin-top: 16px;
+				}
+			}
+			.txt-wrap{
+				position: absolute;
+				left: 100%;
+				top: 7px;
+				margin-left: 10px;
+				width: 300px;
+			}
+			.line-long{
+				width: 60%;
+			}
+			.line-longer{
+				width: 70%;
+			}
+			.line-single{
+				position: relative;
+				width: 70%;
+				.single-element{
+					width: 100%;
+				}
+			}
+			.line-element{
+				position: relative;
+				flex:1;
+			}
+			.child-name {
+				width: 120px;
+				line-height: 30px;
+			}
+			.child-info{
+				.ui-input-fill{
+					width: 100%;
+					margin-bottom: 16px;
+				}
+				.child-repeat{
+					position: relative;
+				}
+			}
+			.child-error{
+				padding-left: 122px;
+			}
+			.child-txt {
+				line-height: 30px;
+			}
+			.top-margin{
+				margin-top: 20px;
+			}
+		}
+		&.has-border{
+			border-bottom: $light-border;
+		}
+	}
+	&.border-info{
+		border: $light-border;
+		li{
+			border-top:  $light-border;
+			&:first-child{
+				border-top: none;
+			}
+			.info-simple,.info-content{
+				border-left: $light-border;
+			}
+		}
+	}
+}
+// deploy module stylesheet
+.mod-deploy{
+	.log-error{
+		padding-left: 110px;
+	}
+	.add-loadbalance{
+		margin-top: 12px;
+	}
+	.log-item{
+		position: relative;
+		width: 60%;
+		padding: 10px 30px 10px 10px;
+		margin-top: 12px;
+		border:$light-border;
+		.cancel-log{
+			position: absolute;
+			top: 8px;
+			right: 8px;
+		}
+		.element-full{
+			width: 100%;
+		}
+		.log-check,.ips{
+			margin-top: 10px;
+		}
+		.ips{
+			position: relative;
+			&:first-child{
+				margin-top: 0;
+			}
+		}
+		.line-full{
+			margin-top: 10px;
+			@include display-flex;
+			.log-title {
+				width: 110px;
+				padding-top: 6px;
+				&.not-align-input{
+					padding-top: 0;
+				}
+			}
+			.serlog-title {
+				width: 130px;
+				padding-top: 6px;
+			}
+		}
+		.unit{
+			display: inline-block;
+			margin: 7px 0 0 10px;
+		}
+	}
+}
+// cluster module stylesheet
+.mod-cluster{
+	.select-creator{
+		width: 70%;
+	}
+	.cluster-log-con{
+		width: 70%;
+		.cluster-log{
+			width: 100%;
+			&:not(:first-child){
+				margin-top: 10px;
+			}
+		}
+	}
+}
+// modal: /index/tpl/globalSetting/globalSetting.html-->newPasswdModal
+.modal-newpw{
+	.info-name{
+		display: inline-block;
+		margin-top: 6px;
+	}
+	.info-content{
+		margin-left:12px;width:300px;display:inline-block;
+		vertical-align: top;
+	}
+}
+// modal: /index/tpl/modal/selectContainerModal/selectContainerModal.html
+.modal-container{
+	.com-select-con{
+		display: inline-block;
+		width: 400px;
+	}
+}
+// modal: /index/tpl/modal/buildModal/buildModal.html
+.modal-buildModal{
+	.info-txt{
+		input{
+			width:100%;
+		}
+	}
+}
+// modal: /index/tpl/modal/instanceLogModal/instanceLogModal.html
+.modal-instance{
+	.com-list-table{
+		margin: 0 -15px 0 -15px;
+		max-height: 300px;
+		overflow-y:auto;
+	}
+}
+// modal: /index/tpl/deployDetail/deployDetail.html --> scaleModal
+.modal-scale{
+	ul{
+		display: inline-block;
+		text-align: left;
+	}
+	.info-name{
+		display: inline-block;
+		width: 106px;
+		padding-top: 6px;
+		vertical-align: top;
+	}
+	.info-content{
+		display: inline-block;
+		.ui-input-white{
+			width: 126px;
+			margin-right: 10px;
+		}
+	}
+}

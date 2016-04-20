@@ -1,0 +1,44 @@
+.d-modal-header 手动构建
+loading(ng-if="isModalLoading")
+ul.modal-body.text-center.modal-buildModal.modal-info(ng-form role="form" name="buildForm")
+  li(ng-show="projectInfo.hasCodeInfo")
+    span.info-name 构建方式
+    .info-txt.text-left.tool-align-input
+      span.com-check-con(ng-click="toggleSelect('branch')")
+        input#checkBranch.ui-radio(type="radio" value="branch" name="BuildWay" ng-model="BuildWay" )
+        label(for="checkBranch") Branch
+      span.com-check-con(ng-click="toggleSelect('tag')")
+        input#checkTag.ui-radio(type="radio" value="tag" name="BuildWay" ng-model="BuildWay" )
+        label(for="checkTag") Tag
+
+  li(ng-show="projectInfo.hasCodeInfo && BuildWay=='branch'")
+    span.info-name 选择分支 *
+    .com-select-con.info-txt(select-con)
+      button.ui-btn.ui-btn-white.ui-btn-select
+        i.icon-down
+        | {{buildInfo.selectedBranch}}
+      ul.select-list
+        li(ng-if="!branches||branches.length===0")
+          a 无分支信息
+        li.select-item(ng-if="branches" ng-repeat="branch in branches")
+          a(ng-bind="branch" ng-click="toggleBranch(branch)")
+  li(ng-show="projectInfo.hasCodeInfo && BuildWay=='tag'")
+    span.info-name 选择Tag *
+    .com-select-con.info-txt(select-con)
+      button.ui-btn.ui-btn-white.ui-btn-select
+        i.icon-down
+        | {{buildInfo.selectedCodetag}}
+      ul.select-list
+        li(ng-if="!tags||tags.length===0")
+          a 无Tag信息
+        li.select-item(ng-if="tags" ng-repeat="tag in tags")
+          a(ng-bind="tag" ng-click="toggleTag(tag)")
+  li
+    label.info-name(for="versionName") 指定版本名 
+    span.info-txt(style="display:inline-block;vertical-align:top")
+      input#versionName.version-txt.ui-input-white(placeholder="默认由系统自动生成，可不填" ng-model="buildInfo.imageTag" name="imageTag" ng-pattern="/^[a-z0-9]+([._-][a-z0-9]+)*$/" ng-if="projectInfo.hasCodeInfo")
+      input#versionName.version-txt.ui-input-white(placeholder="该项目未关联代码仓库，需手动指定版本名" ng-model="buildInfo.imageTag"  ng-pattern="/^[a-z0-9]+([._-][a-z0-9]+)*$/" name="imageTag" ng-if="!projectInfo.hasCodeInfo" required)
+      .txt-error.text-left(ng-show="buildForm.imageTag.$dirty&&buildForm.imageTag.$error.pattern") 非法的版本名
+.modal-footer.text-right
+  button.ui-btn.ui-btn-sm.ui-btn-white(ng-click="close()") 取消
+  button.ui-btn.ui-btn-sm.ui-btn-bright(ng-disabled="isModalLoading&&buildForm.$valid" ng-click="buildForm.$valid&&toBuild()") 确定

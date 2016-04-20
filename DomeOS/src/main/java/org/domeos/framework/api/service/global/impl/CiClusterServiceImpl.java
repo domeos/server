@@ -1,13 +1,15 @@
 package org.domeos.framework.api.service.global.impl;
 
 import org.apache.commons.lang3.StringUtils;
-import org.domeos.framework.api.model.global.CiCluster;
-import org.domeos.framework.api.service.global.CiClusterService;
-import org.domeos.framework.api.biz.global.GlobalBiz;
 import org.domeos.basemodel.HttpResponseTemp;
 import org.domeos.basemodel.ResultStat;
+import org.domeos.framework.api.biz.global.GlobalBiz;
+import org.domeos.framework.api.controller.exception.ApiException;
+import org.domeos.framework.api.controller.exception.PermitException;
+import org.domeos.framework.api.model.global.CiCluster;
+import org.domeos.framework.api.service.global.CiClusterService;
 import org.domeos.framework.engine.AuthUtil;
-import org.domeos.global.GlobalConstant;
+import org.domeos.global.CurrentThreadInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +23,12 @@ public class CiClusterServiceImpl implements CiClusterService {
     @Autowired
     GlobalBiz globalBiz;
 
+    private void checkAdmin() {
+        if (!AuthUtil.isAdmin(CurrentThreadInfo.getUserId())) {
+            throw new PermitException("only admin can operate ci cluster");
+        }
+    }
+
     @Override
     public HttpResponseTemp<?> getCiCluster() {
         CiCluster ciCluster = globalBiz.getCiCluster();
@@ -29,18 +37,16 @@ public class CiClusterServiceImpl implements CiClusterService {
 
     @Override
     public HttpResponseTemp<?> setCiCluster(CiCluster ciCluster) {
-        int userId = GlobalConstant.userThreadLocal.get().getId();
-        if (!AuthUtil.isAdmin(userId)) {
-            return ResultStat.FORBIDDEN.wrap(null, "only admin can do this");
-        }
+        checkAdmin();
+
         if (ciCluster == null) {
-            return ResultStat.PARAM_ERROR.wrap(null, "input kube cluster is null");
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "input kube cluster is null");
         }
         if (!StringUtils.isBlank(ciCluster.checkLegality())) {
-            return ResultStat.PARAM_ERROR.wrap(null, ciCluster.checkLegality());
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, ciCluster.checkLegality());
         }
         if (globalBiz.getCiCluster() != null) {
-            ResultStat.CLUSTER_ALREADY_EXIST.wrap(null);
+            throw ApiException.wrapResultStat(ResultStat.CLUSTER_ALREADY_EXIST);
         }
 
         globalBiz.setCiCluster(ciCluster);
@@ -49,15 +55,13 @@ public class CiClusterServiceImpl implements CiClusterService {
 
     @Override
     public HttpResponseTemp<?> updateCiCluster(CiCluster ciCluster) {
-        int userId = GlobalConstant.userThreadLocal.get().getId();
-        if (!AuthUtil.isAdmin(userId)) {
-            return ResultStat.FORBIDDEN.wrap(null, "only admin can do this");
-        }
+        checkAdmin();
+
         if (ciCluster == null) {
-            return ResultStat.PARAM_ERROR.wrap(null, "input kube cluster is null");
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "input kube cluster is null");
         }
         if (!StringUtils.isBlank(ciCluster.checkLegality())) {
-            return ResultStat.PARAM_ERROR.wrap(null, ciCluster.checkLegality());
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, ciCluster.checkLegality());
         }
 
         globalBiz.updateCiCluster(ciCluster);
@@ -66,10 +70,8 @@ public class CiClusterServiceImpl implements CiClusterService {
 
     @Override
     public HttpResponseTemp<?> deleteCiCluster() {
-        int userId = GlobalConstant.userThreadLocal.get().getId();
-        if (!AuthUtil.isAdmin(userId)) {
-            return ResultStat.FORBIDDEN.wrap(null, "only admin can do this");
-        }
+        checkAdmin();
+
         globalBiz.deleteCiCluster();
         return ResultStat.OK.wrap(null);
     }

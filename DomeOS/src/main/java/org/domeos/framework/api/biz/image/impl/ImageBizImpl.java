@@ -62,7 +62,7 @@ public class ImageBizImpl extends BaseBizImpl implements ImageBiz {
 
     @Override
     public BaseImageCustom getBaseImageCustomById(int id) {
-        return this.getById(ImageBiz.baseImageCustomTableName, id, BaseImageCustom.class);
+        return this.getById(ImageBiz.BASEIMAGECUNSTOM_TABLE_NAME, id, BaseImageCustom.class);
     }
 
     @Override
@@ -72,7 +72,7 @@ public class ImageBizImpl extends BaseBizImpl implements ImageBiz {
 
     @Override
     public void deleteBaseImageCustomById(int id) {
-        this.removeById(ImageBiz.baseImageCustomTableName, id);
+        this.removeById(ImageBiz.BASEIMAGECUNSTOM_TABLE_NAME, id);
     }
 
     @Override

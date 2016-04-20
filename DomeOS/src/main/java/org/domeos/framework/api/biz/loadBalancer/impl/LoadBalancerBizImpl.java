@@ -61,11 +61,11 @@ public class LoadBalancerBizImpl extends BaseBizImpl implements LoadBalancerBiz{
         for (LoadBalancer lb : externalLBs) {
             Integer id = uniqPortMapper.getLoadBalancerId(lb.getPort(), lb.getClusterId());
             if (id != null) {
-                throw new ApiException(ResultStat.PARAM_ERROR, "port " + lb.getPort() + " already exist");
+                throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "port " + lb.getPort() + " already exist");
             }
         }
         for (LoadBalancer lb: loadBalancers) {
-//            super.insertRowForProject(LoadBalancerTable, lb);
+//            super.insertRowForProject(LOADBALANCER_TABLE_NAME, lb);
             if (lb.getCreateTime() == 0) {
                 lb.setCreateTime(System.currentTimeMillis());
             }
@@ -84,11 +84,7 @@ public class LoadBalancerBizImpl extends BaseBizImpl implements LoadBalancerBiz{
             pair.setDeployId(deployId);
             pair.setLoadBalancerId(lb.getId());
             loadBalancerMapper.insertIndexPair(pair, pair.toString());
-
         }
-
-
-        // TODO: 16-4-7 not finished
     }
 
     @Override
@@ -97,7 +93,7 @@ public class LoadBalancerBizImpl extends BaseBizImpl implements LoadBalancerBiz{
         for (LoadBalancer loadBalancer : lbs) {
             uniqPortMapper.deleteIndex(loadBalancer.getId());
             loadBalancerMapper.removeIndexPair(deployId, loadBalancer.getId(), System.currentTimeMillis());
-            this.removeById(GlobalConstant.LoadBalancerTable, loadBalancer.getId());
+            this.removeById(GlobalConstant.LOADBALANCER_TABLE_NAME, loadBalancer.getId());
         }
     }
 

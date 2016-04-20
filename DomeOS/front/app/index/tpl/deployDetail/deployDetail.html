@@ -19,7 +19,7 @@
   </div>
   <loading ng-if="isLoading=(loadingsIns.isLoading||(tabActive[0].active&amp;&amp;deployIns.loadingIns.isLoading)||(tabActive[1].active&amp;&amp;deployEditIns.loadingIns.isLoading))"></loading>
   <tabset>
-    <tab heading="部署详情" active="tabActive[0].active">
+    <tab heading="部署详情" active="tabActive[0].active" ui-sref="deployDetail.detail">
       <div class="deploy-info">
         <div class="deploy-rollback"><span ng-if="!config.stateful">部署版本：</span><span ng-if="config.stateful">该部署是有状态服务，只有一个部署版本：</span>
           <div select-con="select-con" class="com-select-con">
@@ -111,7 +111,7 @@
         </ul>
       </div>
     </tab>
-    <tab heading="升级" active="tabActive[1].active" ng-if="!config.stateful">
+    <tab heading="升级" active="tabActive[1].active" ng-if="!config.stateful" ui-sref="deployDetail.update">
       <div ng-form="ng-form" role="form" name="deployForm" ng-class="{'need-valid':needValid}" class="deploy-info">
         <div class="mod-title">镜像设置</div>
         <div select-con="select-con" class="com-select-con add-mirror">
@@ -135,7 +135,7 @@
                 <button ng-cloak="ng-cloak" class="ui-btn ui-btn-white ui-btn-select"><i class="icon-down"></i>{{containerDrafts.tag}}</button>
                 <ul class="select-list">
                   <li ng-if="!containerDrafts.tagList||containerDrafts.tagList.length===0"><a>无版本信息</a></li>
-                  <li ng-repeat="tag in containerDrafts.tagList" class="select-item"><a ng-bind="tag.tag" ng-click="deployEditIns.toggleImageTag($parent.$index,tag.tag)"></a></li>
+                  <li ng-repeat="tag in containerDrafts.tagList" class="select-item"><a ng-click="deployEditIns.toggleImageTag($parent.$index,tag.tag)"><span ng-bind="parseDate(tag.createTime)" class="txt-prompt image-tag"></span><span ng-bind="tag.tag"></span></a></li>
                 </ul>
               </div>
             </div>
@@ -243,15 +243,15 @@
             <div ng-show="needValid&amp;&amp;deployForm.$invalid" class="txt-error">存在不合法数据，请修改后提交。</div></span></div>
       </div>
     </tab>
-    <tab heading="事件" active="tabActive[2].active">
+    <tab heading="事件" active="tabActive[2].active" ui-sref="deployDetail.event">
       <div class="events-con">
         <ul class="events-list">
           <li ng-if="eventsList.length===0" class="event-success">无事件信息</li>
-          <li ng-repeat="event in eventsList" ng-class="{'START':'event-building','PROCESSING':'event-building','SUCCESS':'event-success','FAILED':'event-failed'}[event.eventStatus]"><span class="icon-dot"><i class="dot-line"></i></span><span ng-bind="event.optTxt" class="event-name"></span><span ng-bind="event.statusTxt" class="event-result"></span><span ng-bind="event.date" class="event-date"></span><span ng-cloak="ng-cloak" class="event-author"><i tooltip="操作者" class="icon-user"></i>{{event.userName}}</span><span class="event-process"><span tooltip="起始状态" tooltip-placement="left" class="event-process-item"><i class="icon-process-dot start"></i><span ng-repeat="status in event.primarySnapshot" ng-bind="status.version+' , '+status.replicas" class="event-process-detail"></span></span><span tooltip="目标状态" tooltip-placement="left" class="event-process-item"><i class="icon-process-dot origin"></i><span ng-repeat="status in event.targetSnapshot" ng-bind="status.version+' , '+status.replicas" class="event-process-detail"></span></span><span tooltip="完成状态" tooltip-placement="left" class="event-process-item"><i class="icon-process-dot current"></i><span ng-repeat="status in event.currentSnapshot" ng-bind="status.version+' , '+status.replicas" class="event-process-detail"></span></span></span><span ng-show="event.eventStatus=='FAILED'" popover="{{event.message}}" popover-trigger="mouseenter" class="txt-warning event-info">错误信息</span></li>
+          <li ng-repeat="event in eventsList" ng-class="{'START':'event-building','PROCESSING':'event-building','SUCCESS':'event-success','FAILED':'event-failed','KUBERNETES':'event-system'}[event.eventStatus]"><span class="icon-dot"><i class="dot-line"></i></span><span ng-bind="event.optTxt" class="event-name"></span><span ng-bind="event.statusTxt" class="event-result"></span><span ng-bind="event.date" class="event-date"></span><span ng-cloak="ng-cloak" class="event-author"><i tooltip="操作者" class="icon-user"></i>{{event.userName}}</span><span ng-if="event.operation!='KUBERNETES'" class="event-process"><span tooltip="起始状态" tooltip-placement="left" class="event-process-item"><i class="icon-process-dot start"></i><span ng-repeat="status in event.primarySnapshot" ng-bind="status.version+' , '+status.replicas" class="event-process-detail"></span></span><span tooltip="目标状态" tooltip-placement="left" class="event-process-item"><i class="icon-process-dot origin"></i><span ng-repeat="status in event.targetSnapshot" ng-bind="status.version+' , '+status.replicas" class="event-process-detail"></span></span><span tooltip="完成状态" tooltip-placement="left" class="event-process-item"><i class="icon-process-dot current"></i><span ng-repeat="status in event.currentSnapshot" ng-bind="status.version+' , '+status.replicas" class="event-process-detail"></span></span></span><span ng-if="event.operation=='KUBERNETES'" ng-bind="event.message" popover="{{event.message}}" popover-trigger="mouseenter" class="event-process tool-nowrap"></span><span ng-show="event.eventStatus=='FAILED'" popover="{{event.message}}" popover-trigger="mouseenter" class="txt-warning event-info">错误信息</span></li>
         </ul>
       </div>
     </tab>
-    <tab heading="实例" active="tabActive[3].active">
+    <tab heading="实例" active="tabActive[3].active" ui-sref="deployDetail.instance">
       <div class="instance-con">
         <table class="ui-table-dome instance-list">
           <thead>
@@ -280,7 +280,7 @@
         </table>
       </div>
     </tab>
-    <tab heading="健康检查" active="tabActive[4].active">
+    <tab heading="健康检查" active="tabActive[4].active" ui-sref="deployDetail.healthcheck">
       <div class="health-con">
         <ul class="com-list-info">
           <li><span class="info-name not-align-input">健康检查</span>
@@ -294,7 +294,7 @@
         </ul>
       </div>
     </tab>
-    <tab heading="网络/访问" active="tabActive[5].active">
+    <tab heading="网络/访问" active="tabActive[5].active" ui-sref="deployDetail.network">
       <div class="health-con">
         <ul ng-form="ng-form" name="healthFrom" ng-class="{'need-valid':healthNeedValid}" class="com-list-info">
           <li><span class="info-name not-align-input">网络模式</span>
@@ -334,7 +334,7 @@
         </ul>
       </div>
     </tab>
-    <tab heading="部署成员" active="tabActive[6].active" ng-hide="!hasMemberPermisson">
+    <tab heading="部署成员" active="tabActive[6].active" ng-hide="!hasMemberPermisson" ui-sref="deployDetail.user">
       <div ng-include="'index/tpl/tplUserList/tplUserList.html'" class="tab-member"></div>
     </tab>
   </tabset>

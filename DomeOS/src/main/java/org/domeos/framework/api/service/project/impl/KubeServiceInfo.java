@@ -56,6 +56,6 @@ public class KubeServiceInfo {
     }
 
     public static Cluster getClusterBasicById(int clusterId) {
-        return clusterBiz.getById(GlobalConstant.clusterTableName, clusterId, Cluster.class);
+        return clusterBiz.getById(GlobalConstant.CLUSTER_TABLE_NAME, clusterId, Cluster.class);
     }
 }

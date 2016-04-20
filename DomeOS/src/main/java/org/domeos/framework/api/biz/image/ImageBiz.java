@@ -11,7 +11,7 @@ import java.util.List;
  */
 public interface ImageBiz extends BaseBiz {
 
-    String baseImageCustomTableName = "base_image_custom";
+    String BASEIMAGECUNSTOM_TABLE_NAME = "base_image_custom";
 
     BaseImage getBaseImage(int id);
 

@@ -18,6 +18,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Created by xupeng on 16-3-30.
@@ -109,7 +110,11 @@ public class EventUpdater {
         @Override
         public Boolean call() throws Exception {
             try {
-                updateCluster(cluster);
+                String version = k8SEventBiz.getLatestResourceVersion(cluster.getId());
+                long count = updateCluster(cluster, version);
+                if (count == 0) {
+                    updateCluster(cluster, null);
+                }
             } catch (Exception e) {
                 logger.error("failed to update cluster " + cluster.getName(), e);
                 throw e;
@@ -118,30 +123,34 @@ public class EventUpdater {
         }
     }
 
-    private void updateCluster(Cluster cluster) throws KubeResponseException,
+    private long updateCluster(Cluster cluster, String version) throws KubeResponseException,
             IOException, KubeInternalErrorException {
+        AtomicLong count = new AtomicLong(0);
         String server = cluster.getApi();
         KubeClient client = new KubeClient(server);
         int clusterId = cluster.getId();
 
-        String version = k8SEventBiz.getLatestResourceVersion(clusterId);
         logger.info("start to watch event for cluster:{} from resourceVersion:{}", clusterId, version);
-        client.watchEvent(version, new EventHandler(k8SEventBiz, clusterId));
+        client.watchEvent(version, new EventHandler(k8SEventBiz, clusterId, count));
+        return count.get();
     }
 
     private static class EventHandler extends TimeoutResponseHandler<Event> {
 
         K8SEventBiz k8SEventBiz;
         int clusterId;
+        AtomicLong counter;
 
-        public EventHandler(K8SEventBiz k8SEventBiz, int clusterId) {
+        public EventHandler(K8SEventBiz k8SEventBiz, int clusterId, AtomicLong counter) {
             this.k8SEventBiz = k8SEventBiz;
             this.clusterId = clusterId;
+            this.counter = counter;
         }
 
         @Override
         public boolean handleResponse(Event event) throws IOException {
             k8SEventBiz.createEvent(clusterId, event);
+            counter.incrementAndGet();
             if (logger.isDebugEnabled()) {
                 logger.debug("insert event name:{}, kind:{}, reason:{}, version:{}",
                         event.getMetadata().getName(), event.getInvolvedObject().getKind(),

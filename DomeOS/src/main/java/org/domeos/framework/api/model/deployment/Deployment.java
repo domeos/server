@@ -5,9 +5,6 @@ import org.domeos.framework.api.model.deployment.related.HostEnv;
 import org.domeos.framework.api.model.deployment.related.NetworkMode;
 import org.domeos.framework.engine.model.RowModelBase;
 
-import java.util.HashSet;
-import java.util.Set;
-
 /**
  * Created by xxs on 16/4/5.
  */
@@ -24,24 +21,6 @@ public class Deployment extends RowModelBase {
     private int clusterId = 0;
     private long lastUpdateTime = 0;
     private int exposePortNum = 0;
-
-    public int getExposePortNum() {
-        return exposePortNum;
-    }
-
-    public void setExposePortNum(int exposePortNum) {
-        this.exposePortNum = exposePortNum;
-    }
-
-
-    public int getClusterId() {
-        return clusterId;
-    }
-
-    public void setClusterId(int clusterId) {
-        this.clusterId = clusterId;
-    }
-
 
     public String getClusterName() {
         return clusterName;
@@ -107,11 +86,27 @@ public class Deployment extends RowModelBase {
         this.scalable = scalable;
     }
 
+    public int getClusterId() {
+        return clusterId;
+    }
+
+    public void setClusterId(int clusterId) {
+        this.clusterId = clusterId;
+    }
+
     public long getLastUpdateTime() {
         return lastUpdateTime;
     }
 
     public void setLastUpdateTime(long lastUpdateTime) {
         this.lastUpdateTime = lastUpdateTime;
+    }
+
+    public int getExposePortNum() {
+        return exposePortNum;
+    }
+
+    public void setExposePortNum(int exposePortNum) {
+        this.exposePortNum = exposePortNum;
     }
 }

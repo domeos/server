@@ -46,7 +46,7 @@ div.mod-deploy.deploy-detail
 			button.ui-btn.ui-btn-bright.ui-btn-md(ng-switch-when="ERROR" ng-disabled="isWaitingStop" ng-click="stopVersion()") 停止
 	loading(ng-if="isLoading=(loadingsIns.isLoading||(tabActive[0].active&&deployIns.loadingIns.isLoading)||(tabActive[1].active&&deployEditIns.loadingIns.isLoading))")
 	tabset
-		tab(heading="部署详情" active="tabActive[0].active")
+		tab(heading="部署详情" active="tabActive[0].active" ui-sref="deployDetail.detail")
 			.deploy-info
 				.deploy-rollback
 					span(ng-if="!config.stateful") 部署版本：
@@ -142,7 +142,7 @@ div.mod-deploy.deploy-detail
 						.info-content
 							div(ng-cloak)
 								span.small-info {{showdeploy.networkMode=='HOST'?'Host':'Overlay'}}
-		tab(heading="升级" active="tabActive[1].active" ng-if="!config.stateful")
+		tab(heading="升级" active="tabActive[1].active" ng-if="!config.stateful" ui-sref="deployDetail.update")
 			.deploy-info(ng-form role="form" name="deployForm" ng-class="{'need-valid':needValid}")
 				.mod-title 镜像设置
 				.com-select-con.add-mirror(select-con)
@@ -177,7 +177,9 @@ div.mod-deploy.deploy-detail
 									li(ng-if="!containerDrafts.tagList||containerDrafts.tagList.length===0")
 										a 无版本信息
 									li.select-item(ng-repeat="tag in containerDrafts.tagList")
-										a(ng-bind="tag.tag" ng-click="deployEditIns.toggleImageTag($parent.$index,tag.tag)")
+										a(ng-click="deployEditIns.toggleImageTag($parent.$index,tag.tag)")
+											span.txt-prompt.image-tag(ng-bind="parseDate(tag.createTime)")
+											span(ng-bind="tag.tag")
 					li(ng-show="!isCollapse")
 						span.info-name 运行过程环境变量
 						.info-content
@@ -279,11 +281,11 @@ div.mod-deploy.deploy-detail
 					span.span.com-bottom-option-con
 						button.ui-btn.ui-btn-md.ui-btn-bright(ng-disabled="isWaitingUpdate||isLoading" ng-click="needValid=true;deployForm.$valid&&toUpdate();") 保存升级设置
 						.txt-error(ng-show="needValid&&deployForm.$invalid") 存在不合法数据，请修改后提交。
-		tab(heading="事件" active="tabActive[2].active")
+		tab(heading="事件" active="tabActive[2].active" ui-sref="deployDetail.event")
 			.events-con
 				ul.events-list
 					li.event-success(ng-if="eventsList.length===0") 无事件信息
-					li(ng-repeat="event in eventsList" ng-class="{'START':'event-building','PROCESSING':'event-building','SUCCESS':'event-success','FAILED':'event-failed'}[event.eventStatus]")
+					li(ng-repeat="event in eventsList" ng-class="{'START':'event-building','PROCESSING':'event-building','SUCCESS':'event-success','FAILED':'event-failed','KUBERNETES':'event-system'}[event.eventStatus]")
 						span.icon-dot
 							i.dot-line
 						span.event-name(ng-bind="event.optTxt")
@@ -292,7 +294,7 @@ div.mod-deploy.deploy-detail
 						span.event-author(ng-cloak)
 							i.icon-user(tooltip="操作者")
 							| {{event.userName}}
-						span.event-process
+						span.event-process(ng-if="event.operation!='KUBERNETES'")
 							span.event-process-item(tooltip="起始状态" tooltip-placement="left")
 								i.icon-process-dot.start
 								span.event-process-detail(ng-repeat="status in event.primarySnapshot" ng-bind="status.version+' , '+status.replicas")
@@ -302,8 +304,9 @@ div.mod-deploy.deploy-detail
 							span.event-process-item(tooltip="完成状态" tooltip-placement="left")
 								i.icon-process-dot.current
 								span.event-process-detail(ng-repeat="status in event.currentSnapshot" ng-bind="status.version+' , '+status.replicas")
+						span.event-process.tool-nowrap(ng-if="event.operation=='KUBERNETES'" ng-bind="event.message" popover="{{event.message}}" popover-trigger="mouseenter")
 						span.txt-warning.event-info(ng-show="event.eventStatus=='FAILED'" popover="{{event.message}}" popover-trigger="mouseenter") 错误信息
-		tab(heading="实例" active="tabActive[3].active")
+		tab(heading="实例" active="tabActive[3].active" ui-sref="deployDetail.instance")
 			.instance-con
 				table.ui-table-dome.instance-list
 					thead
@@ -326,7 +329,7 @@ div.mod-deploy.deploy-detail
 								a.link-safe(ng-click="showLog(ins.instanceName,ins.containers)") 查看
 							td
 								a.link-safe(ng-click="toConsole($index)") 进入
-		tab(heading="健康检查" active="tabActive[4].active")
+		tab(heading="健康检查" active="tabActive[4].active" ui-sref="deployDetail.healthcheck")
 			.health-con
 				ul.com-list-info
 					li
@@ -347,7 +350,7 @@ div.mod-deploy.deploy-detail
 							.line-long(ng-if="config.healthCheckerDraft.type=='HTTP'")
 								span.child-name 允许返回值
 								span.child-txt  200-400(不包含400)
-		tab(heading="网络/访问" active="tabActive[5].active")
+		tab(heading="网络/访问" active="tabActive[5].active" ui-sref="deployDetail.network")
 			.health-con
 				ul.com-list-info(ng-form name="healthFrom" ng-class="{'need-valid':healthNeedValid}")
 					li
@@ -390,7 +393,7 @@ div.mod-deploy.deploy-detail
 						span.info-name.not-align-input 内网域名
 						.info-content
 							span.small-info {{showdeploy.serviceDnsName}}
-		tab(heading="部署成员" active="tabActive[6].active" ng-hide="!hasMemberPermisson")
+		tab(heading="部署成员" active="tabActive[6].active" ng-hide="!hasMemberPermisson" ui-sref="deployDetail.user")
 			div.tab-member(ng-include="'index/tpl/tplUserList/tplUserList.html'")
 script(type="text/ng-template" id="versionListModal.html")
 	.d-modal-header 选择版本

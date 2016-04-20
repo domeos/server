@@ -233,7 +233,7 @@ public class BuildStatusManager {
                 if (deleteJob(client, info.getTaskName())) {
                     imageBiz.updateBaseImageCustomGC(info.getId(), 1);
                 } else {
-                    imageBiz.updateBaseImageCustomGC(info.getId(), 1);
+                    imageBiz.updateBaseImageCustomGC(info.getId(), 0);
                 }
             } catch (Exception e) {
                 logger.warn("exception when check build job terminated status, with message="

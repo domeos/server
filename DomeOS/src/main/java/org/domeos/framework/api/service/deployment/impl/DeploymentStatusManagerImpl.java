@@ -724,7 +724,7 @@ public class DeploymentStatusManagerImpl implements DeploymentStatusManager {
 
     public boolean checkAnyPodFailed(Deployment deployment, Version version)
             throws KubeResponseException, IOException, KubeInternalErrorException, ParseException {
-        Cluster cluster = clusterBiz.getById(GlobalConstant.clusterTableName, deployment.getClusterId(), Cluster.class);
+        Cluster cluster = clusterBiz.getById(GlobalConstant.CLUSTER_TABLE_NAME, deployment.getClusterId(), Cluster.class);
         String clusterApiServer = cluster.getApi();
         KubeClient client = new KubeClient(clusterApiServer, deployment.getNamespace());
         Map<String, String> rcSelector = DeploymentServiceImpl.buildRCSelectorWithSpecifyVersion(deployment, version);
@@ -737,7 +737,7 @@ public class DeploymentStatusManagerImpl implements DeploymentStatusManager {
         if (deployment == null) {
             return null;
         }
-        Cluster cluster = clusterBiz.getById(GlobalConstant.clusterTableName, deployment.getClusterId(), Cluster.class);
+        Cluster cluster = clusterBiz.getById(GlobalConstant.CLUSTER_TABLE_NAME, deployment.getClusterId(), Cluster.class);
         if (cluster == null) {
             throw new DataBaseContentException("no cluster found for deployId="
                     + deployment.getName() + ", clusterId = " + deployment.getClusterId());

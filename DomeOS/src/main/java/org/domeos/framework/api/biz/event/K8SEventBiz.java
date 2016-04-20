@@ -14,7 +14,7 @@ public interface K8SEventBiz {
 
     void createEvent(int clusterName, Event event) throws IOException;
 
-    String getLatestResourceVersion(int clusterName);
+    String getLatestResourceVersion(int clusterId);
 
     List<Event> getEventsByHost(String host) throws IOException;
 

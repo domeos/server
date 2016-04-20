@@ -4,6 +4,7 @@ import org.apache.shiro.SecurityUtils;
 import org.domeos.framework.api.biz.auth.AuthBiz;
 import org.domeos.framework.api.biz.project.ProjectBiz;
 import org.domeos.framework.api.biz.resource.ResourceBiz;
+import org.domeos.framework.api.controller.exception.PermitException;
 import org.domeos.framework.api.model.auth.Group;
 import org.domeos.framework.api.model.auth.User;
 import org.domeos.framework.api.model.auth.UserGroupMap;
@@ -157,40 +158,54 @@ public class AuthUtil {
             return true;
         }
 
+        boolean result = false;
+
         switch (operationType) {
             case GET:
                 if (userRoleType.getAccessLevel() < Role.GUEST.getAccessLevel()) {
-                    return true;
+                    result = true;
                 } else if (userRoleTypeInGroup.getAccessLevel() < Role.GUEST.getAccessLevel()) {
-                    return true;
+                    result = true;
                 } else if (resourceType == ResourceType.PROJECT) {
-                    return projectBiz.isAuthorited(resourceId);
+                    result = projectBiz.isAuthorited(resourceId);
                 } else {
-                    return false;
+                    throw new PermitException(userId, resourceId, resourceType, operationType);
                 }
+                break;
             case MODIFY:
-                return userRoleType.getAccessLevel() <= Role.DEVELOPER.getAccessLevel() ||
+                result = userRoleType.getAccessLevel() <= Role.DEVELOPER.getAccessLevel() ||
                         userRoleTypeInGroup.getAccessLevel() <= Role.DEVELOPER.getAccessLevel();
+                break;
             case DELETE:
-                return userRoleType.getAccessLevel() <= Role.MASTER.getAccessLevel() ||
+                result = userRoleType.getAccessLevel() <= Role.MASTER.getAccessLevel() ||
                         userRoleTypeInGroup.getAccessLevel() <= Role.MASTER.getAccessLevel();
+                break;
             case SET:
-                return true;
+                result = true;
+                break;
             case ADDUSER:
-                return userRoleType.getAccessLevel() <= Role.MASTER.getAccessLevel() ||
+                result = userRoleType.getAccessLevel() <= Role.MASTER.getAccessLevel() ||
                         userRoleTypeInGroup.getAccessLevel() <= Role.MASTER.getAccessLevel();
+                break;
             case GETUSER:
-                return userRoleType.getAccessLevel() <= Role.MASTER.getAccessLevel() ||
+                result = userRoleType.getAccessLevel() <= Role.MASTER.getAccessLevel() ||
                         userRoleTypeInGroup.getAccessLevel() <= Role.MASTER.getAccessLevel();
+                break;
             case MODIFYUSER:
-                return userRoleType.getAccessLevel() <= Role.MASTER.getAccessLevel() ||
+                result =userRoleType.getAccessLevel() <= Role.MASTER.getAccessLevel() ||
                         userRoleTypeInGroup.getAccessLevel() <= Role.MASTER.getAccessLevel();
+                break;
             case DELETEUSER:
-                return userRoleType.getAccessLevel() <= Role.MASTER.getAccessLevel() ||
+                result = userRoleType.getAccessLevel() <= Role.MASTER.getAccessLevel() ||
                         userRoleTypeInGroup.getAccessLevel() <= Role.MASTER.getAccessLevel();
-            default:
-                return false;
+                break;
         }
+
+        if (!result) {
+            throw new PermitException(userId, resourceId, resourceType, operationType);
+        }
+
+        return true;
     }
 
     /**
@@ -211,34 +226,43 @@ public class AuthUtil {
         if (userGroup != null) {
             userRoleType = userGroup.getRole();
         }
+        boolean result = false;
         switch (operationType) {
             case DELETE:
-                return userRoleType.getAccessLevel() <= Role.MASTER.getAccessLevel();
+                result = userRoleType.getAccessLevel() <= Role.MASTER.getAccessLevel();
+                break;
             case ADDGROUPMEMBER:
             case MODIFYGROUPMEMBER:
-                return userRoleType.getAccessLevel() <= Role.MASTER.getAccessLevel();
+                result = userRoleType.getAccessLevel() <= Role.MASTER.getAccessLevel();
+                break;
             case DELETEGROUPMEMBER:
                 if (userRoleType.getAccessLevel() <= Role.MASTER.getAccessLevel()) {
                     // master of a group can delete other users from the group
                     // can only leave from a group if he's not the last master in the group
                     if (userId == dstUserId) {
                         if (authBiz.masterCountInGroup(groupId) <= 1) {
-                            return false;
+                            result = false;
                         } else {
-                            return true;
+                            result = true;
                         }
                     } else {
-                        return true;
+                        result = true;
                     }
                 } else {
                     // normal user can leave from a group
-                    return userId == dstUserId;
+                    result = (userId == dstUserId);
                 }
+                break;
             case LISTGROUPMEMBER:
-                return userRoleType.getAccessLevel() < Role.NOTEXIST.getAccessLevel();
-            default:
-                return false;
+                result = userRoleType.getAccessLevel() < Role.NOTEXIST.getAccessLevel();
+                break;
         }
+
+        if (!result) {
+            throw new PermitException(userId, groupId, operationType, dstUserId);
+        }
+
+        return true;
     }
 
     /**

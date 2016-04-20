@@ -40,6 +40,24 @@ domeApp.controller('globalSettingCtr', ['$scope', '$domeGlobal', '$state', '$dom
 	// 普通用户列表
 	$scope.userList = [];
 
+	$scope.tabActive = [{
+		active: false
+	}, {
+		active: false
+	}, {
+		active: false
+	}, {
+		active: false
+	}, {
+		active: false
+	}, {
+		active: false
+	}, {
+		active: false
+	}, {
+		active: false
+	}];
+
 	function UserList() {}
 	UserList.prototype = {
 		init: function(usersInfo) {
@@ -174,6 +192,8 @@ domeApp.controller('globalSettingCtr', ['$scope', '$domeGlobal', '$state', '$dom
 		$scope.userListIns = new UserList();
 		$scope.userListIns.init(userList);
 	});
+
+
 	$scope.toggleUserType = function(userType) {
 		if (userType !== $scope.currentUserType) {
 			$scope.currentUserType = userType;
@@ -316,6 +336,32 @@ domeApp.controller('globalSettingCtr', ['$scope', '$domeGlobal', '$state', '$dom
 			}
 		});
 	};
+	
+	var stateInfo = $state.$current.name;
+	if (stateInfo.indexOf('ldapinfo') !== -1) {
+		$scope.tabActive[1].active = true;
+		$scope.getLdap();
+	} else if (stateInfo.indexOf('gitinfo') !== -1) {
+		$scope.tabActive[2].active = true;
+		$scope.getGitInfo();
+	} else if (stateInfo.indexOf('registryinfo') !== -1) {
+		$scope.tabActive[3].active = true;
+		$scope.getRegistryInfo();
+	} else if (stateInfo.indexOf('serverinfo') !== -1) {
+		$scope.tabActive[4].active = true;
+		$scope.getServerInfo();
+	} else if (stateInfo.indexOf('monitorinfo') !== -1) {
+		$scope.tabActive[5].active = true;
+		$scope.getMonitorInfo();
+	} else if (stateInfo.indexOf('sshinfo') !== -1) {
+		$scope.tabActive[6].active = true;
+		$scope.getWebSsh();
+	} else if (stateInfo.indexOf('clusterinfo') !== -1) {
+		$scope.tabActive[7].active = true;
+		$scope.getClusterInfo();
+	} else {
+		$scope.tabActive[0].active = true;
+	}
 }]).controller('newPasswdModalCtr', ['$scope', 'username', '$domeUser', '$modalInstance', '$domePublic', function($scope, username, $domeUser, $modalInstance, $domePublic) {
 	$scope.cancel = function() {
 		$modalInstance.dismiss();

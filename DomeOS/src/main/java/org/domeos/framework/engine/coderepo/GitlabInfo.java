@@ -1,11 +1,10 @@
 package org.domeos.framework.engine.coderepo;
 
+import org.domeos.framework.api.biz.global.GlobalBiz;
 import org.domeos.framework.api.biz.project.ProjectBiz;
-import org.domeos.framework.api.model.ci.related.RSAKeyPair;
 import org.domeos.framework.api.model.global.GlobalInfo;
 import org.domeos.framework.api.model.global.GlobalType;
 import org.domeos.framework.api.model.project.GitlabUser;
-import org.domeos.framework.api.biz.global.GlobalBiz;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
@@ -49,9 +48,9 @@ public class GitlabInfo {
         return projectBiz.getGitlabInfoByUserId(userId);
     }
 
-    public static RSAKeyPair getRSAKeyPairByDeployId(int deployId) {
-        return projectBiz.getRSAKeyPairByKeyId(deployId);
-    }
+//    public static RSAKeyPair getRSAKeyPairByDeployId(int deployId) {
+//        return projectBiz.getRSAKeyPairByKeyId(deployId);
+//    }
 
 //    public static int updateExtraDeployId(RSAKeyPair keyPair, int oldDeployId) {
 //        return projectBiz.updateExtraRSAKeyPair(keyPair, oldDeployId);

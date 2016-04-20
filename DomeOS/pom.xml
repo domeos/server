@@ -301,7 +301,7 @@
                                 <copy todir="src/main/webapp"
                                       overwrite="true">
                                     <fileset dir="front/app">
-                                        <include name="**/*.*"/>
+                                        <include name="**/*.*" />
                                     </fileset>
                                 </copy>
                             </tasks>
@@ -344,10 +344,18 @@
                 </configuration>
             </plugin>
             <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
                 <configuration>
-                    <skipTests>true</skipTests>
+                    <configLocation>check-style.xml</configLocation>
+                    <consoleOutput>true</consoleOutput>
+                    <logViolationsToConsole>true</logViolationsToConsole>
+                    <failsOnError>true</failsOnError>
+                    <failOnViolation>true</failOnViolation>
+                    <suppressionsLocation>checkstyle-suppressions.xml</suppressionsLocation>
+                    <suppressionsFileExpression>checkstyle.suppressions.file</suppressionsFileExpression>
                 </configuration>
+                <version>2.13</version>
             </plugin>
         </plugins>
     </build>

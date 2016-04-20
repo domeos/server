@@ -45,7 +45,10 @@ public class NodeLabel {
         if (labels != null && labels.size() != 0) {
             for (Map.Entry<String, String> entry : labels.entrySet()) {
                 if (!isRegularLabel(entry.getKey()) || !isRegularLabel(entry.getValue())) {
-                    return "label must be a qualified name (at most 63 characters, matching regex ([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9]), with an optional DNS subdomain prefix (at most 253 characters, matching regex [a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*) and slash (/): e.g. \"MyName\" or \"example.com/MyName\"";
+                    return "label must be a qualified name (at most 63 characters, matching regex ([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])," +
+                            " with an optional DNS subdomain prefix (at most 253 characters," +
+                            " matching regex [a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*)" +
+                            " and slash (/): e.g. \"MyName\" or \"example.com/MyName\"";
                 }
             }
         }

@@ -14,6 +14,7 @@ import org.domeos.basemodel.HttpResponseTemp;
 import org.domeos.framework.api.consolemodel.auth.UserPassword;
 import org.domeos.framework.api.model.auth.related.LoginType;
 import org.domeos.framework.api.service.auth.UserService;
+import org.domeos.framework.engine.model.CustomObjectMapper;
 import org.junit.AfterClass;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +45,7 @@ public class BaseTestCase extends TestCase {
     public WebApplicationContext wac;
 
     @Autowired
-    public ObjectMapper objectMapper;
+    public CustomObjectMapper objectMapper;
 
     @Autowired
     protected org.apache.shiro.mgt.SecurityManager securityManager;

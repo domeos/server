@@ -26,6 +26,20 @@ domeApp.controller('hostDetailCtr', ['$scope', '$stateParams', '$domeCluster', '
 	});
 	// 面包屑 父级url
 	$scope.parentState = 'clusterDetail({id:"' + clusterId + '"})';
+
+	$scope.tabActive = [{
+		active: false
+	}, {
+		active: false
+	}];
+
+	var stateInfo = $state.$current.name;
+	if (stateInfo.indexOf('info') !== -1) {
+		$scope.tabActive[1].active = true;
+	} else {
+		$scope.tabActive[0].active = true;
+	}
+
 	$domeCluster.getNodeInfo(clusterId, hostname).then(function(res) {
 		var node = res.data.result;
 		$scope.hostSetting.diskTxt = node.diskInfo;

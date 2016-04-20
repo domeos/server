@@ -28,7 +28,7 @@ public class DeploymentBizImpl extends BaseBizImpl implements DeploymentBiz {
 
     @Override
     public Deployment getDeployment(int id) {
-        return super.getById(GlobalConstant.deployTableName, id, Deployment.class);
+        return super.getById(GlobalConstant.DEPLOY_TABLE_NAME, id, Deployment.class);
     }
 
     @Override

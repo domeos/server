@@ -154,7 +154,8 @@ domeApp.controller('monitorCtr', ['$scope', '$domeCluster', '$domeDeploy', '$dom
 		if ($scope.monitorType == '主机') {
 			freshNodeMonitor();
 		} else if ($scope.monitorType == '实例') {
-			$scope.deployListIns.filterDeploy($scope.clusterListIns.cluster.name, envValue).finally(function() {
+			console.log($scope.deployListIns);
+			$scope.deployListIns.filterDeploy($scope.clusterListIns.cluster.name, $scope.currentEnv.value).finally(function() {
 				freshPodMonitor();
 			});
 			// // 过滤掉非当前集群的deploy，并切换到第一个符合条件的deploy

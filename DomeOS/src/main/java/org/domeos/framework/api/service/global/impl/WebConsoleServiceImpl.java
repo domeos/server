@@ -3,15 +3,15 @@ package org.domeos.framework.api.service.global.impl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
-import org.domeos.framework.api.controller.exception.PermitException;
-import org.domeos.framework.api.model.auth.User;
-import org.domeos.framework.api.model.global.WebSsh;
-import org.domeos.framework.api.biz.global.GlobalBiz;
-import org.domeos.framework.api.service.global.WebConsoleService;
 import org.domeos.basemodel.HttpResponseTemp;
 import org.domeos.basemodel.ResultStat;
+import org.domeos.framework.api.biz.global.GlobalBiz;
+import org.domeos.framework.api.controller.exception.ApiException;
+import org.domeos.framework.api.controller.exception.PermitException;
+import org.domeos.framework.api.model.global.WebSsh;
+import org.domeos.framework.api.service.global.WebConsoleService;
 import org.domeos.framework.engine.AuthUtil;
-import org.domeos.global.GlobalConstant;
+import org.domeos.global.CurrentThreadInfo;
 import org.domeos.util.CommonUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,12 +42,10 @@ public class WebConsoleServiceImpl implements WebConsoleService {
     @Autowired
     GlobalBiz globalBiz;
 
-    private int checkAdmin() {
-        User user = GlobalConstant.userThreadLocal.get();
-        if (user == null || !AuthUtil.isAdmin(user.getId())) {
-            throw new PermitException();
+    private void checkAdmin() {
+        if (!AuthUtil.isAdmin(CurrentThreadInfo.getUserId())) {
+            throw new PermitException("only admin can operate webssh");
         }
-        return user.getId();
     }
 
     @Override
@@ -101,7 +99,7 @@ public class WebConsoleServiceImpl implements WebConsoleService {
     public HttpResponseTemp<?> setWebsshSetting(WebSsh webSsh) {
         checkAdmin();
         if (!StringUtils.isBlank(webSsh.checkLegality())) {
-            return ResultStat.PARAM_ERROR.wrap(null, webSsh.checkLegality());
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, webSsh.checkLegality());
         }
         webSsh.setCreateTime(System.currentTimeMillis());
         globalBiz.deleteWebSsh();
@@ -113,7 +111,7 @@ public class WebConsoleServiceImpl implements WebConsoleService {
     public HttpResponseTemp<?> updateWebsshSetting(WebSsh webSsh) {
         checkAdmin();
         if (!StringUtils.isBlank(webSsh.checkLegality())) {
-            return ResultStat.PARAM_ERROR.wrap(null, webSsh.checkLegality());
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, webSsh.checkLegality());
         }
         globalBiz.updateWebSsh(webSsh);
         return ResultStat.OK.wrap(webSsh);

@@ -8,8 +8,6 @@ import org.domeos.framework.api.model.ci.related.RSAKeyPair;
 import org.domeos.framework.api.model.project.GitlabUser;
 import org.domeos.framework.api.model.project.Project;
 import org.domeos.framework.api.model.project.SubversionUser;
-import org.domeos.framework.engine.model.DataModelBase;
-import org.domeos.framework.engine.model.RowModelBase;
 
 import java.util.List;
 
@@ -18,7 +16,7 @@ import java.util.List;
  */
 public interface ProjectBiz extends BaseBiz {
 
-    String projectRsaMapTableName = "project_rsakey_map";
+    String PROJECTRSAMAP_TABLE_NAME = "project_rsakey_map";
 
     void insertRowForRsaKeypair(RSAKeyPair item);
 
@@ -64,7 +62,7 @@ public interface ProjectBiz extends BaseBiz {
 
     void addBuildHistory(BuildHistory buildInfo);
 
-    void setTaskNameAndStatus(int id, String name, BuildState send);
+    void setTaskNameAndStatus(BuildHistory buildInfo);
 
     void insertBuildLogById(int id, byte[] bytes);
 
@@ -82,7 +80,7 @@ public interface ProjectBiz extends BaseBiz {
 
     GitlabUser getGitlabIserById(int id);
 
-    RSAKeyPair getRSAKeyPairByKeyId(int deployId);
+//    RSAKeyPair getRSAKeyPairByKeyId(int deployId);
 
     String getBuildTaskNameById(int buildId);
 }

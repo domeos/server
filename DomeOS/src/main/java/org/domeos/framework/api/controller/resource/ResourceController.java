@@ -1,6 +1,7 @@
 package org.domeos.framework.api.controller.resource;
 
 import org.domeos.basemodel.HttpResponseTemp;
+import org.domeos.framework.api.controller.ApiController;
 import org.domeos.framework.api.model.resource.related.ResourceInfo;
 import org.domeos.framework.api.model.resource.related.ResourceOwnerType;
 import org.domeos.framework.api.model.resource.related.ResourceType;
@@ -14,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @Controller
 @RequestMapping("/api/resource")
-public class ResourceController {
+public class ResourceController extends ApiController {
     @Autowired
     ResourceService resourceService;
 

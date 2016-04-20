@@ -3,8 +3,6 @@ package org.domeos.framework.api.mapper.project;
 import org.apache.ibatis.annotations.*;
 import org.domeos.framework.api.model.ci.related.ProjectRsakeyMap;
 import org.domeos.framework.api.model.ci.related.RSAKeyPair;
-import org.domeos.framework.api.model.project.Project;
-import org.domeos.framework.engine.model.RowMapperDao;
 import org.domeos.global.GlobalConstant;
 import org.springframework.stereotype.Repository;
 
@@ -28,7 +26,7 @@ public interface ProjectRsakeyMapMapper {
     @Select("SElECT * FROM rsa_keypair WHERE id=(SELECT rsaKeypairId FROM rsa_keypair WHERE keyId = #{keyId} LIMIT 1)")
     RSAKeyPair getRSAKeyPairByKeyId(@Param("keyId") int keyId);
 
-    @Insert("INSERT INTO " + GlobalConstant.rsaKeypairTableName +
+    @Insert("INSERT INTO " + GlobalConstant.RSAKEYPAIR_TABLE_NAME +
         " (name, description, state, createTime, removeTime, removed, data) values (" +
         " #{item.name}, #{item.description}, #{item.state}, #{item.createTime}, #{item.removeTime}," +
         " #{item.removed}, #{data})")

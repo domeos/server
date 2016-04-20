@@ -1,0 +1,15 @@
+@import "compass/css3";
+@import "common/css/common.scss";
+.project-create2{
+	padding:0 $page-padding 100px $page-padding;
+	.ui-btn-copy{
+		margin: 20px 0 8px $page-padding;
+	}
+	.project-new{
+		padding: 14px 0 0 $page-padding;
+	}
+}
+.projectlist-con{
+	max-height: 540px;
+	overflow: auto;
+}

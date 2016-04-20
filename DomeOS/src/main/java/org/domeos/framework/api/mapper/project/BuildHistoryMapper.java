@@ -24,7 +24,7 @@ public interface BuildHistoryMapper {
     @Options(useGeneratedKeys = true, keyProperty = "item.id", keyColumn = "id")
     int insertRow(@Param("item") BuildHistory item, @Param("data") String data);
 
-    @Update("UPDATE " + GlobalConstant.buildHistoryTableName + " SET state=#{item.state}, data=#{item.data} WHERE id=#{item.id}")
+    @Update("UPDATE " + GlobalConstant.BUILDHISTORY_TABLE_NAME + " SET state=#{item.state}, data=#{item.data} WHERE id=#{item.id}")
     void updateBuildHistory(@Param("item") RowMapperDao item);
 
     @Update("UPDATE build_history SET log=#{log} WHERE id=#{id}")
@@ -36,13 +36,13 @@ public interface BuildHistoryMapper {
     @Select("SELECT dockerfileContent FROM build_history WHERE id=#{id}")
     String getDockerfileContentById(@Param("id") int buildId);
 
-    @Update("UPDATE build_history SET taskName=#{taskName}, state=#{buildStatus} WHERE id=#{id}")
-    void addTaskNameAndStatus(@Param("id") int id, @Param("taskName") String name, @Param("buildStatus") BuildState send);
+    @Update("UPDATE build_history SET taskName=#{item.taskName}, state=#{item.state} WHERE id=#{item.id}")
+    void addTaskNameAndStatus(@Param("item") BuildHistory buildHistory, String data);
 
     @Select("SELECT log FROM build_history WHERE id=#{id}")
     String getLogById(@Param("id") int buildId);
 
-    @Select("SELECT " + RowMapper.basicColumns + "  FROM build_history WHERE projectId=#{projectId} ORDER BY id DESC")
+    @Select("SELECT " + RowMapper.BASIC_COLUMNS + "  FROM build_history WHERE projectId=#{projectId} ORDER BY id DESC")
     List<RowMapperDao> getBuildHistoryByProjectId(@Param("projectId") int projectId);
 
     @Update("UPDATE build_history SET state=#{state} WHERE id=#{id}")
@@ -50,4 +50,7 @@ public interface BuildHistoryMapper {
 
     @Select("SELECT taskName FROM build_history where id=#{id}")
     String getBuildTaskNameById(@Param("id") int buildId);
+
+    @Select("SELECT * FROM build_history where removed=0")
+    List<RowMapperDao> getAllHistory();
 }

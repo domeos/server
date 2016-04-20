@@ -1,20 +1,23 @@
-domeApp.controller('deployDetailCtr', ['$scope', '$domeDeploy', '$domeCluster', '$domePublic', '$stateParams', '$state', '$modal', '$interval', function($scope, $domeDeploy, $domeCluster, $domePublic, $stateParams, $state, $modal, $interval) {
+domeApp.controller('deployDetailCtr', ['$scope', '$domeDeploy', '$domeCluster', '$domePublic', '$state', '$modal', '$timeout', function($scope, $domeDeploy, $domeCluster, $domePublic, $state, $modal, $timeout) {
 	'use strict';
 	$scope.$emit('pageTitle', {
 		title: '部署',
 		descrition: '',
 		mod: 'deployManage'
 	});
-	if (!$stateParams.id) {
+	if (!$state.params.id) {
 		$state.go('deployManage');
 	}
 	$scope.needValid = false;
-	var deployId = parseInt($stateParams.id);
-	var clusterList = [];
+	var deployId = +$state.params.id;
+	var clusterList = [],
+		timeout;
 	$scope.resourceType = 'DEPLOY';
 	$scope.resourceId = deployId;
 	$scope.tabActive = [{
-		active: true
+		active: false
+	}, {
+		active: false
 	}, {
 		active: false
 	}, {
@@ -26,11 +29,31 @@ domeApp.controller('deployDetailCtr', ['$scope', '$domeDeploy', '$domeCluster', 
 	}, {
 		active: false
 	}];
+	var stateInfo = $state.$current.name;
+	if (stateInfo.indexOf('update') !== -1) {
+		$scope.tabActive[1].active = true;
+	} else if (stateInfo.indexOf('event') !== -1) {
+		$scope.tabActive[2].active = true;
+	} else if (stateInfo.indexOf('instance') !== -1) {
+		$scope.tabActive[3].active = true;
+	} else if (stateInfo.indexOf('healthcheck') !== -1) {
+		$scope.tabActive[4].active = true;
+	} else if (stateInfo.indexOf('network') !== -1) {
+		$scope.tabActive[5].active = true;
+	} else if (stateInfo.indexOf('user') !== -1) {
+		$scope.tabActive[6].active = true;
+	} else {
+		$scope.tabActive[0].active = true;
+	}
 	$scope.labelKey = {
 		key: ''
 	};
 	$scope.$on('memberPermisson', function(event, hasPermisson) {
 		$scope.hasMemberPermisson = hasPermisson;
+		if (!hasPermisson && stateInfo.indexOf('user') !== -1) {
+			$state.go('deployDetail.detail');
+			$scope.tabActive[0].active = true;
+		}
 	});
 	var loadingsIns = $scope.loadingsIns = $domePublic.getLoadingInstance();
 	var getEvent = function() {
@@ -84,6 +107,10 @@ domeApp.controller('deployDetailCtr', ['$scope', '$domeDeploy', '$domeCluster', 
 					case 'DELETE':
 						thisEvent.optTxt = '删除';
 						break;
+					case 'KUBERNETES':
+						thisEvent.optTxt = '系统操作';
+						thisEvent.eventStatus = 'KUBERNETES';
+						break;
 				}
 				switch (thisEvent.eventStatus) {
 					case 'START':
@@ -107,14 +134,24 @@ domeApp.controller('deployDetailCtr', ['$scope', '$domeDeploy', '$domeCluster', 
 			$scope.instanceList = res.data.result;
 		});
 	};
-	var interval = $interval(function() {
-		if (location.href.indexOf('deployDetail') === -1) {
-			$interval.cancel(interval);
+
+	function freshDeploy() {
+		if ($state.current.name == 'deployDetail') {
+			$domeDeploy.getDeployInfo(deployId).then(function(res) {
+				if ($scope.deployIns) {
+					$scope.deployIns.freshDeploy(res.data.result);
+					$scope.deployEditIns.freshDeploy(res.data.result);
+				}
+			}).finally(function() {
+				if (timeout) {
+					$timeout.cancel(timeout);
+				}
+				timeout = $timeout(freshDeploy, 4000);
+			});
 		}
-		if ($scope.deployIns) {
-			$scope.deployIns.freshDeploy();
-		}
-	}, 4000);
+	}
+	freshDeploy();
+
 	var init = function() {
 		loadingsIns.startLoading('fresh');
 		getEvent();

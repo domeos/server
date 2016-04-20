@@ -4,12 +4,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.domeos.basemodel.HttpResponseTemp;
 import org.domeos.basemodel.ResultStat;
 import org.domeos.framework.api.biz.OperationHistory;
+import org.domeos.framework.api.biz.global.GlobalBiz;
 import org.domeos.framework.api.biz.project.ProjectBiz;
 import org.domeos.framework.api.biz.resource.ResourceBiz;
 import org.domeos.framework.api.consolemodel.CreatorDraft;
 import org.domeos.framework.api.consolemodel.project.CodeSourceInfo;
 import org.domeos.framework.api.consolemodel.project.ProjectCreate;
 import org.domeos.framework.api.consolemodel.project.ProjectList;
+import org.domeos.framework.api.controller.exception.ApiException;
 import org.domeos.framework.api.controller.exception.PermitException;
 import org.domeos.framework.api.model.auth.User;
 import org.domeos.framework.api.model.auth.related.Role;
@@ -27,11 +29,11 @@ import org.domeos.framework.api.model.project.related.CodeManager;
 import org.domeos.framework.api.model.project.related.ProjectState;
 import org.domeos.framework.api.model.resource.Resource;
 import org.domeos.framework.api.model.resource.related.ResourceType;
-import org.domeos.framework.api.biz.global.GlobalBiz;
 import org.domeos.framework.api.service.project.ProjectService;
 import org.domeos.framework.engine.AuthUtil;
 import org.domeos.framework.engine.coderepo.CodeApiInterface;
 import org.domeos.framework.engine.coderepo.ReflectFactory;
+import org.domeos.global.CurrentThreadInfo;
 import org.domeos.global.GlobalConstant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,27 +63,27 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public HttpResponseTemp<?> createProject(ProjectCreate projectCreate) {
         if (projectCreate == null || projectCreate.getProject() == null || projectCreate.getCreatorDraft() == null) {
-            return ResultStat.PROJECT_NOT_LEGAL.wrap(null, "project info is null");
+            throw ApiException.wrapMessage(ResultStat.PROJECT_NOT_LEGAL, "project info is null");
         }
-        User user = GlobalConstant.userThreadLocal.get();
+        User user = CurrentThreadInfo.getUser();
         if (user == null) {
-            throw new PermitException();
+            throw new PermitException("no user logged in");
         }
 
         Project project = projectCreate.getProject();
         String error = project.checkLegality();
         if (!StringUtils.isBlank(error)) {
-            return ResultStat.PROJECT_NOT_LEGAL.wrap(null, error);
+            throw ApiException.wrapMessage(ResultStat.PROJECT_NOT_LEGAL, error);
         }
 
         CreatorDraft creatorDraft = projectCreate.getCreatorDraft();
         error = creatorDraft.checkLegality();
         if (!StringUtils.isBlank(error)) {
-            return ResultStat.CREATOR_ERROR.wrap(null, error);
+            throw ApiException.wrapMessage(ResultStat.CREATOR_ERROR, error);
         }
 
         if (!projectBiz.checkProjectName(project.getName())) {
-            return ResultStat.PROJECT_EXISTED.wrap(null);
+            throw ApiException.wrapResultStat(ResultStat.PROJECT_EXISTED);
         }
 
         project.setCreateTime(System.currentTimeMillis());
@@ -89,9 +91,10 @@ public class ProjectServiceImpl implements ProjectService {
 
         if (project.getCodeInfo() != null) {
             CodeConfiguration codeInfo = project.getCodeInfo();
-            CodeApiInterface codeApiInterface = ReflectFactory.createCodeApiInterface(CodeType.getTypeByName(codeInfo.getCodeManager()), codeInfo.getCodeManagerUserId());
+            CodeApiInterface codeApiInterface = ReflectFactory.createCodeApiInterface(CodeType.getTypeByName(codeInfo.getCodeManager()),
+                    codeInfo.getCodeManagerUserId());
             if (codeApiInterface == null) {
-               return ResultStat.PARAM_ERROR.wrap(null, "get code api error, check code configuration");
+                throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "get code api error, check code configuration");
             }
             if (project.getAutoBuildInfo() != null) {
                 AutoBuild info = project.getAutoBuildInfo();
@@ -106,15 +109,15 @@ public class ProjectServiceImpl implements ProjectService {
 
                 Server server = globalBiz.getServer();
                 if (server == null) {
-                    return ResultStat.PARAM_ERROR.wrap(null, "global server should be set");
+                    throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "global server should be set");
                 }
                 String hookurl = server.serverInfo() + "/api/ci/build/autobuild";
                 if (!codeApiInterface.setProjectHook(project.getCodeInfo().getCodeId(), hookurl, pushEvents, tagEvents)) {
-                    return ResultStat.PARAM_ERROR.wrap(null, "set project hook error");
+                    throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "set project hook error, webhook string is: " + hookurl);
                 }
             }
         } else if (project.getAutoBuildInfo() != null) {
-            return ResultStat.PARAM_ERROR.wrap(null, "can not set auto build info");
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "can not set auto build info");
         }
 
         projectBiz.addProject(project);
@@ -130,13 +133,13 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public HttpResponseTemp<?> deleteProject(int id) {
-        User user = checkDeletable(id);
-        projectBiz.removeById(GlobalConstant.projectTableName, id);
+        checkDeletable(id);
+        projectBiz.removeById(GlobalConstant.PROJECT_TABLE_NAME, id);
 
         resourceBiz.deleteResourceByIdAndType(id, ResourceType.PROJECT);
 
         OperationRecord record = new OperationRecord(id, ResourceType.PROJECT, OperationType.DELETE,
-                user.getId(), user.getUsername(), "OK", "", System.currentTimeMillis());
+                CurrentThreadInfo.getUserId(), CurrentThreadInfo.getUserName(), "OK", "", System.currentTimeMillis());
         operationHistory.insertRecord(record);
 
         return ResultStat.OK.wrap(null);
@@ -145,10 +148,10 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public HttpResponseTemp<?> modifyProject(Project project) {
         if (project == null) {
-            return ResultStat.PROJECT_NOT_LEGAL.wrap(null, "project info is null");
+            throw ApiException.wrapMessage(ResultStat.PROJECT_NOT_LEGAL, "project info is null");
         }
 
-        User user = checkModifiable(project.getId());
+        checkModifiable(project.getId());
 
         String error = project.checkLegality();
         if (!StringUtils.isBlank(error)) {
@@ -158,7 +161,7 @@ public class ProjectServiceImpl implements ProjectService {
         projectBiz.updateProjectById(project);
 
         OperationRecord record = new OperationRecord(project.getId(), ResourceType.PROJECT, OperationType.MODIFY,
-                user.getId(), user.getUsername(), "OK", "", System.currentTimeMillis());
+                CurrentThreadInfo.getUserId(), CurrentThreadInfo.getUserName(), "OK", "", System.currentTimeMillis());
         operationHistory.insertRecord(record);
 
         return ResultStat.OK.wrap(null);
@@ -167,20 +170,20 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public HttpResponseTemp<Project> getProject(int id) {
         checkGetable(id);
-        Project project = projectBiz.getById(GlobalConstant.projectTableName, id, Project.class);
+        Project project = projectBiz.getById(GlobalConstant.PROJECT_TABLE_NAME, id, Project.class);
         return ResultStat.OK.wrap(project);
     }
 
     @Override
     public HttpResponseTemp<?> listProjectInfo() {
-        User user = GlobalConstant.userThreadLocal.get();
+        User user = CurrentThreadInfo.getUser();
         if (user == null) {
-            throw new PermitException();
+            throw new PermitException("no user logged in");
         }
 
         List<Resource> resources = AuthUtil.getResourceList(user.getId(), ResourceType.PROJECT);
         List<Project> publicProjects = projectBiz.listAuthoritiedProjects();
-        List<Project> privateProjects = projectBiz.getListByReousrce(GlobalConstant.projectTableName, resources, Project.class);
+        List<Project> privateProjects = projectBiz.getListByReousrce(GlobalConstant.PROJECT_TABLE_NAME, resources, Project.class);
 
         List<ProjectList> projectListInfo = new LinkedList<>();
         for (Project project : publicProjects) {
@@ -218,13 +221,13 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public HttpResponseTemp<?> listCodeSourceInfo() {
-        User user = GlobalConstant.userThreadLocal.get();
+        User user = CurrentThreadInfo.getUser();
         if (user == null) {
-            throw new PermitException();
+            throw new PermitException("no user logged in");
         }
         CodeApiInterface codeApiInterface = ReflectFactory.createCodeApiInterface(CodeType.getTypeByName(CodeManager.gitlab), 0);
         if (codeApiInterface == null) {
-            return ResultStat.PARAM_ERROR.wrap(null, "get code api error, please check code configuration");
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "get code api error, please check code configuration");
         }
         List<CodeSourceInfo> codeSourceInfos = codeApiInterface.listCodeInfo(user.getId());
         return ResultStat.OK.wrap(codeSourceInfos);
@@ -232,13 +235,13 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public HttpResponseTemp<?> listSvnCodeSourceInfo() {
-        User user = GlobalConstant.userThreadLocal.get();
+        User user = CurrentThreadInfo.getUser();
         if (user == null) {
-            throw new PermitException();
+            throw new PermitException("no user logged in");
         }
         CodeApiInterface codeApiInterface = ReflectFactory.createCodeApiInterface(CodeType.getTypeByName(CodeManager.subversion), 0);
         if (codeApiInterface == null) {
-            return ResultStat.PARAM_ERROR.wrap(null, "get code api error, please check code configuration");
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "get code api error, please check code configuration");
         }
         List<CodeSourceInfo> codeSourceInfos = codeApiInterface.listCodeInfo(user.getId());
         return ResultStat.OK.wrap(codeSourceInfos);
@@ -247,11 +250,11 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public HttpResponseTemp<?> setGitlabInfo(GitlabUser gitlab) {
         if (gitlab == null) {
-            return ResultStat.PARAM_ERROR.wrap(null, "git lab info is null");
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "git lab info is null");
         }
-        User user = GlobalConstant.userThreadLocal.get();
+        User user = CurrentThreadInfo.getUser();
         if (user == null) {
-            throw new PermitException();
+            throw new PermitException("no user logged in");
         }
         gitlab.setUserId(user.getId());
         gitlab.setCreateTime(System.currentTimeMillis());
@@ -264,7 +267,7 @@ public class ProjectServiceImpl implements ProjectService {
 
         CodeApiInterface codeApiInterface = ReflectFactory.createCodeApiInterface(CodeType.getTypeByName(CodeManager.gitlab), gitlab.getId());
         if (codeApiInterface == null) {
-            return ResultStat.GITLAB_GLOBAL_INFO_NOT_EXIST.wrap(null, "get code api error, please check code configuration");
+            throw ApiException.wrapMessage(ResultStat.GITLAB_GLOBAL_INFO_NOT_EXIST, "get code api error, please check code configuration");
         }
         CodeSourceInfo codeSourceInfo = new CodeSourceInfo(gitlab.getId(), gitlab.getName(), codeApiInterface.getGitlabProjectInfos());
 
@@ -278,11 +281,11 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public HttpResponseTemp<?> setSubversionInfo(SubversionUser subversion) {
         if (subversion == null) {
-            return ResultStat.PARAM_ERROR.wrap(null, "svn info is not null");
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "svn info is not null");
         }
-        User user = GlobalConstant.userThreadLocal.get();
+        User user = CurrentThreadInfo.getUser();
         if (user == null) {
-            throw new PermitException();
+            throw new PermitException("no user logged in");
         }
         subversion.setUserId(user.getId());
         subversion.setCreateTime(System.currentTimeMillis());
@@ -294,7 +297,7 @@ public class ProjectServiceImpl implements ProjectService {
         }
         CodeApiInterface codeApiInterface = ReflectFactory.createCodeApiInterface(CodeType.getTypeByName(CodeManager.subversion), subversion.getId());
         if (codeApiInterface == null) {
-            return ResultStat.PARAM_ERROR.wrap(null, "get code api error, please check code configuration");
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "get code api error, please check code configuration");
         }
         CodeSourceInfo codeSourceInfo = new CodeSourceInfo(subversion.getId(), subversion.getName(),
                 codeApiInterface.getSubversionProjectInfo(subversion.getId()));
@@ -310,26 +313,26 @@ public class ProjectServiceImpl implements ProjectService {
     public HttpResponseTemp<?> getProjectDockerfile(int projectId, String branch, String path) {
         checkGetable(projectId);
 
-        Project project = projectBiz.getById(GlobalConstant.projectTableName, projectId, Project.class);
+        Project project = projectBiz.getById(GlobalConstant.PROJECT_TABLE_NAME, projectId, Project.class);
         if (project == null) {
-            return ResultStat.PROJECT_NOT_EXIST.wrap(null);
+            throw ApiException.wrapResultStat(ResultStat.PROJECT_NOT_EXIST);
         }
         CodeConfiguration codeConfig = project.getCodeInfo();
         if (codeConfig == null) {
-            return ResultStat.PROJECT_CODE_INFO_NOT_EXIST.wrap(null);
+            throw ApiException.wrapResultStat(ResultStat.PROJECT_CODE_INFO_NOT_EXIST);
         }
 
         CodeApiInterface codeApiInterface = ReflectFactory.createCodeApiInterface(CodeType.getTypeByName(codeConfig.getCodeManager()),
                 codeConfig.getCodeManagerUserId());
         if (codeApiInterface == null) {
-            return ResultStat.PARAM_ERROR.wrap(null, "get code api error");
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "get code api error");
         }
         if (path.startsWith("/")) {
             path = path.substring(1);
         }
         byte[] dockerfile = codeApiInterface.getDockerfile(codeConfig.getCodeId(), branch, path);
         if (dockerfile == null) {
-            return ResultStat.PARAM_ERROR.wrap(null, "dockerfile could not found");
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "dockerfile could not found");
         }
         return ResultStat.OK.wrap(new String(dockerfile));
     }
@@ -338,19 +341,19 @@ public class ProjectServiceImpl implements ProjectService {
     public HttpResponseTemp<?> getBranches(int projectId) {
         checkGetable(projectId);
 
-        Project project = projectBiz.getById(GlobalConstant.projectTableName, projectId, Project.class);
+        Project project = projectBiz.getById(GlobalConstant.PROJECT_TABLE_NAME, projectId, Project.class);
         if (project == null) {
-            return ResultStat.PROJECT_NOT_EXIST.wrap(null);
+            throw ApiException.wrapResultStat(ResultStat.PROJECT_NOT_EXIST);
         }
         CodeConfiguration codeConfig = project.getCodeInfo();
         if (codeConfig == null) {
-            return ResultStat.PROJECT_CODE_INFO_NOT_EXIST.wrap(null);
+            throw ApiException.wrapResultStat(ResultStat.PROJECT_CODE_INFO_NOT_EXIST);
         }
 
         CodeApiInterface codeApiInterface = ReflectFactory.createCodeApiInterface(CodeType.getTypeByName(codeConfig.getCodeManager()),
                 codeConfig.getCodeManagerUserId());
         if (codeApiInterface == null) {
-            return ResultStat.PARAM_ERROR.wrap(null, "get code api error");
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "get code api error");
         }
 
         List<String> branches = codeApiInterface.getBranches(codeConfig.getCodeId());
@@ -361,70 +364,61 @@ public class ProjectServiceImpl implements ProjectService {
     public HttpResponseTemp<?> getReadme(int projectId, String branch) {
         checkGetable(projectId);
 
-        Project project = projectBiz.getById(GlobalConstant.projectTableName, projectId, Project.class);
+        Project project = projectBiz.getById(GlobalConstant.PROJECT_TABLE_NAME, projectId, Project.class);
         if (project == null) {
-            return ResultStat.PROJECT_NOT_EXIST.wrap(null);
+            throw ApiException.wrapResultStat(ResultStat.PROJECT_NOT_EXIST);
         }
         CodeConfiguration codeConfig = project.getCodeInfo();
         if (codeConfig == null) {
-            return ResultStat.PROJECT_CODE_INFO_NOT_EXIST.wrap(null);
+            throw ApiException.wrapResultStat(ResultStat.PROJECT_CODE_INFO_NOT_EXIST);
         }
 
         CodeApiInterface codeApiInterface = ReflectFactory.createCodeApiInterface(CodeType.getTypeByName(codeConfig.getCodeManager()),
                 codeConfig.getCodeManagerUserId());
         if (codeApiInterface == null) {
-            return ResultStat.PARAM_ERROR.wrap(null, "get code api error");
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "get code api error");
         }
 
         byte[] readme = codeApiInterface.getReadme(codeConfig.getCodeId(), branch);
-        return ResultStat.OK.wrap(new String(readme));
+        if (readme != null) {
+            return ResultStat.OK.wrap(new String(readme));
+        } else {
+            return ResultStat.OK.wrap(null);
+        }
     }
 
     @Override
     public HttpResponseTemp<?> getTags(int projectId) {
         checkGetable(projectId);
 
-        Project project = projectBiz.getById(GlobalConstant.projectTableName, projectId, Project.class);
+        Project project = projectBiz.getById(GlobalConstant.PROJECT_TABLE_NAME, projectId, Project.class);
         if (project == null) {
-            return ResultStat.PROJECT_NOT_EXIST.wrap(null);
+            throw ApiException.wrapResultStat(ResultStat.PROJECT_NOT_EXIST);
         }
         CodeConfiguration codeConfig = project.getCodeInfo();
         if (codeConfig == null) {
-            return ResultStat.PROJECT_CODE_INFO_NOT_EXIST.wrap(null);
+            throw ApiException.wrapResultStat(ResultStat.PROJECT_CODE_INFO_NOT_EXIST);
         }
 
         CodeApiInterface codeApiInterface = ReflectFactory.createCodeApiInterface(CodeType.getTypeByName(codeConfig.getCodeManager()),
                 codeConfig.getCodeManagerUserId());
         if (codeApiInterface == null) {
-            return ResultStat.PARAM_ERROR.wrap(null, "get code api error");
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "get code api error");
         }
 
         List<String> branches = codeApiInterface.getTags(codeConfig.getCodeId());
         return ResultStat.OK.wrap(branches);
     }
 
-    public int checkGetable(int id) {
-        User user = GlobalConstant.userThreadLocal.get();
-        if (user == null || !AuthUtil.verify(user.getId(), id, ResourceType.PROJECT, OperationType.GET)) {
-            throw new PermitException();
-        }
-        return user.getId();
-
+    public void checkGetable(int id) {
+        AuthUtil.verify(CurrentThreadInfo.getUserId(), id, ResourceType.PROJECT, OperationType.GET);
     }
 
-    public User checkModifiable(int id) {
-        User user = GlobalConstant.userThreadLocal.get();
-        if (user == null || !AuthUtil.verify(user.getId(), id, ResourceType.PROJECT, OperationType.MODIFY)) {
-            throw new PermitException();
-        }
-        return user;
+    public void checkModifiable(int id) {
+        AuthUtil.verify(CurrentThreadInfo.getUserId(), id, ResourceType.PROJECT, OperationType.MODIFY);
     }
 
-    public User checkDeletable(int id) {
-        User user = GlobalConstant.userThreadLocal.get();
-        if (user == null || !AuthUtil.verify(user.getId(), id, ResourceType.PROJECT, OperationType.DELETE)) {
-            throw new PermitException();
-        }
-        return user;
+    public void checkDeletable(int id) {
+        AuthUtil.verify(CurrentThreadInfo.getUserId(), id, ResourceType.PROJECT, OperationType.DELETE);
     }
 }

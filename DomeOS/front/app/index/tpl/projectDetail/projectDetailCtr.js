@@ -1,4 +1,4 @@
-domeApp.controller('projectDetailCtr', ['$scope', '$state', '$stateParams', '$domeProject', '$domePublic', '$domeImage', '$modal', '$interval', '$location', function($scope, $state, $stateParams, $domeProject, $domePublic, $domeImage, $modal, $interval, $location) {
+domeApp.controller('projectDetailCtr', ['$scope', '$state', '$stateParams', '$domeProject', '$domePublic', '$domeImage', '$modal', '$timeout', '$location', function($scope, $state, $stateParams, $domeProject, $domePublic, $domeImage, $modal, $timeout, $location) {
 	'use strict';
 	$scope.projectId = $stateParams.project;
 	$scope.branch = 'master';
@@ -10,11 +10,9 @@ domeApp.controller('projectDetailCtr', ['$scope', '$state', '$stateParams', '$do
 	// 项目成员的资源类型
 	$scope.resourceType = 'PROJECT';
 	$scope.resourceId = $scope.projectId;
-	$scope.$on('memberPermisson', function(event, hasPermisson) {
-		$scope.hasMemberPermisson = hasPermisson;
-	});
+
 	$scope.tabActive = [{
-		active: true
+		active: false
 	}, {
 		active: false
 	}, {
@@ -24,7 +22,16 @@ domeApp.controller('projectDetailCtr', ['$scope', '$state', '$stateParams', '$do
 	}, {
 		active: false
 	}];
-	var editProject, project, fileMap = {};
+
+	$scope.$on('memberPermisson', function(event, hasPermisson) {
+		$scope.hasMemberPermisson = hasPermisson;
+		if (!hasPermisson && stateInfo.indexOf('user') !== -1) {
+			$state.go('projectDetail.info');
+			$scope.tabActive[0].active = true;
+		}
+	});
+	var editProject, project, fileMap = {},
+		timeout;
 	var initProjectInfo = function() {
 		$domeProject.getProjectInfo($scope.projectId).then(function(res) {
 			project = $scope.project = $domeProject.getProjectInstance(res.data.result);
@@ -172,6 +179,19 @@ domeApp.controller('projectDetailCtr', ['$scope', '$state', '$stateParams', '$do
 			openDockerfile();
 		}
 	};
+	var stateInfo = $state.$current.name;
+	if (stateInfo.indexOf('config') !== -1) {
+		$scope.tabActive[1].active = true;
+	} else if (stateInfo.indexOf('autobuild') !== -1) {
+		$scope.tabActive[2].active = true;
+	} else if (stateInfo.indexOf('buildlog') !== -1) {
+		$scope.tabActive[3].active = true;
+		$scope.getBuildList();
+	} else if (stateInfo.indexOf('user') !== -1) {
+		$scope.tabActive[4].active = true;
+	} else {
+		$scope.tabActive[0].active = true;
+	}
 }]).controller('dockerfileModalCtr', ['$scope', '$modalInstance', 'project', '$domeProject', '$sce', function($scope, $modalInstance, project, $domeProject, $sce) {
 	project.getDockerfile().then(function(res) {
 		if (res.data.resultCode == 200) {

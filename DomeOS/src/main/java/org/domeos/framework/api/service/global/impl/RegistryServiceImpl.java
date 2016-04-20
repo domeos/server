@@ -3,13 +3,13 @@ package org.domeos.framework.api.service.global.impl;
 import org.apache.commons.lang3.StringUtils;
 import org.domeos.basemodel.HttpResponseTemp;
 import org.domeos.basemodel.ResultStat;
-import org.domeos.framework.api.controller.exception.PermitException;
-import org.domeos.framework.api.model.auth.User;
-import org.domeos.framework.api.model.global.Registry;
 import org.domeos.framework.api.biz.global.GlobalBiz;
+import org.domeos.framework.api.controller.exception.ApiException;
+import org.domeos.framework.api.controller.exception.PermitException;
+import org.domeos.framework.api.model.global.Registry;
 import org.domeos.framework.api.service.global.RegistryService;
 import org.domeos.framework.engine.AuthUtil;
-import org.domeos.global.GlobalConstant;
+import org.domeos.global.CurrentThreadInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,12 +23,10 @@ public class RegistryServiceImpl implements RegistryService {
     @Autowired
     GlobalBiz globalBiz;
 
-    private int checkAdmin() {
-        User user = GlobalConstant.userThreadLocal.get();
-        if (user == null || !AuthUtil.isAdmin(user.getId())) {
-            throw new PermitException();
+    private void checkAdmin() {
+        if (!AuthUtil.isAdmin(CurrentThreadInfo.getUserId())) {
+            throw new PermitException("only admin can operate private registry");
         }
-        return user.getId();
     }
 
     @Override
@@ -41,10 +39,10 @@ public class RegistryServiceImpl implements RegistryService {
     public HttpResponseTemp<?> setPrivateRegistry(Registry registry) {
         checkAdmin();
         if (registry == null) {
-            return ResultStat.PARAM_ERROR.wrap(null, "param is null");
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "param is null");
         }
         if (!StringUtils.isBlank(registry.checkLegality())) {
-            return ResultStat.PARAM_ERROR.wrap(null, registry.checkLegality());
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, registry.checkLegality());
         }
 
         globalBiz.deleteRegistry();

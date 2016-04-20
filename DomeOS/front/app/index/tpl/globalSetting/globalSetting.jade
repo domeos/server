@@ -1,6 +1,6 @@
 .mod-global.global-setting
 	tabset.mod-tab
-		tab(heading="用户管理")
+		tab(heading="用户管理" active="tabActive[0].active" ui-sref="globalSetting.userinfo")
 			.user-list-title
 				input.ui-input-fill.ui-input-search.pull-right(placeholder="输入用户名称查找" ng-model="userKey.key")
 				h3 用户列表
@@ -72,7 +72,7 @@
 						td
 							button.ui-btn.ui-btn-primary.ui-btn-sm(ng-click="userListIns.modifyPw(user)") 修改密码
 							a.icon-delete(ng-click="userListIns.deleteUser(user)" ng-if="user.username!='admin'")
-		tab(heading="LDAP" ng-click="getLdap()")
+		tab(heading="LDAP" ng-click="getLdap()" active="tabActive[1].active" ui-sref="globalSetting.ldapinfo")
 			ul.com-list-info.ldap-info(ng-form name="ladpForm" ng-class="{'need-valid':needValidLdap}")
 				li
 					span.info-name OpenLDAP服务器地址
@@ -86,7 +86,7 @@
 			.com-bottom-option
 				button.ui-btn.ui-btn-bright.ui-btn-md(ng-click="needValidLdap=true;ladpForm.$valid&&saveLdap()") 保存配置
 				//- button.ui-btn.ui-btn-safe.ui-btn-md 验证当前配置
-		tab(heading="代码仓库" ng-click="getGitInfo()")
+		tab(heading="代码仓库" ng-click="getGitInfo()" active="tabActive[2].active" ui-sref="globalSetting.gitinfo")
 			ul.com-list-info(ng-form name="gitForm" ng-class="{'need-valid':needValidGit}")
 				li
 					span.info-name 选择类型
@@ -101,7 +101,7 @@
 						input.ui-input-white.line-single(ng-model="gitInfo.url" name="gitUrl" required ng-pattern="/^[^\\s]*$/")
 			.com-bottom-option
 				button.ui-btn.ui-btn-bright.ui-btn-md(ng-click="needValidGit=true;gitForm.$valid&&saveGit()") 保存配置
-		tab(heading="私有仓库" ng-click="getRegistryInfo()")
+		tab(heading="私有仓库" ng-click="getRegistryInfo()" active="tabActive[3].active" ui-sref="globalSetting.registryinfo")
 			ul.com-list-info(ng-form name="registryForm" ng-class="{'need-valid':needValidRegistry}")
 				li
 					span.info-name 私有仓库地址
@@ -120,7 +120,7 @@
 						textarea.ui-input-white.line-single.certification-txt(ng-model="registryInfo.certification" placeholder="请将证书文本粘贴至文本框")
 			.com-bottom-option
 				button.ui-btn.ui-btn-bright.ui-btn-md(ng-click="needValidRegistry=true;registryForm.$valid&&saveRegistry()") 保存配置
-		tab(heading="服务器" ng-click="getServerInfo()")
+		tab(heading="服务器" ng-click="getServerInfo()" active="tabActive[4].active" ui-sref="globalSetting.serverinfo")
 			ul.com-list-info(ng-form name="serverForm" ng-class="{'need-valid':needValidServer}")
 				li
 					span.info-name.not-align-input 服务器地址
@@ -129,7 +129,7 @@
 						input.ui-input-white.line-single(placeholder="https协议url请用“https://”开头" ng-model="serverInfo.url" name="serverUrl" required ng-pattern="/^[^\\s]*$/")
 			.com-bottom-option
 				button.ui-btn.ui-btn-bright.ui-btn-md(ng-click="needValidServer=true;serverForm.$valid&&saveServer()") 保存配置
-		tab(heading="监控配置" ng-click="getMonitorInfo()")
+		tab(heading="监控配置" ng-click="getMonitorInfo()" active="tabActive[5].active" ui-sref="globalSetting.monitorinfo")
 			ul.com-list-info(ng-form name="monitorForm" ng-class="{'need-valid':needValidMonitor}")
 				//- li
 				//- 	span.info-name 监控控制台地址
@@ -159,7 +159,7 @@
 							input.ui-input-white.full(placeholder="请输入ip：port" name="query" ng-model="monitorConfig.query")
 			.com-bottom-option
 				button.ui-btn.ui-btn-bright.ui-btn-md(ng-click="needValidMonitor=true;monitorForm.$valid&&saveMonitor()") 保存配置
-		tab(heading="Web SSH" ng-click="getWebSsh()")
+		tab(heading="Web SSH" ng-click="getWebSsh()" active="tabActive[6].active" ui-sref="globalSetting.sshinfo")
 			ul.com-list-info(ng-form name="sshForm" ng-class="{'need-valid':needValidSsh}")
 				li
 					span.info-name.not-align-input.webssh-txt Web SSH服务地址
@@ -168,7 +168,7 @@
 						input.ui-input-white.line-single(placeholder="请输入ip：port" name="sshUrl" ng-model="sshInfo.url" required)
 			.com-bottom-option
 				button.ui-btn.ui-btn-bright.ui-btn-md(ng-click="needValidSsh=true;sshForm.$valid&&saveSsh()") 保存配置
-		tab(heading="构建集群" ng-click="getClusterInfo()")
+		tab(heading="构建集群" ng-click="getClusterInfo()" active="tabActive[7].active" ui-sref="globalSetting.clusterinfo")
 			ul.com-list-info(ng-form name="clusterForm" ng-class="{'need-valid':needValidCluster}")
 				li
 					span.info-name.not-align-input api server

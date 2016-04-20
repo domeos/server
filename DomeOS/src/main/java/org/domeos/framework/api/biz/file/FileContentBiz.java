@@ -8,7 +8,7 @@ import org.domeos.framework.engine.exception.DaoException;
  */
 public interface FileContentBiz extends BaseBiz {
 
-    String fileContentTableName = "file_content";
+    String FILE_CONTENT_TABLE_NAME = "file_content";
 
     void insertFileContent(String name, String md5, byte[] content) throws DaoException;
 

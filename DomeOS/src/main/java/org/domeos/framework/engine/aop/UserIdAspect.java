@@ -6,7 +6,7 @@ import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
 import org.domeos.framework.api.model.auth.User;
 import org.domeos.framework.engine.AuthUtil;
-import org.domeos.global.GlobalConstant;
+import org.domeos.global.CurrentThreadInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,8 +29,9 @@ public class UserIdAspect {
         }
         try {
             User user = AuthUtil.getUser();
-            GlobalConstant.userThreadLocal.set(user);
+            CurrentThreadInfo.setUser(user);
         } catch (Exception ignore) {
+            CurrentThreadInfo.setUser(null);
             //ignore exception for anonymous controller
         }
     }

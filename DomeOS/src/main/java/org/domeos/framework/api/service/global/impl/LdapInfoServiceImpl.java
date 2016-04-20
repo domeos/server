@@ -6,17 +6,17 @@ import org.apache.shiro.authc.*;
 import org.apache.shiro.subject.Subject;
 import org.domeos.basemodel.HttpResponseTemp;
 import org.domeos.basemodel.ResultStat;
+import org.domeos.framework.api.biz.global.GlobalBiz;
 import org.domeos.framework.api.biz.resource.ResourceBiz;
+import org.domeos.framework.api.controller.exception.ApiException;
 import org.domeos.framework.api.controller.exception.PermitException;
-import org.domeos.framework.api.model.auth.User;
 import org.domeos.framework.api.model.auth.related.LoginType;
 import org.domeos.framework.api.model.global.LdapInfo;
 import org.domeos.framework.api.model.global.LdapLoginInfo;
-import org.domeos.framework.api.biz.global.GlobalBiz;
 import org.domeos.framework.api.service.global.LdapInfoService;
 import org.domeos.framework.engine.AuthUtil;
 import org.domeos.framework.shiro.token.MultiAuthenticationToken;
-import org.domeos.global.GlobalConstant;
+import org.domeos.global.CurrentThreadInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -31,12 +31,10 @@ public class LdapInfoServiceImpl implements LdapInfoService {
     @Autowired
     ResourceBiz resourceBiz;
 
-    private int checkAdmin() {
-        User user = GlobalConstant.userThreadLocal.get();
-        if (user == null || !AuthUtil.isAdmin(user.getId())) {
-            throw new PermitException();
+    private void checkAdmin() {
+        if (!AuthUtil.isAdmin(CurrentThreadInfo.getUserId())) {
+            throw new PermitException("only admin can operate ldap info");
         }
-        return user.getId();
     }
 
     @Override
@@ -51,7 +49,7 @@ public class LdapInfoServiceImpl implements LdapInfoService {
         checkAdmin();
 
         if (!StringUtils.isBlank(ldapInfo.checkLegality())) {
-            return ResultStat.PARAM_ERROR.wrap(null, ldapInfo.checkLegality());
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, ldapInfo.checkLegality());
         }
 
         globalBiz.deleteLdapInfo();
@@ -69,7 +67,7 @@ public class LdapInfoServiceImpl implements LdapInfoService {
         checkAdmin();
 
         if (!StringUtils.isBlank(ldapInfo.checkLegality())) {
-            return ResultStat.PARAM_ERROR.wrap(null, ldapInfo.checkLegality());
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, ldapInfo.checkLegality());
         }
 
         globalBiz.updateLdapInfo(ldapInfo);
@@ -95,7 +93,7 @@ public class LdapInfoServiceImpl implements LdapInfoService {
     @Override
     public HttpResponseTemp<?> ldapLoginTest(LdapLoginInfo ldapLoginInfo) {
         if (!StringUtils.isBlank(ldapLoginInfo.checkLegality())) {
-            return ResultStat.PARAM_ERROR.wrap(null, ldapLoginInfo.checkLegality());
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, ldapLoginInfo.checkLegality());
         }
 
         return normalLogin(ldapLoginInfo);
@@ -108,18 +106,19 @@ public class LdapInfoServiceImpl implements LdapInfoService {
         if (ldapEmailSuffix != null && !userName.endsWith(ldapEmailSuffix)) {
             ldapLoginInfo.setUsername(userName + ldapEmailSuffix);
         }
-        UsernamePasswordToken token = new MultiAuthenticationToken(ldapLoginInfo.getUsername(), ldapLoginInfo.getPassword(), ldapLoginInfo.getServer(), LoginType.LDAP);
+        UsernamePasswordToken token = new MultiAuthenticationToken(ldapLoginInfo.getUsername(),
+                ldapLoginInfo.getPassword(), ldapLoginInfo.getServer(), LoginType.LDAP);
         try {
             subject.login(token);
             return ResultStat.OK.wrap(null);
         } catch (UnknownAccountException e) {
-            return ResultStat.USER_NOT_AUTHORIZED.wrap("username wrong");
+            throw ApiException.wrapMessage(ResultStat.USER_NOT_AUTHORIZED, "username wrong");
         } catch (IncorrectCredentialsException e) {
-            return ResultStat.USER_NOT_AUTHORIZED.wrap("password wrong");
+            throw ApiException.wrapMessage(ResultStat.USER_NOT_AUTHORIZED, "password wrong");
         } catch (ExcessiveAttemptsException e) {
-            return ResultStat.USER_NOT_AUTHORIZED.wrap("login wrong too many times");
+            throw ApiException.wrapMessage(ResultStat.USER_NOT_AUTHORIZED, "login wrong too many times");
         } catch (AuthenticationException e) {
-            return ResultStat.USER_NOT_AUTHORIZED.wrap("other reasons, " + e.getMessage());
+            throw ApiException.wrapUnknownException(e);
         }
     }
 }

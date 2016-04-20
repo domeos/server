@@ -1,0 +1,23 @@
+
+<div class="mod-cluster add-host">
+  <loading ng-if="isLoading"></loading>
+  <ul class="host-info">
+    <li><span class="num-con"><em class="info-num">1</em></span><span class="info-con com-chose-repository">
+        <p class="info-descrip">请选择主机操作系统类型</p><span class="repository active"><i class="icon-centos"></i>CentOS</span></span></li>
+    <li><span class="num-con"><em class="info-num">2</em></span><span class="info-con">
+        <p class="info-descrip">请选择主机的工作场景</p><span class="env-check">
+          <input id="prodEnv" type="checkbox" name="env" ng-model="hostInfo.env.prod" ng-change="getCmdLabels()" class="ui-check"/>
+          <label for="prodEnv">生产环境</label></span><span class="env-check">
+          <input id="testEnv" type="checkbox" name="env" ng-model="hostInfo.env.test" ng-change="getCmdLabels()" class="ui-check"/>
+          <label for="testEnv">测试环境</label></span></span></li>
+    <li><span class="num-con"><em class="info-num">3</em></span><span class="info-con">
+        <p class="info-descrip">根据您的自身需求为主机打上标签</p>
+        <input placeholder="请输入主机标签,以空格分隔" ng-model="hostInfo.labels" ng-change="getCmdLabels()" class="info-line ui-input-white"/></span></li>
+    <li><span class="num-con"><em class="info-num">4</em></span><span class="info-con">请确保主机名称是唯一的并符合dns命名规则。</span></li>
+    <li><span class="num-con"><em class="info-num">5</em></span><span class="info-con">
+        <p class="info-descrip">允许以下命令，将主机添加到集群中</p>
+        <div class="info-line info-cmd">
+          <textarea ng-model="hostCmd" class="ui-input-white"></textarea><span btn-copy="hostCmd" class="cmd-copy"><i class="icon-copy"></i><br/><span>+复制</span></span>
+        </div></span></li>
+  </ul>
+</div>

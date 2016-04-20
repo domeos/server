@@ -9,6 +9,7 @@ import org.domeos.basemodel.HttpResponseTemp;
 import org.domeos.basemodel.ResultStat;
 import org.domeos.framework.api.biz.auth.AuthBiz;
 import org.domeos.framework.api.biz.resource.ResourceBiz;
+import org.domeos.framework.api.controller.exception.ApiException;
 import org.domeos.framework.api.controller.exception.PermitException;
 import org.domeos.framework.api.model.auth.User;
 import org.domeos.framework.api.model.auth.UserGroupMap;
@@ -18,6 +19,7 @@ import org.domeos.framework.api.model.resource.Resource;
 import org.domeos.framework.api.model.resource.related.*;
 import org.domeos.framework.api.service.resource.ResourceService;
 import org.domeos.framework.engine.AuthUtil;
+import org.domeos.global.CurrentThreadInfo;
 import org.domeos.global.GlobalConstant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -84,13 +86,11 @@ public class ResourceServiceImpl implements ResourceService {
         if (resourceInfo == null) {
             return ResultStat.FORBIDDEN.wrap("resourceInfo is null");
         }
-        User user = GlobalConstant.userThreadLocal.get();
-        if (user == null || !AuthUtil.verify(user.getId(), resourceInfo.getResourceId(), resourceInfo.getResourceType(), OperationType.ADDUSER)) {
-            throw new PermitException();
-        }
+        User user = CurrentThreadInfo.getUser();
+        AuthUtil.verify(user.getId(), resourceInfo.getResourceId(), resourceInfo.getResourceType(), OperationType.ADDUSER);
 
         if (!StringUtils.isBlank(resourceInfo.checkLegality())) {
-            return ResultStat.PARAM_ERROR.wrap(null, resourceInfo.checkLegality());
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, resourceInfo.checkLegality());
         }
 
         setResourceInfo(resourceInfo);
@@ -105,15 +105,13 @@ public class ResourceServiceImpl implements ResourceService {
     @Override
     public HttpResponseTemp<?> updateResource(ResourceInfo resourceInfo) {
         if (resourceInfo == null) {
-            return ResultStat.FORBIDDEN.wrap("resourceInfo is null");
+            throw ApiException.wrapMessage(ResultStat.FORBIDDEN, "resourceInfo is null");
         }
-        User user = GlobalConstant.userThreadLocal.get();
-        if (user == null || !AuthUtil.verify(user.getId(), resourceInfo.getResourceId(), resourceInfo.getResourceType(), OperationType.MODIFYUSER)) {
-            throw new PermitException();
-        }
+        User user = CurrentThreadInfo.getUser();
+        AuthUtil.verify(user.getId(), resourceInfo.getResourceId(), resourceInfo.getResourceType(), OperationType.MODIFYUSER);
 
         if (!StringUtils.isBlank(resourceInfo.checkLegality())) {
-            return ResultStat.PARAM_ERROR.wrap(null, resourceInfo.checkLegality());
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, resourceInfo.checkLegality());
         }
 
         setResourceInfo(resourceInfo);
@@ -127,10 +125,8 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     public HttpResponseTemp<?> getResourceUsers(ResourceType resourceType, int resourceId) {
-        User user = GlobalConstant.userThreadLocal.get();
-        if (user == null || !AuthUtil.verify(user.getId(), resourceId, resourceType, OperationType.GETUSER)) {
-            throw new PermitException();
-        }
+        User user = CurrentThreadInfo.getUser();
+        AuthUtil.verify(user.getId(), resourceId, resourceType, OperationType.GETUSER);
 
         List<Resource> resources = resourceBiz.getResourceByResourceIdAndType(resourceId, resourceType);
         if (resources == null) {
@@ -142,10 +138,8 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     public HttpResponseTemp<?> getResourceUsersOnly(ResourceType resourceType, int resourceId) {
-        User user = GlobalConstant.userThreadLocal.get();
-        if (user == null || !AuthUtil.verify(user.getId(), resourceId, resourceType, OperationType.GETUSER)) {
-            throw new PermitException();
-        }
+        User user = CurrentThreadInfo.getUser();
+        AuthUtil.verify(user.getId(), resourceId, resourceType, OperationType.GETUSER);
 
         List<Resource> resources = resourceBiz.getResourceByResourceIdAndType(resourceId, resourceType);
         if (resources == null) {
@@ -157,9 +151,9 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     public HttpResponseTemp<?> getResourcesUsers(ResourceType resourceType) {
-        User user = GlobalConstant.userThreadLocal.get();
+        User user = CurrentThreadInfo.getUser();
         if (user == null) {
-            throw new PermitException();
+            throw new PermitException("no user logged in");
         }
         List<Resource> resourceList = AuthUtil.getResourceList(user.getId(), resourceType);
         if (resourceList == null) {
@@ -181,9 +175,9 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     public HttpResponseTemp<?> getResourcesUsersOnly(ResourceType resourceType) {
-        User user = GlobalConstant.userThreadLocal.get();
+        User user = CurrentThreadInfo.getUser();
         if (user == null) {
-            throw new PermitException();
+            throw new PermitException("no user logged in");
         }
         List<Resource> resourceList = AuthUtil.getResourceList(user.getId(), resourceType);
         if (resourceList == null) {
@@ -205,10 +199,8 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     public HttpResponseTemp<?> deleteResourceUser(ResourceType resourceType, int resourceId, ResourceOwnerType ownerType, int ownerId) {
-        User user = GlobalConstant.userThreadLocal.get();
-        if (user == null || !AuthUtil.verify(user.getId(), resourceId, resourceType, OperationType.DELETEUSER)) {
-            throw new PermitException();
-        }
+        User user = CurrentThreadInfo.getUser();
+        AuthUtil.verify(user.getId(), resourceId, resourceType, OperationType.DELETEUSER);
 
         resourceBiz.deleteResource(resourceType, resourceId, ownerType, ownerId);
 
@@ -287,7 +279,8 @@ public class ResourceServiceImpl implements ResourceService {
         }
         for (Resource resource : resources) {
             if (resource.getOwnerType().equals(ResourceOwnerType.GROUP)) {
-                ResourceGroupInfo groupInfo = new ResourceGroupInfo(resource.getOwnerId(), resource.getOwnerType(), resource.getRole(), resource.getUpdateTime());
+                ResourceGroupInfo groupInfo = new ResourceGroupInfo(resource.getOwnerId(), resource.getOwnerType(),
+                        resource.getRole(), resource.getUpdateTime());
                 List<UserGroupMap> userGroups = authBiz.getAllUsersInGroup(resource.getOwnerId());
                 if (userGroups != null) {
                     for (UserGroupMap userGroup : userGroups) {
@@ -303,7 +296,8 @@ public class ResourceServiceImpl implements ResourceService {
             } else if (resource.getOwnerType().equals(ResourceOwnerType.USER)) {
                 User user = authBiz.getUserById(resource.getOwnerId());
                 if (user != null) {
-                    ResourceUserInfo userInfo = new ResourceUserInfo(user.getId(), resource.getOwnerType(), resource.getRole(), resource.getUpdateTime(), user.getUsername(), user.getEmail(), user.getPhone());
+                    ResourceUserInfo userInfo = new ResourceUserInfo(user.getId(), resource.getOwnerType(), resource.getRole(),
+                            resource.getUpdateTime(), user.getUsername(), user.getEmail(), user.getPhone());
                     ownerInfo.addUserInfo(userInfo);
                 }
             }
@@ -330,7 +324,8 @@ public class ResourceServiceImpl implements ResourceService {
                     for (UserGroupMap userGroup : userGroups) {
                         User user = authBiz.getUserById(userGroup.getUserId());
                         if (user != null) {
-                            ResourceUserInfo userInfo = new ResourceUserInfo(user.getId(), ResourceOwnerType.USER, userGroup.getRole(), resource.getUpdateTime(), user.getUsername(), user.getEmail(), user.getPhone());
+                            ResourceUserInfo userInfo = new ResourceUserInfo(user.getId(), ResourceOwnerType.USER, userGroup.getRole(),
+                                    resource.getUpdateTime(), user.getUsername(), user.getEmail(), user.getPhone());
                             ownerInfo.addUserInfo(userInfo);
                         }
                     }
@@ -338,7 +333,8 @@ public class ResourceServiceImpl implements ResourceService {
             } else if (resource.getOwnerType().equals(ResourceOwnerType.USER)) {
                 User user = authBiz.getUserById(resource.getOwnerId());
                 if (user != null) {
-                    ResourceUserInfo userInfo = new ResourceUserInfo(user.getId(), resource.getOwnerType(), resource.getRole(), resource.getUpdateTime(), user.getUsername(), user.getEmail(), user.getPhone());
+                    ResourceUserInfo userInfo = new ResourceUserInfo(user.getId(), resource.getOwnerType(), resource.getRole(),
+                            resource.getUpdateTime(), user.getUsername(), user.getEmail(), user.getPhone());
                     ownerInfo.addUserInfo(userInfo);
                 }
             }
@@ -350,13 +346,13 @@ public class ResourceServiceImpl implements ResourceService {
         String tableName;
         switch (type) {
             case PROJECT:
-                tableName = GlobalConstant.projectTableName;
+                tableName = GlobalConstant.PROJECT_TABLE_NAME;
                 break;
             case CLUSTER:
-                tableName = GlobalConstant.clusterTableName;
+                tableName = GlobalConstant.CLUSTER_TABLE_NAME;
                 break;
             case DEPLOY:
-                tableName = GlobalConstant.deployTableName;
+                tableName = GlobalConstant.DEPLOY_TABLE_NAME;
                 break;
             default:
                 return null;

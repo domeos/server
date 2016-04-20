@@ -92,7 +92,7 @@
           <td ng-cloak="ng-cloak">{{isNaN(node.cpuBusyCount)?node.cpuBusyCount:(node.cpuBusyCount+'%')}}</td>
           <td ng-cloak="ng-cloak">{{isNaN(node.memPercentCount)?node.memPercentCount:(node.memPercentCount+'%')}}</td>
           <td><a ng-mouseenter="modifyTooltip('diskUsed',node.diskUsedData)" tooltip-template="'detailTooltip.html'" tooltip-placement="left" ng-cloak="ng-cloak" class="link-tooltip">{{isNaN(node.diskUsedCount)?node.diskUsedCount:(node.diskUsedCount+'%')}}</a></td>
-          <td><a ng-bind="node.diskReadCount" ng-mouseenter="modifyTooltip('diskRead',node.diskReadData)" tooltip-template="'detailTooltip.html'" tooltip-placement="left-top" class="link-tooltip"></a></td>
+          <td><a ng-bind="node.diskReadCount" ng-mouseenter="modifyTooltip('diskRead',node.diskReadData)" tooltip-template="'detailTooltip.html'" tooltip-placement="left" class="link-tooltip"></a></td>
           <td><a ng-bind="node.diskWriteCount" ng-mouseenter="modifyTooltip('diskWrite',node.diskWriteData)" tooltip-template="'detailTooltip.html'" tooltip-placement="left"></a></td>
           <td><a ng-bind="node.netInCount" ng-mouseenter="modifyTooltip('netIn',node.netInData)" tooltip-template="'detailTooltip.html'" tooltip-placement="left"></a></td>
           <td><a ng-bind="node.netOutCount" ng-mouseenter="modifyTooltip('netOut',node.netOutData)" tooltip-template="'detailTooltip.html'" tooltip-placement="left"></a></td>

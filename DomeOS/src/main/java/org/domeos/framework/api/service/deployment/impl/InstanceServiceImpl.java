@@ -1,5 +1,7 @@
 package org.domeos.framework.api.service.deployment.impl;
 
+import org.domeos.basemodel.HttpResponseTemp;
+import org.domeos.basemodel.ResultStat;
 import org.domeos.client.kubernetesclient.KubeClient;
 import org.domeos.client.kubernetesclient.definitions.v1.ContainerStatus;
 import org.domeos.client.kubernetesclient.definitions.v1.Pod;
@@ -8,21 +10,19 @@ import org.domeos.client.kubernetesclient.exception.KubeInternalErrorException;
 import org.domeos.client.kubernetesclient.exception.KubeResponseException;
 import org.domeos.client.kubernetesclient.util.PodUtils;
 import org.domeos.client.kubernetesclient.util.filter.Filter;
+import org.domeos.framework.api.biz.cluster.ClusterBiz;
 import org.domeos.framework.api.biz.deployment.DeploymentBiz;
 import org.domeos.framework.api.controller.exception.ApiException;
-import org.domeos.framework.api.controller.exception.PermitException;
 import org.domeos.framework.api.model.cluster.Cluster;
 import org.domeos.framework.api.model.deployment.Deployment;
 import org.domeos.framework.api.model.deployment.related.Container;
 import org.domeos.framework.api.model.deployment.related.Instance;
-import org.domeos.basemodel.HttpResponseTemp;
-import org.domeos.basemodel.ResultStat;
-import org.domeos.framework.api.biz.cluster.ClusterBiz;
 import org.domeos.framework.api.model.operation.OperationType;
 import org.domeos.framework.api.model.resource.related.ResourceType;
 import org.domeos.framework.api.service.deployment.InstanceService;
 import org.domeos.framework.engine.AuthUtil;
 import org.domeos.framework.engine.k8s.NodeWrapper;
+import org.domeos.global.CurrentThreadInfo;
 import org.domeos.global.GlobalConstant;
 import org.domeos.util.DateUtil;
 import org.slf4j.Logger;
@@ -52,10 +52,8 @@ public class InstanceServiceImpl implements InstanceService {
 
     @Override
     public HttpResponseTemp<?> listPodsByDeployId(int deployId) throws Exception {
-        int userId = GlobalConstant.userThreadLocal.get().getId();
-        if (!AuthUtil.verify(userId, deployId, ResourceType.DEPLOY, OperationType.GET)) {
-            throw new PermitException();
-        }
+        int userId = CurrentThreadInfo.getUserId();
+        AuthUtil.verify(userId, deployId, ResourceType.DEPLOY, OperationType.GET);
         return ResultStat.OK.wrap(getInstances(deployId));
     }
 
@@ -80,10 +78,10 @@ public class InstanceServiceImpl implements InstanceService {
     }
 
     public List<Instance> getInstances(int deployId) throws Exception {
-        Deployment deployment = deploymentBiz.getById(GlobalConstant.deployTableName, deployId, Deployment.class);
-        Cluster cluster = clusterBiz.getById(GlobalConstant.clusterTableName, deployment.getClusterId(), Cluster.class);
+        Deployment deployment = deploymentBiz.getById(GlobalConstant.DEPLOY_TABLE_NAME, deployId, Deployment.class);
+        Cluster cluster = clusterBiz.getById(GlobalConstant.CLUSTER_TABLE_NAME, deployment.getClusterId(), Cluster.class);
         if (cluster == null) {
-            throw new ApiException(ResultStat.CLUSTER_NOT_EXIST, "The cluster with clusterId " + deployment.getClusterId() + " does not exist.");
+            throw ApiException.wrapMessage(ResultStat.CLUSTER_NOT_EXIST, "The cluster with clusterId " + deployment.getClusterId() + " does not exist.");
         }
         Map<String, String> labels = DeploymentServiceImpl.buildRCSelector(deployment);
         NodeWrapper nodeWrapper = new NodeWrapper().init(cluster.getId(), deployment.getNamespace());

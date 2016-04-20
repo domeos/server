@@ -6,7 +6,7 @@
 		a.icon-delete(ng-click="deleteCluster()")
 	.cluster-info
 		tabset
-			tab(heading="主机列表")
+			tab(heading="主机列表" active="tabActive[0].active" ui-sref="clusterDetail.hostlist")
 				loading(ng-if="isWaitingHost")
 				.info-options
 					input.ui-input-fill.ui-input-white.ui-input-search.pull-right(placeholder="输入主机名查找" ng-model="hostKey")
@@ -33,7 +33,7 @@
 							td(ng-switch="node.status")
 								span(ng-switch-when="Ready").txt-safe 在线
 								span(ng-switch-default).txt-prompt 离线
-			tab(heading="集群设置")
+			tab(heading="集群设置" active="tabActive[1].active" ui-sref="clusterDetail.info")
 				button.ui-btn.ui-btn-sm.ui-btn-white.edit-cluster(ng-click="checkEdit()" ng-if="!isEdit") 编辑
 				button.ui-btn.ui-btn-sm.ui-btn-primary.edit-cluster(ng-click="checkEdit()" ng-if="isEdit") 取消编辑
 				div(ng-form name="modifyclusterFrom")
@@ -43,7 +43,7 @@
 					.com-bottom-option-con
 						button.ui-btn.ui-btn-bright.ui-btn-md(ng-disabled="isWaitingModify" ng-click="needValid=true;modifyclusterFrom.$valid&&modifyCluster()") 保存设置
 						span.txt-error(ng-if="needValid&&(modifyclusterFrom.$invalid||!clusterIns.etcdValid||!clusterIns.zookeeperValid||!clusterIns.kafkaValid)") 存在不合法数据，请修改后提交。
-			tab(heading="namespace" ng-click="getNamespace()")
+			tab(heading="namespace" ng-click="getNamespace()" active="tabActive[2].active" ui-sref="clusterDetail.namespace")
 				loading(ng-if="isWaitingNamespace")
 				.info-options(ng-form role="form" name="namespaceForm" ng-class="{'need-valid':needValidNamespace}")
 					span.namespace-title namespace
@@ -56,5 +56,5 @@
 							li(ng-repeat="namespace in namespaceList")
 								span.label-item
 									| {{namespace}}
-			tab(heading="集群成员" ng-hide="!hasMemberPermisson")
+			tab(heading="集群成员" ng-hide="!hasMemberPermisson" active="tabActive[3].active" ui-sref="clusterDetail.users")
 				div.tab-member(ng-include="'index/tpl/tplUserList/tplUserList.html'")

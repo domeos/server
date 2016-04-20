@@ -1,7 +1,7 @@
 
 <div class="mod-global global-setting">
   <tabset class="mod-tab">
-    <tab heading="用户管理">
+    <tab heading="用户管理" active="tabActive[0].active" ui-sref="globalSetting.userinfo">
       <div class="user-list-title">
         <input placeholder="输入用户名称查找" ng-model="userKey.key" class="ui-input-fill ui-input-search pull-right"/>
         <h3>用户列表</h3>
@@ -82,7 +82,7 @@
         </tbody>
       </table>
     </tab>
-    <tab heading="LDAP" ng-click="getLdap()">
+    <tab heading="LDAP" ng-click="getLdap()" active="tabActive[1].active" ui-sref="globalSetting.ldapinfo">
       <ul ng-form="ng-form" name="ladpForm" ng-class="{'need-valid':needValidLdap}" class="com-list-info ldap-info">
         <li><span class="info-name">OpenLDAP服务器地址</span>
           <div class="info-content">
@@ -100,7 +100,7 @@
         <button ng-click="needValidLdap=true;ladpForm.$valid&amp;&amp;saveLdap()" class="ui-btn ui-btn-bright ui-btn-md">保存配置</button>
       </div>
     </tab>
-    <tab heading="代码仓库" ng-click="getGitInfo()">
+    <tab heading="代码仓库" ng-click="getGitInfo()" active="tabActive[2].active" ui-sref="globalSetting.gitinfo">
       <ul ng-form="ng-form" name="gitForm" ng-class="{'need-valid':needValidGit}" class="com-list-info">
         <li><span class="info-name">选择类型</span>
           <div class="info-content com-chose-repository"><span class="repository active"><i class="icon-gitlab"></i>GitLab</span>
@@ -117,7 +117,7 @@
         <button ng-click="needValidGit=true;gitForm.$valid&amp;&amp;saveGit()" class="ui-btn ui-btn-bright ui-btn-md">保存配置</button>
       </div>
     </tab>
-    <tab heading="私有仓库" ng-click="getRegistryInfo()">
+    <tab heading="私有仓库" ng-click="getRegistryInfo()" active="tabActive[3].active" ui-sref="globalSetting.registryinfo">
       <ul ng-form="ng-form" name="registryForm" ng-class="{'need-valid':needValidRegistry}" class="com-list-info">
         <li><span class="info-name">私有仓库地址</span>
           <div class="info-content">
@@ -141,7 +141,7 @@
         <button ng-click="needValidRegistry=true;registryForm.$valid&amp;&amp;saveRegistry()" class="ui-btn ui-btn-bright ui-btn-md">保存配置</button>
       </div>
     </tab>
-    <tab heading="服务器" ng-click="getServerInfo()">
+    <tab heading="服务器" ng-click="getServerInfo()" active="tabActive[4].active" ui-sref="globalSetting.serverinfo">
       <ul ng-form="ng-form" name="serverForm" ng-class="{'need-valid':needValidServer}" class="com-list-info">
         <li><span class="info-name not-align-input">服务器地址</span>
           <div class="info-content"><span class="txt-prompt">DomeOS API服务器访问地址</span>
@@ -153,7 +153,7 @@
         <button ng-click="needValidServer=true;serverForm.$valid&amp;&amp;saveServer()" class="ui-btn ui-btn-bright ui-btn-md">保存配置</button>
       </div>
     </tab>
-    <tab heading="监控配置" ng-click="getMonitorInfo()">
+    <tab heading="监控配置" ng-click="getMonitorInfo()" active="tabActive[5].active" ui-sref="globalSetting.monitorinfo">
       <ul ng-form="ng-form" name="monitorForm" ng-class="{'need-valid':needValidMonitor}" class="com-list-info">
         <li><span class="info-name not-align-input">transfer</span>
           <div class="info-content"><span class="txt-prompt">agent上报信息组件</span>
@@ -183,7 +183,7 @@
         <button ng-click="needValidMonitor=true;monitorForm.$valid&amp;&amp;saveMonitor()" class="ui-btn ui-btn-bright ui-btn-md">保存配置</button>
       </div>
     </tab>
-    <tab heading="Web SSH" ng-click="getWebSsh()">
+    <tab heading="Web SSH" ng-click="getWebSsh()" active="tabActive[6].active" ui-sref="globalSetting.sshinfo">
       <ul ng-form="ng-form" name="sshForm" ng-class="{'need-valid':needValidSsh}" class="com-list-info">
         <li><span class="info-name not-align-input webssh-txt">Web SSH服务地址</span>
           <div class="info-content"><span class="txt-prompt">Web SSH登录服务访问地址（对应容器的访问地址）</span>
@@ -195,7 +195,7 @@
         <button ng-click="needValidSsh=true;sshForm.$valid&amp;&amp;saveSsh()" class="ui-btn ui-btn-bright ui-btn-md">保存配置</button>
       </div>
     </tab>
-    <tab heading="构建集群" ng-click="getClusterInfo()">
+    <tab heading="构建集群" ng-click="getClusterInfo()" active="tabActive[7].active" ui-sref="globalSetting.clusterinfo">
       <ul ng-form="ng-form" name="clusterForm" ng-class="{'need-valid':needValidCluster}" class="com-list-info">
         <li><span class="info-name not-align-input">api server</span>
           <div class="info-content"><span class="txt-prompt">集群的Kubernetes api server地址。请确保该集群内有能用来构建的主机。</span>

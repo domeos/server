@@ -1,11 +1,10 @@
 package org.domeos.framework.api.controller.global;
 
+import org.domeos.basemodel.HttpResponseTemp;
 import org.domeos.framework.api.controller.ApiController;
 import org.domeos.framework.api.model.global.LdapInfo;
 import org.domeos.framework.api.model.global.LdapLoginInfo;
 import org.domeos.framework.api.service.global.LdapInfoService;
-import org.domeos.basemodel.HttpResponseTemp;
-import org.domeos.framework.engine.AuthUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;

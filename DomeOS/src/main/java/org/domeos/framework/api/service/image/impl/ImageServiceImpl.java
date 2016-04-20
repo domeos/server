@@ -1,11 +1,13 @@
 package org.domeos.framework.api.service.image.impl;
 
 import org.apache.commons.lang3.StringUtils;
-import org.domeos.framework.api.biz.image.ImageBiz;
 import org.apache.log4j.Logger;
 import org.domeos.basemodel.HttpResponseTemp;
 import org.domeos.basemodel.ResultStat;
+import org.domeos.framework.api.biz.global.GlobalBiz;
+import org.domeos.framework.api.biz.image.ImageBiz;
 import org.domeos.framework.api.biz.project.ProjectBiz;
+import org.domeos.framework.api.controller.exception.ApiException;
 import org.domeos.framework.api.model.global.Registry;
 import org.domeos.framework.api.model.image.AllDockerImages;
 import org.domeos.framework.api.model.image.BaseImage;
@@ -14,11 +16,10 @@ import org.domeos.framework.api.model.image.DockerImage;
 import org.domeos.framework.api.model.operation.OperationType;
 import org.domeos.framework.api.model.project.Project;
 import org.domeos.framework.api.model.resource.related.ResourceType;
-import org.domeos.framework.api.biz.global.GlobalBiz;
 import org.domeos.framework.api.service.image.ImageService;
 import org.domeos.framework.engine.AuthUtil;
 import org.domeos.global.ClientConfigure;
-import org.domeos.global.GlobalConstant;
+import org.domeos.global.CurrentThreadInfo;
 import org.domeos.util.CommonUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -49,12 +50,12 @@ public class ImageServiceImpl implements ImageService {
     public HttpResponseTemp<?> getBaseImage(int id) {
         BaseImage baseImage = imageBiz.getBaseImage(id);
         if (baseImage == null) {
-            return ResultStat.PARAM_ERROR.wrap(null, "not a base image");
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "not a base image");
         }
         long createTime = PrivateRegistry.getCreateTime(baseImage);
         if (createTime <= 0) {
             logger.error("image not exist in registry");
-            return ResultStat.PARAM_ERROR.wrap(null, "image not exist in registry");
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "image not exist in registry");
         }
         baseImage.setCreateTime(createTime);
         return ResultStat.OK.wrap(baseImage);
@@ -63,27 +64,27 @@ public class ImageServiceImpl implements ImageService {
     @Override
     public HttpResponseTemp<?> setBaseImage(BaseImage baseImage) {
         if (baseImage == null) {
-            return ResultStat.PARAM_ERROR.wrap(null, "base image info is null");
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "base image info is null");
         }
         if (!StringUtils.isBlank(baseImage.checkLegality())) {
-            return ResultStat.PARAM_ERROR.wrap(null, baseImage.checkLegality());
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, baseImage.checkLegality());
         }
 
         BaseImage tmp = imageBiz.getBaseImageByNameAndTag(baseImage.getImageName(), baseImage.getImageTag(), baseImage.getRegistry());
         if (tmp != null) {
-            return ResultStat.BASE_IMAGE_ALREADY_EXIST.wrap(null);
+            throw ApiException.wrapResultStat(ResultStat.BASE_IMAGE_ALREADY_EXIST);
         }
 
         long createTime = PrivateRegistry.getCreateTime(baseImage);
         if (createTime <= 0) {
-            return ResultStat.PARAM_ERROR.wrap(null, "no such image in registry");
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "no such image in registry");
         } else {
             BaseImage old = imageBiz.getBaseImageByNameAndTag(baseImage.getImageName(), baseImage.getImageTag(), baseImage.getRegistry());
             if (old == null) {
                 baseImage.setCreateTime(PrivateRegistry.getCreateTime(baseImage));
                 imageBiz.setBaseImage(baseImage);
             } else {
-                return ResultStat.BASE_IMAGE_ALREADY_EXIST.wrap(null, "base image exist");
+                throw ApiException.wrapMessage(ResultStat.BASE_IMAGE_ALREADY_EXIST, "base image exist");
             }
             return ResultStat.OK.wrap(baseImage);
         }
@@ -114,21 +115,21 @@ public class ImageServiceImpl implements ImageService {
 
     @Override
     public HttpResponseTemp<?> getBuildImage() {
-        int userId = GlobalConstant.userThreadLocal.get().getId();
+        int userId = CurrentThreadInfo.getUserId();
         if (!AuthUtil.isAdmin(userId)) {
-            return ResultStat.FORBIDDEN.wrap(null, "only admin can do this");
+            throw ApiException.wrapMessage(ResultStat.FORBIDDEN, "only admin can do this");
         }
         return ResultStat.OK.wrap(globalBiz.getBuildImage());
     }
 
     @Override
     public HttpResponseTemp<?> setBuildImage(BuildImage buildImage) {
-        int userId = GlobalConstant.userThreadLocal.get().getId();
+        int userId = CurrentThreadInfo.getUserId();
         if (!AuthUtil.isAdmin(userId)) {
-            return ResultStat.FORBIDDEN.wrap(null, "only admin can do this");
+            throw ApiException.wrapMessage(ResultStat.FORBIDDEN, "only admin can do this");
         }
         if (buildImage == null) {
-            return ResultStat.PARAM_ERROR.wrap(null, "build image info is null");
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "build image info is null");
         }
         globalBiz.deleteBuildImage();
         buildImage.setLastUpdate(System.currentTimeMillis());
@@ -138,10 +139,10 @@ public class ImageServiceImpl implements ImageService {
 
     @Override
     public HttpResponseTemp<?> getDockerImages() {
-        int userId = GlobalConstant.userThreadLocal.get().getId();
+        int userId = CurrentThreadInfo.getUserId();
         Registry registry = globalBiz.getRegistry();
         if (registry == null) {
-            return ResultStat.PARAM_ERROR.wrap(null, "private registry must be set");
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "private registry must be set");
         }
         HashSet<DockerImage> authImages = new HashSet<>();
         List<String> images = PrivateRegistry.getDockerImages(registry.fullRegistry());
@@ -196,11 +197,11 @@ public class ImageServiceImpl implements ImageService {
 
     @Override
     public HttpResponseTemp<?> getDockerImageDetailByProjectName(String projectName, String registryUrl) {
-        int userId = GlobalConstant.userThreadLocal.get().getId();
+        int userId = CurrentThreadInfo.getUserId();
         if (StringUtils.isBlank(registryUrl)) {
             Registry registry = globalBiz.getRegistry();
             if (registry == null) {
-                return ResultStat.PARAM_ERROR.wrap(null, "private registry must be set");
+                throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "private registry must be set");
             }
             registryUrl = registry.fullRegistry();
         }
@@ -231,7 +232,7 @@ public class ImageServiceImpl implements ImageService {
                     }
                 } catch (InterruptedException | ExecutionException e) {
                     logger.warn("get project list error, message is " + e.getMessage());
-                    return ResultStat.PARAM_ERROR.wrap(null, "no such image in registry");
+                    throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "no such image in registry");
                 }
             }
         }
@@ -266,10 +267,10 @@ public class ImageServiceImpl implements ImageService {
 
     @Override
     public HttpResponseTemp<?> getAllDockerImages() {
-        int userId = GlobalConstant.userThreadLocal.get().getId();
+        int userId = CurrentThreadInfo.getUserId();
         Registry registry = globalBiz.getRegistry();
         if (registry == null) {
-            return ResultStat.PARAM_ERROR.wrap(null, "private registry must be set");
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "private registry must be set");
         }
         AllDockerImages allDockerImages = new AllDockerImages();
         allDockerImages.setRegistry(registry.getUrl());
@@ -355,18 +356,18 @@ public class ImageServiceImpl implements ImageService {
 
     @Override
     public HttpResponseTemp<?> getDockerImageDetail(String name, String registryUrl) {
-        int userId = GlobalConstant.userThreadLocal.get().getId();
+        int userId = CurrentThreadInfo.getUserId();
         if (StringUtils.isBlank(registryUrl)) {
             Registry registry = globalBiz.getRegistry();
             if (registry == null) {
-                return ResultStat.PARAM_ERROR.wrap(null, "private registry must be set");
+                throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "private registry must be set");
             }
             registryUrl = registry.fullRegistry();
         }
 
         Project project = projectBiz.getProjectByName(name);
         if (project != null && !AuthUtil.verify(userId, project.getId(), ResourceType.PROJECT, OperationType.GET)) {
-            return ResultStat.FORBIDDEN.wrap(null);
+            throw ApiException.wrapResultStat(ResultStat.FORBIDDEN);
         }
 
         List<DockerImage> dockerImages = PrivateRegistry.getDockerImageInfo(name, CommonUtil.fullUrl(registryUrl));

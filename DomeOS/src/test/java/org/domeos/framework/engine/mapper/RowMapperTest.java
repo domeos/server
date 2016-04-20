@@ -1,8 +1,8 @@
 package org.domeos.framework.engine.mapper;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.domeos.base.BaseTestCase;
 import org.domeos.framework.api.model.project.Project;
+import org.domeos.framework.engine.model.CustomObjectMapper;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -14,7 +14,7 @@ public class RowMapperTest extends BaseTestCase {
     RowMapper rowMapper;
 
     @Autowired
-    ObjectMapper objectMapper;
+    CustomObjectMapper objectMapper;
 
     @Test
     public void T010Create() {

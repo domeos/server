@@ -1,0 +1,193 @@
+.mod-global.global-setting
+	tabset.mod-tab
+		tab(heading="用户管理")
+			.user-list-title
+				input.ui-input-fill.ui-input-search.pull-right(placeholder="输入用户名称查找" ng-model="userKey.key")
+				h3 用户列表
+				.com-select-con(select-con)
+					button.ui-btn.ui-btn-select.ui-btn-white(ng-cloak)
+						i.icon-down
+						| {{currentUserType=='USER'?'普通用户':currentUserType}}
+					ul.select-list
+						li.select-item
+							a(ng-click="toggleUserType('LDAP');") LDAP
+						li.select-item
+							a(ng-click="toggleUserType('USER');") 普通用户
+				.to-add(ng-if="currentUserType=='USER'")
+					button.ui-btn.ui-btn-primary.ui-btn-sm(ng-if="!isShowAdd" ng-click="toggleShowAdd()") 创建用户
+						i.icon-down-white.up
+					button.ui-btn.ui-btn-primary.ui-btn-sm(ng-if="isShowAdd" ng-click="toggleShowAdd()") 取消
+						i.icon-down-white
+			ul.com-list-info.add-user(ng-form name="userForm" role="form" ng-class="{'need-valid':needValidUser.valid}" ng-show="isShowAdd")
+				li
+					span.info-name 用户名
+					.info-content
+						input.ui-input-white.line-single(placeholder="由小写字母和数字组成" name="newuser" ng-model="newUser.username" is-user-exist="userListIns.userList" required ng-pattern="/^[0-9a-z]+$/")
+						span.txt-error(ng-if="(needValidUser.valid||userForm.newuser.$dirty)&&userForm.newuser.$error.pattern") 非法的名称
+						span.txt-error(ng-if="(needValidUser.valid||userForm.newuser.$dirty)&&userForm.newuser.$error.isUserExist") 用户已存在
+				li
+					span.info-name 密码
+					.info-content
+						input.ui-input-white.line-single(placeholder="8-20位" type="password" ng-model="newUser.password" name="newpw"  ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" required ng-minlength="8" ng-maxlength="20")
+						span.txt-error(ng-if="(needValidUser.valid||userForm.newpw.$dirty)&&(userForm.newpw.$error.minlength||userForm.newpw.$error.maxlength)") 长度必须为8-20位
+				li
+					span.info-name 再次输入密码
+					.info-content
+						input.ui-input-white.line-single(placeholder="重新输入密码" type="password" ng-model="newUser.rePassword" name="password"  ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" required equal="newUser.password")
+						span.txt-error(ng-if="(needValidUser.valid||userForm.password.$dirty)&&userForm.password.$error.equal") 两次密码不一致
+				li
+					span.info-name 电子邮箱
+					.info-content
+						input.ui-input-white.line-single( ng-model="newUser.email" name="email" required)
+						.txt-wrap
+							button.ui-btn.ui-btn-primary.ui-btn-sm(ng-click="needValidUser.valid=true;userForm.$valid&&addUser(userForm);") 确认创建
+			table.ui-table-dome.full.ui-table-users(ng-if="currentUserType=='LDAP'")
+				thead
+					tr
+						th 用户名
+				tbody
+					tr(ng-if="!userList||userListFiltered1.length===0")
+						td 无相关用户信息
+					tr(ng-repeat="user in userListFiltered1=(userList|filter:{'username':userKey.key})")
+						td(ng-bind="user.username")
+			table.ui-table-dome.full.ui-table-users(ng-if="currentUserType!='LDAP'")
+				thead
+					tr
+						th 用户名
+						th 电子邮箱
+						th 操作
+				tbody
+					tr(ng-if="!userListIns.userList||userFiltered.length===0")
+						td(colspan="3") 无相关用户信息
+					tr(ng-repeat="user in userFiltered=(userListIns.userList|filter:{'username':userKey.key})")
+						td(ng-bind="user.username")
+						td
+							span(ng-if="!user.isEdit")
+								span.useremail.tool-nowrap(ng-bind="user.email")
+								a.icon-edit(ng-click="userListIns.toggleEdit(user,true)")
+							span(ng-if="user.isEdit")
+								input.useremail.ui-input-white(ng-model="user.newEmail")
+								button.ui-btn.ui-btn-primary.ui-btn-sm(ng-click="userListIns.saveSingle(user)") 保存
+								button.ui-btn.ui-btn-white.ui-btn-sm(ng-click="userListIns.toggleEdit(user,false)") 取消
+						td
+							button.ui-btn.ui-btn-primary.ui-btn-sm(ng-click="userListIns.modifyPw(user)") 修改密码
+							a.icon-delete(ng-click="userListIns.deleteUser(user)" ng-if="user.username!='admin'")
+		tab(heading="LDAP" ng-click="getLdap()")
+			ul.com-list-info.ldap-info(ng-form name="ladpForm" ng-class="{'need-valid':needValidLdap}")
+				li
+					span.info-name OpenLDAP服务器地址
+					.info-content
+						input.ui-input-white.line-single(placeholder="IP或域名" name="ladpUrl" ng-model="ldapInfo.url" required ng-pattern="/^[^\\s]*$/")
+						input.ui-input-white.line-single(placeholder="端口，如：389" name="ladpPort" ng-model="ldapInfo.port" required ng-pattern="/^[^\\s]*$/")
+				li
+					span.info-name email后缀
+					.info-content
+						input.ui-input-white.line-single(ng-model="ldapInfo.emailSuffix" name="ladpEmail" required ng-pattern="/^[^\\s]*$/")
+			.com-bottom-option
+				button.ui-btn.ui-btn-bright.ui-btn-md(ng-click="needValidLdap=true;ladpForm.$valid&&saveLdap()") 保存配置
+				//- button.ui-btn.ui-btn-safe.ui-btn-md 验证当前配置
+		tab(heading="代码仓库" ng-click="getGitInfo()")
+			ul.com-list-info(ng-form name="gitForm" ng-class="{'need-valid':needValidGit}")
+				li
+					span.info-name 选择类型
+					.info-content.com-chose-repository
+						span.repository.active
+							i.icon-gitlab
+							| GitLab
+						p.txt-prompt 每种类型可分别配置一个代码仓库
+				li
+					span.info-name 代码仓库地址
+					.info-content
+						input.ui-input-white.line-single(ng-model="gitInfo.url" name="gitUrl" required ng-pattern="/^[^\\s]*$/")
+			.com-bottom-option
+				button.ui-btn.ui-btn-bright.ui-btn-md(ng-click="needValidGit=true;gitForm.$valid&&saveGit()") 保存配置
+		tab(heading="私有仓库" ng-click="getRegistryInfo()")
+			ul.com-list-info(ng-form name="registryForm" ng-class="{'need-valid':needValidRegistry}")
+				li
+					span.info-name 私有仓库地址
+					.info-content
+						input.ui-input-white.line-single(ng-model="registryInfo.url" name="registryUrl" required ng-pattern="/^[^\\s]*$/" style="display:inline-block")
+						span
+							input.ui-check(type="checkbox" name="isHttps" id="isHttps" ng-model="registryInfo.status" ng-true-value="1" ng-false-value="0")
+							label(for="isHttps") https
+				li
+					span.info-name 描述
+					.info-content
+						input.ui-input-white.line-single(ng-model="registryInfo.description")
+				li(ng-if="registryInfo.status===1")
+					span.info-name 证书信息
+					.info-content
+						textarea.ui-input-white.line-single.certification-txt(ng-model="registryInfo.certification" placeholder="请将证书文本粘贴至文本框")
+			.com-bottom-option
+				button.ui-btn.ui-btn-bright.ui-btn-md(ng-click="needValidRegistry=true;registryForm.$valid&&saveRegistry()") 保存配置
+		tab(heading="服务器" ng-click="getServerInfo()")
+			ul.com-list-info(ng-form name="serverForm" ng-class="{'need-valid':needValidServer}")
+				li
+					span.info-name.not-align-input 服务器地址
+					.info-content
+						span.txt-prompt DomeOS API服务器访问地址
+						input.ui-input-white.line-single(placeholder="https协议url请用“https://”开头" ng-model="serverInfo.url" name="serverUrl" required ng-pattern="/^[^\\s]*$/")
+			.com-bottom-option
+				button.ui-btn.ui-btn-bright.ui-btn-md(ng-click="needValidServer=true;serverForm.$valid&&saveServer()") 保存配置
+		tab(heading="监控配置" ng-click="getMonitorInfo()")
+			ul.com-list-info(ng-form name="monitorForm" ng-class="{'need-valid':needValidMonitor}")
+				//- li
+				//- 	span.info-name 监控控制台地址
+				//- 	.info-content
+				//- 		input.ui-input-white.line-single(placeholder="https协议url请用“https://”开头" name="serverUrl" ng-model="monitorConfig.url" required ng-pattern="/^[^\\s]*$/")
+				li
+					span.info-name.not-align-input transfer
+					.info-content
+						span.txt-prompt agent上报信息组件
+						.line-single(ng-repeat="tansfer in monitorConfig.transfer")
+							input.ui-input-white.full(placeholder="请输入ip：port" name="serverUrl" ng-model="tansfer.text" ng-focus="$last&&monitorIns.addItem('transfer')")
+							.txt-wrap(ng-if="monitorConfig.transfer.length>1")
+								a.icon-delete(ng-click="monitorIns.deleteArrItem('transfer',$index)")
+				li
+					span.info-name.not-align-input graph
+					.info-content
+						span.txt-prompt 监控数据存储组件
+						.line-single(ng-repeat="graph in monitorConfig.graph")
+							input.ui-input-white.full(placeholder="请输入ip：port" name="serverUrl" ng-model="graph.text" ng-focus="$last&&monitorIns.addItem('graph')")
+							.txt-wrap(ng-if="monitorConfig.graph.length>1")
+								a.icon-delete(ng-click="monitorIns.deleteArrItem('graph',$index)")
+				li
+					span.info-name.not-align-input query
+					.info-content
+						span.txt-prompt 监控数据查询组件
+						.line-single
+							input.ui-input-white.full(placeholder="请输入ip：port" name="query" ng-model="monitorConfig.query")
+			.com-bottom-option
+				button.ui-btn.ui-btn-bright.ui-btn-md(ng-click="needValidMonitor=true;monitorForm.$valid&&saveMonitor()") 保存配置
+		tab(heading="Web SSH" ng-click="getWebSsh()")
+			ul.com-list-info(ng-form name="sshForm" ng-class="{'need-valid':needValidSsh}")
+				li
+					span.info-name.not-align-input.webssh-txt Web SSH服务地址
+					.info-content
+						span.txt-prompt Web SSH登录服务访问地址（对应容器的访问地址）
+						input.ui-input-white.line-single(placeholder="请输入ip：port" name="sshUrl" ng-model="sshInfo.url" required)
+			.com-bottom-option
+				button.ui-btn.ui-btn-bright.ui-btn-md(ng-click="needValidSsh=true;sshForm.$valid&&saveSsh()") 保存配置
+		tab(heading="构建集群" ng-click="getClusterInfo()")
+			ul.com-list-info(ng-form name="clusterForm" ng-class="{'need-valid':needValidCluster}")
+				li
+					span.info-name.not-align-input api server
+					.info-content
+						span.txt-prompt 集群的Kubernetes api server地址。请确保该集群内有能用来构建的主机。
+						input.ui-input-white.line-single(placeholder="请输入ip：port" name="apiServer" ng-model="clusterInfo.host" required)
+				li
+					span.info-name namespace
+					.info-content
+						input.ui-input-white.line-single(placeholder="请指定一个namespace" name="namespace" ng-model="clusterInfo.namespace" required)
+			.com-bottom-option
+				button.ui-btn.ui-btn-bright.ui-btn-md(ng-click="needValidCluster=true;clusterForm.$valid&&saveCluster()") 保存配置
+script(type="text/ng-template" id="newPasswdModal.html")
+	.d-modal-header 修改密码
+	.modal-body.text-center.modal-newpw(ng-form role="form" name="pwForm")
+		span.info-name 新密码
+		.info-content.text-left
+			input.ui-input-white.full(placeholder="8-20位" type="password" name="newPassword" ng-model="passwd" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" required ng-minlength="8" ng-maxlength="20")
+			span.txt-error(ng-if="pwForm.newPassword.$dirty&&(pwForm.newPassword.$error.minlength||pwForm.newPassword.$error.maxlength)") 长度必须为8-20位
+	.modal-footer
+		button.ui-btn.ui-btn-sm.ui-btn-white(ng-click="cancel()") 取消
+		button.ui-btn.ui-btn-sm.ui-btn-safe(ng-click="pwForm.$valid&&subPw()") 确定

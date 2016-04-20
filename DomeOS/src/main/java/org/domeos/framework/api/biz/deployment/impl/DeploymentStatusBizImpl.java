@@ -15,11 +15,11 @@ public class DeploymentStatusBizImpl extends BaseBizImpl implements DeploymentSt
 
     @Override
     public DeploymentStatus getDeploymentStatus(int deployId) {
-        return DeploymentStatus.valueOf(super.getState(GlobalConstant.deployTableName, deployId));
+        return DeploymentStatus.valueOf(super.getState(GlobalConstant.DEPLOY_TABLE_NAME, deployId));
     }
 
     @Override
     public void setDeploymentStatus(int deployId, DeploymentStatus status) {
-        super.updateState(GlobalConstant.deployTableName, status.name(), deployId);
+        super.updateState(GlobalConstant.DEPLOY_TABLE_NAME, status.name(), deployId);
     }
 }

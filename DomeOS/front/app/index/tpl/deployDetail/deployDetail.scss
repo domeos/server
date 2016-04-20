@@ -77,10 +77,14 @@
 					white-space: pre-wrap;
 				}
 				.event-process{
+					display: inline-block;
 					width: 350px;
 					.event-process-item{
 						display: inline-block;
 						margin-left: 12px;
+						&:first-child{
+							margin-left: 0;
+						}
 					}
 					.icon-process-dot{
 						display: inline-block;
@@ -155,7 +159,7 @@
 						}
 					}
 					.event-status{
-						color:  #f85959;;
+						color:  #f85959;
 					}
 				}
 				&.event-building{
@@ -167,6 +171,14 @@
 					}
 					.event-status{
 						color:  #5dabf3;;
+					}
+				}
+				&.event-system{
+					.icon-dot{
+						background-color: rgba(255,171,0,.2);
+						&:after{
+							background-color:  rgba(255,171,0,.4);
+						}
 					}
 				}
 				&:nth-child(2n+1){
@@ -210,6 +222,10 @@
 		}
 		.all-update{
 			color: dome-color(dome,bright);
+		}
+		.image-tag{
+			float: right;
+			margin-right: 4px;
 		}
 		.com-list-info{
 			margin: 20px  $wider-padding 0  $wider-padding;

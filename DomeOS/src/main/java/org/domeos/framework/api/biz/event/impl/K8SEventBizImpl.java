@@ -1,7 +1,6 @@
 package org.domeos.framework.api.biz.event.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.domeos.client.kubernetesclient.definitions.v1.Event;
 import org.domeos.client.kubernetesclient.definitions.v1.ObjectReference;
 import org.domeos.framework.api.biz.event.K8SEventBiz;
@@ -9,13 +8,12 @@ import org.domeos.framework.api.consolemodel.event.EventInfo;
 import org.domeos.framework.api.mapper.event.EventMapper;
 import org.domeos.framework.api.model.event.EventKind;
 import org.domeos.framework.api.model.event.releated.EventDBProto;
+import org.domeos.framework.engine.model.CustomObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -30,7 +28,7 @@ public class K8SEventBizImpl implements K8SEventBiz {
     EventMapper eventMapper;
 
     @Autowired
-    ObjectMapper objectMapper;
+    CustomObjectMapper objectMapper;
 
     @Override
     public void createEvent(int clusterId, Event event) throws IOException {
@@ -110,13 +108,14 @@ public class K8SEventBizImpl implements K8SEventBiz {
     }
 
     private static List<Event> mergeEvent(List<Event> events) {
-        LinkedHashMap<String, Event> eventMap = new LinkedHashMap<>();
-        for (Event event : events) {
-            String character = getCharacter(event);
-            eventMap.put(character, event);
-        }
-        events = new ArrayList<>(eventMap.values().size());
-        events.addAll(eventMap.values());
+        // already merged in database by "insert on duplicate update"
+//        LinkedHashMap<String, Event> eventMap = new LinkedHashMap<>();
+//        for (Event event : events) {
+//            String character = getCharacter(event);
+//            eventMap.put(character, event);
+//        }
+//        events = new ArrayList<>(eventMap.values().size());
+//        events.addAll(eventMap.values());
         return events;
     }
 

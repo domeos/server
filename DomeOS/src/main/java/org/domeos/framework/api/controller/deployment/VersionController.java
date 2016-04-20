@@ -1,6 +1,7 @@
 package org.domeos.framework.api.controller.deployment;
 
 import org.domeos.basemodel.HttpResponseTemp;
+import org.domeos.basemodel.ResultStat;
 import org.domeos.framework.api.consolemodel.deployment.VersionDetail;
 import org.domeos.framework.api.consolemodel.deployment.VersionInfo;
 import org.domeos.framework.api.controller.ApiController;
@@ -23,23 +24,22 @@ public class VersionController extends ApiController {
 
     @ResponseBody
     @RequestMapping(value = "/create", method = RequestMethod.POST)
-    public HttpResponseTemp<?> createVersion(@RequestBody Version version,
-                                             @RequestParam(value = "deployId", required = true) int deployId
-    ) throws Exception {
-        return versionService.createVersion(version, deployId);
+    public HttpResponseTemp<Long> createVersion(@RequestBody Version version,
+                                             @RequestParam(value = "deployId", required = true) int deployId)
+            throws Exception {
+        return ResultStat.OK.wrap(versionService.createVersion(version, deployId));
     }
 
     @ResponseBody
     @RequestMapping(value = "/id/{deployId}/{versionId}", method = RequestMethod.GET)
     public HttpResponseTemp<VersionDetail> getVersion(@PathVariable int deployId,
-                                                      @PathVariable long versionId
-    ) throws Exception {
-        return versionService.getVersion(deployId, versionId);
+                                                      @PathVariable long versionId) throws Exception {
+        return ResultStat.OK.wrap(versionService.getVersion(deployId, versionId));
     }
 
     @ResponseBody
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public HttpResponseTemp<List<VersionInfo>> listVersion(@RequestParam int deployId) throws Exception {
-        return versionService.listVersion(deployId);
+        return ResultStat.OK.wrap(versionService.listVersion(deployId));
     }
 }

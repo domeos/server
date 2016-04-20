@@ -32,11 +32,11 @@ public class ReplicationControllerUpdater {
     private final UpdateStatus status = new UpdateStatus(UpdatePhase.Unknow, 0, 0);
     private Future updateFuture = null;
     private StatusChangeHandler<UpdateStatus> statusHandler;  // call every time status change
-    private static final ReplicationControllerUpdater emptyUpdater = new ReplicationControllerUpdater();
+    private static final ReplicationControllerUpdater EMPTY_UPDATER = new ReplicationControllerUpdater();
     private static Logger logger = Logger.getLogger(ReplicationControllerUpdater.class);
 
     public static ReplicationControllerUpdater EmptyUpdater() {
-        return emptyUpdater;
+        return EMPTY_UPDATER;
     }
 
     public static ReplicationControllerUpdater RollingUpdater(
@@ -77,7 +77,7 @@ public class ReplicationControllerUpdater {
         updater.client = client;
     }
 
-    private ReplicationControllerUpdater(){
+    private ReplicationControllerUpdater() {
     }
 
     public void start() {
@@ -361,26 +361,26 @@ public class ReplicationControllerUpdater {
         if ((policy.getMinPodReadyCount() > 0 && totalReadyCountNow < policy.getMinPodReadyCount())
                 || (policy.getMaxPodReadyCount() > 0 && totalReadyCountNow > policy.getMaxPodReadyCount())) {
             updateFailed("check update status failed with oldPodReadyCount=" + readyCount.getOldReplicaCount()
-                    + ", newPodReadyCount=" + readyCount.getNewReplicaCount() + ", but require minPodReadyCount="
-                    + policy.getMinPodReadyCount() + ", maxPodReadCount=" + policy.getMaxPodReadyCount()
-                );
+                            + ", newPodReadyCount=" + readyCount.getNewReplicaCount() + ", but require minPodReadyCount="
+                            + policy.getMinPodReadyCount() + ", maxPodReadCount=" + policy.getMaxPodReadyCount()
+            );
             return false;
         }
         return true;
     }
 
-/*
-    public static boolean checkUpdateStatus(UpdatePolicy policy, UpdateReplicationCount readyCountNow) {
-        int totalReadyCountNow = readyCountNow.getNewReplicaCount() + readyCountNow.getOldReplicaCount();
-        if ((policy.getMinPodReadyCount() > 0 && totalReadyCountNow < policy.getMinPodReadyCount())
-                || (policy.getMaxPodReadyCount() > 0 && totalReadyCountNow > policy.getMaxPodReadyCount())) {
-            return false;
+    /*
+        public static boolean checkUpdateStatus(UpdatePolicy policy, UpdateReplicationCount readyCountNow) {
+            int totalReadyCountNow = readyCountNow.getNewReplicaCount() + readyCountNow.getOldReplicaCount();
+            if ((policy.getMinPodReadyCount() > 0 && totalReadyCountNow < policy.getMinPodReadyCount())
+                    || (policy.getMaxPodReadyCount() > 0 && totalReadyCountNow > policy.getMaxPodReadyCount())) {
+                return false;
+            }
+            return true;
         }
-        return true;
-    }
-*/
+    */
     public UpdateReplicationCount getDesireCount(ReplicationController oldRC, ReplicationController newRC) {
-        return new UpdateReplicationCount(oldRC.getSpec().getReplicas() , newRC.getSpec().getReplicas());
+        return new UpdateReplicationCount(oldRC.getSpec().getReplicas(), newRC.getSpec().getReplicas());
     }
 
     public class UpdateReplicationController implements Runnable {

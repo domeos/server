@@ -12,6 +12,7 @@ import org.domeos.framework.api.biz.auth.AuthBiz;
 import org.domeos.framework.api.biz.project.ProjectBiz;
 import org.domeos.framework.api.consolemodel.auth.ChangeUserPassword;
 import org.domeos.framework.api.consolemodel.auth.UserPassword;
+import org.domeos.framework.api.controller.exception.ApiException;
 import org.domeos.framework.api.model.auth.User;
 import org.domeos.framework.api.model.auth.related.LoginType;
 import org.domeos.framework.api.model.auth.related.Role;
@@ -88,13 +89,13 @@ public class UserServiceImpl implements UserService {
         try {
             subject.login(token);
         } catch (UnknownAccountException e) {
-            return ResultStat.USER_NOT_AUTHORIZED.wrap("username wrong");
+            throw ApiException.wrapMessage(ResultStat.USER_NOT_AUTHORIZED, "username wrong");
         } catch (IncorrectCredentialsException e) {
-            return ResultStat.USER_NOT_AUTHORIZED.wrap("password wrong");
+            throw ApiException.wrapMessage(ResultStat.USER_NOT_AUTHORIZED, "password wrong");
         } catch (ExcessiveAttemptsException e) {
-            return ResultStat.USER_NOT_AUTHORIZED.wrap("login wrong too many times");
+            throw ApiException.wrapMessage(ResultStat.USER_NOT_AUTHORIZED, "login wrong too many times");
         } catch (AuthenticationException e) {
-            return ResultStat.USER_NOT_AUTHORIZED.wrap("other reasons");
+            throw ApiException.wrapUnknownException(e);
         }
 
         if (userPass.getLoginType() != null && userPass.getLoginType().equals(LoginType.LDAP)) {
@@ -120,19 +121,19 @@ public class UserServiceImpl implements UserService {
     public HttpResponseTemp<?> createUser(int userId, User user, boolean flag) {
         if (flag) {
             if (!AuthUtil.isAdmin(userId)) {
-                return ResultStat.USER_NOT_LEGAL.wrap("must be admin");
+                throw ApiException.wrapMessage(ResultStat.USER_NOT_LEGAL, "must be admin");
             }
         }
         if (user == null) {
-            return ResultStat.USER_NOT_LEGAL.wrap(null, "user info is null");
+            throw ApiException.wrapMessage(ResultStat.USER_NOT_LEGAL, "user info is null");
         }
 
         if (!StringUtils.isBlank(user.checkLegality())) {
-            return ResultStat.USER_NOT_LEGAL.wrap(null, user.checkLegality());
+            throw ApiException.wrapMessage(ResultStat.USER_NOT_LEGAL, user.checkLegality());
         }
 
         if (authBiz.getUserByName(user.getUsername()) != null) {
-            return ResultStat.USER_EXISTED.wrap(null);
+            throw ApiException.wrapResultStat(ResultStat.USER_EXISTED);
         }
 
         CryptoUtil.encryptPassword(user);
@@ -169,11 +170,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public HttpResponseTemp<?> deleteUser(int userId, String username) {
         if (!AuthUtil.isAdmin(userId)) {
-            return ResultStat.USER_NOT_LEGAL.wrap("must be admin");
+            throw ApiException.wrapMessage(ResultStat.USER_NOT_LEGAL, "must be admin");
         }
         User user = authBiz.getUserByName(username);
         if (user == null) {
-            return ResultStat.USER_NOT_EXIST.wrap(null);
+            throw ApiException.wrapResultStat(ResultStat.USER_NOT_EXIST);
         }
         user.setUpdateTime(System.currentTimeMillis());
         user.setState(UserState.DELETED);
@@ -185,7 +186,7 @@ public class UserServiceImpl implements UserService {
     public HttpResponseTemp<?> modifyUser(int userId, String username, String email) {
         User user = getUser(username);
         if (user == null) {
-            return ResultStat.USER_NOT_EXIST.wrap("user is null");
+            throw ApiException.wrapMessage(ResultStat.USER_NOT_EXIST, "user is null");
         }
         if (AuthUtil.isAdmin(userId) || user.getId() == userId) {
             if (email != null) {
@@ -193,14 +194,14 @@ public class UserServiceImpl implements UserService {
             }
             return modifyUser(user);
         } else {
-            return ResultStat.USER_NOT_LEGAL.wrap("");
+            throw ApiException.wrapResultStat(ResultStat.USER_NOT_LEGAL);
         }
     }
 
     @Override
     public HttpResponseTemp<?> modifyUser(User user) {
         if (user == null) {
-            return ResultStat.USER_NOT_LEGAL.wrap("user is null");
+            throw ApiException.wrapMessage(ResultStat.USER_NOT_LEGAL, "user is null");
         }
         user.setUpdateTime(System.currentTimeMillis());
         authBiz.modifyUser(user);
@@ -210,14 +211,14 @@ public class UserServiceImpl implements UserService {
     @Override
     public HttpResponseTemp<?> changePassword(ChangeUserPassword changeUserPassword) {
         if (changeUserPassword == null) {
-            return ResultStat.USER_NOT_AUTHORIZED.wrap("change password fail");
+            throw ApiException.wrapMessage(ResultStat.USER_NOT_AUTHORIZED, "change password fail");
         }
         // modify to newpassword only if oldpassword is matched
         UserPassword userPass = new UserPassword(changeUserPassword.getUsername(), changeUserPassword.getOldpassword());
         userPass.setLoginType(LoginType.USER);
         HttpResponseTemp<?> res = normalLogin(userPass);
         if (res == null) {
-            return ResultStat.USER_NOT_AUTHORIZED.wrap("change password fail");
+            throw ApiException.wrapMessage(ResultStat.USER_NOT_AUTHORIZED, "change password fail");
         }
         if (res.getResultCode() == ResultStat.OK.responseCode) {
             User user = new User(changeUserPassword.getUsername(), changeUserPassword.getNewpassword());
@@ -227,17 +228,17 @@ public class UserServiceImpl implements UserService {
             subject.logout();
             return ResultStat.OK.wrap("");
         } else {
-            return ResultStat.USER_NOT_AUTHORIZED.wrap("change password fail");
+            throw ApiException.wrapMessage(ResultStat.USER_NOT_AUTHORIZED, "change password fail");
         }
     }
 
     @Override
     public HttpResponseTemp<?> changePasswordByAdmin(int userId, UserPassword userPassword) {
         if (!AuthUtil.isAdmin(userId)) {
-            return ResultStat.USER_NOT_LEGAL.wrap("must be admin");
+            throw ApiException.wrapMessage(ResultStat.USER_NOT_LEGAL, "must be admin");
         }
         if (userPassword == null) {
-            return ResultStat.USER_NOT_AUTHORIZED.wrap("userPassword is null");
+            throw ApiException.wrapMessage(ResultStat.USER_NOT_AUTHORIZED, "userPassword is null");
         }
         User user = new User(userPassword.getUsername(), userPassword.getPassword());
         CryptoUtil.encryptPassword(user);
@@ -254,11 +255,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public HttpResponseTemp<?> getUserInfo(String username) {
         if (!verify(username)) {
-            return ResultStat.USER_NOT_AUTHORIZED.wrap(null);
+            throw ApiException.wrapResultStat(ResultStat.USER_NOT_AUTHORIZED);
         }
         User userInfo = authBiz.getUserByName(username);
         if (userInfo == null) {
-            return ResultStat.USER_NOT_EXIST.wrap(null);
+            throw ApiException.wrapResultStat(ResultStat.USER_NOT_EXIST);
         }
         return ResultStat.OK.wrap(userInfo);
     }

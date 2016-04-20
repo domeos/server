@@ -5,7 +5,7 @@
 			i.icon-tool
 			| 镜像定制工具
 	tabset.mod-tab
-		tab(heading="基础镜像")
+		tab(heading="基础镜像" active="tabActive[0].active" ui-sref="imageManage.baseimages")
 			.image-option
 				button.ui-btn.ui-btn-bright.ui-btn-sm(ng-if="!isShowAdd" ng-click="toggleShowAdd(true)") 添加
 				button.ui-btn.ui-btn-bright.ui-btn-sm(ng-if="isShowAdd" ng-click="toggleShowAdd(false)") 取消
@@ -45,7 +45,7 @@
 						td(ng-bind="img.description")
 						td
 							a.icon-delete(ng-click="deleteBaseImage(img.id)")
-		tab(heading="项目镜像")
+		tab(heading="项目镜像" active="tabActive[1].active" ui-sref="imageManage.projectimages")
 			.image-option
 				span.registry-address 仓库地址：{{projectRegistry}}
 				.pull-right
@@ -65,7 +65,7 @@
 						td
 							a.link-safe(ng-click="openTagModal(img.imageName)") 查看
 						td(ng-bind="parseDate(img.createTime)")
-		tab(heading="非项目镜像")
+		tab(heading="非项目镜像" active="tabActive[2].active" ui-sref="imageManage.otherimages")
 			.image-option
 				span.registry-address 仓库地址：{{projectRegistry}}
 				.pull-right

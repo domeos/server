@@ -1,13 +1,15 @@
 package org.domeos.framework.api.controller.global;
 
-import org.domeos.framework.api.model.global.CiCluster;
-import org.domeos.framework.api.service.global.CiClusterService;
 import org.domeos.basemodel.HttpResponseTemp;
 import org.domeos.framework.api.controller.ApiController;
-import org.domeos.framework.engine.AuthUtil;
+import org.domeos.framework.api.model.global.CiCluster;
+import org.domeos.framework.api.service.global.CiClusterService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
  * Created by feiliu206363 on 2015/12/4.

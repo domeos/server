@@ -1,14 +1,12 @@
 package org.domeos.framework.api.model.deployment;
 
 import org.apache.commons.lang3.StringUtils;
-import org.domeos.framework.api.model.deployment.related.LogDraft;
 import org.domeos.framework.api.consolemodel.deployment.ContainerDraft;
 import org.domeos.framework.api.model.deployment.related.LabelSelector;
+import org.domeos.framework.api.model.deployment.related.LogDraft;
 import org.domeos.framework.engine.model.RowModelBase;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  */

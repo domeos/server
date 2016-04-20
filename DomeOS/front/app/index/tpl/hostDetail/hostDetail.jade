@@ -22,7 +22,7 @@
 	loading(ng-if="loading")
 	.host-info
 		tabset
-			tab(heading="实例列表")
+			tab(heading="实例列表" active="tabActive[0].active" ui-sref="hostDetail.instancelist")
 				loading(ng-if="isWaitingHost")
 				.info-options
 					input.ui-input-fill.ui-input-white.ui-input-search.pull-right(placeholder="输入实例名称查找" ng-model="insKey")
@@ -49,7 +49,7 @@
 								a.txt-safe(ng-click="showLog(ins.instanceName,ins.containers,ins.namespace)") 日志
 							td
 								a.link-safe(ng-click="toConsole($index)") 进入
-			tab(heading="主机设置")
+			tab(heading="主机设置" active="tabActive[1].active" ui-sref="hostDetail.info")
 				ul.com-list-info(ng-form role="form" name="hostForm" ng-class="{'need-valid':needValidHost}")
 					li
 						span.info-name 工作场景

@@ -6,8 +6,10 @@ import org.domeos.basemodel.ResultStat;
 import org.domeos.client.kubernetesclient.definitions.v1.EnvVar;
 import org.domeos.client.kubernetesclient.definitions.v1beta1.Job;
 import org.domeos.framework.api.biz.file.FileContentBiz;
+import org.domeos.framework.api.biz.global.GlobalBiz;
 import org.domeos.framework.api.biz.image.ImageBiz;
 import org.domeos.framework.api.biz.project.ProjectBiz;
+import org.domeos.framework.api.controller.exception.ApiException;
 import org.domeos.framework.api.model.ci.related.BuildState;
 import org.domeos.framework.api.model.ci.related.BuildStatus;
 import org.domeos.framework.api.model.global.Registry;
@@ -20,7 +22,6 @@ import org.domeos.framework.api.model.image.related.FileInfo;
 import org.domeos.framework.api.model.image.related.SourceImage;
 import org.domeos.framework.api.model.project.Project;
 import org.domeos.framework.api.model.project.related.EnvSetting;
-import org.domeos.framework.api.biz.global.GlobalBiz;
 import org.domeos.framework.api.service.image.BaseImageCustomService;
 import org.domeos.framework.api.service.project.impl.UpdateBuildStatusInfo;
 import org.domeos.framework.engine.exception.DaoException;
@@ -67,10 +68,10 @@ public class BaseImageCustomServiceImpl implements BaseImageCustomService {
     public HttpResponseTemp<?> addBaseImageCustom(String username, BaseImageCustom baseImageCustom) {
 
         if (baseImageCustom == null) {
-            return ResultStat.PARAM_ERROR.wrap(null, "base image custom information is null.");
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "base image custom information is null.");
         }
         if (!StringUtils.isBlank(baseImageCustom.checkLegality())) {
-            return ResultStat.PARAM_ERROR.wrap(null, baseImageCustom.checkLegality());
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, baseImageCustom.checkLegality());
         }
 
         SourceImage sourceImage = baseImageCustom.getSourceImage();
@@ -96,7 +97,7 @@ public class BaseImageCustomServiceImpl implements BaseImageCustomService {
     public HttpResponseTemp<?> validation(long userId, String imageName, String imageTag) {
         Registry registry = globalBiz.getRegistry();
         if (registry == null) {
-            return ResultStat.PARAM_ERROR.wrap(null, "registry in global configuation must be set");
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "registry in global configuation must be set");
         }
         if (imageTag != null) {
             List<DockerImage> images = PrivateRegistry.getDockerImageInfo(imageName, registry.fullRegistry());
@@ -204,10 +205,10 @@ public class BaseImageCustomServiceImpl implements BaseImageCustomService {
     @Override
     public HttpResponseTemp<?> previewFile(long userId, BaseImageCustom baseImageCustom, String docMD5) {
         if (baseImageCustom == null) {
-            return ResultStat.PARAM_ERROR.wrap(null, "cannot find the custom base image");
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "cannot find the custom base image");
         }
         if (userId <= 0) {
-            return ResultStat.FORBIDDEN.wrap(null);
+            throw ApiException.wrapResultStat(ResultStat.FORBIDDEN);
         }
 
         byte[] content = fileContentBiz.getContentByMd5(docMD5);
@@ -220,26 +221,26 @@ public class BaseImageCustomServiceImpl implements BaseImageCustomService {
     @Override
     public HttpResponseTemp<?> modifyBaseImageCustom(long userId, String username, BaseImageCustom baseImageCustom) {
         if (baseImageCustom == null) {
-            return ResultStat.PARAM_ERROR.wrap(null, "base image custom info is null");
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "base image custom info is null");
         }
 
         if (userId <= 0) {
-            return ResultStat.FORBIDDEN.wrap(null);
+            throw ApiException.wrapResultStat(ResultStat.FORBIDDEN);
         }
 
         if (!StringUtils.isBlank(baseImageCustom.checkLegality())) {
-            return ResultStat.PARAM_ERROR.wrap(null, baseImageCustom.checkLegality());
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, baseImageCustom.checkLegality());
         }
         return addBaseImageCustom(username, baseImageCustom);
     }
 
     public HttpResponseTemp<?> deleteBaseImageCustom(long userId, int imageId) {
         if (userId <= 0) {
-            return ResultStat.FORBIDDEN.wrap(null);
+            throw ApiException.wrapResultStat(ResultStat.FORBIDDEN);
         }
         BaseImageCustom baseImageCustom = imageBiz.getBaseImageCustomById(imageId);
         if (baseImageCustom == null) {
-            return ResultStat.PARAM_ERROR.wrap(null, "base image custom info is null");
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "base image custom info is null");
         }
         imageBiz.deleteBaseImageCustomById(baseImageCustom.getId());
         return ResultStat.OK.wrap(null, null);
@@ -249,19 +250,19 @@ public class BaseImageCustomServiceImpl implements BaseImageCustomService {
     public HttpResponseTemp<?> startBuild(int imageId, long userId) {
 
         if (userId <= 0) {
-            return ResultStat.FORBIDDEN.wrap(null);
+            throw ApiException.wrapResultStat(ResultStat.FORBIDDEN);
         }
         BaseImageCustom baseImageCustom = imageBiz.getBaseImageCustomById(imageId);
         if (baseImageCustom == null) {
-            return ResultStat.PARAM_ERROR.wrap(null, "cannot find the Custom base image!");
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "cannot find the Custom base image!");
         }
         BuildImage buildImage = globalBiz.getBuildImage();
         if (buildImage == null) {
-            return ResultStat.PARAM_ERROR.wrap(null, "build image not set!");
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "build image not set!");
         }
         Server server = globalBiz.getServer();
         if (server == null) {
-            return ResultStat.PARAM_ERROR.wrap(null, "server not set!");
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "server not set!");
         }
 
         String secret = UUID.randomUUID().toString();
@@ -271,14 +272,15 @@ public class BaseImageCustomServiceImpl implements BaseImageCustomService {
         try {
             jobWrapper = new JobWrapper().init();
         } catch (Exception e) {
-            return ResultStat.PARAM_ERROR.wrap(null, e.getMessage());
+            throw ApiException.wrapUnknownException(e);
         }
 
         String registryUrl = globalBiz.getRegistry().registryDomain();
-        EnvVar[] envVars = generateEnvs(server.serverInfo(), baseImageCustom.getId(), baseImageCustom.getImageName(), baseImageCustom.getImageTag(), registryUrl,
+        EnvVar[] envVars = generateEnvs(server.serverInfo(), baseImageCustom.getId(), baseImageCustom.getImageName(),
+                baseImageCustom.getImageTag(), registryUrl,
                 secret, "BASEIMAGECUSTOM", baseImageCustom.getDockerfile());
         if (envVars == null) {
-            return ResultStat.PARAM_ERROR.wrap(null, "no env info for build kube job");
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "no env info for build kube job");
         }
         Job job = jobWrapper.sendJob(jobWrapper.generateJob(buildImage.getName(), envVars));
 
@@ -288,7 +290,8 @@ public class BaseImageCustomServiceImpl implements BaseImageCustomService {
         imageBiz.updateBaseImageCustomById(baseImageCustom);
 
         /*
-        kubeBuildMapper.addKubeBuild(new KubeBuild(baseImageCustom.getId(), job.getMetadata().getName(), BuildState.SEND.name(), KubeBuild.KubeBuildType.BASEIMAGE.getType()));
+        kubeBuildMapper.addKubeBuild(new KubeBuild(baseImageCustom.getId(), job.getMetadata().getName(), BuildState.SEND.name(),
+         KubeBuild.KubeBuildType.BASEIMAGE.getType()));
         */
 
 
@@ -299,13 +302,13 @@ public class BaseImageCustomServiceImpl implements BaseImageCustomService {
     public HttpResponseTemp<?> uploadLogfile(MultipartFile body, int imageId, String secret) throws DaoException {
 
         if (body == null) {
-            return ResultStat.PARAM_ERROR.wrap(null, "upload build log error");
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "upload build log error");
         }
 
         String md5 = saveFile("log", body);
         if (StringUtils.isBlank(md5)) {
             logger.warn("save build log error, image id " + imageId + ", build id ");
-            return ResultStat.SERVER_INTERNAL_ERROR.wrap(null, "save build log file error");
+            throw ApiException.wrapMessage(ResultStat.SERVER_INTERNAL_ERROR, "save build log file error");
         }
 
         imageBiz.setBaseImageLogMD5(imageId, md5);
@@ -315,14 +318,14 @@ public class BaseImageCustomServiceImpl implements BaseImageCustomService {
 
     public HttpResponseTemp<?> listBaseImageCustomInfo(long userId) {
         if (userId <= 0) {
-            return ResultStat.FORBIDDEN.wrap(null);
+            throw ApiException.wrapResultStat(ResultStat.FORBIDDEN);
         }
         try {
             List<BaseImageCustom> customList = UpdateBuildStatusInfo.updateBaseImageCustoms(imageBiz.listBaseImageCustom());
             Collections.sort(customList, new BaseImageCustom.ProjectListInfoComparator());
             return ResultStat.OK.wrap(customList);
         } catch (Exception e) {
-            return ResultStat.PARAM_ERROR.wrap(null, e.getMessage());
+            throw ApiException.wrapUnknownException(e);
         }
     }
 
@@ -330,7 +333,7 @@ public class BaseImageCustomServiceImpl implements BaseImageCustomService {
 
         BaseImageCustom baseImageCustom = imageBiz.getBaseImageCustomById(id);
         if (baseImageCustom == null) {
-            return ResultStat.PARAM_ERROR.wrap(null, "baseImageCustom not exist");
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "baseImageCustom not exist");
         }
 
         if (!StringUtils.isBlank(baseImageCustom.getFileJson())) {
@@ -386,7 +389,7 @@ public class BaseImageCustomServiceImpl implements BaseImageCustomService {
     public HttpResponseTemp<?> downloadLogFile(int imageId, long userId) {
 
         if (userId <= 0) {
-            return ResultStat.FORBIDDEN.wrap(null);
+            throw ApiException.wrapResultStat(ResultStat.FORBIDDEN);
         }
         String md5 = imageBiz.getBaseImageLogMD5(imageId);
         if (StringUtils.isBlank(md5)) {
@@ -405,12 +408,13 @@ public class BaseImageCustomServiceImpl implements BaseImageCustomService {
         if (buildStatus != null) {
             BaseImageCustom baseImageCustom = imageBiz.getBaseImageCustomById(buildStatus.getProjectId());
             if (baseImageCustom == null || !baseImageCustom.getSecret().equals(secret)) {
-                return ResultStat.FORBIDDEN.wrap(null);
+                throw ApiException.wrapResultStat(ResultStat.FORBIDDEN);
             }
             Registry registry = globalBiz.getRegistry();
             if (registry != null && BuildState.Success.name().equals(buildStatus.getStatus())) {
                 baseImageCustom.setState(BuildState.Success.name());
-                BaseImage baseImage = new BaseImage(baseImageCustom.getImageName(), baseImageCustom.getImageTag(), registry.fullRegistry(), baseImageCustom.getDescription());
+                BaseImage baseImage = new BaseImage(baseImageCustom.getImageName(), baseImageCustom.getImageTag(),
+                        registry.fullRegistry(), baseImageCustom.getDescription());
                 double imageSize = PrivateRegistry.getImageSize(baseImage);
                 if (imageSize > 0) {
                     buildStatus.setImageSize(imageSize);
@@ -455,7 +459,8 @@ public class BaseImageCustomServiceImpl implements BaseImageCustomService {
         return null;
     }
 
-    public EnvVar[] generateEnvs(String server, int imageId, String imageName, String imageTag, String registryUrl, String secret, String type, String dockerfile) {
+    public EnvVar[] generateEnvs(String server, int imageId, String imageName, String imageTag, String registryUrl,
+                                 String secret, String type, String dockerfile) {
         return new EnvVar[]{
                 new EnvVar().putName("SERVER").putValue(server),
                 new EnvVar().putName("IMAGEID").putValue(String.valueOf(imageId)),

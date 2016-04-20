@@ -1,0 +1,108 @@
+
+<div ng-controller="tplUserListCtr" class="member-con">
+  <div class="title-con">
+    <input placeholder="搜索{{resourceName}}成员" ng-model="userKey1" class="ui-input ui-input-fill ui-input-search pull-right"/>
+    <h3 ng-cloak="ng-cloak" class="member-title txt-bright">{{resourceName}}成员</h3>
+    <button ng-click="isEdit=true" ng-show="!isEdit" class="ui-btn ui-btn-safe ui-btn-sm">编辑</button>
+    <button ng-click="isEdit=false" ng-show="isEdit" class="ui-btn ui-btn-safe ui-btn-sm">退出编辑</button>
+  </div>
+  <div ng-if="isEdit" class="member-select">
+    <div ng-hide="resourceType=='group'" class="member-way"><a ng-click="toggleWay('member')" ng-class="{'active':selectWay=='member'}" class="select-type">导入成员</a><a ng-click="toggleWay('group')" ng-class="{'active':selectWay=='group'}" class="select-type">导入组成员</a><a ng-click="toggleWay('item')" ng-class="{'active':selectWay=='item'}" class="select-type">导入{{resourceName}}成员</a></div>
+    <div class="member-search">
+      <div select-con="select-con" label="true" ng-if="selectWay=='member'" class="com-select-con">
+        <ul class="selected-labels">
+          <li ng-repeat="user in selectedUsers" ng-cloak="ng-cloak" class="select-label"><a ng-click="cancelUser($index)" class="icon-cancel"></a>{{user.username}}</li>
+          <li class="select-input">
+            <input placeholder="搜索成员" ng-model="userKey.key" ng-keydown="userKeyUp($event,userKey.key,userListFiltered[0])" class="line-element ui-btn-select"/>
+          </li>
+        </ul>
+        <ul class="select-list">
+          <li ng-if="!userList||userListFiltered.length===0"><a>无相关用户信息</a></li>
+          <li ng-repeat="user in userListFiltered=(userList|filter:{'username':userKey.key})" class="select-item"><a ng-bind="user.username" ng-click="checkUser(user)"></a></li>
+        </ul>
+      </div>
+      <div select-con="select-con" ng-if="selectWay=='group'" class="com-select-con">
+        <button ng-cloak="ng-cloak" class="ui-btn ui-btn-white ui-btn-select"><i class="icon-down"></i>{{selectedGroup.name||'选择组'}}</button>
+        <ul class="select-list">
+          <li ng-repeat="group in groupList" class="select-item"><a ng-bind="group.name" ng-click="toggleGroup(group.name,group.id)"></a></li>
+        </ul>
+      </div>
+      <div select-con="select-con" ng-if="selectWay=='item'" class="com-select-con">
+        <button ng-cloak="ng-cloak" class="ui-btn ui-btn-white ui-btn-select"><i class="icon-down"></i>{{selectResource.resourceName||'选择'+resourceName}}</button>
+        <ul class="select-list">
+          <li ng-repeat="resource in selectResourceUser" class="select-item"><a ng-bind="resource.resourceName" ng-click="toggleResource($index)"></a></li>
+        </ul>
+      </div>
+      <div select-con="select-con" class="com-select-con">
+        <button class="ui-btn ui-btn-white ui-btn-select"><i class="icon-down"></i>{{selectedRole}}</button>
+        <ul class="select-list">
+          <li class="select-item"><a ng-click="toggleRole('MASTER')">MASTER</a></li>
+          <li class="select-item"><a ng-click="toggleRole('DEVELOPER')">DEVELOPER</a></li>
+          <li class="select-item"><a ng-click="toggleRole('REPORTER')">REPORTER</a></li>
+          <li ng-if="selectWay=='group'" class="select-item"><a ng-click="toggleRole('oldRole')">保留原有组权限</a></li>
+          <li ng-if="selectWay=='item'" class="select-item"><a ng-click="toggleRole('oldRole')" ng-cloak="ng-cloak">保留原有{{resourceName}}权限</a></li>
+        </ul>
+      </div>
+      <button ng-click="addMember()" class="ui-btn ui-btn-primary ui-btn-sm">添加成员</button>
+    </div>
+  </div>
+  <div class="member-list">
+    <table class="ui-table-dome">
+      <thead>
+        <tr>
+          <th>用户名称</th>
+          <th ng-cloak="ng-cloak">{{resourceName}}内权限</th>
+          <th> </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-if="!userInfos||userinfoFilterred1.length===0">
+          <td colspan="3">无相关用户信息</td>
+        </tr>
+        <tr></tr>
+        <tr ng-repeat="user in userinfoFilterred1=(userInfos|filter:{'username':userKey1})">
+          <td ng-bind="user.username"></td>
+          <td><span ng-bind="user.role" ng-hide="isEdit"></span>
+            <div ng-if="isEdit" class="edit-role">
+              <div select-con="select-con" class="com-select-con">
+                <button ng-cloak="ng-cloak" class="ui-btn ui-btn-white ui-btn-select"><i class="icon-down"></i>{{user.newRole}}</button>
+                <ul class="select-list">
+                  <li class="select-item"><a ng-click="resourceInfo.toggleRole(user,'MASTER')">MASTER</a></li>
+                  <li class="select-item"><a ng-click="resourceInfo.toggleRole(user,'DEVELOPER')">DEVELOPER</a></li>
+                  <li class="select-item"><a ng-click="resourceInfo.toggleRole(user,'REPORTER')">REPORTER</a></li>
+                </ul>
+              </div>
+              <button ng-if="user.isDirty" ng-click="saveRole(user)" class="ui-btn ui-btn-primary ui-btn-sm">Save</button>
+            </div>
+          </td>
+          <td><a ng-if="isEdit" ng-click="deleteUser(user)" class="icon-delete"></a></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div ng-show="isGroupExist=(!!groupInfo&amp;&amp;!!groupInfo.userInfos&amp;&amp;groupInfo.userInfos.length!==0)" class="title-con">
+    <input placeholder="搜索项目成员" ng-model="userKey2" class="ui-input ui-input-fill ui-input-search pull-right"/>
+    <h3 ng-cloak="ng-cloak" class="member-title txt-bright">{{resourceName}}创建组</h3>
+  </div>
+  <div ng-show="isGroupExist" class="member-list">
+    <table class="ui-table-dome">
+      <thead>
+        <tr>
+          <th>用户名称</th>
+          <th ng-cloak="ng-cloak">{{resourceName}}内权限</th>
+          <th> </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-if="userinfoFilterred2.length===0">
+          <td colspan="3">无相关用户信息</td>
+        </tr>
+        <tr ng-repeat="user in userinfoFilterred2=(groupInfo.userInfos|filter:{'username':userKey2})">
+          <td ng-bind="user.username"></td>
+          <td><span ng-bind="user.role"></span></td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

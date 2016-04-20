@@ -15,11 +15,14 @@ import java.util.List;
 @Repository
 public interface EventMapper {
 
-    @Insert("INSERT INTO k8s_events (version, clusterId, namespace, event_kind, name, host, content) " +
-            "VALUES (#{version}, #{clusterId}, #{namespace}, #{eventKind}, #{name}, #{host}, #{content})")
+    @Insert("INSERT INTO k8s_events (version, clusterId, namespace, eventKind, name, host, content) " +
+            "VALUES (#{version}, #{clusterId}, #{namespace}, #{eventKind}, #{name}, #{host}, #{content}) " +
+            "ON DUPLICATE KEY UPDATE version=VALUES(version), content=VALUES(content)")
     void createEvent(EventDBProto proto);
 
     // get by max id
+    // 根据前面insert on duplicate key update的策略,这样可能在事件重复出现的时候可能会拿不到最新的version,不过无所谓,
+    // 结果是把一些事件再重复插入一遍
     @Select("SELECT version FROM k8s_events WHERE id = (SELECT MAX(id) FROM k8s_events WHERE clusterId = #{clusterId})")
     String getNewestResourceVersion(@Param("clusterId") int clusterId);
 
@@ -30,7 +33,7 @@ public interface EventMapper {
     List<EventDBProto> getEventsByNamespace(@Param("clusterId") int clusterId,
                                             @Param("namespace") String namespace);
 
-    @Select("SELECT * FROM k8s_events WHERE clusterId = #{clusterId} AND namespace = #{namespace} AND event_kind = #{kind}")
+    @Select("SELECT * FROM k8s_events WHERE clusterId = #{clusterId} AND namespace = #{namespace} AND eventKind = #{kind}")
     List<EventDBProto> getEventsByKindAndNamespace(@Param("clusterId") int clusterId,
                                                    @Param("namespace") String namespace,
                                                    @Param("kind") EventKind kind);

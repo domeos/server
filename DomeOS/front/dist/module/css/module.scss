@@ -1,0 +1,146 @@
+@import "compass/css3";
+@import "common/css/common.scss";
+@import "/module/images/icon/*.png";
+@include all-icon-sprites;
+
+.icon-sprite, .icon-app, .icon-cluster, .icon-deploy, .icon-global, .icon-image, .icon-monitor, .icon-project, .icon-user{
+	display: inline-block;
+	width: 24px;
+	height: 24px;
+	vertical-align: middle;
+	margin-right: 22px;
+}
+.icon-doc{
+	display: inline-block;
+	width: 14px;
+	height: 14px;
+	margin-right: 4px;
+}
+.icon-down{
+	display: inline-block;
+	height: 5px;
+	width: 10px;
+	margin-left: 8px;
+	@include transition(rotate .4s);
+	&.up{
+		@include rotate(-90deg);
+		@include transition(rotate .4s);
+	}
+}
+$border:1px solid rgba(255,255,255,.5);
+* {
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+}
+*:before,
+*:after {
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+}
+$padding:7%;
+body{
+	background: #6aa9f6 url(/module/images/background.jpg) no-repeat center center;
+	background-size: cover;
+	background-attachment:fixed;
+	min-height: 560px;
+	padding-top: 4%;
+	padding-bottom: 2%;
+	color:#fff;
+}
+.module-con{
+	position: relative;
+	width: 58%;
+	margin: 0 auto;
+	.log-con{
+		position: absolute;
+		right:100%;
+		top: $padding;
+		width: 128px;
+		text-align: right;
+		margin-right: 8%;
+		line-height: 12px;
+		img{
+			vertical-align: bottom;
+		}
+		.version{
+			font-size: 12px;
+		}
+	}
+	.option-con{
+		position: absolute;
+		left: 100%;
+		top: $padding;
+		width: 260px;
+		margin-left: 8%;
+		.com-user-option{
+			.arrow{
+				left: 19px;
+			}
+		}
+		.link-doc{
+			color: #fff;
+		}
+		.user-con{
+			position: relative;
+			margin-top: 30px;
+			.username {
+				color: #fff;
+			}
+			.com-user-option{
+				left: 0;
+			}
+		}
+	}
+	.list-module{
+		width: 100%;
+		border-left: $border;
+		border-right: $border;
+		li{
+			border-bottom:  $border;
+			font-size: 0;
+			&:last-child{
+				border-bottom: none;
+			}
+			.module{
+				display: inline-block;
+				width: 50%;
+				padding: $padding 0 $padding 0;
+				color: #fff;
+				font-size: 18px;
+				text-align: center;
+				border-right:  $border;
+				&:hover{
+					background-color: rgba(255,255,255,.2);
+					@include transition(background-color .3s);
+				}
+				&:last-child{
+					border-right:  none;
+				}
+				h4{
+					display: inline-block;
+					margin: 0;
+					width: 128px;
+					text-align: left;
+				}
+			}
+		}
+	}
+}
+@media (max-width: 1500px) {
+		.module-con{
+			width: 51%;
+		}
+}
+@media (max-width: 1300px) {
+		.module-con{
+			width: 46%;
+		}
+}
+.modal-body{
+	color: dome-color(font,default);
+	input{
+		width: 340px;
+	}
+}

@@ -62,6 +62,8 @@ public enum ResultStat {
     BUILD_INFO_NOT_EXIST(1404),
     BUILD_INFO_NOT_MATCH(1405),
     REGISTRY_NOT_EXIST(1406),
+    WEBHOOK_ERROR(1407),
+    RSAKEYPAIR_ERROR(1408),
 
     // base image related
     BASE_IMAGE_MAPPING_ERROR(1500),

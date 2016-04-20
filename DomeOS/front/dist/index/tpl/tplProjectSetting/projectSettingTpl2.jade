@@ -1,0 +1,30 @@
+table.table-info.projectinfo
+	tr
+		td 构建目录
+		td
+			input.info-txt.ui-input-fill(ng-model="config.dockerfileInfo.buildPath" name="buildDir" placeholder="以“/”开头，系统会在该目录下执行构建命令" ng-pattern="/^\//" ng-change="changeDockerfilePath(config.dockerfileInfo.buildPath);")
+			span.tool-inline-error(ng-show="(needValid||proInfoForm.buildDir.$dirty)&&proInfoForm.buildDir.$invalid") 非法的路径
+	tr
+		td Dockerfile路径
+		td
+			input.info-txt.ui-input-fill(ng-model="config.dockerfileInfo.dockerfilePath" name="dockerfilePath" placeholder="/dockerfile" required)
+			span.tool-inline-error(ng-show="(needValid||proInfoForm.dockerfilePath.$dirty)&&proInfoForm.dockerfilePath.$error.required")
+			span.tool-inline-error(ng-show="(needValid||proInfoForm.dockerfilePath.$dirty)&&!proInfoForm.dockerfilePath.$error.required&&proInfoForm.dockerfilePath.$invalid") 非法的路径
+	tr
+		td 项目可见性
+		td
+			span.txt-visible
+				input#toPublic.ui-check(type="checkbox" ng-true-value="1" ng-false-value="0" ng-model="config.authority")
+				label(for="toPublic") 对所有人可见
+	tr
+		td 运行过程环境变量
+		td
+			.txt-prompt.setting-title 请列出项目需要配置的环境变量，给予默认值并加以描述，用于部署时提示运维人员配置。
+			ul.settting-list
+				li(ng-repeat="envConfDefault in config.envConfDefault")
+					.setting-group
+						input.info-txt.ui-input-fill.env-name(placeholder="环境变量名" ng-model="envConfDefault.key" ng-focus="$last&&project.addEnvConfDefault()" is-required param1="{{envConfDefault.value}}")
+						input.info-txt.ui-input-fill.env-value(placeholder="环境变量值" ng-model="envConfDefault.value" is-required param1="{{envConfDefault.key}}")
+						input.info-txt.ui-input-fill.env-description(placeholder="环境变量描述" ng-model="envConfDefault.description" )
+					span.delete-con
+						a.icon-delete(ng-if="config.envConfDefault.length>1" ng-click="project.deleteArrItem('envConfDefault',$index)")

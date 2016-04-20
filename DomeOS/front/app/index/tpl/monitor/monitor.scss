@@ -2,6 +2,7 @@
 @import "common/css/common.scss";
 .monitor-manage{
 	min-height: 700px;
+	padding-bottom: 400px;
 	.monitor-options{
 		padding: 20px $page-padding 20px $page-padding;
 		border-bottom: $light-border;
@@ -30,6 +31,13 @@
 	.link-tooltip{
 		display: inline-block;
 		position: relative;
+	}
+	.table-detail{
+		td,th{
+			padding-right: 15px;
+			padding-bottom: 2px;
+			text-align: left;
+		}
 	}
 }
 .mod-monitor{

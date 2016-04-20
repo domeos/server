@@ -11,9 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Created by sparkchen on 16/4/5.
@@ -114,8 +112,7 @@ public class BaseBizImpl implements BaseBiz {
             }
             return result;
         }catch (Exception e) {
-            throw new DaoConvertingException("Get MySQL Data failed! tableName=" + tableName
-                + ", name=" + name ,e );
+            throw new DaoConvertingException("Get MySQL Data failed! tableName=" + tableName + ", name=" + name, e );
         }
     }
 
@@ -166,7 +163,7 @@ public class BaseBizImpl implements BaseBiz {
     }
 
     @Override
-    public void updateRow(String tableName, RowModelBase rowModelBase) throws DaoException{
+    public void updateRow(String tableName, RowModelBase rowModelBase) throws DaoException {
         try {
             mapper.updateRow(tableName, new RowMapperDao(rowModelBase));
         } catch (Exception e) {

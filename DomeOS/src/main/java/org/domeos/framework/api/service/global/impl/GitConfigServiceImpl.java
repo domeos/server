@@ -3,15 +3,15 @@ package org.domeos.framework.api.service.global.impl;
 import org.apache.commons.lang3.StringUtils;
 import org.domeos.basemodel.HttpResponseTemp;
 import org.domeos.basemodel.ResultStat;
+import org.domeos.framework.api.biz.global.GlobalBiz;
+import org.domeos.framework.api.controller.exception.ApiException;
 import org.domeos.framework.api.controller.exception.PermitException;
-import org.domeos.framework.api.model.auth.User;
 import org.domeos.framework.api.model.global.GitConfig;
 import org.domeos.framework.api.model.global.GlobalInfo;
 import org.domeos.framework.api.model.global.GlobalType;
 import org.domeos.framework.api.service.global.GitConfigService;
-import org.domeos.framework.api.biz.global.GlobalBiz;
 import org.domeos.framework.engine.AuthUtil;
-import org.domeos.global.GlobalConstant;
+import org.domeos.global.CurrentThreadInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -28,12 +28,10 @@ public class GitConfigServiceImpl implements GitConfigService {
     @Autowired
     GlobalBiz globalBiz;
 
-    private int checkAdmin() {
-        User user = GlobalConstant.userThreadLocal.get();
-        if (user == null || !AuthUtil.isAdmin(user.getId())) {
-            throw new PermitException();
+    private void checkAdmin() {
+        if (!AuthUtil.isAdmin(CurrentThreadInfo.getUserId())) {
+            throw new PermitException("only admin can operate git configuration");
         }
-        return user.getId();
     }
 
     @Override
@@ -54,16 +52,16 @@ public class GitConfigServiceImpl implements GitConfigService {
     public HttpResponseTemp<?> addGitConfg(GitConfig gitConfig) {
         checkAdmin();
         if (gitConfig == null) {
-            return ResultStat.PARAM_ERROR.wrap(null, "git config info is null");
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "git config info is null");
         }
 
         if (!StringUtils.isBlank(gitConfig.checkLegality())) {
-            return ResultStat.PARAM_ERROR.wrap(null, gitConfig.checkLegality());
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, gitConfig.checkLegality());
         }
 
         GlobalInfo gitInfo = globalBiz.getGlobalInfoByType(gitConfig.getType());
         if (gitInfo != null) {
-            return ResultStat.GIT_INFO_ALREADY_EXIST.wrap(null);
+            throw ApiException.wrapResultStat(ResultStat.GIT_INFO_ALREADY_EXIST);
         }
 
         GlobalInfo globalInfo = new GlobalInfo(gitConfig.getType(), gitConfig.getUrl());
@@ -90,10 +88,10 @@ public class GitConfigServiceImpl implements GitConfigService {
     public HttpResponseTemp<?> modifyGitConfig(GitConfig gitConfig) {
         checkAdmin();
         if (gitConfig.getId() <= 0) {
-            return ResultStat.PARAM_ERROR.wrap(null, "no such code info");
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "no such code info");
         }
         if (!StringUtils.isBlank(gitConfig.checkLegality())) {
-            return ResultStat.PARAM_ERROR.wrap(null, gitConfig.checkLegality());
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, gitConfig.checkLegality());
         }
         GlobalInfo globalInfo = new GlobalInfo(gitConfig.getId(), gitConfig.getType(), gitConfig.getUrl());
         globalBiz.updateGlobalInfoById(globalInfo);

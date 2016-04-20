@@ -39,6 +39,6 @@ public interface BaseImageCustomMapper {
     @Select("SELECT logMD5 from base_image_custom WHERE id=#{id} AND removed=0")
     String getBaseImageLogMD5(@Param("id")int imageId);
 
-    @Select("SELECT " + RowMapper.basicColumns + "  FROM base_image_custom WHERE removed=0 ORDER BY id DESC")
+    @Select("SELECT " + RowMapper.BASIC_COLUMNS + "  FROM base_image_custom WHERE removed=0 ORDER BY id DESC")
     List<RowMapperDao> listBaseImageCustom();
 }

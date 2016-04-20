@@ -225,17 +225,14 @@ deployModule.factory('$domeDeploy', ['$http', '$domeCluster', '$domeUser', '$dom
 			}
 		},
 		// 刷新当前Deploy状态
-		freshDeploy: function() {
+		freshDeploy: function(newConfig) {
 			var that = this;
-			getDeployInfo(this.config.deployId).then(function(res) {
-				var newConfig = res.data.result;
-				if (newConfig) {
-					that.config.lastUpdateTime = newConfig.lastUpdateTime;
-					that.config.deploymentStatus = newConfig.deploymentStatus;
-					that.config.currentVersions = newConfig.currentVersions;
-					that.config.currentReplicas = newConfig.currentReplicas;
-				}
-			});
+			if (newConfig) {
+				that.config.lastUpdateTime = newConfig.lastUpdateTime;
+				that.config.deploymentStatus = newConfig.deploymentStatus;
+				that.config.currentVersions = newConfig.currentVersions;
+				that.config.currentReplicas = newConfig.currentReplicas;
+			}
 		},
 		freshVersionList: function() {
 			var that = this;
@@ -272,7 +269,7 @@ deployModule.factory('$domeDeploy', ['$http', '$domeCluster', '$domeUser', '$dom
 			that.clusterListIns.toggleCluster(index);
 			var clusterId = that.clusterListIns.cluster.id;
 			that.loadingIns.startLoading('nodelist');
-			
+
 			$domeCluster.getNodeList(clusterId).then(function(res) {
 				// 如果是app store的主机列表，则过滤掉没有diskPath的主机
 				that.nodeListIns.init(res.data.result, that.config.stateful);
@@ -578,7 +575,6 @@ deployModule.factory('$domeDeploy', ['$http', '$domeCluster', '$domeUser', '$dom
 					creatorType: that.userGroupListIns.userGroup.type
 				};
 			}
-
 			for (i = 0; i < deployConfig.logDraft.logItemDrafts.length; i++) {
 				var thisLogItem = deployConfig.logDraft.logItemDrafts[i];
 				if (thisLogItem.logPath !== '') {
@@ -597,7 +593,11 @@ deployModule.factory('$domeDeploy', ['$http', '$domeCluster', '$domeUser', '$dom
 					logItemDrafts.push(formartLogItem);
 				}
 			}
-			deployConfig.logDraft.logItemDrafts = logItemDrafts;
+			if (logItemDrafts.length === 0) {
+				deployConfig.logDraft = null;
+			} else {
+				deployConfig.logDraft.logItemDrafts = logItemDrafts;
+			}
 
 			if (!deployConfig.stateful) {
 				if (deployConfig.containerDrafts) {
@@ -636,7 +636,7 @@ deployModule.factory('$domeDeploy', ['$http', '$domeCluster', '$domeUser', '$dom
 				labelSelectors: newConfig.labelSelectors
 			};
 			createVersion(versionObj).then(function(res) {
-				if (that.config.deploymentStatus != 'RUNNING' && that.config.deploymentStatus != 'STOP') {
+				if (that.config.deploymentStatus != 'RUNNING') {
 					$domePublic.openPrompt('新建部署版本成功,当前状态不能升级。');
 					deferred.resolve('create');
 				} else {

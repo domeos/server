@@ -59,7 +59,7 @@ public class ProjectBizImpl extends BaseBizImpl implements ProjectBiz {
 
     @Override
     public Project getProjectByName(String name) {
-        return this.getByName(GlobalConstant.projectTableName, name, Project.class);
+        return this.getByName(GlobalConstant.PROJECT_TABLE_NAME, name, Project.class);
     }
 
     @Override
@@ -143,7 +143,7 @@ public class ProjectBizImpl extends BaseBizImpl implements ProjectBiz {
     public RSAKeyPair getRSAKeyPairByProjectId(int id) {
         ProjectRsakeyMap projectRsakeyMap = projectRsakeyMapMapper.getRSAKeypairMapByProjectId(id);
         if (projectRsakeyMap != null) {
-            return getById(GlobalConstant.rsaKeypairTableName, id, RSAKeyPair.class);
+            return getById(GlobalConstant.RSAKEYPAIR_TABLE_NAME, id, RSAKeyPair.class);
         }
         return null;
     }
@@ -169,8 +169,8 @@ public class ProjectBizImpl extends BaseBizImpl implements ProjectBiz {
     }
 
     @Override
-    public void setTaskNameAndStatus(int id, String name, BuildState send) {
-        buildHistoryMapper.addTaskNameAndStatus(id, name, send);
+    public void setTaskNameAndStatus(BuildHistory buildInfo) {
+        buildHistoryMapper.addTaskNameAndStatus(buildInfo, buildInfo.toString());
     }
 
     @Override
@@ -204,12 +204,23 @@ public class ProjectBizImpl extends BaseBizImpl implements ProjectBiz {
 
     @Override
     public List<BuildHistory> getUnGCBuildHistory() {
-        return null;
+        List<RowMapperDao> data = buildHistoryMapper.getAllHistory();
+        if (data == null) {
+            return null;
+        }
+        List<BuildHistory> buildHistories = new LinkedList<>();
+        for (RowMapperDao tmp : data) {
+            BuildHistory buildHistory = checkResult(tmp, BuildHistory.class);
+            if (buildHistory.getIsGC() == 0) {
+                buildHistories.add(buildHistory);
+            }
+        }
+        return buildHistories;
     }
 
     @Override
     public void updateBuildGCInfoById(BuildHistory info) {
-
+        buildHistoryMapper.updateBuildHistory(new RowMapperDao(info));
     }
 
     @Override
@@ -222,11 +233,11 @@ public class ProjectBizImpl extends BaseBizImpl implements ProjectBiz {
         return gitlabUserMapper.getGitlabInfoById(id);
     }
 
-    @Override
-    public RSAKeyPair getRSAKeyPairByKeyId(int deployId) {
-
-        return null;
-    }
+//    @Override
+//    public RSAKeyPair getRSAKeyPairByKeyId(int deployId) {
+//
+//        return null;
+//    }
 
     @Override
     public String getBuildTaskNameById(int buildId) {

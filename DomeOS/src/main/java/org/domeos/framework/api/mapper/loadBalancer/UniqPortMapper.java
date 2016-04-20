@@ -13,15 +13,15 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface UniqPortMapper {
 
-    @Insert("INSERT INTO " + GlobalConstant.uniqPortIndexTableName +
+    @Insert("INSERT INTO " + GlobalConstant.UNIQPORTINDEX_TABLE_NAME +
         " (lbid, port,clusterId) values (#{lbid}, #{port}, #{clusterId})")
     public void insertIndex(@Param("lbid") int lbid, @Param("port") int port, @Param("clusterId") int clusterId);
 
-    @Select("SELECT lbid FROM " + GlobalConstant.uniqPortIndexTableName +
+    @Select("SELECT lbid FROM " + GlobalConstant.UNIQPORTINDEX_TABLE_NAME +
         " WHERE port=#{port} AND clusterId=#{clusterId}")
     public Integer getLoadBalancerId(@Param("port") int port, @Param("clusterId") int clusterId);
 
-    @Delete("DELETE FROM " + GlobalConstant.uniqPortIndexTableName +
+    @Delete("DELETE FROM " + GlobalConstant.UNIQPORTINDEX_TABLE_NAME +
         " WHERE lbid=#{lbid}")
     public void deleteIndex(int lbid);
 

@@ -16,7 +16,7 @@ public interface ProjectMapper {
     @Select("SELECT COUNT(*) FROM project WHERE name=#{name} AND removed=0")
     Integer checkProjectName(@Param("name") String name);
 
-    @Insert("INSERT INTO " + GlobalConstant.projectTableName +
+    @Insert("INSERT INTO " + GlobalConstant.PROJECT_TABLE_NAME +
         " (name, description, state, createTime, removeTime, removed, data, authority) values (" +
             " #{item.name}, #{item.description}, #{item.state}, #{item.createTime}, #{item.removeTime}," +
             " #{item.removed}, #{data}, #{item.authority})")
@@ -30,7 +30,7 @@ public interface ProjectMapper {
     @Select("SELECT * FROM project WHERE authority=1 AND removed=0")
     List<RowMapperDao> getAuthoritiedProjects();
 
-    @Update("UPDATE " + GlobalConstant.projectTableName +
+    @Update("UPDATE " + GlobalConstant.PROJECT_TABLE_NAME +
         " SET name=#{item.name}, description=#{item.description}, state=#{item.state}," +
             " data=#{data}, authority=#{item.authority} WHERE id=#{item.id}")
     void updateProject(@Param("item") Project project, @Param("data") String data);

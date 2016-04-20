@@ -1,21 +1,19 @@
 package org.domeos.global;
 
 
-import org.domeos.framework.api.model.auth.User;
-
 /**
  * Created by Administrator on 2015/7/21.
  */
 
 public class GlobalConstant {
-    public static final String clusterTableName = "cluster";
-    public static final String deployTableName = "deployment";
-    public static final String LoadBalancerTable = "load_balancer";
-    public static final String LoadBalancerDeployMapTable = "load_balancer_deploy_map";
-    public static final String projectTableName = "project";
-    public static final String rsaKeypairTableName = "rsa_keypair";
-    public static final String buildHistoryTableName = "build_history";
-    public static final String uniqPortIndexTableName = "uniq_port_index";
+    public static final String CLUSTER_TABLE_NAME = "cluster";
+    public static final String DEPLOY_TABLE_NAME = "deployment";
+    public static final String LOADBALANCER_TABLE_NAME = "load_balancer";
+    public static final String LOADBALANCERDEPLOYMAP_TABLE_NAME = "load_balancer_deploy_map";
+    public static final String PROJECT_TABLE_NAME = "project";
+    public static final String RSAKEYPAIR_TABLE_NAME = "rsa_keypair";
+    public static final String BUILDHISTORY_TABLE_NAME = "build_history";
+    public static final String UNIQPORTINDEX_TABLE_NAME = "uniq_port_index";
 
     public static String HTTP_PREFIX = "http://";
     public static String HTTPS_PREFIX = "https://";
@@ -38,6 +36,4 @@ public class GlobalConstant {
     public static String CLUSTER_IP_STR = "ClusterIP";
     public static String UTC_TIME = "UTC";
     public static String HTTP_CONTENTLENGTH = "Content-Length";
-
-    public static ThreadLocal<User> userThreadLocal = new ThreadLocal<>();
 }

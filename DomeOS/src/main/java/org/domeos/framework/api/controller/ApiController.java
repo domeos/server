@@ -1,12 +1,11 @@
 package org.domeos.framework.api.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.domeos.basemodel.HttpResponseTemp;
 import org.domeos.basemodel.ResultStat;
 import org.domeos.framework.api.controller.exception.ApiException;
-import org.domeos.framework.api.controller.exception.DeployIlegalException;
 import org.domeos.framework.api.controller.exception.PermitException;
+import org.domeos.framework.engine.model.CustomObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +22,7 @@ public abstract class ApiController {
 
     @Autowired
     @Qualifier("objectMapper")
-    protected ObjectMapper objectMapper;
+    protected CustomObjectMapper objectMapper;
 
     private ResponseEntity<String> responseToEntity(HttpResponseTemp<?> response) {
         String body = null;
@@ -38,13 +37,21 @@ public abstract class ApiController {
 
     @ExceptionHandler(PermitException.class)
     public ResponseEntity<String> permitExceptionHandler(PermitException e) {
-        logger.error("unexpected exception happened:" + e.getMessage(), e);
+        logger.warn("not permitted:" + e.getMessage());
         return responseToEntity(ResultStat.FORBIDDEN.wrap(null, e.getMessage()));
     }
 
     @ExceptionHandler(ApiException.class)
     public ResponseEntity<String> depolyExceptionHandler(ApiException e) {
-        return responseToEntity(e.getStat().wrap(null, e.getMessage()));
+        StringBuilder msg = new StringBuilder();
+        if (e.getCause() != null) {
+            Throwable t = e.getCause();
+            logger.error("unexpected exception happened:" + t.getMessage(), e);
+            msg.append(t.getClass().getSimpleName());
+            msg.append(":");
+        }
+        msg.append(e.getMessage());
+        return responseToEntity(e.getStat().wrap(null, msg.toString()));
     }
 
     @ExceptionHandler(Exception.class)

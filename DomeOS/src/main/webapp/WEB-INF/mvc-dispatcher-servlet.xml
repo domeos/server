@@ -196,8 +196,7 @@
         </property>
     </bean>
     <bean id="lifecycleBeanPostProcessor" class="org.apache.shiro.spring.LifecycleBeanPostProcessor"/>
-    <bean id="objectMapper" class="com.fasterxml.jackson.databind.ObjectMapper">
-    </bean>
+    <bean id="objectMapper" class="org.domeos.framework.engine.model.CustomObjectMapper"/>
     <bean id="userIdAspect" class="org.domeos.framework.engine.aop.UserIdAspect"/>
     <bean id="loggerAspect" class="org.domeos.framework.engine.aop.LoggerAspect"/>
     <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">

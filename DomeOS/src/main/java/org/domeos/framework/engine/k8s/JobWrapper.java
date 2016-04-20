@@ -56,7 +56,9 @@ public class JobWrapper {
         String secret = "build-" + UUID.randomUUID().toString();
         Map<String, String> nodeSelector = new HashMap<>();
         nodeSelector.put("BUILDENV", "HOSTENVTYPE");
-        PodSpec podSpec = new PodSpec().putVolumes(fetchBuildVolumes()).putContainers(fetcthContainer(secret, image, envVar)).putRestartPolicy("Never").putNodeSelector(nodeSelector);
+        PodSpec podSpec = new PodSpec().putVolumes(fetchBuildVolumes())
+                .putContainers(fetcthContainer(secret, image, envVar))
+                .putRestartPolicy("Never").putNodeSelector(nodeSelector);
         ObjectMeta podMetaData = new ObjectMeta().putLabels(fetchBuildLabel(secret));
         PodTemplateSpec podTempSpec = new PodTemplateSpec().putMetadata(podMetaData).putSpec(podSpec);
         JobSpec jobSpec = new JobSpec().putTemplate(podTempSpec);

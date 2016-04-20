@@ -1,0 +1,48 @@
+ul.com-list-info.border-info
+	li
+		span.info-name 集群名称
+		.info-content(ng-bind="config.name")
+	li
+		span.info-name 创建者
+		.info-content(ng-bind="config.ownerName")
+	li
+		span.info-name api server
+		.info-content(ng-bind="config.api")
+	li
+		span.info-name dns服务器
+		.info-content(ng-bind="isStrNull(config.dns)")
+	li
+		span.info-name etcd
+		.info-content
+			div.line-single(ng-hide="$last" ng-repeat="etcd in config.etcd")
+				span.ui-input-white.ui-input-txt.single-element(ng-bind="etcd.name")
+	li
+		span.info-name domain
+		.info-content
+			span(ng-bind="isStrNull(config.domain)")
+	li
+		span.info-name 日志自动收集
+		.info-content(ng-switch="config.logConfig")
+			span(ng-switch-when="1") On
+			span(ng-switch-default) Off
+	li(ng-if="config.logConfig===1")
+		span.info-name kafka
+		.info-content
+			div.line-single(ng-hide="$last" ng-repeat="kafka in config.clusterLog.kafka")
+				span.ui-input-white.ui-input-txt.single-element(ng-bind="kafka.name")
+			span(ng-if="config.clusterLog.kafka.length<=1") 未设置
+	li(ng-if="config.logConfig===1")
+		span.info-name zookeeper
+		.info-content
+			div.line-single(ng-hide="$last" ng-repeat="zookeeper in config.clusterLog.zookeeper")
+				span.ui-input-white.ui-input-txt.single-element(ng-bind="zookeeper.name")
+			span(ng-if="config.clusterLog.zookeeper.length<=1") 未设置
+	li(ng-if="config.logConfig===1")
+		span.info-name 日志容器
+		.info-content
+			.line-singgle
+				span 镜像名 : 
+				span.cluster-log(ng-bind="config.clusterLog.imageName")
+			.line-singgle
+				span 镜像版本 : 
+				span.cluster-log(ng-bind="isStrNull(config.clusterLog.imageTag)")

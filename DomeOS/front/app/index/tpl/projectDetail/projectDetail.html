@@ -4,11 +4,11 @@
     <button ng-click="openBuild(config.projectId,!!config.codeInfo)" class="ui-btn ui-btn-md ui-btn-bright">构建</button><a ng-click="deleteProject()" class="ui-btn-delete"><i class="icon-delete"></i></a>
   </div>
   <tabset>
-    <tab heading="基本信息" active="tabActive[0].active">
+    <tab heading="基本信息" active="tabActive[0].active" ui-sref="projectDetail.info">
       <div class="code-origin">代码源：<a href="{{config.codeInfo.codeHttpUrl}}" target="_blank" ng-bind="config.codeInfo.codeHttpUrl"></a><span ng-if="!config.codeInfo">该项目没有关联代码仓库</span></div>
       <div markdown="markdown" projectid="projectId" branch="branch" class="markdown"></div>
     </tab>
-    <tab heading="项目配置" active="tabActive[1].active">
+    <tab heading="项目配置" active="tabActive[1].active" ui-sref="projectDetail.config">
       <form name="proInfoForm" ng-class="{'need-valid':needValid}" novalidate="novalidate" class="proInfo-form">
         <div class="pull-right dockerfile-options">
           <button ng-if="!edit" ng-click="getDockerfile()" class="ui-btn ui-btn-sm ui-btn-white ui-btn-dockerfile">查看Dockerfile</button>
@@ -28,7 +28,7 @@
         </div>
       </form>
     </tab>
-    <tab heading="持续集成" active="tabActive[2].active">
+    <tab heading="持续集成" active="tabActive[2].active" ui-sref="projectDetail.autobuild">
       <p ng-if="!config.codeInfo" class="tool-noinfo">该项目未关联代码仓库，无法持续集成</p>
       <div ng-if="config.codeInfo" class="ci-con"><span class="ci-title">自动构建</span><span class="branch-check">
           <input id="buildMaster" type="checkbox" name="buildBranch" ng-model="config.autoBuildInfo.master" class="ui-check"/>
@@ -43,7 +43,7 @@
         <button ng-click="modifyCI()" ng-disabled="isWaitingForModify" class="ui-btn ui-btn-md ui-btn-bright">保存修改</button>
       </div>
     </tab>
-    <tab heading="构建记录" ng-click="getBuildList()" active="tabActive[3].active">
+    <tab heading="构建记录" ng-click="getBuildList()" active="tabActive[3].active" ui-sref="projectDetail.buildlog">
       <div class="chose-log"><span class="chose-title">按状态筛选</span><a ng-class="{'active':statusKey=='Success'}" ng-click="toggleStatus('Success')" class="txt-chose">成功</a><a ng-class="{'active':statusKey=='Fail'}" ng-click="toggleStatus('Fail')" class="txt-chose">失败</a><a ng-class="{'active':statusKey=='Building'}" ng-click="toggleStatus('Building')" class="txt-chose">构建中</a><a ng-class="{'active':statusKey=='Preparing'}" ng-click="toggleStatus('Preparing')" class="txt-chose">准备中</a><i class="sep">|</i><span class="chose-title">按构建模式筛选</span><a ng-class="{'active':autoBuildKey===0}" ng-click="toggleAutoBuild(0)" class="txt-chose">手动构建</a><a ng-class="{'active':autoBuildKey===1}" ng-click="toggleAutoBuild(1)" class="txt-chose">自动构建</a></div>
       <div class="build-log">
         <loglist>
@@ -67,7 +67,7 @@
         </loglist>
       </div>
     </tab>
-    <tab heading="项目成员" ng-hide="!hasMemberPermisson" active="tabActive[4].active">
+    <tab heading="项目成员" ng-hide="!hasMemberPermisson" active="tabActive[4].active" ui-sref="projectDetail.user">
       <div ng-include="'index/tpl/tplUserList/tplUserList.html'" class="tab-member"></div>
     </tab>
   </tabset>

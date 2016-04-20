@@ -1,10 +1,11 @@
 package org.domeos.framework.api.biz.deployment.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.domeos.framework.api.biz.deployment.DeployEventBiz;
 import org.domeos.framework.api.mapper.deployment.DeployEventMapper;
 import org.domeos.framework.api.model.deployment.DeployEvent;
 import org.domeos.framework.api.model.deployment.DeployEventDBProto;
+import org.domeos.framework.engine.model.CustomObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,13 +16,13 @@ import java.util.List;
 /**
  */
 @Service("deployEventBiz")
-public class DeployEventBizImpl implements DeployEventBiz{
+public class DeployEventBizImpl implements DeployEventBiz {
 
     @Autowired
     DeployEventMapper deployEventMapper;
 
     @Autowired
-    ObjectMapper objectMapper;
+    CustomObjectMapper objectMapper;
 
     @Override
     public void createEvent(DeployEvent event) throws JsonProcessingException {

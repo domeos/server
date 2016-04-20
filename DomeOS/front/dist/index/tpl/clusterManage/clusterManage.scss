@@ -1,0 +1,74 @@
+@import "compass/css3";
+@import "common/css/common.scss";
+
+.cluster-manage{
+	.cluster-list{
+		padding: 20px $page-padding 20px $page-padding;
+		li{
+			float: left;
+			width: 33.3%;
+			max-width: 550px;
+			padding-left: 20px;
+			margin-top: 20px;
+			.cluster-item{
+				border: $deep-border;
+				border-radius: $default-radius;
+				.cluster-header{
+					padding: 8px 12px 8px;
+					text-align: left;
+					border-bottom: $light-border;
+					overflow: hidden;
+					.cluster-name {
+						display: block;
+						margin-top: 7px;
+						color: dome-color(font,embed);
+						font-size: 16px;
+					}
+					.ui-btn-white{
+						color: dome-color(dome,bright);
+					}
+				}
+				.cluster-content{
+					padding: 20px 0 26px 0;
+					height: 90px;
+					font-size: 0;
+					text-align: center;
+					.cluster-info{
+						display: inline-block;
+						width: 50%;
+						font-size: 14px;
+						.cluster-embed{
+							margin-top: 8px;
+							font-size: 18px;
+							letter-spacing: 2px;
+						}
+					}
+					.no-host{
+						display: block;
+						margin-top: 9px;
+						padding-left: 10%;
+						font-size: 14px;
+						text-align: left;
+					}
+				}
+				.addhost{
+					margin-bottom: 20px;
+					padding-top: 12px;
+				}
+			}
+			&:nth-child(3n+1){
+				padding-left: 0;
+			}
+			&.no-cluster{
+				height: 208px;
+				text-align: center;
+				border:1px dashed dome-color(border,deep);
+				border-radius: $default-radius;
+				span{
+					display: inline-block;
+					margin-top: 90px;
+				}
+			}
+		}
+	}
+}

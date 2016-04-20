@@ -1,11 +1,9 @@
 package org.domeos.framework.engine.k8s.updater;
 
 import org.apache.log4j.Logger;
-import org.domeos.api.model.deployment.*;
-import org.domeos.framework.api.consolemodel.deployment.EnvDraft;
-import org.domeos.framework.api.model.deployment.Deployment;
-import org.domeos.framework.api.model.deployment.Version;
-import org.domeos.framework.api.service.deployment.impl.DeploymentServiceImpl;
+import org.domeos.api.model.deployment.DeploymentUpdatePhase;
+import org.domeos.api.model.deployment.DeploymentUpdateStatus;
+import org.domeos.api.model.deployment.UpdatePhase;
 import org.domeos.client.kubernetesclient.KubeClient;
 import org.domeos.client.kubernetesclient.definitions.v1.Pod;
 import org.domeos.client.kubernetesclient.definitions.v1.PodList;
@@ -16,9 +14,12 @@ import org.domeos.client.kubernetesclient.exception.KubeResponseException;
 import org.domeos.client.kubernetesclient.util.PodUtils;
 import org.domeos.client.kubernetesclient.util.RCUtils;
 import org.domeos.exception.TimeoutException;
+import org.domeos.framework.api.consolemodel.deployment.EnvDraft;
+import org.domeos.framework.api.model.deployment.Deployment;
+import org.domeos.framework.api.model.deployment.Version;
+import org.domeos.framework.api.service.deployment.impl.DeploymentServiceImpl;
 import org.domeos.framework.engine.k8s.RcBuilder;
 import org.domeos.global.GlobalConstant;
-import org.domeos.framework.engine.k8s.updater.ReplicationControllerUpdater;
 
 import java.io.IOException;
 import java.util.List;
@@ -53,7 +54,7 @@ public class DeploymentUpdater {
         this.deployment = deployment;
         this.dstVersion = version;
         this.isKeepQuantityIdentify = true;
-        this.targetRC = new RcBuilder(deployment,null, version, extraEnvs).build();
+        this.targetRC = new RcBuilder(deployment, null, version, extraEnvs).build();
     }
 
     public DeploymentUpdater(KubeClient client, Deployment deployment, Version version, int replicas, List<EnvDraft> extraEnvs) {
@@ -62,7 +63,7 @@ public class DeploymentUpdater {
         this.dstVersion = version;
         this.isKeepQuantityIdentify = false;
         this.replicas = replicas;
-        this.targetRC = new RcBuilder(deployment,null, version, extraEnvs).build();
+        this.targetRC = new RcBuilder(deployment, null, version, extraEnvs).build();
     }
 
     public void start() {
@@ -94,7 +95,8 @@ public class DeploymentUpdater {
         */
     }
 
-    public ReplicationController selectMaxVersionRC(Map<String, String> rcSelector) throws KubeResponseException, IOException, KubeInternalErrorException {
+    public ReplicationController selectMaxVersionRC(Map<String, String> rcSelector)
+            throws KubeResponseException, IOException, KubeInternalErrorException {
         ReplicationControllerList rcList = client.listReplicationController(rcSelector);
         if (rcList == null || rcList.getItems().length == 0) {
             // failedPhase("no previous replication controller found");
@@ -166,7 +168,7 @@ public class DeploymentUpdater {
             // ** find first rc to update
             ReplicationController rc = selectMaxVersionRC(rcSelector);
             // ** start update
-            while(rc != null) {
+            while (rc != null) {
                 // ** get current target rc number
                 currentTargetRC = client.replicationControllerInfo(RCUtils.getName(targetRC));
                 currentTargetReplicas = currentTargetRC.getSpec().getReplicas();

@@ -1,0 +1,44 @@
+@import "compass/css3";
+@import "common/css/common.scss";
+.image-manage{
+	.ui-btn-imgtool{
+		background-color: #4ed5b3;
+	}
+	.image-option{
+		padding:16px $page-padding 16px $wider-padding;
+		border-bottom: $light-border;
+		overflow: hidden;
+		.ui-input-search{
+			margin-left: 20px;
+		}
+		.registry-address{
+			display: inline-block;
+			margin-top: 6px;
+		}
+	}
+	.add-image{
+		padding: 4px 0 16px $wider-padding;
+		li{
+			padding-top: 14px;
+			.info-name {
+				display: inline-block;
+				width: 160px;
+				padding-top: 2px;
+			}
+			.ui-input-info{
+				width: 65%;
+			}
+			.ui-btn{
+				margin-left: 16px;
+			}
+		}
+	}
+	.ui-table-dome{
+		table-layout: fixed;
+		td,th{
+			&:first-child{
+				padding-left: $wider-padding;
+			}
+		}
+	}
+}

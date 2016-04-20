@@ -1,29 +1,24 @@
 package org.domeos.framework.api.service.deployment.impl;
 
 import org.apache.commons.lang3.StringUtils;
-import org.domeos.framework.api.biz.OperationHistory;
-import org.domeos.framework.api.biz.loadBalancer.LoadBalancerBiz;
-import org.domeos.framework.api.model.deployment.related.DeploymentAccessType;
-import org.domeos.framework.api.model.deployment.related.*;
-import org.domeos.framework.api.model.deployment.related.InnerServiceProtocol;
 import org.domeos.api.model.deployment.LoadBalanceDraft;
-import org.domeos.client.kubernetesclient.definitions.v1.Container;
-import org.domeos.framework.api.biz.deployment.impl.DeployEventBiz;
-import org.domeos.framework.api.model.operation.OperationRecord;
-import org.domeos.framework.api.service.deployment.DeploymentStatusManager;
 import org.domeos.basemodel.HttpResponseTemp;
 import org.domeos.basemodel.ResultStat;
 import org.domeos.client.kubernetesclient.KubeClient;
+import org.domeos.client.kubernetesclient.definitions.v1.Container;
 import org.domeos.client.kubernetesclient.definitions.v1.*;
 import org.domeos.client.kubernetesclient.exception.KubeInternalErrorException;
 import org.domeos.client.kubernetesclient.exception.KubeResponseException;
 import org.domeos.client.kubernetesclient.util.PodUtils;
 import org.domeos.client.kubernetesclient.util.RCUtils;
 import org.domeos.exception.DeploymentEventException;
+import org.domeos.framework.api.biz.OperationHistory;
 import org.domeos.framework.api.biz.cluster.ClusterBiz;
 import org.domeos.framework.api.biz.deployment.DeploymentBiz;
 import org.domeos.framework.api.biz.deployment.VersionBiz;
+import org.domeos.framework.api.biz.deployment.DeployEventBiz;
 import org.domeos.framework.api.biz.event.K8SEventBiz;
+import org.domeos.framework.api.biz.loadBalancer.LoadBalancerBiz;
 import org.domeos.framework.api.biz.resource.ResourceBiz;
 import org.domeos.framework.api.consolemodel.CreatorDraft;
 import org.domeos.framework.api.consolemodel.deployment.*;
@@ -40,12 +35,15 @@ import org.domeos.framework.api.model.cluster.Cluster;
 import org.domeos.framework.api.model.deployment.DeployEvent;
 import org.domeos.framework.api.model.deployment.Deployment;
 import org.domeos.framework.api.model.deployment.Version;
+import org.domeos.framework.api.model.deployment.related.*;
 import org.domeos.framework.api.model.global.GlobalInfo;
 import org.domeos.framework.api.model.global.GlobalType;
+import org.domeos.framework.api.model.operation.OperationRecord;
 import org.domeos.framework.api.model.operation.OperationType;
 import org.domeos.framework.api.model.resource.Resource;
 import org.domeos.framework.api.model.resource.related.ResourceType;
 import org.domeos.framework.api.service.deployment.DeploymentService;
+import org.domeos.framework.api.service.deployment.DeploymentStatusManager;
 import org.domeos.framework.engine.AuthUtil;
 import org.domeos.framework.engine.exception.DaoException;
 import org.domeos.framework.engine.k8s.KubeUtil;
@@ -53,6 +51,7 @@ import org.domeos.framework.engine.k8s.RcBuilder;
 import org.domeos.framework.engine.k8s.updater.DeploymentUpdater;
 import org.domeos.framework.engine.k8s.updater.DeploymentUpdaterManager;
 import org.domeos.framework.engine.runtime.IResourceStatus;
+import org.domeos.global.CurrentThreadInfo;
 import org.domeos.global.GlobalConstant;
 import org.domeos.util.MD5Util;
 import org.slf4j.Logger;
@@ -90,12 +89,6 @@ public class DeploymentServiceImpl implements DeploymentService {
 
     @Autowired
     ClusterBiz clusterBiz;
-//
-//    @Autowired
-//    ResourceService resourceService;
-//
-//	@Autowired
-//    LoadBalanceBiz loadBalanceBiz;
 
     @Autowired
     DeployEventBiz deployEventBiz;
@@ -117,10 +110,8 @@ public class DeploymentServiceImpl implements DeploymentService {
 
 
     private void checkDeployPermit(int deployId, OperationType operationType) {
-        User user = GlobalConstant.userThreadLocal.get();
-        if (user == null || !AuthUtil.verify(user.getId(), deployId, ResourceType.DEPLOY, operationType)) {
-            throw new PermitException();
-        }
+        int userId = CurrentThreadInfo.getUserId();
+        AuthUtil.verify(userId, deployId, ResourceType.DEPLOY, operationType);
     }
 
 
@@ -130,9 +121,9 @@ public class DeploymentServiceImpl implements DeploymentService {
 
 
     @Override
-    public HttpResponseTemp<?> createDeployment(DeploymentDraft deploymentDraft) throws Exception {
+    public int createDeployment(DeploymentDraft deploymentDraft) throws Exception {
         if (deploymentDraft == null) {
-            return ResultStat.DEPLOYMENT_NOT_LEGAL.wrap(null, "deployment is null");
+            throw ApiException.wrapMessage(ResultStat.DEPLOYMENT_NOT_LEGAL, "deployment is null");
         }
 //
 //        if (loadBalanceDrafts != null && loadBalanceDrafts.size() > 0) {
@@ -154,25 +145,32 @@ public class DeploymentServiceImpl implements DeploymentService {
 //            }
 //        }
 
+        if (CurrentThreadInfo.getUser() == null) {
+            throw new PermitException("no user logged in");
+        }
         List<LoadBalancer> lbs = deploymentDraft.toLoadBalancer();
-        for (LoadBalancer loadBalancer: lbs) {
+        for (LoadBalancer loadBalancer : lbs) {
             String err = loadBalancer.checkLegality();
             if (!StringUtils.isBlank(err)) {
-                throw new ApiException(ResultStat.DEPLOYMENT_NOT_LEGAL, err);
+                throw ApiException.wrapMessage(ResultStat.DEPLOYMENT_NOT_LEGAL, err);
             }
         }
         String errInfo = deploymentDraft.checkLegality();
         if (!StringUtils.isBlank(errInfo)) {
             throw new DeployIlegalException(errInfo);
         }
+        Cluster cluster = clusterBiz.getClusterById(deploymentDraft.getClusterId());
+        if (cluster == null) {
+            throw ApiException.wrapResultStat(ResultStat.CLUSTER_NOT_EXIST);
+        }
 
         String deployName = deploymentDraft.getDeployName();
-        List<Deployment> list = deploymentBiz.getListByName(GlobalConstant.deployTableName, deployName, Deployment.class);
+        List<Deployment> list = deploymentBiz.getListByName(GlobalConstant.DEPLOY_TABLE_NAME, deployName, Deployment.class);
         if (list != null && list.size() != 0) {
-            for (Deployment one: list) {
+            for (Deployment one : list) {
                 if (one.getClusterId() == deploymentDraft.getClusterId() &&
-                    one.getNamespace().equals(deploymentDraft.getNamespace())) {
-                    throw new ApiException(ResultStat.DEPLOYMENT_EXIST, "");
+                        one.getNamespace().equals(deploymentDraft.getNamespace())) {
+                    throw ApiException.wrapResultStat(ResultStat.DEPLOYMENT_EXIST);
                 }
             }
         }
@@ -181,24 +179,24 @@ public class DeploymentServiceImpl implements DeploymentService {
         try {
             deploymentBiz.createDeployment(deployment);
         } catch (Exception e) {
-            throw new ApiException(ResultStat.SERVER_INTERNAL_ERROR, e.getMessage());
+            throw ApiException.wrapUnknownException(e);
         }
         try {
             loadBalancerBiz.insertLoadBalancers(deployment.getId(), lbs);
         } catch (Exception e) {
-            deploymentBiz.removeById(GlobalConstant.deployTableName, deployment.getId());
-            throw new ApiException(ResultStat.SERVER_INTERNAL_ERROR, e.getMessage());
+            deploymentBiz.removeById(GlobalConstant.DEPLOY_TABLE_NAME, deployment.getId());
+            throw ApiException.wrapUnknownException(e);
         }
 
         Version version = deploymentDraft.toVersion();
         version.setDeployId(deployment.getId());
         version.setCreateTime(deployment.getCreateTime());
         try {
-            versionBiz.insertRow(version);
+            versionBiz.insertVersionWithLogCollect(version, cluster);
         } catch (Exception e) {
             // failed
-            deploymentBiz.removeById(GlobalConstant.deployTableName, deployment.getId());
-            throw e;
+            deploymentBiz.removeById(GlobalConstant.DEPLOY_TABLE_NAME, deployment.getId());
+            throw ApiException.wrapUnknownException(e);
         }
 
 
@@ -211,40 +209,41 @@ public class DeploymentServiceImpl implements DeploymentService {
         resourceBiz.addResource(resource);
 
         // add operation record
-        if (GlobalConstant.userThreadLocal.get() == null) {
-            throw new PermitException();
-        }
         operationHistory.insertRecord(new OperationRecord(
                 resource.getResourceId(),
                 resource.getResourceType(),
                 OperationType.BUILD,
-                GlobalConstant.userThreadLocal.get().getId(),
-                GlobalConstant.userThreadLocal.get().getUsername(),
+                CurrentThreadInfo.getUserId(),
+                CurrentThreadInfo.getUserName(),
                 "OK",
                 "",
                 System.currentTimeMillis()
         ));
 
         // TODO(sparkchen)
-        logger.info("create deploy succeed, deployId={}, ownerType={}, ownerId={}", deployment.getId(), creatorDraft.getCreatorType(), creatorDraft.getCreatorId());
+        logger.info("create deploy succeed, deployId={}, ownerType={}, ownerId={}",
+                deployment.getId(), creatorDraft.getCreatorType(), creatorDraft.getCreatorId());
 
-        return ResultStat.OK.wrap(null);
+        return deployment.getId();
     }
 
 
     private List<Resource> getResourceList() {
-        int userId = GlobalConstant.userThreadLocal.get().getId();
+        int userId = CurrentThreadInfo.getUserId();
         return AuthUtil.getResourceList(userId, ResourceType.DEPLOY);
     }
 
     private User checkOpPermit(int deployId, int clusterId) {
-        User user = GlobalConstant.userThreadLocal.get();
-        int userId = user.getId();
-        if (!AuthUtil.verify(userId, clusterId, ResourceType.CLUSTER, OperationType.MODIFY)) {
-            throw new PermitException("no modify privilege for clusterId " + clusterId);
-        }
-        if (!AuthUtil.verify(userId, deployId, ResourceType.DEPLOY, OperationType.MODIFY)) {
-            throw new PermitException("no modify privilege for deployment");
+        User user = CurrentThreadInfo.getUser();
+        if (user != null) {
+            if (!AuthUtil.verify(user.getId(), clusterId, ResourceType.CLUSTER, OperationType.MODIFY)) {
+                throw new PermitException("no modify privilege for clusterId " + clusterId);
+            }
+            if (!AuthUtil.verify(user.getId(), deployId, ResourceType.DEPLOY, OperationType.MODIFY)) {
+                throw new PermitException("no modify privilege for deployment");
+            }
+        } else {
+            throw new PermitException("");
         }
         return user;
     }
@@ -282,60 +281,56 @@ public class DeploymentServiceImpl implements DeploymentService {
                 break;
         }
         if (!availables.contains(dst)) {
-            throw new ApiException(ResultStat.DEPLOYMENT_STATUS_NOT_ALLOW, "Can not change to " + dst.name() + " status from " + src.name());
+            throw ApiException.wrapMessage(ResultStat.DEPLOYMENT_STATUS_NOT_ALLOW, "Can not change to " + dst.name() + " status from " + src.name());
         }
     }
 
 
     @Override
-    public HttpResponseTemp<?> removeDeployment(int deployId) throws IOException {
+    public void removeDeployment(int deployId) throws IOException {
 
         checkDeployPermit(deployId, OperationType.DELETE);
-        Deployment deployment = deploymentBiz.getById(GlobalConstant.deployTableName, deployId, Deployment.class);
+        Deployment deployment = deploymentBiz.getById(GlobalConstant.DEPLOY_TABLE_NAME, deployId, Deployment.class);
         DeploymentStatus deploymentStatus = deploymentStatusManager.getDeploymentStatus(deployId);
         if (deploymentStatus == null || !deploymentStatus.equals(DeploymentStatus.STOP)) {
-            throw new ApiException(ResultStat.CANNOT_DELETE_DEPLOYMENT, "deployment status is " + deployment.getState() + " now");
+            throw ApiException.wrapMessage(ResultStat.CANNOT_DELETE_DEPLOYMENT, "deployment status is " + deployment.getState() + " now");
         }
 
         loadBalancerBiz.deleteLBSByDeploy(deployId);
         versionBiz.disableAllVersion(deployId);
-        deploymentBiz.removeById(GlobalConstant.deployTableName, deployId);
+        deploymentBiz.removeById(GlobalConstant.DEPLOY_TABLE_NAME, deployId);
 
         resourceBiz.deleteResourceByIdAndType(deployId, ResourceType.DEPLOY);
         // add operation record
-        if (GlobalConstant.userThreadLocal.get() == null) {
-            throw new PermitException();
-        }
         operationHistory.insertRecord(new OperationRecord(
                 deployId,
                 ResourceType.DEPLOY,
                 OperationType.DELETE,
-                GlobalConstant.userThreadLocal.get().getId(),
-                GlobalConstant.userThreadLocal.get().getUsername(),
+                CurrentThreadInfo.getUserId(),
+                CurrentThreadInfo.getUserName(),
                 "OK",
                 "",
                 System.currentTimeMillis()
         ));
         logger.info("delete deploy succeed, deployId={}", deployId);
 
-        return ResultStat.OK.wrap(null);
     }
 
 
     @Override
-    public HttpResponseTemp<?> modifyDeployment(int deployId, DeploymentDraft deploymentDraft) throws Exception {
+    public void modifyDeployment(int deployId, DeploymentDraft deploymentDraft) throws Exception {
         checkDeployPermit(deployId, OperationType.MODIFY);
         if (deploymentDraft == null) {
-            return ResultStat.DEPLOYMENT_NOT_LEGAL.wrap(null, "deployment is null");
+            throw ApiException.wrapMessage(ResultStat.DEPLOYMENT_NOT_LEGAL, "deployment is null");
         }
 
         String errInfo = deploymentDraft.checkLegality();
         if (!StringUtils.isBlank(errInfo)) {
-            return ResultStat.DEPLOYMENT_NOT_LEGAL.wrap(null, errInfo);
+            throw ApiException.wrapMessage(ResultStat.DEPLOYMENT_NOT_LEGAL, errInfo);
         }
         Deployment oldDeploy = deploymentBiz.getDeployment(deployId);
         if (oldDeploy == null) {
-            throw new ApiException(ResultStat.DEPLOYMENT_NOT_EXIST, "");
+            throw ApiException.wrapResultStat(ResultStat.DEPLOYMENT_NOT_EXIST);
         }
         Deployment newDeploy = deploymentDraft.toDeployment();
 
@@ -346,35 +341,31 @@ public class DeploymentServiceImpl implements DeploymentService {
         // Acturally Operation
 
         // add operation record
-        if (GlobalConstant.userThreadLocal.get() == null) {
-            throw new PermitException();
-        }
         operationHistory.insertRecord(new OperationRecord(
-            deployId,
-            ResourceType.DEPLOY,
-            OperationType.MODIFY,
-            GlobalConstant.userThreadLocal.get().getId(),
-            GlobalConstant.userThreadLocal.get().getUsername(),
-            "OK",
-            "",
-            System.currentTimeMillis()
+                deployId,
+                ResourceType.DEPLOY,
+                OperationType.MODIFY,
+                CurrentThreadInfo.getUserId(),
+                CurrentThreadInfo.getUserName(),
+                "OK",
+                "",
+                System.currentTimeMillis()
         ));
 
-        return ResultStat.OK.wrap(null);
     }
 
 
     @Override
-    public HttpResponseTemp<List<DeploymentInfo>> listDeployment() throws IOException, KubeInternalErrorException, KubeResponseException {
+    public List<DeploymentInfo> listDeployment() throws IOException, KubeInternalErrorException, KubeResponseException {
         List<DeploymentInfo> deploymentInfos = new ArrayList<>();
         List<Resource> resources = getResourceList();
         if (resources == null || resources.size() == 0) {
-            return ResultStat.OK.wrap(deploymentInfos);
+            return deploymentInfos;
         }
         List<Deployment> deployments = deploymentBiz.getListByReousrce(
-            GlobalConstant.deployTableName, resources, Deployment.class);
+                GlobalConstant.DEPLOY_TABLE_NAME, resources, Deployment.class);
 
-        for (Deployment deployment: deployments) {
+        for (Deployment deployment : deployments) {
             DeploymentInfo deploymentInfo = new DeploymentInfo(deployment);
             deploymentInfo.setDeploymentStatus(deploymentStatusManager.getDeploymentStatus(deployment.getId()));
             DeployResourceStatus deployResourceStatus = resourceStatus.getDeployResourceStatusById(deployment.getId());
@@ -386,15 +377,15 @@ public class DeploymentServiceImpl implements DeploymentService {
             }
             String serviceDnsName = "";
             List<LoadBalancer> loadBalancers = loadBalancerBiz.getLBSByDeploy(deployment.getId());
-            if (loadBalancers != null ) {
+            if (loadBalancers != null) {
                 for (LoadBalancer lb : loadBalancers) {
                     serviceDnsName += lb.getDnsName() + " ";
                 }
             }
             // set cluster name
-            Cluster cluster = clusterBiz.getById(GlobalConstant.clusterTableName, deployment.getClusterId(), Cluster.class);
+            Cluster cluster = clusterBiz.getById(GlobalConstant.CLUSTER_TABLE_NAME, deployment.getClusterId(), Cluster.class);
             if (cluster == null) {
-                throw new ApiException(ResultStat.CLUSTER_NOT_EXIST,
+                throw ApiException.wrapMessage(ResultStat.CLUSTER_NOT_EXIST,
                         "deployment " + deployment.getName() + " requires the cluster (clusterId: " + deployment.getClusterId() + ") information");
             }
             deploymentInfo.setClusterName(cluster.getName());
@@ -413,25 +404,25 @@ public class DeploymentServiceImpl implements DeploymentService {
         Collections.sort(deploymentInfos, new Comparator<DeploymentInfo>() {
             @Override
             public int compare(DeploymentInfo o1, DeploymentInfo o2) {
-                return ((Long)o2.getCreateTime()).compareTo(o1.getCreateTime());
+                return ((Long) o2.getCreateTime()).compareTo(o1.getCreateTime());
             }
         });
-        return ResultStat.OK.wrap(deploymentInfos);
+        return deploymentInfos;
     }
 
 
     @Override
-    public HttpResponseTemp<DeploymentDetail> getDeployment(int deployId) throws IOException, KubeInternalErrorException, KubeResponseException {
+    public DeploymentDetail getDeployment(int deployId) throws IOException, KubeInternalErrorException, KubeResponseException {
         checkDeployPermit(deployId, OperationType.GET);
 
         Deployment deployment = deploymentBiz.getDeployment(deployId);
 
         if (deployment == null) {
-            throw new ApiException(ResultStat.DEPLOYMENT_NOT_EXIST);
+            throw ApiException.wrapResultStat(ResultStat.DEPLOYMENT_NOT_EXIST);
         }
-        Cluster cluster = clusterBiz.getById(GlobalConstant.clusterTableName, deployment.getClusterId(), Cluster.class);
+        Cluster cluster = clusterBiz.getById(GlobalConstant.CLUSTER_TABLE_NAME, deployment.getClusterId(), Cluster.class);
         if (cluster == null) {
-            throw new ApiException(ResultStat.SERVER_INTERNAL_ERROR, "ClusterId: " + deployment.getClusterId() + " not exists");
+            throw ApiException.wrapMessage(ResultStat.SERVER_INTERNAL_ERROR, "ClusterId: " + deployment.getClusterId() + " not exists");
         }
 
         DeploymentDetail deploymentDetail = new DeploymentDetail();
@@ -508,28 +499,28 @@ public class DeploymentServiceImpl implements DeploymentService {
             deploymentDetail.setCurrentVersions(null);
         }
         deploymentDetail.setHealthChecker(deployment.getHealthChecker());
-        return ResultStat.OK.wrap(deploymentDetail);
+        return deploymentDetail;
     }
 
 
     @Override
-    public HttpResponseTemp<?> stopDeployment(int deployId) throws KubeResponseException, IOException, KubeInternalErrorException, DeploymentEventException {
+    public void stopDeployment(int deployId) throws KubeResponseException, IOException, KubeInternalErrorException, DeploymentEventException {
 
         // ** get deployment
         Deployment deployment = deploymentBiz.getDeployment(deployId);
         if (deployment == null) {
-            return ResultStat.PARAM_ERROR.wrap(null, "no such deployment in database");
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "no such deployment in database");
         }
 
         // ** get cluster
-        Cluster cluster = clusterBiz.getById(GlobalConstant.clusterTableName, deployment.getClusterId(), Cluster.class);
+        Cluster cluster = clusterBiz.getById(GlobalConstant.CLUSTER_TABLE_NAME, deployment.getClusterId(), Cluster.class);
         String clusterApiServer = cluster.getApi();
         int clusterId = cluster.getId();
         checkOpPermit(deployId, clusterId);
         checkStateAvailable(DeploymentStatus.STOPPING, deployment);
 
-        User user = GlobalConstant.userThreadLocal.get();
-        deploymentBiz.updateState(GlobalConstant.deployTableName, DeploymentStatus.STOPPING.name(), deployId);
+        User user = CurrentThreadInfo.getUser();
+        deploymentBiz.updateState(GlobalConstant.DEPLOY_TABLE_NAME, DeploymentStatus.STOPPING.name(), deployId);
 
         // TODO(sparkchen)
         // record event
@@ -541,16 +532,16 @@ public class DeploymentServiceImpl implements DeploymentService {
         // ** get rclist
         try {
             deploymentStatusManager.registerStopEvent(
-                deployId,
-                user,
-                queryDesiredSnapshot(client, deployment),
-                queryCurrentSnapshot(client, deployment));
+                    deployId,
+                    user,
+                    queryDesiredSnapshot(client, deployment),
+                    queryCurrentSnapshot(client, deployment));
 
             new KubeUtil(client).deleteService(buildRCLabel(deployment));
             ReplicationControllerList rcList = client.listReplicationController(buildRCLabel(deployment));
             PodList podList = client.listPod(buildRCSelector(deployment));
             if (rcList == null && podList == null) {
-                return ResultStat.OK.wrap(null);
+                return;
             }
             if (rcList != null && rcList.getItems() != null) {
                 for (ReplicationController rc : rcList.getItems()) {
@@ -562,31 +553,31 @@ public class DeploymentServiceImpl implements DeploymentService {
                     deployId,
                     null, // queryCurrentSnapshot(client, deployment),
                     e.getMessage());
-            return ResultStat.DEPLOYMENT_STOP_FAILED.wrap(e.getMessage());
+            throw ApiException.wrapMessage(ResultStat.DEPLOYMENT_STOP_FAILED, e.getMessage());
         }
 
-        return ResultStat.OK.wrap(null);
+        return;
     }
 
 
     @Override
-    public HttpResponseTemp<?> startDeployment(int deployId, long versionId, int replicas)
-        throws IOException, KubeInternalErrorException, KubeResponseException, DeploymentEventException, DaoException {
+    public void startDeployment(int deployId, long versionId, int replicas)
+            throws IOException, KubeInternalErrorException, KubeResponseException, DeploymentEventException, DaoException {
 
         // ** get deployment and version
         Deployment deployment = deploymentBiz.getDeployment(deployId);
         Version version = versionBiz.getVersion(deployId, versionId);
 
-        if (deployment == null ) {
-            throw new ApiException(ResultStat.PARAM_ERROR, "no such deployment:" + deployId);
+        if (deployment == null) {
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "no such deployment:" + deployId);
         }
         if (version == null) {
-            throw new ApiException(ResultStat.PARAM_ERROR, "no such version:" + versionId);
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "no such version:" + versionId);
         }
 
-        Cluster cluster = clusterBiz.getById(GlobalConstant.clusterTableName, deployment.getClusterId(), Cluster.class);
+        Cluster cluster = clusterBiz.getById(GlobalConstant.CLUSTER_TABLE_NAME, deployment.getClusterId(), Cluster.class);
         if (cluster == null) {
-            throw new ApiException(ResultStat.PARAM_ERROR, "no such clusterId: " + deployment.getClusterId());
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "no such clusterId: " + deployment.getClusterId());
         }
         User user = checkOpPermit(deployId, cluster.getId());
         checkStateAvailable(DeploymentStatus.DEPLOYING, deployment);
@@ -610,11 +601,11 @@ public class DeploymentServiceImpl implements DeploymentService {
         // ** modify event
         try {
             deploymentStatusManager.registerStartEvent(deployId, user,
-                buildSingleDeploymentSnapshot(versionId, replicas));
+                    buildSingleDeploymentSnapshot(versionId, replicas));
         } catch (DeploymentEventException e) {
             deployment.setState(DeploymentStatus.ERROR.name());
             deploymentBiz.update(deployment);
-            return ResultStat.DEPLOYMENT_START_FAILED.wrap(e.getMessage());
+            throw ApiException.wrapMessage(ResultStat.DEPLOYMENT_START_FAILED, e.getMessage());
         }
 
         KubeClient client;
@@ -634,22 +625,22 @@ public class DeploymentServiceImpl implements DeploymentService {
                         String message = "no node found for " + version.getHostList().get(i);
                         deploymentStatusManager.failedEventForDeployment(deploymentId, queryCurrentSnapshot(client, deployment),
                                 message);
-                        return ResultStat.DEPLOYMENT_START_FAILED.wrap(null, message);
+                        throw ApiException.wrapMessage(ResultStat.DEPLOYMENT_START_FAILED, message);
                     } else if (node.getMetadata() == null || node.getMetadata().getAnnotations() == null
                             || !node.getMetadata().getAnnotations().containsKey(GlobalConstant.DISK_STR)) {
                         String message = "no disk found on node";
                         if (node.getMetadata() != null) {
-                            message +=  node.getMetadata().getName();
+                            message += node.getMetadata().getName();
                         }
                         deploymentStatusManager.failedEventForDeployment(deploymentId, queryCurrentSnapshot(client, deployment),
                                 message);
-                        return ResultStat.DEPLOYMENT_START_FAILED.wrap(null, message);
+                        throw ApiException.wrapMessage(ResultStat.DEPLOYMENT_START_FAILED, message);
                     } else if (node.getStatus().getAddresses() == null
                             || node.getStatus().getAddresses().length == 0) {
                         String message = "no ip found for node=" + node.getMetadata().getName();
                         deploymentStatusManager.failedEventForDeployment(deploymentId, queryCurrentSnapshot(client, deployment),
                                 message);
-                        return ResultStat.DEPLOYMENT_START_FAILED.wrap(null, message);
+                        throw ApiException.wrapMessage(ResultStat.DEPLOYMENT_START_FAILED, message);
                     }
                     // ** found node ip
                     nodeList.add(i, node);
@@ -690,13 +681,13 @@ public class DeploymentServiceImpl implements DeploymentService {
             } else {
                 // ** build replication controller
                 List<EnvDraft> allExtraEnvs = buildExtraEnv(cluster);
-              //  ReplicationController rc = buildReplicationController(deployment, version, allExtraEnvs);
-                ReplicationController rc = new RcBuilder(deployment,null, version, allExtraEnvs).build();
+                //  ReplicationController rc = buildReplicationController(deployment, version, allExtraEnvs);
+                ReplicationController rc = new RcBuilder(deployment, null, version, allExtraEnvs).build();
                 if (rc == null || rc.getSpec() == null) {
                     String message = "build replication controller failed";
                     deploymentStatusManager.failedEventForDeployment(deploymentId, queryCurrentSnapshot(client, deployment),
                             message);
-                    return ResultStat.DEPLOYMENT_START_FAILED.wrap(null, message);
+                    throw ApiException.wrapMessage(ResultStat.DEPLOYMENT_START_FAILED, message);
                 }
                 rc.getSpec().setReplicas(replicas);
                 // ** create
@@ -706,13 +697,13 @@ public class DeploymentServiceImpl implements DeploymentService {
                 for (LoadBalancer loadBalancer : loadBalancers) {
                     if (loadBalancer.getType() == LoadBalanceType.EXTERNAL_SERVICE) {
                         org.domeos.client.kubernetesclient.definitions.v1.Service service =
-                            buildServiceForStateless(loadBalancer, deployment);
+                                buildServiceForStateless(loadBalancer, deployment);
                         if (service == null || service.getMetadata() == null
-                            || service.getMetadata().getLabels() == null) {
+                                || service.getMetadata().getLabels() == null) {
                             String message = "build service for deployId=" + deployId + " failed";
                             deploymentStatusManager.failedEventForDeployment(deploymentId, queryCurrentSnapshot(client, deployment),
-                                message);
-                            return ResultStat.DEPLOYMENT_START_FAILED.wrap(message);
+                                    message);
+                            throw ApiException.wrapMessage(ResultStat.DEPLOYMENT_START_FAILED, message);
                         }
                         new KubeUtil(client).deleteService(service.getMetadata().getLabels());
                         client.createService(service);
@@ -720,13 +711,13 @@ public class DeploymentServiceImpl implements DeploymentService {
                         InnerServiceDraft innerServiceDraft = new InnerServiceDraft(loadBalancer);
                         List<InnerServiceDraft> innerServiceDraftList = new ArrayList<>();
                         innerServiceDraftList.add(innerServiceDraft);
-                            org.domeos.client.kubernetesclient.definitions.v1.Service service =
+                        org.domeos.client.kubernetesclient.definitions.v1.Service service =
                                 buildInnerService(innerServiceDraftList, deployment);
-                            if (service == null || service.getMetadata() == null || service.getMetadata().getLabels() == null) {
-                                String message = "build internal service for deployId=" + deployId + " failed";
-                                deploymentStatusManager.failedEventForDeployment(deploymentId,
+                        if (service == null || service.getMetadata() == null || service.getMetadata().getLabels() == null) {
+                            String message = "build internal service for deployId=" + deployId + " failed";
+                            deploymentStatusManager.failedEventForDeployment(deploymentId,
                                     queryCurrentSnapshot(client, deployment), message);
-                                return ResultStat.DEPLOYMENT_START_FAILED.wrap(message);
+                                throw ApiException.wrapMessage(ResultStat.DEPLOYMENT_START_FAILED, message);
                             }
                             new KubeUtil(client).deleteService(service.getMetadata().getLabels());
                             client.createService(service);
@@ -736,42 +727,41 @@ public class DeploymentServiceImpl implements DeploymentService {
             }
         } catch (KubeInternalErrorException e) {
             deploymentStatusManager.failedEventForDeployment(deployId,
-                null, // queryCurrentSnapshot(client, deployment),
-                e.getMessage());
-            return ResultStat.DEPLOYMENT_START_FAILED.wrap(null, e.getMessage());
-        } catch (KubeResponseException e)  {
+                    null, // queryCurrentSnapshot(client, deployment),
+                    e.getMessage());
+            throw ApiException.wrapKnownException(ResultStat.DEPLOYMENT_START_FAILED, e);
+        } catch (KubeResponseException e) {
             deploymentStatusManager.failedEventForDeployment(deployId,
                     null, // queryCurrentSnapshot(client, deployment),
                     e.getStatus().getMessage());
-            return ResultStat.DEPLOYMENT_START_FAILED.wrap(null, e.getStatus().getMessage());
+            throw ApiException.wrapMessage(ResultStat.DEPLOYMENT_START_FAILED, e.getStatus().getMessage());
         } catch (Exception e) {
             deploymentStatusManager.failedEventForDeployment(deployId,
                     null,
                     e.getMessage());
-            return ResultStat.DEPLOYMENT_START_FAILED.wrap(null, e.getMessage());
+            throw ApiException.wrapUnknownException(e);
         }
 
-        return ResultStat.OK.wrap(null);
     }
 
 
     @Override
     public HttpResponseTemp<?> startUpdate(int deployId, long versionId, int replicas)
-        throws IOException, KubeResponseException, KubeInternalErrorException, DeploymentEventException, DaoException {
+            throws IOException, KubeResponseException, KubeInternalErrorException, DeploymentEventException, DaoException {
 
         Deployment deployment = deploymentBiz.getDeployment(deployId);
         Version version = versionBiz.getVersion(deployId, versionId);
 
-        if (deployment == null ) {
-            throw new ApiException(ResultStat.PARAM_ERROR, "no such deployment:" + deployId);
+        if (deployment == null) {
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "no such deployment:" + deployId);
         }
         if (version == null) {
-            throw new ApiException(ResultStat.PARAM_ERROR, "no such version:" + versionId);
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "no such version:" + versionId);
         }
 
-        Cluster cluster = clusterBiz.getById(GlobalConstant.clusterTableName, deployment.getClusterId(), Cluster.class);
+        Cluster cluster = clusterBiz.getById(GlobalConstant.CLUSTER_TABLE_NAME, deployment.getClusterId(), Cluster.class);
         if (cluster == null) {
-            throw new ApiException(ResultStat.PARAM_ERROR, "no such clusterId: " + deployment.getClusterId());
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "no such clusterId: " + deployment.getClusterId());
         }
         User user = checkOpPermit(deployId, cluster.getId());
         String clusterApiServer = cluster.getApi();
@@ -786,7 +776,7 @@ public class DeploymentServiceImpl implements DeploymentService {
                     buildRCLabel(deployment));
             currentSnapshot = queryCurrentSnapshot(client,
                     buildRCSelector(deployment));
-            int totalReplicas = (int)getTotalReplicas(srcSnapshot);
+            int totalReplicas = (int) getTotalReplicas(srcSnapshot);
             if (replicas != -1) {
                 totalReplicas = replicas;
             }
@@ -798,9 +788,9 @@ public class DeploymentServiceImpl implements DeploymentService {
             deployment.setState(DeploymentStatus.UPDATING.name());
             deploymentBiz.update(deployment);
             deploymentStatusManager.registerStartUpdateEvent(deployId, user,
-                srcSnapshot,
-                currentSnapshot,
-                buildSingleDeploymentSnapshot(versionId, totalReplicas));
+                    srcSnapshot,
+                    currentSnapshot,
+                    buildSingleDeploymentSnapshot(versionId, totalReplicas));
         } catch (DeploymentEventException | KubeResponseException | KubeInternalErrorException e) {
             return ResultStat.DEPLOYMENT_UPDATE_FAILED.wrap(null, e.getMessage());
         }
@@ -836,16 +826,16 @@ public class DeploymentServiceImpl implements DeploymentService {
         Deployment deployment = deploymentBiz.getDeployment(deployId);
         Version version = versionBiz.getVersion(deployId, versionId);
 
-        if (deployment == null ) {
-            throw new ApiException(ResultStat.PARAM_ERROR, "no such deployment:" + deployId);
+        if (deployment == null) {
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "no such deployment:" + deployId);
         }
         if (version == null) {
-            throw new ApiException(ResultStat.PARAM_ERROR, "no such version:" + versionId);
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "no such version:" + versionId);
         }
 
-        Cluster cluster = clusterBiz.getById(GlobalConstant.clusterTableName, deployment.getClusterId(), Cluster.class);
+        Cluster cluster = clusterBiz.getById(GlobalConstant.CLUSTER_TABLE_NAME, deployment.getClusterId(), Cluster.class);
         if (cluster == null) {
-            throw new ApiException(ResultStat.PARAM_ERROR, "no such clusterId: " + deployment.getClusterId());
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "no such clusterId: " + deployment.getClusterId());
         }
         User user = checkOpPermit(deployId, cluster.getId());
         String clusterApiServer = cluster.getApi();
@@ -869,7 +859,7 @@ public class DeploymentServiceImpl implements DeploymentService {
                     buildRCLabel(deployment));
             currentSnapshot = queryCurrentSnapshot(client,
                     buildRCSelector(deployment));
-            int totalReplicas = (int)getTotalReplicas(srcSnapshot);
+            int totalReplicas = (int) getTotalReplicas(srcSnapshot);
             if (replicas != -1) {
                 totalReplicas = replicas;
             }
@@ -878,9 +868,9 @@ public class DeploymentServiceImpl implements DeploymentService {
             deployment.setState(DeploymentStatus.BACKROLLING.name());
             deploymentBiz.update(deployment);
             deploymentStatusManager.registerStartRollbackEvent(deployId, user,
-                srcSnapshot,
-                currentSnapshot,
-                buildSingleDeploymentSnapshot(versionId, totalReplicas));
+                    srcSnapshot,
+                    currentSnapshot,
+                    buildSingleDeploymentSnapshot(versionId, totalReplicas));
         } catch (DeploymentEventException | KubeResponseException | KubeInternalErrorException e) {
             ResultStat.DEPLOYMENT_UPDATE_FAILED.wrap(e.getMessage());
         } catch (DaoException e) {
@@ -933,13 +923,13 @@ public class DeploymentServiceImpl implements DeploymentService {
 
         Deployment deployment = deploymentBiz.getDeployment(deployId);
 
-        if (deployment == null ) {
-            throw new ApiException(ResultStat.PARAM_ERROR, "no such deployment:" + deployId);
+        if (deployment == null) {
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "no such deployment:" + deployId);
         }
 
-        Cluster cluster = clusterBiz.getById(GlobalConstant.clusterTableName, deployment.getClusterId(), Cluster.class);
+        Cluster cluster = clusterBiz.getById(GlobalConstant.CLUSTER_TABLE_NAME, deployment.getClusterId(), Cluster.class);
         if (cluster == null) {
-            throw new ApiException(ResultStat.PARAM_ERROR, "no such clusterId: " + deployment.getClusterId());
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "no such clusterId: " + deployment.getClusterId());
         }
         User user = checkOpPermit(deployId, cluster.getId());
         String clusterApiServer = cluster.getApi();
@@ -970,7 +960,7 @@ public class DeploymentServiceImpl implements DeploymentService {
                     // ** ** no rc online for versionId now, build new
                     Version version = versionBiz.getVersion(deployId, versionId);
                     List<EnvDraft> allExtraEnvs = buildExtraEnv(cluster);
-                    targetRC = new RcBuilder(deployment,null, version, allExtraEnvs).build();
+                    targetRC = new RcBuilder(deployment, null, version, allExtraEnvs).build();
                 }
             }
             // ** register event
@@ -1006,13 +996,13 @@ public class DeploymentServiceImpl implements DeploymentService {
 
         Deployment deployment = deploymentBiz.getDeployment(deployId);
 
-        if (deployment == null ) {
-            throw new ApiException(ResultStat.PARAM_ERROR, "no such deployment:" + deployId);
+        if (deployment == null) {
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "no such deployment:" + deployId);
         }
 
-        Cluster cluster = clusterBiz.getById(GlobalConstant.clusterTableName, deployment.getClusterId(), Cluster.class);
+        Cluster cluster = clusterBiz.getById(GlobalConstant.CLUSTER_TABLE_NAME, deployment.getClusterId(), Cluster.class);
         if (cluster == null) {
-            throw new ApiException(ResultStat.PARAM_ERROR, "no such clusterId: " + deployment.getClusterId());
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "no such clusterId: " + deployment.getClusterId());
         }
         User user = checkOpPermit(deployId, cluster.getId());
         String clusterApiServer = cluster.getApi();
@@ -1043,7 +1033,7 @@ public class DeploymentServiceImpl implements DeploymentService {
                     // ** ** no rc online now, build new
                     Version version = versionBiz.getVersion(deployId, versionId);
                     List<EnvDraft> allExtraEnvs = buildExtraEnv(cluster);
-                    targetRC = new RcBuilder(deployment,null, version, allExtraEnvs).build();
+                    targetRC = new RcBuilder(deployment, null, version, allExtraEnvs).build();
                 }
             }
             // ** register event
@@ -1075,36 +1065,33 @@ public class DeploymentServiceImpl implements DeploymentService {
 
 
     @Override
-    public HttpResponseTemp<List<DeployEvent>> listDeployEvent(int deployId) throws IOException {
+    public List<DeployEvent> listDeployEvent(int deployId) throws IOException {
         Deployment deployment = deploymentBiz.getDeployment(deployId);
         if (deployment == null) {
-            return ResultStat.PARAM_ERROR.wrap(null, "no such deploy in database");
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "no such deploy in database");
         }
-        Cluster cluster = clusterBiz.getById(GlobalConstant.clusterTableName, deployment.getClusterId(), Cluster.class);
+        Cluster cluster = clusterBiz.getById(GlobalConstant.CLUSTER_TABLE_NAME, deployment.getClusterId(), Cluster.class);
         if (cluster == null) {
-            return ResultStat.PARAM_ERROR.wrap(null, "no such cluster in database, clusterId = " + deployment.getClusterId());
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "no such cluster in database, clusterId = " + deployment.getClusterId());
         }
         int clusterId = cluster.getId();
 
-        User user = GlobalConstant.userThreadLocal.get();
-        if (user == null || !AuthUtil.verify(user.getId(), clusterId, ResourceType.CLUSTER, OperationType.GET)) {
-            return ResultStat.FORBIDDEN.wrap(null, "no list privilege for cluster");
-        }
+        AuthUtil.verify(CurrentThreadInfo.getUserId(), clusterId, ResourceType.CLUSTER, OperationType.GET);
         if (deployId < 1) {
-            return ResultStat.DEPLOYMENT_NOT_LEGAL.wrap(null, "deployId is illegal");
+            throw ApiException.wrapMessage(ResultStat.DEPLOYMENT_NOT_LEGAL, "deployId is illegal");
         }
         List<DeployEvent> events = new LinkedList<>();
         List<DeployEvent> deployEvents = deployEventBiz.getEventByDeployId(deployId);
         if (deployEvents != null) {
             events.addAll(deployEvents);
         }
-        // TODO k8s events are too much @conan
-//        List<Event> eventList = k8SEventBiz.getEventsByDeployName(deployment.getClusterId(), deployment.getName());
-//        List<EventInfo> eventInfos = k8SEventBiz.translateEvent(eventList);
-//        List<DeployEvent> transEvents = translateK8sEvents(deployId, eventInfos);
-//        if (transEvents != null) {
-//            events.addAll(transEvents);
-//        }
+
+        List<Event> eventList = k8SEventBiz.getEventsByDeployName(deployment.getClusterId(), deployment.getName());
+        List<EventInfo> eventInfos = k8SEventBiz.translateEvent(eventList);
+        List<DeployEvent> transEvents = translateK8sEvents(deployId, eventInfos);
+        if (transEvents != null) {
+            events.addAll(transEvents);
+        }
 
         // sort by startTime
         if (events.size() != 0) {
@@ -1116,14 +1103,20 @@ public class DeploymentServiceImpl implements DeploymentService {
             });
         }
 
-        return ResultStat.OK.wrap(events);
+        return events;
     }
 
 
     private List<DeployEvent> translateK8sEvents(int deployId, List<EventInfo> eventInfos) {
         List<DeployEvent> deployEvents = new LinkedList<>();
+        int i = 0;
         for (EventInfo eventInfo : eventInfos) {
             deployEvents.add(translateK8sEvent(deployId, eventInfo));
+            i++;
+            // at most 20 events
+            if (i >= 20) {
+                break;
+            }
         }
         return deployEvents;
     }
@@ -1135,8 +1128,8 @@ public class DeploymentServiceImpl implements DeploymentService {
         deployEvent.setLastModify(eventInfo.getLastTS());
         String message = String.format("reason:%s, count:%d, message:%s", eventInfo.getReason(), eventInfo.getCount(), eventInfo.getMessage());
         deployEvent.setMessage(message);
-        deployEvent.setStartTime(eventInfo.getFirstTS());
-        deployEvent.setOperation(DeployOperation.KUBENETES);
+        deployEvent.setStartTime(eventInfo.getLastTS());
+        deployEvent.setOperation(DeployOperation.KUBERNETES);
         deployEvent.setUserName("system");
         return deployEvent;
     }
@@ -1331,9 +1324,9 @@ public class DeploymentServiceImpl implements DeploymentService {
 
     public static void scaleRCEvenNotExist(KubeClient client, ReplicationController rc)
             throws KubeResponseException, IOException, KubeInternalErrorException {
-        int replicas  = rc.getSpec().getReplicas();
+        int replicas = rc.getSpec().getReplicas();
         String rcName = RCUtils.getName(rc);
-        ReplicationController tmpRC =  client.replicationControllerInfo(rcName);
+        ReplicationController tmpRC = client.replicationControllerInfo(rcName);
         if (tmpRC == null) {
             // create rc
             client.createReplicationController(rc);
@@ -1441,7 +1434,8 @@ public class DeploymentServiceImpl implements DeploymentService {
     }
 
 
-    private static org.domeos.client.kubernetesclient.definitions.v1.Service buildStatefulService(List<LoadBalanceDraft> loadBalanceDraft, Deployment deployment, int index) {
+    private static org.domeos.client.kubernetesclient.definitions.v1.Service buildStatefulService(List<LoadBalanceDraft> loadBalanceDraft,
+                                                                                                  Deployment deployment, int index) {
         if (deployment == null || loadBalanceDraft == null || loadBalanceDraft.size() == 0) {
             return null;
         }
@@ -1525,7 +1519,7 @@ public class DeploymentServiceImpl implements DeploymentService {
     private String buildServiceDnsName(Deployment deployment) {
         String serviceDnsName = null;
         if (deployment != null) {
-            Cluster cluster = clusterBiz.getById(GlobalConstant.clusterTableName, deployment.getClusterId(), Cluster.class);
+            Cluster cluster = clusterBiz.getById(GlobalConstant.CLUSTER_TABLE_NAME, deployment.getClusterId(), Cluster.class);
             String dnsSuffix = "." + deployment.getNamespace() + ".svc." + cluster.getDomain();
             String deployName = deployment.getName();
             if (deployment.isStateful()) {

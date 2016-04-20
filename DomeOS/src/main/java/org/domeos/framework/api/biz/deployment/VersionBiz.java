@@ -1,5 +1,6 @@
 package org.domeos.framework.api.biz.deployment;
 
+import org.domeos.framework.api.model.cluster.Cluster;
 import org.domeos.framework.api.model.deployment.Version;
 
 import java.util.List;
@@ -7,9 +8,11 @@ import java.util.List;
 /**
  */
 public interface VersionBiz {
-    String versionTableName = "version";
+    String VERSION_TABLE_NAME = "version";
 
     long insertRow(Version version);
+
+    long insertVersionWithLogCollect(Version version, Cluster cluster);
 
     void disableAllVersion(int deployId);
 

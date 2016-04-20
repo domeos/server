@@ -10,13 +10,13 @@ import org.domeos.client.kubernetesclient.definitions.v1.Pod;
 import org.domeos.client.kubernetesclient.definitions.v1.PodList;
 import org.domeos.client.kubernetesclient.util.filter.Filter;
 import org.domeos.framework.api.biz.cluster.ClusterBiz;
+import org.domeos.framework.api.biz.global.GlobalBiz;
 import org.domeos.framework.api.model.cluster.Cluster;
 import org.domeos.framework.api.model.deployment.related.DeployResourceStatus;
 import org.domeos.framework.api.model.monitor.falcon.CounterValue;
 import org.domeos.framework.api.model.monitor.falcon.EndpointCounter;
 import org.domeos.framework.api.model.monitor.falcon.GraphHistoryRequest;
 import org.domeos.framework.api.model.monitor.falcon.GraphHistoryResponse;
-import org.domeos.framework.api.biz.global.GlobalBiz;
 import org.domeos.framework.api.service.monitor.MonitorService;
 import org.domeos.global.GlobalConstant;
 import org.slf4j.Logger;
@@ -36,14 +36,14 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by xxs on 16/1/15.
  */
-public class DeployResourceStatusManager implements IResourceStatus{
+public class DeployResourceStatusManager implements IResourceStatus {
 
     static ClusterBiz clusterBiz;
     static GlobalBiz globalBiz;
     static MonitorService monitorSelfService;
 
-    private static final long firstRunWaitSeconds = 10;
-    private static final long runIntervalSeconds = 300;
+    private static final long FIRST_RUN_WAIT_SECONDS = 10;
+    private static final long RUN_INTERVAL_SECONDS = 300;
     private static boolean resourceStatusManagerIsRunning = false;
 
     public void init() {
@@ -77,7 +77,7 @@ public class DeployResourceStatusManager implements IResourceStatus{
     }
 
     public void startUpdateResourceStatus() {
-        executorService.scheduleWithFixedDelay(new UpdateStatusRunnable(), firstRunWaitSeconds, runIntervalSeconds,
+        executorService.scheduleWithFixedDelay(new UpdateStatusRunnable(), FIRST_RUN_WAIT_SECONDS, RUN_INTERVAL_SECONDS,
                 TimeUnit.SECONDS);
     }
 

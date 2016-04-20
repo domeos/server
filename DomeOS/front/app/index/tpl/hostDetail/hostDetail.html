@@ -10,7 +10,7 @@
   <loading ng-if="loading"></loading>
   <div class="host-info">
     <tabset>
-      <tab heading="实例列表">
+      <tab heading="实例列表" active="tabActive[0].active" ui-sref="hostDetail.instancelist">
         <loading ng-if="isWaitingHost"></loading>
         <div class="info-options">
           <input placeholder="输入实例名称查找" ng-model="insKey" class="ui-input-fill ui-input-white ui-input-search pull-right"/><span ng-cloak="ng-cloak" class="info-count">共{{instanceListFiltered.length}}个实例</span>
@@ -42,7 +42,7 @@
           </tbody>
         </table>
       </tab>
-      <tab heading="主机设置">
+      <tab heading="主机设置" active="tabActive[1].active" ui-sref="hostDetail.info">
         <ul ng-form="ng-form" role="form" name="hostForm" ng-class="{'need-valid':needValidHost}" class="com-list-info">
           <li><span class="info-name">工作场景</span>
             <div class="info-content"><span class="com-check-con">

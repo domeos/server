@@ -19,63 +19,71 @@ import java.util.List;
 public interface DeploymentService {
     /**
      * create deployment
+     *
      * @param deploymentDraft input parameters
      * @return
      * @throws Exception
      */
-    HttpResponseTemp<?> createDeployment(DeploymentDraft deploymentDraft) throws Exception;
+    int createDeployment(DeploymentDraft deploymentDraft) throws Exception;
 
     /**
      * remove deployment by id
+     *
      * @param deployId deployment id
      * @return
      * @throws IOException
      */
-    HttpResponseTemp<?> removeDeployment(int deployId) throws IOException;
+    void removeDeployment(int deployId) throws IOException;
 
     /**
      * update deployment by id
-     * @param deployId deployment id
+     *
+     * @param deployId        deployment id
      * @param deploymentDraft new parameters
      * @return
      * @throws Exception
      */
-    HttpResponseTemp<?> modifyDeployment(int deployId, DeploymentDraft deploymentDraft) throws Exception;
+    void modifyDeployment(int deployId, DeploymentDraft deploymentDraft) throws Exception;
 
     /**
      * get deployment detail by id
+     *
      * @param deployId deployment id
      * @return deployment detail
      * @throws IOException
      * @throws KubeInternalErrorException
      * @throws KubeResponseException
      */
-    HttpResponseTemp<DeploymentDetail> getDeployment(int deployId) throws IOException, KubeInternalErrorException, KubeResponseException;
+    DeploymentDetail getDeployment(int deployId) throws IOException, KubeInternalErrorException, KubeResponseException;
 
     /**
      * list abstract info of deployments
+     *
      * @return List of DeploymentInfo
      * @throws IOException
      * @throws KubeInternalErrorException
      * @throws KubeResponseException
      */
-    HttpResponseTemp<List<DeploymentInfo>> listDeployment() throws IOException, KubeInternalErrorException, KubeResponseException;
+    List<DeploymentInfo> listDeployment() throws IOException, KubeInternalErrorException, KubeResponseException;
 
     /**
      * start deployment
-     * @param deployId deployment id
+     *
+     * @param deployId  deployment id
      * @param versionId current version id
-     * @param replicas the number of RC
+     * @param replicas  the number of RC
      * @return
      * @throws IOException
      * @throws KubeInternalErrorException
      * @throws KubeResponseException
      * @throws DeploymentEventException
      */
-    HttpResponseTemp<?> startDeployment(int deployId, long versionId, int replicas) throws IOException, KubeInternalErrorException, KubeResponseException, DeploymentEventException, DaoException;
+    void startDeployment(int deployId, long versionId, int replicas)
+            throws IOException, KubeInternalErrorException, KubeResponseException, DeploymentEventException, DaoException;
 
     /**
      * stop deployment
+     *
      * @param deployId deployment id
      * @return
      * @throws IOException
@@ -83,39 +91,45 @@ public interface DeploymentService {
      * @throws KubeResponseException
      * @throws DeploymentEventException
      */
-    HttpResponseTemp<?> stopDeployment(int deployId) throws IOException, KubeInternalErrorException, KubeResponseException, DeploymentEventException;
+    void stopDeployment(int deployId)
+            throws IOException, KubeInternalErrorException, KubeResponseException, DeploymentEventException;
 
     /**
      * start deployment update
-     * @param deployId deployment id
+     *
+     * @param deployId  deployment id
      * @param versionId new version id
-     * @param replicas the number of new version RC
+     * @param replicas  the number of new version RC
      * @return
      * @throws IOException
      * @throws KubeInternalErrorException
      * @throws KubeResponseException
      * @throws DeploymentEventException
      */
-    HttpResponseTemp<?> startUpdate(int deployId, long versionId, int replicas) throws IOException, KubeInternalErrorException, KubeResponseException, DeploymentEventException, DaoException;
+    HttpResponseTemp<?> startUpdate(int deployId, long versionId, int replicas)
+            throws IOException, KubeInternalErrorException, KubeResponseException, DeploymentEventException, DaoException;
 
     /**
      * start rollback for deployment
-     * @param deployId deployment id
+     *
+     * @param deployId  deployment id
      * @param versionId rollback to versionId
-     * @param replicas the number of rollback version RC
+     * @param replicas  the number of rollback version RC
      * @return
      * @throws IOException
      * @throws KubeInternalErrorException
      * @throws KubeResponseException
      * @throws DeploymentEventException
      */
-    HttpResponseTemp<?> startRollback(int deployId, long versionId, int replicas) throws IOException, KubeInternalErrorException, KubeResponseException, DeploymentEventException;
+    HttpResponseTemp<?> startRollback(int deployId, long versionId, int replicas)
+            throws IOException, KubeInternalErrorException, KubeResponseException, DeploymentEventException;
 
     /**
      * scale up for deployment
-     * @param deployId deployment id
+     *
+     * @param deployId  deployment id
      * @param versionId current version id
-     * @param replicas target replicas
+     * @param replicas  target replicas
      * @return
      * @throws IOException
      * @throws DeploymentEventException
@@ -124,9 +138,10 @@ public interface DeploymentService {
 
     /**
      * scale down for deployment
-     * @param deployId deployment id
+     *
+     * @param deployId  deployment id
      * @param versionId current version id
-     * @param replicas target replicas
+     * @param replicas  target replicas
      * @return
      * @throws IOException
      * @throws DeploymentEventException
@@ -135,9 +150,10 @@ public interface DeploymentService {
 
     /**
      * list deployment events
+     *
      * @param deployId deployment id
      * @return
      * @throws IOException
      */
-    HttpResponseTemp<List<DeployEvent>> listDeployEvent(int deployId) throws IOException;
+    List<DeployEvent> listDeployEvent(int deployId) throws IOException;
 }

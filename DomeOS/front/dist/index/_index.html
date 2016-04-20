@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html ng-app="domeApp">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>DomeOS</title>
+    <style>[ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .translate-cloak, .x-ng-cloak, .ng-hide {
+  display: none !important; }
+
+ng\:form {
+  display: block; }
+
+.ng-animate-start {
+  clip: rect(0, auto, auto, 0);
+  -ms-zoom: 1.0001; }
+
+.ng-animate-active {
+  clip: rect(-1px, auto, auto, 0);
+  -ms-zoom: 1; }
+
+
+
+/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJtYXBwaW5ncyI6IkFBQ0EsMEdBQW1HO0VBQUMsT0FBTyxFQUFDLGVBQWU7O0FBQUUsUUFBUTtFQUFDLE9BQU8sRUFBQyxLQUFLOztBQUFFLGlCQUFpQjtFQUFDLElBQUksRUFBQyxzQkFBbUI7RUFBQyxRQUFRLEVBQUMsTUFBTTs7QUFBRSxrQkFBa0I7RUFBQyxJQUFJLEVBQUMseUJBQXNCO0VBQUMsUUFBUSxFQUFDLENBQUMiLCJzb3VyY2VzIjpbImNvbW1vbi9jc3MvbmctY2xvYWsuc2NzcyJdLCJuYW1lcyI6W10sImZpbGUiOiJjb21tb24vY3NzL25nLWNsb2FrLmNzcyIsInNvdXJjZVJvb3QiOiIvc291cmNlLyIsInNvdXJjZXNDb250ZW50IjpbIkBjaGFyc2V0IFwiVVRGLThcIjtcbltuZ1xcOmNsb2FrXSxbbmctY2xvYWtdLFtkYXRhLW5nLWNsb2FrXSxbeC1uZy1jbG9ha10sLm5nLWNsb2FrLC50cmFuc2xhdGUtY2xvYWssLngtbmctY2xvYWssLm5nLWhpZGV7ZGlzcGxheTpub25lICFpbXBvcnRhbnQ7fW5nXFw6Zm9ybXtkaXNwbGF5OmJsb2NrO30ubmctYW5pbWF0ZS1zdGFydHtjbGlwOnJlY3QoMCxhdXRvLGF1dG8sMCk7LW1zLXpvb206MS4wMDAxO30ubmctYW5pbWF0ZS1hY3RpdmV7Y2xpcDpyZWN0KC0xcHgsYXV0byxhdXRvLDApOy1tcy16b29tOjE7fSJdfQ== */
+
+/*# sourceMappingURL=../../maps/common/css/ng-cloak-8dd5fbe918.css.map */
+
+    </style>
+    <link href="/favicon.ico" rel="shortcut icon"><!-- build:css index/css/domeStyle-6ee4106033.min.css -->
+    <link rel="stylesheet" href="lib/css/bootstrap-491121ec16.css" type="text/css">
+    <link rel="stylesheet" href="index/css/ng-scrollbar-ed8138658f.css" type="text/css">
+    <link rel="stylesheet" href="common/css/base-d739ffc0e0.css" type="text/css">
+    <link rel="stylesheet" href="index/css/index-5fa1abd20b.css" type="text/css">
+    <link rel="stylesheet" href="index/css/bussiness-ddaff22c50.css" type="text/css">
+    <link rel="stylesheet" href="index/tpl/nav/nav-6a8145e67d.css" type="text/css">
+    <link rel="stylesheet" href="index/tpl/projectManage/projectManage-c40166b421.css" type="text/css">
+    <link rel="stylesheet" href="index/tpl/deployManage/deployManage-59778f8853.css" type="text/css">
+    <link rel="stylesheet" href="index/tpl/groupManage/groupManage-e3dc0c10cb.css" type="text/css">
+    <link rel="stylesheet" href="index/tpl/imageManage/imageManage-0920c1faef.css" type="text/css">
+    <link rel="stylesheet" href="index/tpl/globalSetting/globalSetting-09a3ce33a6.css" type="text/css">
+    <link rel="stylesheet" href="index/tpl/clusterManage/clusterManage-03fc4b87de.css" type="text/css">
+    <link rel="stylesheet" href="index/tpl/appStore/appStore-d2c94bd27e.css" type="text/css">
+    <link rel="stylesheet" href="index/tpl/createProject1/createProject1-48ccc7457b.css" type="text/css">
+    <link rel="stylesheet" href="index/tpl/createProject2/createProject2-15b646aed8.css" type="text/css">
+    <link rel="stylesheet" href="index/tpl/projectDetail/projectDetail-14b3962718.css" type="text/css">
+    <link rel="stylesheet" href="index/tpl/createCluster/createCluster-8b526edfda.css" type="text/css">
+    <link rel="stylesheet" href="index/tpl/tplProjectSetting/projectSetting1Tpl-fdabb93572.css" type="text/css">
+    <link rel="stylesheet" href="index/tpl/tplUserList/tplUserList-f2f393d36b.css" type="text/css">
+    <link rel="stylesheet" href="index/tpl/createDeploy1/createDeploy1-f3e00a86f4.css" type="text/css">
+    <link rel="stylesheet" href="index/tpl/createDeploy2/createDeploy2-5d005d05cc.css" type="text/css">
+    <link rel="stylesheet" href="index/tpl/createAppDeploy/createAppDeploy-114d54386c.css" type="text/css">
+    <link rel="stylesheet" href="index/tpl/monitor/monitor-8cca6a8131.css" type="text/css">
+    <link rel="stylesheet" href="index/tpl/deployDetail/deployDetail-aca20f6ad3.css" type="text/css">
+    <link rel="stylesheet" href="index/tpl/createGroup/createGroup-c6ca68aea4.css" type="text/css">
+    <link rel="stylesheet" href="index/tpl/groupDetail/groupDetail-8738c15b5a.css" type="text/css">
+    <link rel="stylesheet" href="index/tpl/hostDetail/hostDetail-f634929245.css" type="text/css">
+    <link rel="stylesheet" href="index/tpl/addHost/addHost-ff9cd59263.css" type="text/css">
+    <link rel="stylesheet" href="index/tpl/clusterDetail/clusterDetail-d14dc1905a.css" type="text/css">
+    <link rel="stylesheet" href="index/tpl/mirrorCustom/mirrorCustom-395dfdb3fb.css" type="text/css">
+    <link rel="stylesheet" type="text/css"><!-- endbuild -->
+  </head>
+  <body ng-controller="domeCtr" resize-body>
+    <div class="page">
+      <ng-include src="'index/tpl/nav/nav.html'"></ng-include>
+      <div class="content">
+        <header class="header">
+          <ul class="pull-right header-item">
+            <li class="header-doc"><a href="http://doc.domeos.org" target="_blank"><span class="icon-doc"></span>文档</a></li>
+            <li class="header-user">
+              <div select-con>
+                <button ng-cloak class="ui-btn ui-btn-none username ui-btn-select">{{loginUser.username}}<i class="icon-down-white up drop"></i></button>
+                <ul class="com-user-option select-list">
+                  <li class="arrow"></li>
+                  <li select-item ng-if="loginUser.loginType=='USER'"><a ng-click="modifyPw()">修改密码</a></li>
+                  <li select-item><a ng-click="logout()">退出登录</a></li>
+                </ul>
+              </div>
+            </li>
+          </ul>
+          <div class="breadcrunmbs"><span ncy-breadcrumb ncy-breadcrumb-text-separator=" &gt; "></span></div>
+          <div class="page-info">
+            <h1 ng-bind="title" class="page-title"></h1><span ng-bind="descrition" class="page-detail"></span>
+          </div>
+        </header>
+        <div ui-view="" class="module container"></div>
+      </div>
+    </div>
+    <script type="text/ng-template" id="promptModal.html">
+      <div class="d-modal-header">提示</div>
+      <div class="modal-body">
+        <p ng-bind="promptTxt"></p>
+      </div>
+      <div class="modal-footer">
+        <button ng-click="cancel()" class="ui-btn ui-btn-primary ui-btn-sm">确定</button>
+      </div>
+    </script>
+    <script type="text/ng-template" id="confirmModal.html">
+      <div class="d-modal-header">提示</div>
+      <div class="modal-body">
+        <p ng-bind="promptTxt"></p>
+      </div>
+      <div class="modal-footer">
+        <button ng-click="cancel()" class="ui-btn ui-btn-white ui-btn-sm">取消</button>
+        <button ng-click="sure()" class="ui-btn ui-btn-primary ui-btn-sm">继续</button>
+      </div>
+    </script>
+    <script type="text/ng-template" id="warningModal.html">
+      <div class="d-modal-header">警告</div>
+      <div class="modal-body">
+        <p ng-bind="titleInfo" ng-class="{'font-size-16':detailInfo}" class="txt-error"></p>
+        <p ng-bind="detailInfo" class="txt-error tool-wrap-break"></p>
+      </div>
+      <div class="modal-footer">
+        <button ng-click="cancel()" class="ui-btn ui-btn-error ui-btn-sm">确定</button>
+      </div>
+    </script>
+    <script type="text/ng-template" id="deleteModal.html">
+      <div class="d-modal-header">删除</div>
+      <div class="modal-body">
+        <p ng-bind="promptTxt" class="txt-error"></p>
+      </div>
+      <div class="modal-footer">
+        <button ng-click="cancel()" class="ui-btn ui-btn-white ui-btn-sm">取消</button>
+        <button ng-click="delete()" class="ui-btn ui-btn-error ui-btn-sm">确定</button>
+      </div>
+    </script>
+    <script type="text/ng-template" id="modifyPwModal.html">
+      <div class="d-modal-header">修改密码</div>
+      <div class="modal-body">
+        <ul ng-form name="pwForm" role="form" ng-class="{'need-valid':needValid}" class="modal-info">
+          <li>
+            <label class="info-name">原密码</label>
+            <div class="info-txt text-left">
+              <input placeholder="请输入原密码" type="password" name="oldPw" ng-model="pwObj.oldpassword" required class="full ui-input-white">
+            </div>
+          </li>
+          <li>
+            <label class="info-name">新密码</label>
+            <div class="info-txt text-left">
+              <input placeholder="8-20位" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" type="password" name="newPw" ng-model="pwObj.newpassword" required ng-minlength="8" ng-maxlength="20" class="full ui-input-white"><span ng-if="(needValid||pwForm.newPw.$dirty)&amp;&amp;(pwForm.newPw.$error.minlength||pwForm.newPw.$error.maxlength)" class="txt-error">长度必须为8-20位</span>
+            </div>
+          </li>
+          <li>
+            <label class="info-name">确认新密码</label>
+            <div class="info-txt text-left">
+              <input placeholder="再次输入新密码" type="password" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" name="newPwAgain" ng-model="newPwAgain" required equal="pwObj.newpassword" class="full ui-input-white"><span ng-if="(needValidUser.valid||pwForm.newPwAgain.$dirty)&amp;&amp;pwForm.newPwAgain.$error.equal" class="txt-error">两次密码不一致</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button ng-click="cancel()" class="ui-btn ui-btn-white ui-btn-sm">取消</button>
+        <button ng-click="needValid=true;pwForm.$valid&amp;&amp;modiftPw()" class="ui-btn ui-btn-sm ui-btn-primary">确定</button>
+      </div>
+    </script>
+    <div></div><!-- build:js index/js/lib-1893bc0231.min.js -->
+    <script type="text/javascript" src="lib/js/jquery-4a356126b9.min.js"></script>
+    <script type="text/javascript" src="lib/js/angular-8eb6e12ab5.min.js"></script>
+    <script type="text/javascript" src="lib/js/angular-ui-router-0ef20b23d2.min.js"></script>
+    <script type="text/javascript" src="lib/js/ng-scrollbar-24966c94da.js"></script>
+    <script type="text/javascript" src="lib/js/angular-locale_zh-cn-c29988c37c.js"></script>
+    <script type="text/javascript" src="lib/js/ui-bootstrap-tpls-9d4059f2be.min.js"></script>
+    <script type="text/javascript" src="lib/js/angular-animate-5099819540.min.js"></script>
+    <script type="text/javascript" src="lib/js/angular-breadcrumb-d89c1e5f91.min.js"></script>
+    <script type="text/javascript" src="lib/js/bindonce-c74d20356d.min.js"></script>
+    <script type="text/javascript" src="lib/js/ocLazyLoad-65b138b48d.js"></script>
+    <script type="text/javascript" src=""></script><!-- endbuild -->
+    <!-- build:js index/js/domeApp-5bff90af21.min.js -->
+    <script type="text/javascript" src="common/publicModule/publicModule-5ca7d0f755.js"></script>
+    <script type="text/javascript" src="common/publicModule/directive/publicDirective-238c427215.js"></script>
+    <script type="text/javascript" src="common/domeModule/domeModule-99eeb7312b.js"></script>
+    <script type="text/javascript" src="common/deployModule/deployModule-d5b7f29f89.js"></script>
+    <script type="text/javascript" src="common/imageModule/imageModule-f07333e379.js"></script>
+    <script type="text/javascript" src="common/projectModule/projectModule-3c6b1d3f78.js"></script>
+    <script type="text/javascript" src="common/userModule/userModule-7bdfd28190.js"></script>
+    <script type="text/javascript" src="index/js/domeApp-0da1cd6849.js"></script>
+    <script type="text/javascript" src="index/js/filter-57e8c2cc40.js"></script>
+    <script type="text/javascript" src="index/js/services/domeService-edb22bbe91.js"></script>
+    <script type="text/javascript" src="index/js/services/clusterService-13f56c72f7.js"></script>
+    <script type="text/javascript" src="index/js/services/monitorService-ffd01202fe.js"></script>
+    <script type="text/javascript" src="index/js/directives/domeDirective-12de7aac09.js"></script>
+    <script type="text/javascript" src="index/js/directives/domeValidation-7254ec1d28.js"></script>
+    <script type="text/javascript" src="index/js/controllers/indexController-ddc6a96907.js"></script>
+    <script type="text/javascript" src="index/tpl/projectManage/projectManageCtr-2c033738af.js"></script>
+    <script type="text/javascript" src="index/tpl/deployManage/deployManageCtr-69f373a327.js"></script>
+    <script type="text/javascript" src="index/tpl/groupManage/groupManageCtr-32b51fd3a6.js"></script>
+    <script type="text/javascript" src="index/tpl/clusterManage/clusterManageCtr-80f7e60616.js"></script>
+    <script type="text/javascript" src="index/tpl/appStore/appStoreCtr-ded41e2b8a.js"></script>
+    <script type="text/javascript" src="index/tpl/imageManage/imageManageCtr-00e0dfb618.js"></script>
+    <script type="text/javascript" src="index/tpl/globalSetting/globalSettingCtr-5a2d99006d.js"></script>
+    <script type="text/javascript" src="index/tpl/createProject1/createProjectCtr1-d2d88190f1.js"></script>
+    <script type="text/javascript" src="index/tpl/createProject2/createProjectCtr2-1e188db9ba.js"></script>
+    <script type="text/javascript" src="index/tpl/projectDetail/projectDetailCtr-922b87de61.js"></script>
+    <script type="text/javascript" src="index/tpl/createDeploy1/createDeployCtr1-56f35f41d7.js"></script>
+    <script type="text/javascript" src="index/tpl/createDeploy2/createDeployCtr2-fef0079638.js"></script>
+    <script type="text/javascript" src="index/tpl/createAppDeploy/createAppDeployCtr-d32245a1e1.js"></script>
+    <script type="text/javascript" src="index/tpl/monitor/monitorCtr-6c212b0e3e.js"></script>
+    <script type="text/javascript" src="index/tpl/deployDetail/deployDetailCtr-b31b49e427.js"></script>
+    <script type="text/javascript" src="index/tpl/createGroup/createGroupCtr-9b12480f01.js"></script>
+    <script type="text/javascript" src="index/tpl/groupDetail/groupDetailCtr-4a2a4af869.js"></script>
+    <script type="text/javascript" src="index/tpl/clusterDetail/clusterDetailCtr-002d2c917c.js"></script>
+    <script type="text/javascript" src="index/tpl/createCluster/createClusterCtr-be20a21c4c.js"></script>
+    <script type="text/javascript" src="index/tpl/hostDetail/hostDetailCtr-bc8c00ec09.js"></script>
+    <script type="text/javascript" src="index/tpl/addHost/addHostCtr-2de774b302.js"></script>
+    <script type="text/javascript" src="index/tpl/modal/buildModal/buildModalCtr-526df7bd31.js"></script>
+    <script type="text/javascript" src="index/tpl/modal/hostListModal/hostListModalCtr-51b7e2506e.js"></script>
+    <script type="text/javascript" src="index/tpl/modal/otherImageModal/otherImageModalCtr-94d2107148.js"></script>
+    <script type="text/javascript" src="index/tpl/modal/instanceLogModal/instanceLogModalCtr-1d3a1c6dfc.js"></script>
+    <script type="text/javascript" src="index/tpl/modal/selectContainerModal/selectContainerModalCtr-9fd9516e2a.js"></script>
+    <script type="text/javascript" src="index/tpl/tplUserList/tplUserListCtr-bf51bb198e.js"></script>
+    <script type="text/javascript" src="index/tpl/mirrorCustom/mirrorCustomCtr-20c5496327.js"></script>
+    <script type="text/javascript" src=""></script><!-- endbuild -->
+  </body>
+</html>

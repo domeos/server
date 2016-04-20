@@ -112,7 +112,7 @@
 					td
 						a.link-tooltip(ng-mouseenter="modifyTooltip('diskUsed',node.diskUsedData)" tooltip-template="'detailTooltip.html'" tooltip-placement="left" ng-cloak) {{isNaN(node.diskUsedCount)?node.diskUsedCount:(node.diskUsedCount+'%')}}
 					td
-						a.link-tooltip(ng-bind="node.diskReadCount" ng-mouseenter="modifyTooltip('diskRead',node.diskReadData)" tooltip-template="'detailTooltip.html'" tooltip-placement="left-top")
+						a.link-tooltip(ng-bind="node.diskReadCount" ng-mouseenter="modifyTooltip('diskRead',node.diskReadData)" tooltip-template="'detailTooltip.html'" tooltip-placement="left")
 					td
 						a(ng-bind="node.diskWriteCount" ng-mouseenter="modifyTooltip('diskWrite',node.diskWriteData)" tooltip-template="'detailTooltip.html'" tooltip-placement="left")
 					td

@@ -2,7 +2,6 @@ package org.domeos.framework.api.consolemodel.cluster;
 
 import org.apache.commons.lang3.StringUtils;
 import org.domeos.framework.api.model.cluster.related.ClusterLog;
-import org.domeos.framework.api.model.resource.related.ResourceOwnerType;
 import org.domeos.util.CommonUtil;
 
 /**
@@ -25,7 +24,8 @@ public class ClusterInfo {
     public ClusterInfo() {
     }
 
-    public ClusterInfo(int id, String name, String api, String tag, String domain, String dns, String etcd, String ownerName, int logConfig, long createTime, ClusterLog clusterLog) {
+    public ClusterInfo(int id, String name, String api, String tag, String domain, String dns, String etcd,
+                       String ownerName, int logConfig, long createTime, ClusterLog clusterLog) {
         this.id = id;
         this.name = name;
         this.api = api;

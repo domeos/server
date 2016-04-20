@@ -9,9 +9,10 @@ import org.domeos.client.kubernetesclient.definitions.v1beta1.Job;
 import org.domeos.exception.RSAKeypairException;
 import org.domeos.exception.WebHooksException;
 import org.domeos.framework.api.biz.OperationHistory;
+import org.domeos.framework.api.biz.global.GlobalBiz;
 import org.domeos.framework.api.biz.project.ProjectBiz;
+import org.domeos.framework.api.controller.exception.ApiException;
 import org.domeos.framework.api.controller.exception.PermitException;
-import org.domeos.framework.api.model.auth.User;
 import org.domeos.framework.api.model.ci.BuildHistory;
 import org.domeos.framework.api.model.ci.CodeType;
 import org.domeos.framework.api.model.ci.related.*;
@@ -25,7 +26,6 @@ import org.domeos.framework.api.model.project.Project;
 import org.domeos.framework.api.model.project.SubversionUser;
 import org.domeos.framework.api.model.project.related.*;
 import org.domeos.framework.api.model.resource.related.ResourceType;
-import org.domeos.framework.api.biz.global.GlobalBiz;
 import org.domeos.framework.api.service.image.impl.PrivateRegistry;
 import org.domeos.framework.api.service.project.BuildService;
 import org.domeos.framework.engine.AuthUtil;
@@ -35,6 +35,7 @@ import org.domeos.framework.engine.coderepo.ReflectFactory;
 import org.domeos.framework.engine.coderepo.WebHook;
 import org.domeos.framework.engine.exception.DaoException;
 import org.domeos.framework.engine.k8s.JobWrapper;
+import org.domeos.global.CurrentThreadInfo;
 import org.domeos.global.GlobalConstant;
 import org.domeos.util.CommonUtil;
 import org.domeos.util.RSAKeyPairGenerator;
@@ -62,62 +63,50 @@ public class BuildServiceImpl implements BuildService {
     @Autowired
     OperationHistory operationHistory;
 
-    public int checkGetable(int id) {
-        User user = GlobalConstant.userThreadLocal.get();
-        if (user == null || !org.domeos.framework.engine.AuthUtil.verify(user.getId(), id, ResourceType.PROJECT, OperationType.GET)) {
-            throw new PermitException();
-        }
-        return user.getId();
+    public void checkGetable(int id) {
+        AuthUtil.verify(CurrentThreadInfo.getUserId(), id, ResourceType.PROJECT, OperationType.GET);
     }
 
-    public int checkModifiable(int id) {
-        User user = GlobalConstant.userThreadLocal.get();
-        if (user == null || !org.domeos.framework.engine.AuthUtil.verify(user.getId(), id, ResourceType.PROJECT, OperationType.MODIFY)) {
-            throw new PermitException();
-        }
-        return user.getId();
+    public void checkModifiable(int id) {
+        AuthUtil.verify(CurrentThreadInfo.getUserId(), id, ResourceType.PROJECT, OperationType.MODIFY);
     }
 
-    public int checkDeletable(int id) {
-        User user = GlobalConstant.userThreadLocal.get();
-        if (user == null || !org.domeos.framework.engine.AuthUtil.verify(user.getId(), id, ResourceType.PROJECT, OperationType.DELETE)) {
-            throw new PermitException();
-        }
-        return user.getId();
+    public void checkDeletable(int id) {
+        AuthUtil.verify(CurrentThreadInfo.getUserId(), id, ResourceType.PROJECT, OperationType.DELETE);
     }
 
     @Override
     public HttpResponseTemp<?> dockerfilePreview(Project project) {
         if (project == null) {
-            return ResultStat.PARAM_ERROR.wrap(null, "input project info is null");
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "input project info is null");
         }
         checkGetable(project.getId());
 
         if (project.getDockerfileConfig() != null && project.getDockerfileInfo() == null) {
             if (!StringUtils.isBlank(project.getDockerfileConfig().checkLegality())) {
-                return ResultStat.PARAM_ERROR.wrap(null, project.getDockerfileConfig().checkLegality());
+                throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, project.getDockerfileConfig().checkLegality());
             }
             DockerfileContent dockerfile = project.getDockerfileConfig();
             if (dockerfile == null) {
-                return ResultStat.PARAM_ERROR.wrap(null, "docker file config is null");
+                throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "docker file config is null");
             }
 
             try {
                 String dockerfileStr = generateDockerfile(dockerfile, project.getConfFiles());
                 return ResultStat.OK.wrap(dockerfileStr);
             } catch (Exception e) {
-                return ResultStat.PARAM_ERROR.wrap(null, e.getMessage());
+                throw ApiException.wrapUnknownException(e);
             }
         } else if (project.getDockerfileConfig() == null && project.getDockerfileInfo() != null) {
             UserDefinedDockerfile dockerfileInfo = project.getDockerfileInfo();
             CodeConfiguration codeInfo = project.getCodeInfo();
             if (codeInfo == null) {
-                return ResultStat.PARAM_ERROR.wrap(null, "code info is null");
+                throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "code info is null");
             }
             CodeApiInterface codeApiInterface = ReflectFactory.createCodeApiInterface(CodeType.getTypeByName(codeInfo.getCodeManager()),
                     codeInfo.getCodeManagerUserId());
             if (codeApiInterface == null) {
-                return ResultStat.PARAM_ERROR.wrap(null, "get code api error");
+                throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "get code api error");
             }
             String dockerfilePath = dockerfileInfo.getDockerfilePath();
             if (!StringUtils.isBlank(dockerfilePath) && dockerfilePath.startsWith("/")) {
@@ -125,11 +114,11 @@ public class BuildServiceImpl implements BuildService {
             }
             byte[] dockerfileStr = codeApiInterface.getDockerfile(codeInfo.getCodeId(), dockerfileInfo.getBranch(), dockerfilePath);
             if (dockerfileStr == null) {
-                return ResultStat.DOCKERFILE_NOT_EXIST.wrap(null);
+                throw ApiException.wrapResultStat(ResultStat.DOCKERFILE_NOT_EXIST);
             }
             return ResultStat.OK.wrap(new String(dockerfileStr));
         } else {
-            return ResultStat.PARAM_ERROR.wrap(null, "docker config and docker info both exist");
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "docker config and docker info both exist");
         }
     }
 
@@ -141,12 +130,12 @@ public class BuildServiceImpl implements BuildService {
             return "Forbidden";
         }
         try {
-            Project project = projectBiz.getById(GlobalConstant.projectTableName, projectId, Project.class);
+            Project project = projectBiz.getById(GlobalConstant.PROJECT_TABLE_NAME, projectId, Project.class);
             if (project != null) {
                 docker = generateDockerfile(project.getDockerfileConfig(), project.getConfFiles());
             }
         } catch (Exception e) {
-            logger.warn(e.getMessage());
+            throw ApiException.wrapUnknownException(e);
         }
         return docker;
     }
@@ -155,12 +144,7 @@ public class BuildServiceImpl implements BuildService {
     public HttpResponseTemp<?> dockerfileUsed(int projectId, int buildId) {
         checkGetable(projectId);
 
-        try {
-            String dockerfile = projectBiz.getDockerfileByBuildId(buildId);
-            return ResultStat.OK.wrap(dockerfile);
-        } catch (Exception e) {
-            return ResultStat.BUILD_INFO_NOT_EXIST.wrap(null);
-        }
+        return ResultStat.OK.wrap(projectBiz.getDockerfileByBuildId(buildId));
     }
 
     @Override
@@ -173,7 +157,7 @@ public class BuildServiceImpl implements BuildService {
 
             List<Project> projects = projectBiz.getAllProjects();
             if (projects == null) {
-                return ResultStat.PARAM_ERROR.wrap(null, "no project info");
+                throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "no project info");
             }
             for (Project project : projects) {
                 CodeConfiguration codeConfig = project.getCodeInfo();
@@ -238,13 +222,13 @@ public class BuildServiceImpl implements BuildService {
 
         } catch (WebHooksException e) {
             logger.warn("webhook error, message is " + e.getMessage());
-            return ResultStat.PARAM_ERROR.wrap(null, e.getMessage());
+            throw ApiException.wrapMessage(ResultStat.WEBHOOK_ERROR, e.getMessage());
         } catch (RSAKeypairException e) {
             logger.warn("rsa keypair error, message is " + e.getMessage());
-            return ResultStat.PARAM_ERROR.wrap(null, e.getMessage());
+            throw ApiException.wrapMessage(ResultStat.RSAKEYPAIR_ERROR, e.getMessage());
         } catch (DaoException e) {
             logger.warn("dao exception, message is " + e.getMessage());
-            return ResultStat.PARAM_ERROR.wrap(null, e.getMessage());
+            throw ApiException.wrapUnknownException(e);
         }
         return ResultStat.OK.wrap(null);
     }
@@ -252,16 +236,16 @@ public class BuildServiceImpl implements BuildService {
     @Override
     public HttpResponseTemp<?> startBuild(BuildHistory buildInfo) {
         if (buildInfo == null) {
-            return ResultStat.PARAM_ERROR.wrap(null, "build information is null");
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "build information is null");
         }
 
-        int userId = checkGetable(buildInfo.getProjectId());
+        checkGetable(buildInfo.getProjectId());
 
         if (!StringUtils.isBlank(buildInfo.checkLegality())) {
-            return ResultStat.PARAM_ERROR.wrap(null, buildInfo.checkLegality());
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, buildInfo.checkLegality());
         }
 
-        Project project = projectBiz.getById(GlobalConstant.projectTableName, buildInfo.getProjectId(), Project.class);
+        Project project = projectBiz.getById(GlobalConstant.PROJECT_TABLE_NAME, buildInfo.getProjectId(), Project.class);
         CodeConfiguration codeConfig = project.getCodeInfo();
         CodeApiInterface codeApiInterface = null;
         if (codeConfig != null) {
@@ -269,13 +253,13 @@ public class BuildServiceImpl implements BuildService {
             codeApiInterface = ReflectFactory.createCodeApiInterface(CodeType.getTypeByName(codeConfig.getCodeManager()),
                     codeConfig.getCodeManagerUserId());
             if (codeApiInterface == null) {
-                return ResultStat.PARAM_ERROR.wrap(null, "get code api error");
+                throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "get code api error");
             }
             // get commit info
             CommitInformation commitInfo = codeApiInterface.getCommitInfo(codeConfig.getCodeId(), "");
             CodeInfomation codeInfo = buildInfo.getCodeInfo();
             if (codeInfo == null) {
-                return ResultStat.PARAM_ERROR.wrap(null, "code information not set");
+                throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "code information not set");
             }
             if (codeInfo.getCodeBranch() != null && !codeInfo.getCodeBranch().isEmpty()) {
                 commitInfo = codeApiInterface.getBranchCommitInfo(codeConfig.getCodeId(), codeInfo.getCodeBranch());
@@ -283,7 +267,7 @@ public class BuildServiceImpl implements BuildService {
                 commitInfo = codeApiInterface.getTagCommitInfo(codeConfig.getCodeId(), codeInfo.getCodeTag());
             }
             if (commitInfo == null) {
-                return ResultStat.GITLAB_COMMIT_NOT_FOUND.wrap(null, "cannot found commit info in gitlab, url: " + codeConfig.getCodeSshUrl());
+                throw ApiException.wrapMessage(ResultStat.GITLAB_COMMIT_NOT_FOUND, "cannot found commit info in gitlab, url: " + codeConfig.getCodeSshUrl());
             }
             buildInfo.setCommitInfo(commitInfo);
         }
@@ -292,13 +276,13 @@ public class BuildServiceImpl implements BuildService {
         buildInfo.setAutoBuild(0);
         buildInfo.setState(BuildState.Preparing.name());
         UserInformation userInfo = new UserInformation();
-        userInfo.setUserId(userId);
-        userInfo.setUserName(AuthUtil.getUserNameById(userId));
+        userInfo.setUserId(CurrentThreadInfo.getUserId());
+        userInfo.setUserName(AuthUtil.getUserNameById(CurrentThreadInfo.getUserId()));
         buildInfo.setUserInfo(userInfo);
 
         Registry registry = globalBiz.getRegistry();
         if (registry == null) {
-            return ResultStat.REGISTRY_NOT_EXIST.wrap(null);
+            throw ApiException.wrapResultStat(ResultStat.REGISTRY_NOT_EXIST);
         }
 
         ImageInformation imageInfo = buildInfo.getImageInfo();
@@ -309,7 +293,7 @@ public class BuildServiceImpl implements BuildService {
         imageInfo.setRegistry(registry.registryDomain());
 
         if (buildInfo.getCodeInfo() == null) {
-            return ResultStat.PARAM_ERROR.wrap(null, "code information must be set");
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "code information must be set");
         }
         if (StringUtils.isBlank(imageInfo.getImageTag())) {
             if (!StringUtils.isBlank(buildInfo.getCodeInfo().getCodeBranch())) {
@@ -330,15 +314,14 @@ public class BuildServiceImpl implements BuildService {
                 return result;
             }
         } catch (DaoException e) {
-            logger.warn("dao exception, " + e.getMessage());
-            return ResultStat.SERVER_INTERNAL_ERROR.wrap(null, e.getMessage());
+            throw ApiException.wrapUnknownException(e);
         } catch (RSAKeypairException e) {
             logger.warn("rsa keypair error, " + e.getMessage());
-            return ResultStat.SERVER_INTERNAL_ERROR.wrap(null, e.getMessage());
+            throw ApiException.wrapMessage(ResultStat.SERVER_INTERNAL_ERROR, e.getMessage());
         }
 
         OperationRecord record = new OperationRecord(buildInfo.getProjectId(), ResourceType.PROJECT, OperationType.BUILD,
-                userId, userInfo.getUserName(), "JOBSEND", "", System.currentTimeMillis());
+                CurrentThreadInfo.getUserId(), userInfo.getUserName(), "JOBSEND", "", System.currentTimeMillis());
         operationHistory.insertRecord(record);
 
         return ResultStat.OK.wrap(buildInfo);
@@ -349,9 +332,9 @@ public class BuildServiceImpl implements BuildService {
         if (buildResult != null) {
             String buildSecret = projectBiz.getSecretById(buildResult.getBuildId());
             if (buildSecret == null || !buildSecret.equals(secret)) {
-                return ResultStat.FORBIDDEN.wrap(null);
+                throw new PermitException("secret not match");
             }
-            BuildHistory buildInfo = projectBiz.getById(GlobalConstant.buildHistoryTableName, buildResult.getBuildId(), BuildHistory.class);
+            BuildHistory buildInfo = projectBiz.getById(GlobalConstant.BUILDHISTORY_TABLE_NAME, buildResult.getBuildId(), BuildHistory.class);
             Registry registry = globalBiz.getRegistry();
             if (registry != null && BuildState.Success.name().equals(buildResult.getStatus())) {
                 BaseImage baseImage = new BaseImage(buildInfo.getImageInfo().getImageName(),
@@ -386,7 +369,7 @@ public class BuildServiceImpl implements BuildService {
     @Override
     public HttpResponseTemp<?> uploadLogfile(MultipartFile body, int projectId, int buildId, String secret) {
         if (body == null) {
-            return ResultStat.PARAM_ERROR.wrap(null, "upload build log error");
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "upload build log error");
         }
 
         try {
@@ -413,7 +396,7 @@ public class BuildServiceImpl implements BuildService {
             List<BuildHistory> buildInfos = UpdateBuildStatusInfo.updateStatusInfos(projectBiz.getBuildHistoryByProjectId(projectId));
             return ResultStat.OK.wrap(buildInfos);
         } catch (Exception e) {
-            return ResultStat.PARAM_ERROR.wrap(null, e.getMessage());
+            throw ApiException.wrapUnknownException(e);
         }
     }
 
@@ -506,11 +489,11 @@ public class BuildServiceImpl implements BuildService {
     private HttpResponseTemp<Object> sendBuildJob(BuildHistory buildInfo, Project project) throws DaoException, RSAKeypairException {
         BuildImage buildImage = globalBiz.getBuildImage();
         if (buildImage == null) {
-            return ResultStat.PARAM_ERROR.wrap(null, "build image not set!");
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "build image not set!");
         }
         Server server = globalBiz.getServer();
         if (server == null) {
-            return ResultStat.PARAM_ERROR.wrap(null, "server not set!");
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "server not set!");
         }
 
         CodeApiInterface codeApiInterface = null;
@@ -525,17 +508,17 @@ public class BuildServiceImpl implements BuildService {
             codeApiInterface = ReflectFactory.createCodeApiInterface(CodeType.getTypeByName(codeConfig.getCodeManager()),
                     codeConfig.getCodeManagerUserId());
             if (codeApiInterface == null) {
-                return ResultStat.PARAM_ERROR.wrap(null, "get code api error");
+                throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "get code api error");
             }
             if (codeConfig.getCodeManager() == CodeManager.gitlab) {
                 privateKey = getGitPrivateKey(codeApiInterface, codeConfig.getCodeId(), project.getId(), project.getName());
                 if (StringUtils.isBlank(privateKey)) {
-                    return ResultStat.PARAM_ERROR.wrap(null, "put deploy key to git error, please check token");
+                    throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "put deploy key to git error, please check token");
                 }
             } else if (codeConfig.getCodeManager() == CodeManager.subversion) {
                 SubversionUser svnInfo = projectBiz.getSubversionInfoById(codeConfig.getCodeId());
                 if (svnInfo == null) {
-                    return ResultStat.SERVER_INTERNAL_ERROR.wrap(null, "can not get subversion info");
+                    throw ApiException.wrapMessage(ResultStat.SERVER_INTERNAL_ERROR, "can not get subversion info");
                 }
                 privateKey = svnInfo.getPassword();
             }
@@ -550,7 +533,7 @@ public class BuildServiceImpl implements BuildService {
             UserDefinedDockerfile dockerInfo = project.getDockerfileInfo();
             String ref = null;
             if (buildInfo.getCodeInfo() == null) {
-                return ResultStat.PARAM_ERROR.wrap(null, "no code info for build");
+                throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "no code info for build");
             }
             if (!StringUtils.isBlank(buildInfo.getCodeInfo().getCodeTag()) && buildInfo.getCommitInfo() != null) {
                 ref = buildInfo.getCommitInfo().getId();
@@ -580,18 +563,18 @@ public class BuildServiceImpl implements BuildService {
 
             byte[] content = codeApiInterface.getDockerfile(codeConfig.getCodeId(), ref, path);
             if (content == null) {
-                return ResultStat.PARAM_ERROR.wrap(null, "could not find dockerfile in " + dockerInfo.getDockerfilePath());
+                throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "could not find dockerfile in " + dockerInfo.getDockerfilePath());
             }
             dockerfileContent = new String(content);
         } else {
             try {
                 dockerfileContent = generateDockerfile(project.getDockerfileConfig(), project.getConfFiles());
             } catch (Exception e) {
-                return ResultStat.PARAM_ERROR.wrap(null, e.getMessage());
+                throw ApiException.wrapUnknownException(e);
             }
         }
         if (StringUtils.isBlank(dockerfileContent)) {
-            return ResultStat.PARAM_ERROR.wrap(null, "generate dockerfile error");
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "generate dockerfile error");
         }
 
         buildInfo.setDockerfileContent(dockerfileContent);
@@ -604,16 +587,18 @@ public class BuildServiceImpl implements BuildService {
         try {
             jobWrapper = new JobWrapper().init();
         } catch (Exception e) {
-            return ResultStat.PARAM_ERROR.wrap(null, e.getMessage());
+            throw ApiException.wrapUnknownException(e);
         }
 
         EnvVar[] envVars = generateEnvs(codeType, server.serverInfo(), buildInfo, privateKey, codeUrl, hasDockerfile,
                 secret, buildPath, dockerfilePath);
         if (envVars == null) {
-            return ResultStat.PARAM_ERROR.wrap(null, "no env info for build kube job");
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "no env info for build kube job");
         }
         Job job = jobWrapper.sendJob(jobWrapper.generateJob(buildImage.getName(), envVars));
-        projectBiz.setTaskNameAndStatus(buildInfo.getId(), job.getMetadata().getName(), BuildState.Send);
+        buildInfo.setTaskName(job.getMetadata().getName());
+        buildInfo.setState(BuildState.Send.name());
+        projectBiz.setTaskNameAndStatus(buildInfo);
 
         return null;
     }
@@ -644,7 +629,7 @@ public class BuildServiceImpl implements BuildService {
                 privateKey = keyPair.getPrivateKey().replaceAll("\n", "\\\\n");
             }
         } else {
-            RSAKeyPair keyPair = projectBiz.getById(GlobalConstant.rsaKeypairTableName, keyMap.getRsaKeypairId(), RSAKeyPair.class);
+            RSAKeyPair keyPair = projectBiz.getById(GlobalConstant.RSAKEYPAIR_TABLE_NAME, keyMap.getRsaKeypairId(), RSAKeyPair.class);
             privateKey = keyPair.getPrivateKey().replaceAll("\n", "\\\\n");
         }
         return privateKey;

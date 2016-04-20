@@ -1,7 +1,9 @@
 package org.domeos.framework.api.mapper.file;
 
-import org.apache.ibatis.annotations.*;
-import org.domeos.framework.api.model.file.ByteContent;
+import org.apache.ibatis.annotations.Insert;
+import org.apache.ibatis.annotations.Options;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 import org.domeos.framework.api.model.file.FileContent;
 import org.springframework.stereotype.Repository;
 

@@ -1,7 +1,6 @@
 package org.domeos.framework.api.consolemodel.cluster;
 
 import org.domeos.framework.api.model.global.ClusterMonitor;
-import org.domeos.framework.api.model.resource.related.ResourceOwnerType;
 
 import java.util.Comparator;
 
@@ -22,7 +21,8 @@ public class ClusterListInfo {
     private int nodeNum;
     private int podNum;
 
-    public ClusterListInfo(int id, String name, String api, String tag, String domain, int logConfig, String ownerName, long createTime, int nodeNum, int podNum) {
+    public ClusterListInfo(int id, String name, String api, String tag, String domain, int logConfig, String ownerName,
+                           long createTime, int nodeNum, int podNum) {
         this.id = id;
         this.name = name;
         this.api = api;

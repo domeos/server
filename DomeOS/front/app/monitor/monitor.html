@@ -54,7 +54,7 @@ ng\:form {
           <table class="ui-table">
             <thead>
               <tr>
-                <th ng-repeat="head in monitorsInfo.cpu.tableData.head"><span tooltip="{{monitorsInfo.keyMap[head]}}" ng-bind="head"></span></th>
+                <th ng-repeat="head in monitorsInfo.cpu.tableData.head"><span tooltip="{{monitorsInfo.keyMap[head]}}" tooltip-placement="{{$last?'left':'top'}}" ng-bind="head"></span></th>
               </tr>
             </thead>
             <tbody>

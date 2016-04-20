@@ -10,19 +10,8 @@ public class DeployIlegalException extends ApiException {
         this.stat = ResultStat.DEPLOYMENT_NOT_LEGAL;
     }
 
-    public DeployIlegalException(Throwable cause) {
-        super(cause);
-    }
-
     public DeployIlegalException(String message) {
-        super(message);
+        super(ResultStat.DEPLOYMENT_NOT_LEGAL, message);
     }
 
-    public DeployIlegalException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public DeployIlegalException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
-    }
 }

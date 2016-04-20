@@ -1,6 +1,5 @@
 package org.domeos.framework.api.model.deployment.related;
 
-import org.domeos.framework.api.model.deployment.related.DeployServiceProtocol;
 import sun.net.util.IPAddressUtil;
 
 import java.util.List;

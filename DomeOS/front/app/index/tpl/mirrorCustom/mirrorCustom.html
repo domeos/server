@@ -2,7 +2,7 @@
 <div class="mirror-custom mod-deploy">
   <loading ng-if="isLoading"></loading>
   <tabset class="mod-tab">
-    <tab heading="定制镜像">
+    <tab heading="定制镜像" active="tabActive[0].active" ui-sref="mirrorCustom">
       <ul ng-form="ng-form" name="mirrorInfoForm" ng-class="{'need-valid':needValid}" novalidate="novalidate" class="com-list-info">
         <li class="has-border"><span class="info-name">定制类型</span>
           <div class="info-content">
@@ -167,7 +167,7 @@
       <div class="com-bottom-option"><span class="com-bottom-option-con">
           <button ng-click="needValid=true;mirrorInfoForm.$valid&amp;&amp;creatBuild()" class="ui-btn ui-btn-md ui-btn-bright">开始构建</button><span ng-if="needValid&amp;&amp;mirrorInfoForm.$invalid" class="txt-error">存在不合法数据，请修改后提交！</span></span></div>
     </tab>
-    <tab heading="定制记录" ng-click="selectImgList()">
+    <tab heading="定制记录" ng-click="selectImgList()" active="tabActive[1].active" ui-sref="mirrorCustom.log">
       <div class="chose-row">
         <div class="chose-item"><span class="chose-title">状态筛选</span>
           <div class="chose-options"><em ng-class="{'active':selectOption.state.All}" ng-click="toggleAll('state')">全部</em><em ng-class="{'active':selectOption.state.Building}" ng-click="toggleSelect('state','Building')">构建中</em><em ng-class="{'active':selectOption.state.Success}" ng-click="toggleSelect('state','Success')">成功</em><em ng-class="{'active':selectOption.state.Fail}" ng-click="toggleSelect('state','Fail')">失败</em><em class="txt-prompt">|</em>

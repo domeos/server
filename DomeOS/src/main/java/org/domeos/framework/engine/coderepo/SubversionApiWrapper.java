@@ -84,7 +84,8 @@ public class SubversionApiWrapper implements CodeApiInterface {
             for (SubversionUser subversion : subversions) {
                 SubversionApiWrapper subversionApiWrapper = new SubversionApiWrapper(subversion.getId());
                 ;
-                codeSourceInfos.add(new CodeSourceInfo(subversion.getId(), subversion.getName(), subversionApiWrapper.getSubversionProjectInfo(subversion.getId())));
+                codeSourceInfos.add(new CodeSourceInfo(subversion.getId(), subversion.getName(),
+                        subversionApiWrapper.getSubversionProjectInfo(subversion.getId())));
             }
         }
         return codeSourceInfos;

@@ -1,0 +1,72 @@
+@import "compass/css3";
+@import "common/css/common.scss";
+.add-host{
+	margin: 0 0-$page-padding 0 0-$page-padding;
+	.host-info{
+		li{
+			display: table;
+			border-bottom: $light-border;
+			width: 100%;
+			.num-con{
+				display: table-cell;
+				width: 200px;
+				text-align: center;
+				vertical-align: middle;
+				.info-num{
+					display: inline-block;
+					height: 40px;
+					width: 40px;
+					padding-top:9px;
+					color: dome-color(dome,bright);
+					text-align: center;
+					border: $light-border;
+					border-radius: $default-radius;
+				}
+			}
+			.info-con{
+				display: table-cell;
+				padding-top: 20px;
+				padding-bottom: 20px;
+				.info-descrip{
+					margin-bottom:16px;
+				}
+				.info-line{
+					width: 62%;
+				}
+				.info-cmd{
+					position: relative;
+					@include display-flex;
+					overflow: hidden;
+					textarea{
+						@include flex(1);
+						min-height: 85px;
+						padding-right: 85px;
+						border-radius: $default-radius 0 0  $default-radius;
+					}
+					.cmd-copy{
+						display: block;
+						height: 85px;
+						width: 70px;
+						padding-top: 18px;
+						text-align: center;
+						border: $deep-border;
+						border-left: none;
+						border-radius: 0 $default-radius $default-radius 0;
+					}
+				}
+				.line-con{
+					@include display-flex;
+					.line-element{
+						@include flex(1);
+					}
+				}
+				.ui-input-sibling {
+					margin-top: 6px;
+				}
+			}
+			.env-check{
+				margin-right: 50px;
+			}
+		}
+	}
+}

@@ -35,7 +35,7 @@ html(ng-app="monitorApp")
 						thead
 							tr
 								th(ng-repeat="head in monitorsInfo.cpu.tableData.head")
-									span(tooltip="{{monitorsInfo.keyMap[head]}}" ng-bind="head")
+									span(tooltip="{{monitorsInfo.keyMap[head]}}" tooltip-placement="{{$last?'left':'top'}}" ng-bind="head")
 						tbody
 							tr(ng-repeat="body in monitorsInfo.cpu.tableData.body")
 								td(ng-repeat="item in monitorsInfo.cpu.tableData.item")

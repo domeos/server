@@ -1,27 +1,28 @@
 package org.domeos.framework.api.service.monitor.impl;
 
-import org.apache.log4j.Logger;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
+import org.domeos.basemodel.HttpResponseTemp;
+import org.domeos.basemodel.ResultStat;
+import org.domeos.framework.api.biz.global.GlobalBiz;
 import org.domeos.framework.api.biz.monitor.MonitorBiz;
 import org.domeos.framework.api.consolemodel.monitor.MonitorDataRequest;
 import org.domeos.framework.api.consolemodel.monitor.MonitorResult;
 import org.domeos.framework.api.consolemodel.monitor.TargetRequest;
+import org.domeos.framework.api.controller.exception.ApiException;
 import org.domeos.framework.api.model.global.GlobalInfo;
 import org.domeos.framework.api.model.global.GlobalType;
-import org.domeos.framework.api.model.monitor.falcon.EndpointCounter;
-import org.domeos.framework.api.model.monitor.falcon.GraphHistoryRequest;
-import org.domeos.framework.api.model.monitor.falcon.GraphHistoryResponse;
 import org.domeos.framework.api.model.monitor.ContainerInfo;
 import org.domeos.framework.api.model.monitor.CounterItems;
 import org.domeos.framework.api.model.monitor.MonitorTarget;
 import org.domeos.framework.api.model.monitor.TargetInfo;
-import org.domeos.framework.api.biz.global.GlobalBiz;
+import org.domeos.framework.api.model.monitor.falcon.EndpointCounter;
+import org.domeos.framework.api.model.monitor.falcon.GraphHistoryRequest;
+import org.domeos.framework.api.model.monitor.falcon.GraphHistoryResponse;
 import org.domeos.framework.api.service.monitor.MonitorService;
-import org.domeos.basemodel.HttpResponseTemp;
-import org.domeos.basemodel.ResultStat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -49,10 +50,10 @@ public class MonitorServiceImpl implements MonitorService {
     public HttpResponseTemp<?> insertTargets(TargetRequest targetRequest) {
 
         if (targetRequest == null) {
-            return ResultStat.TARGET_REQUEST_NOT_LEGAL.wrap(null, "target request info is null");
+            throw ApiException.wrapMessage(ResultStat.TARGET_REQUEST_NOT_LEGAL, "target request info is null");
         }
         if (!StringUtils.isBlank(targetRequest.checkLegality())) {
-            return ResultStat.TARGET_REQUEST_NOT_LEGAL.wrap(null, targetRequest.checkLegality());
+            throw ApiException.wrapMessage(ResultStat.TARGET_REQUEST_NOT_LEGAL, targetRequest.checkLegality());
         }
 
         ObjectMapper mapper = new ObjectMapper();
@@ -61,7 +62,7 @@ public class MonitorServiceImpl implements MonitorService {
             targetRequestJson = mapper.writeValueAsString(targetRequest);
         } catch (JsonProcessingException e) {
             logger.error("error processing json!", e);
-            return ResultStat.TARGET_REQUEST_NOT_LEGAL.wrap(null, "error processing json : " + e.getMessage());
+            throw ApiException.wrapMessage(ResultStat.TARGET_REQUEST_NOT_LEGAL, "error processing json : " + e.getMessage());
         }
 
         MonitorTarget monitorTarget = new MonitorTarget();
@@ -80,7 +81,7 @@ public class MonitorServiceImpl implements MonitorService {
         ObjectMapper mapper = new ObjectMapper();
         String targetRequestJson = monitorBiz.getMonitorTargetById(targetId);
         if (StringUtils.isBlank(targetRequestJson)) {
-            return ResultStat.TARGET_REQUEST_NOT_LEGAL.wrap(null, "target id does not exist");
+            throw ApiException.wrapMessage(ResultStat.TARGET_REQUEST_NOT_LEGAL, "target id does not exist");
         }
 
         TargetRequest targetRequest;
@@ -88,7 +89,7 @@ public class MonitorServiceImpl implements MonitorService {
             targetRequest = mapper.readValue(targetRequestJson, TargetRequest.class);
         } catch (IOException e) {
             logger.error("error processing json!", e);
-            return ResultStat.TARGET_REQUEST_NOT_LEGAL.wrap(null, "error processing json : " + e.getMessage());
+            throw ApiException.wrapMessage(ResultStat.TARGET_REQUEST_NOT_LEGAL, "error processing json : " + e.getMessage());
         }
 
         return ResultStat.OK.wrap(targetRequest);
@@ -98,10 +99,10 @@ public class MonitorServiceImpl implements MonitorService {
     public HttpResponseTemp<?> retrieveCounters(TargetRequest targetRequest) {
 
         if (targetRequest == null) {
-            return ResultStat.TARGET_REQUEST_NOT_LEGAL.wrap(null, "target request info is null");
+            throw ApiException.wrapMessage(ResultStat.TARGET_REQUEST_NOT_LEGAL, "target request info is null");
         }
         if (!StringUtils.isBlank(targetRequest.checkLegality())) {
-            return ResultStat.TARGET_REQUEST_NOT_LEGAL.wrap(null, targetRequest.checkLegality());
+            throw ApiException.wrapMessage(ResultStat.TARGET_REQUEST_NOT_LEGAL, targetRequest.checkLegality());
         }
 
         List<String> rawCounters = retrieveCountersByTargetInfoList(targetRequest.getTargetType(), targetRequest.getTargetInfos());
@@ -117,16 +118,16 @@ public class MonitorServiceImpl implements MonitorService {
     public HttpResponseTemp<?> getMonitorData(MonitorDataRequest monitorDataRequest) {
 
         if (monitorDataRequest == null) {
-            return ResultStat.MONITOR_DATA_REQUEST_NOT_LEGAL.wrap(null, "monitor data request info is null");
+            throw ApiException.wrapMessage(ResultStat.MONITOR_DATA_REQUEST_NOT_LEGAL, "monitor data request info is null");
         }
         if (!StringUtils.isBlank(monitorDataRequest.checkLegality())) {
-            return ResultStat.MONITOR_DATA_REQUEST_NOT_LEGAL.wrap(null, monitorDataRequest.checkLegality());
+            throw ApiException.wrapMessage(ResultStat.MONITOR_DATA_REQUEST_NOT_LEGAL, monitorDataRequest.checkLegality());
         }
 
         // preparation
         GlobalInfo queryInfo = globalBiz.getGlobalInfoByType(GlobalType.MONITOR_QUERY);
         if (queryInfo == null) {
-            return ResultStat.MONITOR_DATA_QUERY_ERROR.wrap(null, "query is null");
+            throw ApiException.wrapMessage(ResultStat.MONITOR_DATA_QUERY_ERROR, "query is null");
         }
         String queryUrl = "http://" + queryInfo.getValue() + "/graph/history";
 
@@ -143,17 +144,18 @@ public class MonitorServiceImpl implements MonitorService {
             graphHistoryResponses = postJson(queryUrl, graphHistoryRequest);
         } catch (JsonProcessingException e) {
             logger.error("error processing json!", e);
-            return ResultStat.MONITOR_DATA_QUERY_ERROR.wrap(null, "error processing json : " + e.getMessage());
+            throw ApiException.wrapMessage(ResultStat.MONITOR_DATA_QUERY_ERROR, "error processing json : " + e.getMessage());
         } catch (IOException e) {
             logger.error("io exception!", e);
-            return ResultStat.MONITOR_DATA_QUERY_ERROR.wrap(null, "io exception : " + e.getMessage());
+            throw ApiException.wrapMessage(ResultStat.MONITOR_DATA_QUERY_ERROR, "io exception : " + e.getMessage());
         }
         if (graphHistoryResponses == null) {
-            return ResultStat.MONITOR_DATA_QUERY_ERROR.wrap(null, "query response is null");
+            throw ApiException.wrapMessage(ResultStat.MONITOR_DATA_QUERY_ERROR, "query response is null");
         }
 
         // re-arrage GraphHistoryResponses
-        Map<String, List<GraphHistoryResponse>> graphHistoryResponseMap = arrangeGraphHistoryResponseList(graphHistoryResponses, monitorDataRequest.getTargetType());
+        Map<String, List<GraphHistoryResponse>> graphHistoryResponseMap = arrangeGraphHistoryResponseList(graphHistoryResponses,
+                monitorDataRequest.getTargetType());
 
         // create MonitorResult
         createMonitorResult(monitorResult, graphHistoryResponseMap, monitorDataRequest);
@@ -173,12 +175,12 @@ public class MonitorServiceImpl implements MonitorService {
 
         // collect endpoints and containers
         switch (targetType) {
-            case "node" :
+            case "node":
                 for (TargetInfo targetInfo : targetInfos) {
                     endpoints.add(targetInfo.getNode());
                 }
                 break;
-            case "pod" :
+            case "pod":
                 for (TargetInfo targetInfo : targetInfos) {
                     for (ContainerInfo containerInfo : targetInfo.getPod().getContainers()) {
                         endpoints.add(containerInfo.getHostname());
@@ -186,7 +188,7 @@ public class MonitorServiceImpl implements MonitorService {
                     }
                 }
                 break;
-            case "container" :
+            case "container":
                 for (TargetInfo targetInfo : targetInfos) {
                     endpoints.add(targetInfo.getContainer().getHostname());
                     containers.add(targetInfo.getContainer().getContainerId());
@@ -199,8 +201,8 @@ public class MonitorServiceImpl implements MonitorService {
             case "node":
                 rawCounters = monitorBiz.getNodeCountersByEndpoints(joinStringSet(endpoints, ","));
                 break;
-            case "pod" :
-            case "container" :
+            case "pod":
+            case "container":
                 rawCounters = monitorBiz.getContainerCountersByEndpoints(joinStringSet(endpoints, ","), joinStringSet(containers, ","));
         }
 
@@ -230,15 +232,15 @@ public class MonitorServiceImpl implements MonitorService {
         List<String> counters = retrieveCountersByTargetInfoList(monitorDataRequest.getTargetType(), monitorDataRequest.getTargetInfos());
 
         switch (monitorDataRequest.getTargetType()) {
-            case "node" :
+            case "node":
                 for (String counter : counters) {
-                    for (TargetInfo targetInfo: monitorDataRequest.getTargetInfos())
+                    for (TargetInfo targetInfo : monitorDataRequest.getTargetInfos())
                         graphHistoryRequest.getEndpoint_counters().add(new EndpointCounter(targetInfo.getNode(), counter));
                 }
                 break;
-            case "pod" :
+            case "pod":
                 for (String counter : counters) {
-                    for (TargetInfo targetInfo: monitorDataRequest.getTargetInfos()) {
+                    for (TargetInfo targetInfo : monitorDataRequest.getTargetInfos()) {
                         for (ContainerInfo containerInfo : targetInfo.getPod().getContainers()) {
                             if (counter.contains(containerInfo.getContainerId())) {
                                 graphHistoryRequest.getEndpoint_counters().add(new EndpointCounter(containerInfo.getHostname(), counter));
@@ -247,9 +249,9 @@ public class MonitorServiceImpl implements MonitorService {
                     }
                 }
                 break;
-            case "container" :
+            case "container":
                 for (String counter : counters) {
-                    for (TargetInfo targetInfo: monitorDataRequest.getTargetInfos()) {
+                    for (TargetInfo targetInfo : monitorDataRequest.getTargetInfos()) {
                         if (counter.contains(targetInfo.getContainer().getContainerId())) {
                             graphHistoryRequest.getEndpoint_counters().add(new EndpointCounter(targetInfo.getContainer().getHostname(), counter));
                         }
@@ -286,18 +288,20 @@ public class MonitorServiceImpl implements MonitorService {
                 return null;
             }
             InputStream inputStream = conn.getInputStream();
-            graphHistoryResponses = mapper.readValue(inputStream, new TypeReference<List<GraphHistoryResponse>>() {});
+            graphHistoryResponses = mapper.readValue(inputStream, new TypeReference<List<GraphHistoryResponse>>() {
+            });
             inputStream.close();
         } catch (Exception e) {
 
             logger.error("exception in sending post request!", e);
             return null;
         }
-        return  graphHistoryResponses;
+        return graphHistoryResponses;
     }
 
     // re-arrage GraphHistoryResponses
-    private Map<String, List<GraphHistoryResponse>> arrangeGraphHistoryResponseList(List<GraphHistoryResponse> graphHistoryResponses, String targetType) {
+    private Map<String, List<GraphHistoryResponse>> arrangeGraphHistoryResponseList(List<GraphHistoryResponse> graphHistoryResponses,
+                                                                                    String targetType) {
 
         Map<String, List<GraphHistoryResponse>> result = new HashMap<>();
 
@@ -311,13 +315,13 @@ public class MonitorServiceImpl implements MonitorService {
             // fix counter name
             String counter = graphHistoryResponse.getCounter();
             switch (targetType) {
-                case "node" :
+                case "node":
                     if (counter.startsWith("df.bytes")) {
                         counter = counter.substring(0, counter.indexOf("fstype=")) + counter.substring(counter.indexOf("mount="));
                     }
                     break;
-                case "pod" :
-                case "container" :
+                case "pod":
+                case "container":
                     counter = counter.substring(0, counter.indexOf("/id="));
             }
             if (!result.containsKey(counter)) {
@@ -330,7 +334,8 @@ public class MonitorServiceImpl implements MonitorService {
     }
 
     // create monitorResult by arranged GraphHistoryResponse-Map
-    private void createMonitorResult(MonitorResult monitorResult, Map<String, List<GraphHistoryResponse>> graphHistoryResponseMap, MonitorDataRequest monitorDataRequest) {
+    private void createMonitorResult(MonitorResult monitorResult, Map<String, List<GraphHistoryResponse>> graphHistoryResponseMap,
+                                     MonitorDataRequest monitorDataRequest) {
 
         Map<String, String> containerPodMap = getContainerPodMap(monitorDataRequest);
 
@@ -371,7 +376,8 @@ public class MonitorServiceImpl implements MonitorService {
                         targetValueKeys.add(graphHistoryResponse.getEndpoint());
                         break;
                     case "pod":
-                        targetValueKeys.add(containerPodMap.get(graphHistoryResponse.getCounter().substring(graphHistoryResponse.getCounter().indexOf("/id=") + 4)));
+                        targetValueKeys.add(containerPodMap.get(graphHistoryResponse.getCounter()
+                                .substring(graphHistoryResponse.getCounter().indexOf("/id=") + 4)));
                         break;
                     case "container":
                         targetValueKeys.add(graphHistoryResponse.getCounter().substring(graphHistoryResponse.getCounter().indexOf("/id=") + 4));

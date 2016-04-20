@@ -20,6 +20,7 @@ public class LoadBalanceDraft {
 
     public LoadBalanceDraft() {
     }
+
     public LoadBalanceDraft(LoadBalancer loadBalancer) {
         id = loadBalancer.getId();
         name = loadBalancer.getName();
@@ -102,7 +103,7 @@ public class LoadBalanceDraft {
         if (clusterId <= 0) {
             return "cluster id less than 0";
         } else if (externalIPs == null || externalIPs.size() == 0) {
-        //     return "do not have external ip info";
+            //     return "do not have external ip info";
             return "";  // for stateful deployment
         } else {
             for (String ip : externalIPs) {

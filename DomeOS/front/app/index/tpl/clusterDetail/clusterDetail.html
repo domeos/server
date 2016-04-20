@@ -3,7 +3,7 @@
   <div class="mod-option"><a ui-sref="addHost({id:clusterId})" class="ui-btn ui-btn-lg ui-btn-link ui-btn-bright"><i class="icon-add-white"></i>添加主机</a><a ng-click="deleteCluster()" class="icon-delete"></a></div>
   <div class="cluster-info">
     <tabset>
-      <tab heading="主机列表">
+      <tab heading="主机列表" active="tabActive[0].active" ui-sref="clusterDetail.hostlist">
         <loading ng-if="isWaitingHost"></loading>
         <div class="info-options">
           <input placeholder="输入主机名查找" ng-model="hostKey" class="ui-input-fill ui-input-white ui-input-search pull-right"/><span ng-cloak="ng-cloak" class="info-count">共{{nodelistFiltered.length}}台主机</span>
@@ -34,7 +34,7 @@
           </tbody>
         </table>
       </tab>
-      <tab heading="集群设置">
+      <tab heading="集群设置" active="tabActive[1].active" ui-sref="clusterDetail.info">
         <button ng-click="checkEdit()" ng-if="!isEdit" class="ui-btn ui-btn-sm ui-btn-white edit-cluster">编辑</button>
         <button ng-click="checkEdit()" ng-if="isEdit" class="ui-btn ui-btn-sm ui-btn-primary edit-cluster">取消编辑</button>
         <div ng-form="ng-form" name="modifyclusterFrom">
@@ -47,7 +47,7 @@
           </div>
         </div>
       </tab>
-      <tab heading="namespace" ng-click="getNamespace()">
+      <tab heading="namespace" ng-click="getNamespace()" active="tabActive[2].active" ui-sref="clusterDetail.namespace">
         <loading ng-if="isWaitingNamespace"></loading>
         <div ng-form="ng-form" role="form" name="namespaceForm" ng-class="{'need-valid':needValidNamespace}" class="info-options"><span class="namespace-title">namespace</span>
           <div class="namespace-con">
@@ -61,7 +61,7 @@
           </div>
         </div>
       </tab>
-      <tab heading="集群成员" ng-hide="!hasMemberPermisson">
+      <tab heading="集群成员" ng-hide="!hasMemberPermisson" active="tabActive[3].active" ui-sref="clusterDetail.users">
         <div ng-include="'index/tpl/tplUserList/tplUserList.html'" class="tab-member"></div>
       </tab>
     </tabset>

@@ -1,0 +1,23 @@
+
+<div class="d-modal-header">选择主机列表<span ng-cloak="ng-cloak" class="model-prompt">共{{hostList.length}}台</span></div>
+<div class="d-modal-full">
+  <table class="ui-table-dome">
+    <thead>
+      <tr>
+        <th>主机名</th>
+        <th>IP</th>
+        <th>实例个数</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-if="hostList.length===0">
+        <td>无已选主机</td>
+      </tr>
+      <tr ng-repeat="host in hostList|filter:{'labelFilter':true}">
+        <td ng-bind="host.name"></td>
+        <td ng-bind="host.ip"></td>
+        <td ng-bind="host.runningPods"></td>
+      </tr>
+    </tbody>
+  </table>
+</div>

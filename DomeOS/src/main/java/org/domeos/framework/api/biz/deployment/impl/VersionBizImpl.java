@@ -1,9 +1,16 @@
 package org.domeos.framework.api.biz.deployment.impl;
 
+import org.apache.commons.lang3.StringUtils;
+import org.domeos.basemodel.ResultStat;
 import org.domeos.framework.api.biz.base.impl.BaseBizImpl;
-import org.domeos.framework.api.mapper.deployment.VersionMapper;
-import org.domeos.framework.api.model.deployment.Version;
 import org.domeos.framework.api.biz.deployment.VersionBiz;
+import org.domeos.framework.api.consolemodel.deployment.ContainerDraft;
+import org.domeos.framework.api.controller.exception.ApiException;
+import org.domeos.framework.api.mapper.deployment.VersionMapper;
+import org.domeos.framework.api.model.cluster.Cluster;
+import org.domeos.framework.api.model.cluster.related.ClusterLog;
+import org.domeos.framework.api.model.deployment.Version;
+import org.domeos.framework.api.model.deployment.related.LogDraft;
 import org.domeos.framework.engine.model.RowMapperDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,6 +38,28 @@ public class VersionBizImpl extends BaseBizImpl implements VersionBiz {
         version.setCreateTime(System.currentTimeMillis());
         versionMapper.insertRow(version, version.toString());
         return verNow;
+    }
+
+    @Override
+    public long insertVersionWithLogCollect(Version version, Cluster cluster) {
+        LogDraft logDraft = version.getLogDraft();
+        ClusterLog clusterLog = cluster.getClusterLog();
+        if (logDraft != null && logDraft.getLogItemDrafts() != null && logDraft.getLogItemDrafts().size() > 0) {
+            if (clusterLog == null) {
+                throw ApiException.wrapMessage(ResultStat.CLUSTER_NOT_LEGAL, "cluster log info not exist");
+            }
+            if(!StringUtils.isBlank(clusterLog.checkLegality())) {
+                throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, clusterLog.checkLegality());
+            }
+            logDraft.setKafkaBrokers(clusterLog.getKafka());
+            ContainerDraft flumeDraft = new ContainerDraft();
+            flumeDraft.setCpu(1.0);
+            flumeDraft.setMem(2048.0);
+            flumeDraft.setTag(clusterLog.getImageTag());
+            flumeDraft.setImage(clusterLog.getImageName());
+            logDraft.setFlumeDraft(flumeDraft);
+        }
+        return insertRow(version);
     }
 
     @Override
@@ -75,7 +104,8 @@ public class VersionBizImpl extends BaseBizImpl implements VersionBiz {
 //                // set log flume image related
 //                clusterLogService.setLogDraft(version, clusterId);
 //                /* openxxs comment this checkContainerLegality(kafka and flume setting check)
-//                /* For this situation: add cluster kafka and flume -> create deployment version with log -> delete cluster kafka and flume -> get or list deployment version with log
+//                /* For this situation: add cluster kafka and flume -> create deployment version with log ->
+//                   delete cluster kafka and flume -> get or list deployment version with log
 //                String logDraftCheckLegality = version.getLogDraft().checkContainerLegality();
 //                if (!StringUtils.isBlank(logDraftCheckLegality)) {
 //                    throw new IOException(logDraftCheckLegality);

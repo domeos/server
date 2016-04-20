@@ -263,14 +263,14 @@ CREATE TABLE IF NOT EXISTS `monitor_targets` (
    `version` VARCHAR(255) NOT NULL,
    `clusterId` INT(11) NOT NULL,
    `namespace` VARCHAR(255) NOT NULL,
-   `event_kind` VARCHAR(255) NOT NULL,
+   `eventKind` VARCHAR(255) NOT NULL,
    `name` VARCHAR(255) NOT NULL,
    `host` VARCHAR(255),
    `content` TEXT
  ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-CREATE INDEX `k8s_events_index1` ON k8s_events(`clusterId`, `namespace`, `event_kind`);
-CREATE INDEX `k8s_events_index2` ON k8s_events(`clusterId`, `name`);
-CREATE INDEX `k8s_events_index3` ON k8s_events(`host`);
+CREATE INDEX `k8s_events_kind_index` ON k8s_events(`clusterId`, `namespace`, `eventKind`);
+CREATE UNIQUE INDEX `k8s_events_name_index` ON k8s_events(`clusterId`, `namespace`, `name`);
+CREATE INDEX `k8s_events_host_index` ON k8s_events(`host`);
 
  CREATE TABLE IF NOT EXISTS `deploy_event` (
   `eid` INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,

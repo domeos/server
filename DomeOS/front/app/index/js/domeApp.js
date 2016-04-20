@@ -1,4 +1,4 @@
-var domeApp = angular.module('domeApp', ['ui.router', 'ncy-angular-breadcrumb', 'oc.lazyLoad', 'ngAnimate', 'pasvaz.bindonce', 'ngLocale', 'ui.bootstrap',  'ngScrollbar', 'publicModule', 'domeModule', 'deployModule', 'imageModule', 'userModule', 'projectModule']);
+var domeApp = angular.module('domeApp', ['ui.router', 'ncy-angular-breadcrumb', 'oc.lazyLoad', 'ngAnimate', 'pasvaz.bindonce', 'ngLocale', 'ui.bootstrap', 'ngScrollbar', 'publicModule', 'domeModule', 'deployModule', 'imageModule', 'userModule', 'projectModule']);
 
 domeApp.run(['$rootScope', function($rootScope) {
 	// 修改页面title，采用ng-bind的方法会使页面闪烁
@@ -50,7 +50,39 @@ domeApp.config(['$stateProvider', '$urlRouterProvider', function($stateProvider,
 						return $ocLazyLoad.load('/lib/js/jquery.zclip.js');
 					}]
 				}
-			}).state('deployManage', {
+			})
+			.state('projectDetail.info', {
+				url: '/info',
+				ncyBreadcrumb: {
+					label: '项目详情',
+					parent: 'projectManage'
+				}
+			}).state('projectDetail.config', {
+				url: '/config',
+				ncyBreadcrumb: {
+					label: '项目详情',
+					parent: 'projectManage'
+				}
+			}).state('projectDetail.autobuild', {
+				url: '/autobuild',
+				ncyBreadcrumb: {
+					label: '项目详情',
+					parent: 'projectManage'
+				}
+			}).state('projectDetail.buildlog', {
+				url: '/buildlog',
+				ncyBreadcrumb: {
+					label: '项目详情',
+					parent: 'projectManage'
+				}
+			}).state('projectDetail.user', {
+				url: '/user',
+				ncyBreadcrumb: {
+					label: '项目详情',
+					parent: 'projectManage'
+				}
+			})
+			.state('deployManage', {
 				url: '/deployManage',
 				templateUrl: 'index/tpl/deployManage/deployManage.html',
 				controller: 'deployManageCtr',
@@ -77,6 +109,48 @@ domeApp.config(['$stateProvider', '$urlRouterProvider', function($stateProvider,
 				url: '/deployDetail/:id',
 				templateUrl: 'index/tpl/deployDetail/deployDetail.html',
 				controller: 'deployDetailCtr',
+				ncyBreadcrumb: {
+					label: '部署详情',
+					parent: 'deployManage'
+				}
+			}).state('deployDetail.detail', {
+				url: '/detail',
+				ncyBreadcrumb: {
+					label: '部署详情',
+					parent: 'deployManage'
+				}
+			}).state('deployDetail.update', {
+				url: '/update',
+				ncyBreadcrumb: {
+					label: '部署详情',
+					parent: 'deployManage'
+				}
+			}).state('deployDetail.event', {
+				url: '/event',
+				ncyBreadcrumb: {
+					label: '部署详情',
+					parent: 'deployManage'
+				}
+			}).state('deployDetail.instance', {
+				url: '/instance',
+				ncyBreadcrumb: {
+					label: '部署详情',
+					parent: 'deployManage'
+				}
+			}).state('deployDetail.healthcheck', {
+				url: '/healthcheck',
+				ncyBreadcrumb: {
+					label: '部署详情',
+					parent: 'deployManage'
+				}
+			}).state('deployDetail.network', {
+				url: '/network',
+				ncyBreadcrumb: {
+					label: '部署详情',
+					parent: 'deployManage'
+				}
+			}).state('deployDetail.user', {
+				url: '/user',
 				ncyBreadcrumb: {
 					label: '部署详情',
 					parent: 'deployManage'
@@ -127,10 +201,50 @@ domeApp.config(['$stateProvider', '$urlRouterProvider', function($stateProvider,
 					label: '集群详情',
 					parent: 'clusterManage'
 				}
+			}).state('clusterDetail.hostlist', {
+				url: '/hostlist',
+				ncyBreadcrumb: {
+					label: '集群详情',
+					parent: 'clusterManage'
+				}
+			}).state('clusterDetail.info', {
+				url: '/info',
+				ncyBreadcrumb: {
+					label: '集群详情',
+					parent: 'clusterManage'
+				}
+			}).state('clusterDetail.namespace', {
+				url: '/namespace',
+				ncyBreadcrumb: {
+					label: '集群详情',
+					parent: 'clusterManage'
+				}
+			}).state('clusterDetail.users', {
+				url: '/users',
+				ncyBreadcrumb: {
+					label: '集群详情',
+					parent: 'clusterManage'
+				}
 			}).state('hostDetail', {
 				url: '/hostDetail/:clusterId/:name',
 				templateUrl: 'index/tpl/hostDetail/hostDetail.html',
 				controller: 'hostDetailCtr',
+				ncyBreadcrumb: {
+					label: '主机详情',
+					parent: function($scope) {
+						return $scope.parentState;
+					}
+				}
+			}).state('hostDetail.instancelist', {
+				url: '/instancelist',
+				ncyBreadcrumb: {
+					label: '主机详情',
+					parent: function($scope) {
+						return $scope.parentState;
+					}
+				}
+			}).state('hostDetail.info', {
+				url: '/info',
 				ncyBreadcrumb: {
 					label: '主机详情',
 					parent: function($scope) {
@@ -151,6 +265,25 @@ domeApp.config(['$stateProvider', '$urlRouterProvider', function($stateProvider,
 				ncyBreadcrumb: {
 					label: '镜像管理'
 				}
+			}).state('imageManage.baseimages', {
+				url: '/baseimages',
+				templateUrl: 'index/tpl/imageManage/imageManage.html',
+				controller: 'imageManageCtr',
+				ncyBreadcrumb: {
+					label: '镜像管理'
+				}
+			}).state('imageManage.projectimages', {
+				url: '/projectimages',
+				templateUrl: 'index/tpl/imageManage/imageManage.html',
+				controller: 'imageManageCtr',
+				ncyBreadcrumb: {
+					label: '镜像管理'
+				}
+			}).state('imageManage.otherimages', {
+				url: '/otherimages',
+				ncyBreadcrumb: {
+					label: '镜像管理'
+				}
 			}).state('mirrorCustom', {
 				url: '/mirrorCustom',
 				templateUrl: 'index/tpl/mirrorCustom/mirrorCustom.html',
@@ -159,10 +292,56 @@ domeApp.config(['$stateProvider', '$urlRouterProvider', function($stateProvider,
 					label: '镜像定制',
 					parent: 'imageManage'
 				}
+			}).state('mirrorCustom.log', {
+				url: '/log',
+				ncyBreadcrumb: {
+					label: '镜像定制',
+					parent: 'imageManage'
+				}
 			}).state('globalSetting', {
 				url: '/globalSetting',
 				templateUrl: 'index/tpl/globalSetting/globalSetting.html',
 				controller: 'globalSettingCtr',
+				ncyBreadcrumb: {
+					label: '全局配置'
+				}
+			}).state('globalSetting.userinfo', {
+				url: '/userinfo',
+				ncyBreadcrumb: {
+					label: '全局配置'
+				}
+			}).state('globalSetting.ldapinfo', {
+				url: '/ldapinfo',
+				ncyBreadcrumb: {
+					label: '全局配置'
+				}
+			}).state('globalSetting.gitinfo', {
+				url: '/gitinfo',
+				ncyBreadcrumb: {
+					label: '全局配置'
+				}
+			}).state('globalSetting.registryinfo', {
+				url: '/registryinfo',
+				ncyBreadcrumb: {
+					label: '全局配置'
+				}
+			}).state('globalSetting.serverinfo', {
+				url: '/serverinfo',
+				ncyBreadcrumb: {
+					label: '全局配置'
+				}
+			}).state('globalSetting.monitorinfo', {
+				url: '/monitorinfo',
+				ncyBreadcrumb: {
+					label: '全局配置'
+				}
+			}).state('globalSetting.sshinfo', {
+				url: '/sshinfo',
+				ncyBreadcrumb: {
+					label: '全局配置'
+				}
+			}).state('globalSetting.clusterinfo', {
+				url: '/clusterinfo',
 				ncyBreadcrumb: {
 					label: '全局配置'
 				}

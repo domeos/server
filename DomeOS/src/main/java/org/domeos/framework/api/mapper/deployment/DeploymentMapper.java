@@ -13,7 +13,7 @@ import java.util.List;
 @Repository
 public interface DeploymentMapper {
 
-    @Insert("INSERT INTO " + GlobalConstant.deployTableName +
+    @Insert("INSERT INTO " + GlobalConstant.DEPLOY_TABLE_NAME +
         " (name, description, state, createTime, removeTime, removed, data, clusterId) values (" +
         " #{item.name}, #{item.description}, #{item.state}, #{item.createTime}, #{item.removeTime}," +
         " #{item.removed}, #{data}, #{item.clusterId})")
@@ -21,12 +21,12 @@ public interface DeploymentMapper {
     int insertDeploy(@Param("item") Deployment item, @Param("data") String data);
 
 
-    @Update("update " + GlobalConstant.deployTableName +
+    @Update("update " + GlobalConstant.DEPLOY_TABLE_NAME +
         " set name='${item.name}', description='${item.description}', state='${item.state}', " +
         "data='${item.data}' where id = ${item.id}")
     int updateDeploy(@Param("item") RowMapperDao item);
 
-    @Select("SELECT * FROM " + GlobalConstant.deployTableName + " WHERE clusterId=#{clusterId} AND removed=0")
+    @Select("SELECT * FROM " + GlobalConstant.DEPLOY_TABLE_NAME + " WHERE clusterId=#{clusterId} AND removed=0")
     List<Deployment> listDeploymentByClusterId(@Param("clusterId")int clusterId);
 
 //

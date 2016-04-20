@@ -1,4 +1,4 @@
-domeApp.controller('deployManageCtr', ['$scope', '$domeDeploy', '$domeCluster', '$interval', function($scope, $domeDeploy, $domeCluster, $interval) {
+domeApp.controller('deployManageCtr', ['$scope', '$domeDeploy', '$domeCluster', '$timeout', '$state', function($scope, $domeDeploy, $domeCluster, $timeout, $state) {
 	'use strict';
 	$scope.$emit('pageTitle', {
 		title: '部署',
@@ -7,7 +7,8 @@ domeApp.controller('deployManageCtr', ['$scope', '$domeDeploy', '$domeCluster', 
 	});
 	$scope.showSelect = true;
 	$scope.isLoading = true;
-	var cluserList = [];
+	var cluserList = [],
+		timeout;
 	$scope.selectOption = {};
 	$scope.selectOption.status = {
 		ALL: true,
@@ -38,40 +39,40 @@ domeApp.controller('deployManageCtr', ['$scope', '$domeDeploy', '$domeCluster', 
 
 	$scope.deloyList = [];
 	var init = function() {
-		$domeDeploy.getDeployList().then(function(res) {
-			var thisDeploy, cpuPercent, memPercent;
-			if (res.data.result) {
-				$scope.deloyList = res.data.result;
-				for (i = 0; i < $scope.deloyList.length; i++) {
-					thisDeploy = $scope.deloyList[i];
-					cpuPercent = thisDeploy.cpuTotal > 0 ? (thisDeploy.cpuUsed / thisDeploy.cpuTotal * 100).toFixed(2) : '0.00';
-					memPercent = thisDeploy.memoryTotal > 0 ? (thisDeploy.memoryUsed / thisDeploy.memoryTotal * 100).toFixed(2) : '0.00';
-					if (thisDeploy.serviceDnsName && thisDeploy.serviceDnsName !== '') {
-						thisDeploy.dnsName = thisDeploy.serviceDnsName;
-					} else {
-						thisDeploy.dnsName = '无';
-					}
-					if (cpuPercent > memPercent) {
-						thisDeploy.compare = 'cpu';
-						thisDeploy.comparePercent = cpuPercent;
-					} else {
-						thisDeploy.compare = 'memory';
-						thisDeploy.comparePercent = memPercent;
+		if ($state.current.name == 'deployManage') {
+			$domeDeploy.getDeployList().then(function(res) {
+				var thisDeploy, cpuPercent, memPercent;
+				if (res.data.result) {
+					$scope.deloyList = res.data.result;
+					for (i = 0; i < $scope.deloyList.length; i++) {
+						thisDeploy = $scope.deloyList[i];
+						cpuPercent = thisDeploy.cpuTotal > 0 ? (thisDeploy.cpuUsed / thisDeploy.cpuTotal * 100).toFixed(2) : '0.00';
+						memPercent = thisDeploy.memoryTotal > 0 ? (thisDeploy.memoryUsed / thisDeploy.memoryTotal * 100).toFixed(2) : '0.00';
+						if (thisDeploy.serviceDnsName && thisDeploy.serviceDnsName !== '') {
+							thisDeploy.dnsName = thisDeploy.serviceDnsName;
+						} else {
+							thisDeploy.dnsName = '无';
+						}
+						if (cpuPercent > memPercent) {
+							thisDeploy.compare = 'cpu';
+							thisDeploy.comparePercent = cpuPercent;
+						} else {
+							thisDeploy.compare = 'memory';
+							thisDeploy.comparePercent = memPercent;
+						}
 					}
 				}
-			}
-		}).finally(function() {
-			$scope.isLoading = false;
-			$scope.$digest();
-		});
+			}).finally(function() {
+				$scope.isLoading = false;
+				if (timeout) {
+					$timeout.cancel(timeout);
+				}
+				timeout = $timeout(init, 4000);
+			});
+		}
 	};
 	init();
-	var interval = $interval(function() {
-		if (location.href.indexOf('deployManage') === -1) {
-			$interval.cancel(interval);
-		}
-		init();
-	}, 4000);
+
 	var getNamespace = function(clusterId) {
 		$domeCluster.getNamespace(clusterId).then(function(res) {
 			var namespaceList = res.data.result;

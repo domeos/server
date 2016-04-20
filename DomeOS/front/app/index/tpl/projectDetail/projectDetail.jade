@@ -5,12 +5,12 @@
 		a.ui-btn-delete(ng-click="deleteProject()")
 			i.icon-delete
 	tabset
-		tab(heading="基本信息" active="tabActive[0].active")
+		tab(heading="基本信息" active="tabActive[0].active" ui-sref="projectDetail.info")
 			.code-origin 代码源：
 				a(href="{{config.codeInfo.codeHttpUrl}}" target="_blank" ng-bind="config.codeInfo.codeHttpUrl")
 				span(ng-if="!config.codeInfo") 该项目没有关联代码仓库
 			.markdown(markdown projectid="projectId" branch="branch")
-		tab(heading="项目配置" active="tabActive[1].active")
+		tab(heading="项目配置" active="tabActive[1].active" ui-sref="projectDetail.config")
 			form(name="proInfoForm" ng-class="{'need-valid':needValid}" novalidate).proInfo-form
 				.pull-right.dockerfile-options
 					button.ui-btn.ui-btn-sm.ui-btn-white.ui-btn-dockerfile(ng-if="!edit" ng-click="getDockerfile()") 查看Dockerfile
@@ -31,7 +31,7 @@
 					button.ui-btn.ui-btn-md.ui-btn-bright(ng-click="checkEdit()") 取消
 					button.ui-btn.ui-btn-md.ui-btn-bright(ng-click="needValid=true;proInfoForm.$valid&&submitModify()" ng-disabled="isWaitingForModify") 保存修改
 					button.ui-btn.ui-btn-md.ui-btn-safe(ng-click="needValid=true;proInfoForm.$valid&&getDockerfile()") 预览Dockerfile
-		tab(heading="持续集成" active="tabActive[2].active")
+		tab(heading="持续集成" active="tabActive[2].active" ui-sref="projectDetail.autobuild")
 			p.tool-noinfo(ng-if="!config.codeInfo") 该项目未关联代码仓库，无法持续集成
 			.ci-con(ng-if="config.codeInfo")
 				span.ci-title 自动构建
@@ -48,7 +48,7 @@
 					input.ui-input-white(ng-model="config.autoBuildInfo.branches" ng-show="config.autoBuildInfo.other" placeholder="请输入分支名称，用逗号分隔 e.g. dev,fix-bug"  )
 			.ui-btn-options(ng-show="config.codeInfo")
 				button.ui-btn.ui-btn-md.ui-btn-bright(ng-click="modifyCI()" ng-disabled="isWaitingForModify") 保存修改
-		tab(heading="构建记录" ng-click="getBuildList()" active="tabActive[3].active")
+		tab(heading="构建记录" ng-click="getBuildList()" active="tabActive[3].active" ui-sref="projectDetail.buildlog")
 			.chose-log
 				span.chose-title 按状态筛选
 				a.txt-chose(ng-class="{'active':statusKey=='Success'}" ng-click="toggleStatus('Success')") 成功
@@ -85,7 +85,7 @@
 									a.link-safe(href="{{log.logHref}}" target="_blank" ng-click="stopPropagation($event)") 日志
 								td
 									i.icon-down.up(ng-class="{'up':$index!==currentIndex}")
-		tab(heading="项目成员" ng-hide="!hasMemberPermisson" active="tabActive[4].active")
+		tab(heading="项目成员" ng-hide="!hasMemberPermisson" active="tabActive[4].active" ui-sref="projectDetail.user")
 			div.tab-member(ng-include="'index/tpl/tplUserList/tplUserList.html'")
 script(type="text/ng-template" id="dockerfileModal.html")
 	.d-modal-header 查看Dockerfile

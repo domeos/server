@@ -7,6 +7,8 @@ import org.domeos.framework.api.biz.auth.AuthBiz;
 import org.domeos.framework.api.consolemodel.auth.GroupMember;
 import org.domeos.framework.api.consolemodel.auth.GroupMembers;
 import org.domeos.framework.api.consolemodel.auth.Namespace;
+import org.domeos.framework.api.controller.exception.ApiException;
+import org.domeos.framework.api.controller.exception.PermitException;
 import org.domeos.framework.api.model.auth.Group;
 import org.domeos.framework.api.model.auth.User;
 import org.domeos.framework.api.model.auth.UserGroupMap;
@@ -56,9 +58,7 @@ public class UserGroupServiceImpl implements UserGroupService {
 
     @Override
     public HttpResponseTemp<?> addGroupMember(int userId, UserGroupMap userGroup) {
-        if (!AuthUtil.groupVerify(userId, userGroup.getGroupId(), OperationType.ADDGROUPMEMBER, userGroup.getUserId())) {
-            return ResultStat.FORBIDDEN.wrap(null);
-        }
+        AuthUtil.groupVerify(userId, userGroup.getGroupId(), OperationType.ADDGROUPMEMBER, userGroup.getUserId());
         int exist = authBiz.userExistInGroup(userGroup);
         if (exist != 0) {
             authBiz.modifyUserGroup(userGroup);
@@ -71,15 +71,12 @@ public class UserGroupServiceImpl implements UserGroupService {
     @Override
     public HttpResponseTemp<?> addGroupMembers(int userId, GroupMembers members) {
         if (members == null) {
-            return ResultStat.FORBIDDEN.wrap("Group is null");
+            throw new PermitException("group is null");
         }
-        if (!AuthUtil.groupVerify(userId, members.getGroupId(),
-                OperationType.ADDGROUPMEMBER, -1)) {
-            return ResultStat.FORBIDDEN.wrap(null);
-        }
+        AuthUtil.groupVerify(userId, members.getGroupId(), OperationType.ADDGROUPMEMBER, -1);
         String membersLegalityInfo = members.checkLegality();
         if (!StringUtils.isBlank(membersLegalityInfo)) {
-            return ResultStat.GROUP_MEMBER_FAILED.wrap(membersLegalityInfo);
+            throw ApiException.wrapMessage(ResultStat.GROUP_MEMBER_FAILED, membersLegalityInfo);
         }
         for (UserGroupMap userGroup : members.getMembers()) {
             userGroup.setGroupId(members.getGroupId());
@@ -92,22 +89,16 @@ public class UserGroupServiceImpl implements UserGroupService {
     @Override
     public HttpResponseTemp<?> deleteGroupMember(int userId, UserGroupMap userGroup) {
         if (userGroup == null) {
-            return ResultStat.FORBIDDEN.wrap("userGroup is null");
+            throw new PermitException("userGroup is null");
         }
-        if (!AuthUtil.groupVerify(userId, userGroup.getGroupId(),
-                OperationType.DELETEGROUPMEMBER, userGroup.getUserId())) {
-            return ResultStat.FORBIDDEN.wrap(null);
-        }
+        AuthUtil.groupVerify(userId, userGroup.getGroupId(), OperationType.DELETEGROUPMEMBER, userGroup.getUserId());
         authBiz.deleteUserGroup(userGroup);
         return ResultStat.OK.wrap(null);
     }
 
     @Override
     public HttpResponseTemp<?> listGroupMember(int userId, int groupId) {
-        if (!AuthUtil.groupVerify(userId, groupId,
-                OperationType.LISTGROUPMEMBER, -1)) {
-            return ResultStat.FORBIDDEN.wrap(null);
-        }
+        AuthUtil.groupVerify(userId, groupId, OperationType.LISTGROUPMEMBER, -1);
         List<UserGroupMap> userGroups = authBiz.getAllUsersInGroup(groupId);
         List<GroupMember> res = null;
         if (userGroups != null) {
@@ -125,7 +116,7 @@ public class UserGroupServiceImpl implements UserGroupService {
     @Override
     public HttpResponseTemp<?> getNamespace(User user) {
         if (user == null) {
-            return ResultStat.NAMESPACE_FAILED.wrap(null);
+            throw ApiException.wrapResultStat(ResultStat.NAMESPACE_FAILED);
         }
         List<Integer> groupIds;
         if (AuthUtil.isAdmin(user.getId())) {

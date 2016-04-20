@@ -1,7 +1,7 @@
 .mirror-custom.mod-deploy
 	loading(ng-if="isLoading")
 	tabset.mod-tab
-		tab(heading="定制镜像")
+		tab(heading="定制镜像"  active="tabActive[0].active" ui-sref="mirrorCustom")
 			ul.com-list-info(ng-form name="mirrorInfoForm" ng-class="{'need-valid':needValid}" novalidate="novalidate")
 				li.has-border
 					span.info-name 定制类型
@@ -163,7 +163,7 @@
 				span.com-bottom-option-con
 					button.ui-btn.ui-btn-md.ui-btn-bright(ng-click="needValid=true;mirrorInfoForm.$valid&&creatBuild()") 开始构建
 					span.txt-error(ng-if="needValid&&mirrorInfoForm.$invalid") 存在不合法数据，请修改后提交！
-		tab(heading="定制记录" ng-click="selectImgList()")
+		tab(heading="定制记录" ng-click="selectImgList()" active="tabActive[1].active" ui-sref="mirrorCustom.log")
 			.chose-row
 				.chose-item
 					span.chose-title 状态筛选

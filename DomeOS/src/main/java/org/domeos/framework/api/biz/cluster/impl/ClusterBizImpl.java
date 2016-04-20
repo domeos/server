@@ -5,7 +5,6 @@ import org.domeos.framework.api.biz.cluster.ClusterBiz;
 import org.domeos.framework.api.mapper.cluster.ClusterMapper;
 import org.domeos.framework.api.model.cluster.Cluster;
 import org.domeos.framework.engine.exception.DaoException;
-import org.domeos.framework.engine.model.RowMapperDao;
 import org.domeos.global.GlobalConstant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,7 +22,7 @@ public class ClusterBizImpl extends BaseBizImpl implements ClusterBiz {
 
     @Override
     public boolean hasCluster(String name) {
-        return (super.getByName(GlobalConstant.clusterTableName, name, Cluster.class) != null);
+        return (super.getByName(GlobalConstant.CLUSTER_TABLE_NAME, name, Cluster.class) != null);
     }
 
     @Override
@@ -33,17 +32,17 @@ public class ClusterBizImpl extends BaseBizImpl implements ClusterBiz {
 
     @Override
     public Cluster getClusterById(int id) {
-        return super.getById(GlobalConstant.clusterTableName, id, Cluster.class);
+        return super.getById(GlobalConstant.CLUSTER_TABLE_NAME, id, Cluster.class);
     }
 
     @Override
     public Cluster getClusterByName(String name) {
-        return super.getByName(GlobalConstant.clusterTableName, name, Cluster.class);
+        return super.getByName(GlobalConstant.CLUSTER_TABLE_NAME, name, Cluster.class);
     }
 
     @Override
     public List<Cluster> listClusters() {
-        return super.getWholeTable(GlobalConstant.clusterTableName, Cluster.class);
+        return super.getWholeTable(GlobalConstant.CLUSTER_TABLE_NAME, Cluster.class);
     }
 
     @Override

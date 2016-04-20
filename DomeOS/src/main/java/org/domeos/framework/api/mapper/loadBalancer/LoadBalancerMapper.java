@@ -16,26 +16,26 @@ import java.util.List;
 @Repository
 public interface LoadBalancerMapper {
 
-    @Select("select " + RowMapper.basicColumns + " from " + GlobalConstant.LoadBalancerTable +
-            "  where id in (select loadBalancerId from " + GlobalConstant.LoadBalancerDeployMapTable +
+    @Select("select " + RowMapper.BASIC_COLUMNS + " from " + GlobalConstant.LOADBALANCER_TABLE_NAME +
+            "  where id in (select loadBalancerId from " + GlobalConstant.LOADBALANCERDEPLOYMAP_TABLE_NAME +
             " where deployId = #{deployId} and removed = 0)")
     List<RowMapperDao> getLBListByDeploy(@Param("deployId") int deployId);
 
-    @Insert("INSERT INTO " + GlobalConstant.LoadBalancerTable +
+    @Insert("INSERT INTO " + GlobalConstant.LOADBALANCER_TABLE_NAME +
             " (name, description, state, createTime, removeTime, removed, data) values (" +
             " #{item.name}, #{item.description}, #{item.state}, #{item.createTime}, #{item.removeTime}," +
             " #{item.removed}, #{data})")
     @Options(useGeneratedKeys = true, keyProperty = "item.id", keyColumn = "id")
     int insertLoadBalancer(@Param("item") LoadBalancer item, @Param("data") String data);
 
-    @Insert("INSERT INTO " + GlobalConstant.LoadBalancerDeployMapTable +
+    @Insert("INSERT INTO " + GlobalConstant.LOADBALANCERDEPLOYMAP_TABLE_NAME +
             " (name, description, state, createTime, removeTime, removed, data, deployId, loadBalancerId) values (" +
             " #{item.name}, #{item.description}, #{item.state}, #{item.createTime}, #{item.removeTime}, " +
             " #{item.removed}, #{data}, #{item.deployId}, #{item.loadBalancerId})")
     @Options(useGeneratedKeys = true, keyProperty = "item.id", keyColumn = "id")
     int insertIndexPair(@Param("item") DeployLoadBalancerPair item, @Param("data") String data);
 
-    @Update("update " + GlobalConstant.LoadBalancerDeployMapTable + " set removed = 1, removeTime=${removeTime} " +
+    @Update("update " + GlobalConstant.LOADBALANCERDEPLOYMAP_TABLE_NAME + " set removed = 1, removeTime=${removeTime} " +
             "where deployId = ${deployId} AND loadBalancerId = ${lbid}")
     void removeIndexPair(@Param("deployId") int deployId, @Param("lbid") int lbid, @Param("removeTime") long removeTime);
 

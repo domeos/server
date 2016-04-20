@@ -255,6 +255,7 @@ public final class DeploymentDraft {
         deployment.setStateful(isStateful());
         deployment.setNetworkMode(getNetworkMode());
         deployment.setCreateTime(System.currentTimeMillis());
+        deployment.setExposePortNum(getExposePortNum());
         deployment.setHealthChecker(getHealthCheckerDraft());
         return deployment;
     }

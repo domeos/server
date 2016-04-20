@@ -11,5 +11,5 @@ public enum DeployOperation {
     START,
     STOP,
     DELETE,
-    KUBENETES
+    KUBERNETES
 }

@@ -14,8 +14,23 @@ domeApp.controller('clusterDetailCtr', ['$scope', '$domeCluster', '$stateParams'
 		namespace: ''
 	};
 	$scope.isEdit = false;
+
+	$scope.tabActive = [{
+		active: false
+	}, {
+		active: false
+	}, {
+		active: false
+	}, {
+		active: false
+	}];
+
 	$scope.$on('memberPermisson', function(event, hasPermisson) {
 		$scope.hasMemberPermisson = hasPermisson;
+		if (!hasPermisson && stateInfo.indexOf('users') !== -1) {
+			$state.go('clusterDetail.hostlist');
+			$scope.tabActive[0].active = true;
+		}
 	});
 
 	$domeCluster.getNodeList(clusterId).then(function(res) {
@@ -113,4 +128,16 @@ domeApp.controller('clusterDetailCtr', ['$scope', '$domeCluster', '$stateParams'
 			$scope.isWaitingModify = false;
 		});
 	};
+
+	var stateInfo = $state.$current.name;
+	if (stateInfo.indexOf('info') !== -1) {
+		$scope.tabActive[1].active = true;
+	} else if (stateInfo.indexOf('namespace') !== -1) {
+		$scope.tabActive[2].active = true;
+		$scope.getNamespace();
+	} else if (stateInfo.indexOf('users') !== -1) {
+		$scope.tabActive[3].active = true;
+	} else {
+		$scope.tabActive[0].active = true;
+	}
 }]);

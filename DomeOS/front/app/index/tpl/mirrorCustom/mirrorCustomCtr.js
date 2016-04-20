@@ -1,4 +1,4 @@
-domeApp.controller('mirrorCustomCtr', ['$scope', '$domeImage', '$domePublic', '$modal', '$q', '$location', function($scope, $domeImage, $domePublic, $modal, $q, $location) {
+domeApp.controller('mirrorCustomCtr', ['$scope', '$domeImage', '$domePublic', '$modal', '$q', '$location', '$state', function($scope, $domeImage, $domePublic, $modal, $q, $location, $state) {
 	$scope.$emit('pageTitle', {
 		title: '镜像定制',
 		descrition: '在这里您可以定制满足个性化需求的镜像。',
@@ -37,6 +37,11 @@ domeApp.controller('mirrorCustomCtr', ['$scope', '$domeImage', '$domePublic', '$
 		}];
 
 	};
+	$scope.tabActive = [{
+		active: false
+	}, {
+		active: false
+	}];
 	var startBuildRequest = function(imageId) {
 		$domeImage.startBuild(imageId).then(function(res) {
 			if (res.data.resultCode === 200) {
@@ -261,7 +266,7 @@ domeApp.controller('mirrorCustomCtr', ['$scope', '$domeImage', '$domePublic', '$
 
 	//定制记录
 	$scope.customList = [];
-	var init = function() {
+	$scope.selectImgList = function() {
 		var requestUrl = $location.host(),
 			logUrl;
 		if ($location.port()) {
@@ -287,9 +292,6 @@ domeApp.controller('mirrorCustomCtr', ['$scope', '$domeImage', '$domePublic', '$
 		}).finally(function() {
 			$scope.isLoading = false;
 		});
-	};
-	$scope.selectImgList = function() {
-		init();
 	};
 	$scope.selectOption = {
 		state: {
@@ -337,20 +339,11 @@ domeApp.controller('mirrorCustomCtr', ['$scope', '$domeImage', '$domePublic', '$
 		$scope.selectOption.isshowmore = !$scope.selectOption.isshowmore;
 	};
 
-	$scope.getBuildLog = function(imgId, state) {
-		var modalInstance = $modal.open({
-			animation: true,
-			templateUrl: 'mirrorDairyModal.html',
-			controller: 'mirrorDairyModalCtr',
-			size: 'lg',
-			resolve: {
-				params: function() {
-					return {
-						imageId: imgId,
-						state: state
-					};
-				}
-			}
-		});
-	};
+	var stateInfo = $state.$current.name;
+	if (stateInfo.indexOf('log') !== -1) {
+		$scope.tabActive[1].active = true;
+		$scope.selectImgList();
+	} else {
+		$scope.tabActive[0].active = true;
+	}
 }]);

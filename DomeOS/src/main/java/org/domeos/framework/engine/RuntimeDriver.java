@@ -2,7 +2,7 @@ package org.domeos.framework.engine;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.domeos.framework.api.biz.deployment.DeploymentStatusBiz;
-import org.domeos.framework.api.biz.deployment.impl.DeployEventBiz;
+import org.domeos.framework.api.biz.deployment.DeployEventBiz;
 import org.domeos.framework.api.model.LoadBalancer.LoadBalancer;
 import org.domeos.framework.api.model.auth.User;
 import org.domeos.framework.api.model.cluster.Cluster;
