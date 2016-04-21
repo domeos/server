@@ -1,6 +1,6 @@
 
 <div class="mod-monitor monitor-manage">
-  <loading ng-if="isLoading"></loading>
+  <loading ng-if="loadingsIns.isLoading"></loading>
   <div class="monitor-options">
     <div class="monitor-option"><span class="option-title">集群</span>
       <div select-con="select-con" class="com-select-con">
@@ -21,7 +21,7 @@
     </div>
     <div class="monitor-option"><span class="option-title">环境</span>
       <div select-con="select-con" class="com-select-con">
-        <button ng-cloak="ng-cloak" class="ui-btn ui-btn-white ui-btn-select">{{currentEnv.text}}<i class="icon-down"></i></button>
+        <button ng-cloak="ng-cloak" ng-disabled="loadingsIns.loadingItems.deploy" class="ui-btn ui-btn-white ui-btn-select">{{currentEnv.text}}<i class="icon-down"></i></button>
         <ul class="select-list">
           <li class="select-item"><a ng-click="toggleEnv('生产')">生产 </a></li>
           <li class="select-item"><a ng-click="toggleEnv('测试')">测试</a></li>

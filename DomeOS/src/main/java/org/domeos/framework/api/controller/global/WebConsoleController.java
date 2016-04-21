@@ -3,6 +3,7 @@ package org.domeos.framework.api.controller.global;
 import org.domeos.basemodel.HttpResponseTemp;
 import org.domeos.framework.api.controller.ApiController;
 import org.domeos.framework.api.model.global.WebSsh;
+import org.domeos.framework.api.model.resource.related.ResourceType;
 import org.domeos.framework.api.service.global.WebConsoleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -25,9 +26,11 @@ public class WebConsoleController extends ApiController {
     @RequestMapping(value = "console", method = RequestMethod.GET)
     public void getWebConsole(@RequestParam(value="host", required=true) String host,
                               @RequestParam(value="container", required=false) String container,
+                              @RequestParam(value="type", required=true) ResourceType type,
+                              @RequestParam(value="id", required=true) int id,
                               HttpServletRequest request,
                               HttpServletResponse response) {
-        webConsoleService.getWebConsole(host, container, request, response);
+        webConsoleService.getWebConsole(host, container, type, id, request, response);
     }
 
     @ResponseBody

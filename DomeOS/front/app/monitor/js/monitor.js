@@ -198,7 +198,7 @@ monitorApp.service('$monitor', ['$http', '$q', '$util', '$filter', function($htt
 		};
 		_monitorInfo = {
 			monitorItem: [],
-			monitorCondition: {}
+			monitorType: ''
 		};
 		_tableInfo = {
 			tableLength: 6,
@@ -370,7 +370,7 @@ monitorApp.service('$monitor', ['$http', '$q', '$util', '$filter', function($htt
 					text: value.average
 				};
 			}
-			if (_monitorInfo.monitorCondition.targetType == 'container') {
+			if (_monitorInfo.monitorType == 'container') {
 				key = key.substring(0, 12);
 			}
 			tableResult[0][key] = value.min;
@@ -404,7 +404,7 @@ monitorApp.service('$monitor', ['$http', '$q', '$util', '$filter', function($htt
 				};
 
 				for (j = 0; j < _monitorInfo.monitorItem.length; j++) {
-					var keyName = _monitorInfo.monitorCondition.targetType === 'container' ? _monitorInfo.monitorItem[j].substring(0, 12) : _monitorInfo.monitorItem[j];
+					var keyName = _monitorInfo.monitorType === 'container' ? _monitorInfo.monitorItem[j].substring(0, 12) : _monitorInfo.monitorItem[j];
 					if (unit == '%') {
 						result[keyName] = {
 							text: toDecimal(counter[i][_monitorInfo.monitorItem[j]], 2, '%')
@@ -649,9 +649,9 @@ monitorApp.service('$monitor', ['$http', '$q', '$util', '$filter', function($htt
 		_tableInfo.tableHead = tableHead;
 
 		_monitorInfo.monitorItem = monitorItem;
-		_monitorInfo.monitorCondition = monitorCondition;
+		_monitorInfo.monitorType = monitorResult.targetType;
 
-		if (monitorCondition.targetType == 'node') {
+		if (monitorResult.targetType == 'node') {
 			// 主机：cpu占用率数据
 			if (monitorResult.counterResults['cpu.busy']) {
 				currentCounterData = monitorResult.counterResults['cpu.busy'];
@@ -1060,7 +1060,7 @@ monitorApp.service('$monitor', ['$http', '$q', '$util', '$filter', function($htt
 		return _monitorCountResult;
 	};
 	self.getMonitor = function(monitorCondition) {
-		return $http.post('/api/monitor/data', monitorCondition);
+		return $http.get('/api/monitor/data/' + monitorCondition.targetId + '?start=' + monitorCondition.start + '&end=' + monitorCondition.end + '&dataSpec=' + monitorCondition.dataSpec + '&cid=' + monitorCondition.cid);
 	};
 }]);
 monitorApp.controller('monitorCtr', ['$scope', '$http', '$util', '$monitor', '$q', '$timeout', function($scope, $http, $util, $monitor, $q, $timeout) {
@@ -1078,6 +1078,17 @@ monitorApp.controller('monitorCtr', ['$scope', '$http', '$util', '$monitor', '$q
 	}];
 	var targetInfoId = $util.getQueryString('id'),
 		clusterId = $util.getQueryString('cid');
+	// $scope.monitorType = function() {
+	// 	var type = $util.getQueryString('cid');
+	// 	if (type == 'node') {
+	// 		return '主机';
+	// 	} else if (type == 'pod') {
+	// 		return '实例';
+	// 	} else if (type == 'container') {
+	// 		return '容器';
+	// 	}
+	// 	return '';
+	// }();
 	$scope.clusterName = $util.getQueryString('cname');
 	$scope.singleItem = false;
 	$scope.monitorItem = [];
@@ -1091,7 +1102,7 @@ monitorApp.controller('monitorCtr', ['$scope', '$http', '$util', '$monitor', '$q
 		if ($scope.targetInfos) {
 			deferred.resolve($scope.targetInfos);
 		} else {
-			$http.get('/api/monitor/target/' + targetInfoId).then(function(res) {
+			$http.get('/api/monitor/target/' + targetInfoId + '?cid=' + clusterId).then(function(res) {
 				$scope.targetInfos = res.data.result;
 				$scope.monitorItem = [];
 				var monitorTargetInfos = $scope.targetInfos.targetInfos,
@@ -1205,13 +1216,13 @@ monitorApp.controller('monitorCtr', ['$scope', '$http', '$util', '$monitor', '$q
 			$timeout.cancel(timeout);
 		}
 
-		getTargetInfo().then(function(targetInfo) {
+		getTargetInfo().then(function() {
 			var monitorCondition = {
-				startTime: $scope.date.startDate,
-				endTime: $scope.date.endDate,
+				targetId: targetInfoId,
+				start: $scope.date.startDate,
+				end: $scope.date.endDate,
 				dataSpec: $scope.currentSampleType.type,
-				targetType: targetInfo.targetType,
-				targetInfos: targetInfo.targetInfos
+				cid: clusterId
 			};
 			$monitor.getMonitor(monitorCondition).then(function(res) {
 				var data = res.data.result || {};
@@ -1221,7 +1232,7 @@ monitorApp.controller('monitorCtr', ['$scope', '$http', '$util', '$monitor', '$q
 				$scope.intervalTime = data.interval * 1000;
 				$scope.monitorsInfo = null;
 				$scope.monitorsInfo = angular.copy($monitor.getMonitorsArr(monitorCondition, $scope.monitorItem, data, !$scope.isRealTime));
-				// 刷新时恢复到原来选择的项
+					// 刷新时恢复到原来选择的项
 				recoverSelectedItem('diskUsedMult');
 				recoverSelectedItem('diskReadMult');
 				recoverSelectedItem('diskWriteMult');

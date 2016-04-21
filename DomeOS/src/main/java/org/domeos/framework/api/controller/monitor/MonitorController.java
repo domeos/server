@@ -1,7 +1,6 @@
 package org.domeos.framework.api.controller.monitor;
 
 import org.domeos.framework.api.consolemodel.monitor.TargetRequest;
-import org.domeos.framework.api.consolemodel.monitor.MonitorDataRequest;
 import org.domeos.framework.api.service.monitor.MonitorService;
 import org.domeos.basemodel.HttpResponseTemp;
 import org.domeos.framework.api.controller.ApiController;
@@ -27,19 +26,25 @@ public class MonitorController extends ApiController {
 
     @ResponseBody
     @RequestMapping(value = "/monitor/target/{targetId}", method = RequestMethod.GET)
-    public HttpResponseTemp<?> fetchTargets(@PathVariable long targetId) {
-        return monitorService.fetchTargets(targetId);
+    public HttpResponseTemp<?> fetchTargets(@PathVariable long targetId,
+                                            @RequestParam(value = "cid", required = true) int cid) {
+        return monitorService.fetchTargets(targetId, cid);
     }
 
     @ResponseBody
-    @RequestMapping(value = "/monitor/counter", method = RequestMethod.POST)
-    public HttpResponseTemp<?> retrieveCounters(@RequestBody TargetRequest targetRequest) {
-        return monitorService.retrieveCounters(targetRequest);
+    @RequestMapping(value = "/monitor/counter/{targetId}", method = RequestMethod.GET)
+    public HttpResponseTemp<?> retrieveCounters(@PathVariable long targetId,
+                                                @RequestParam(value = "cid", required = true) int cid) {
+        return monitorService.retrieveCounters(targetId, cid);
     }
 
     @ResponseBody
-    @RequestMapping(value = "/monitor/data", method = RequestMethod.POST)
-    public HttpResponseTemp<?> getMonitorData(@RequestBody MonitorDataRequest monitorDataRequest) {
-        return monitorService.getMonitorData(monitorDataRequest);
+    @RequestMapping(value = "/monitor/data/{targetId}", method = RequestMethod.GET)
+    public HttpResponseTemp<?> getMonitorData(@PathVariable long targetId,
+                                              @RequestParam(value = "start", required = true) long start,
+                                              @RequestParam(value = "end", required = true) long end,
+                                              @RequestParam(value = "dataSpec", defaultValue = "AVERAGE") String dataSpec,
+                                              @RequestParam(value = "cid", required = true) int cid) {
+        return monitorService.getMonitorData(targetId, start, end, dataSpec, cid);
     }
 }

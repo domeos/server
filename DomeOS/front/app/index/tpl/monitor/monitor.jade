@@ -1,5 +1,5 @@
 .mod-monitor.monitor-manage
-	loading(ng-if="isLoading")
+	loading(ng-if="loadingsIns.isLoading")
 	.monitor-options
 		.monitor-option
 			span.option-title 集群
@@ -22,7 +22,7 @@
 		.monitor-option
 			span.option-title 环境
 			.com-select-con(select-con)
-				button.ui-btn.ui-btn-white.ui-btn-select(ng-cloak) {{currentEnv.text}}
+				button.ui-btn.ui-btn-white.ui-btn-select(ng-cloak ng-disabled="loadingsIns.loadingItems.deploy") {{currentEnv.text}}
 					i.icon-down
 				ul.select-list
 					li.select-item

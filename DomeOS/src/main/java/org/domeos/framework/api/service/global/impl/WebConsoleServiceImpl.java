@@ -9,6 +9,8 @@ import org.domeos.framework.api.biz.global.GlobalBiz;
 import org.domeos.framework.api.controller.exception.ApiException;
 import org.domeos.framework.api.controller.exception.PermitException;
 import org.domeos.framework.api.model.global.WebSsh;
+import org.domeos.framework.api.model.operation.OperationType;
+import org.domeos.framework.api.model.resource.related.ResourceType;
 import org.domeos.framework.api.service.global.WebConsoleService;
 import org.domeos.framework.engine.AuthUtil;
 import org.domeos.global.CurrentThreadInfo;
@@ -49,8 +51,9 @@ public class WebConsoleServiceImpl implements WebConsoleService {
     }
 
     @Override
-    public void getWebConsole(String host, String container, HttpServletRequest request, HttpServletResponse response) {
-
+    public void getWebConsole(String host, String container, ResourceType type, int id, HttpServletRequest request, HttpServletResponse response) {
+        int userId = CurrentThreadInfo.getUserId();
+        AuthUtil.verify(userId, id, type, OperationType.MODIFY);
         try {
             String url = getRequestUrl(host, container);
             if (StringUtils.isBlank(url)) {

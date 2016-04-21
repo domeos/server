@@ -22,7 +22,11 @@ import org.domeos.framework.api.model.monitor.TargetInfo;
 import org.domeos.framework.api.model.monitor.falcon.EndpointCounter;
 import org.domeos.framework.api.model.monitor.falcon.GraphHistoryRequest;
 import org.domeos.framework.api.model.monitor.falcon.GraphHistoryResponse;
+import org.domeos.framework.api.model.operation.OperationType;
+import org.domeos.framework.api.model.resource.related.ResourceType;
 import org.domeos.framework.api.service.monitor.MonitorService;
+import org.domeos.framework.engine.AuthUtil;
+import org.domeos.global.CurrentThreadInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -56,6 +60,8 @@ public class MonitorServiceImpl implements MonitorService {
             throw ApiException.wrapMessage(ResultStat.TARGET_REQUEST_NOT_LEGAL, targetRequest.checkLegality());
         }
 
+        AuthUtil.verify(CurrentThreadInfo.getUserId(), targetRequest.getClusterId(), ResourceType.CLUSTER, OperationType.GET);
+
         ObjectMapper mapper = new ObjectMapper();
         String targetRequestJson;
         try {
@@ -76,7 +82,9 @@ public class MonitorServiceImpl implements MonitorService {
     }
 
     @Override
-    public HttpResponseTemp<?> fetchTargets(long targetId) {
+    public HttpResponseTemp<?> fetchTargets(long targetId, int cid) {
+
+        AuthUtil.verify(CurrentThreadInfo.getUserId(), cid, ResourceType.CLUSTER, OperationType.GET);
 
         ObjectMapper mapper = new ObjectMapper();
         String targetRequestJson = monitorBiz.getMonitorTargetById(targetId);
@@ -96,10 +104,13 @@ public class MonitorServiceImpl implements MonitorService {
     }
 
     @Override
-    public HttpResponseTemp<?> retrieveCounters(TargetRequest targetRequest) {
+    public HttpResponseTemp<?> retrieveCounters(long targetId, int cid) {
 
+        AuthUtil.verify(CurrentThreadInfo.getUserId(), cid, ResourceType.CLUSTER, OperationType.GET);
+
+        TargetRequest targetRequest = fetchTargetRequest(targetId);
         if (targetRequest == null) {
-            throw ApiException.wrapMessage(ResultStat.TARGET_REQUEST_NOT_LEGAL, "target request info is null");
+            throw ApiException.wrapMessage(ResultStat.TARGET_REQUEST_NOT_LEGAL, "target request info not exists");
         }
         if (!StringUtils.isBlank(targetRequest.checkLegality())) {
             throw ApiException.wrapMessage(ResultStat.TARGET_REQUEST_NOT_LEGAL, targetRequest.checkLegality());
@@ -115,11 +126,21 @@ public class MonitorServiceImpl implements MonitorService {
 
 
     @Override
-    public HttpResponseTemp<?> getMonitorData(MonitorDataRequest monitorDataRequest) {
+    public HttpResponseTemp<?> getMonitorData(long targetId, long startTime, long endTime, String dataSpec, int cid) {
 
-        if (monitorDataRequest == null) {
-            throw ApiException.wrapMessage(ResultStat.MONITOR_DATA_REQUEST_NOT_LEGAL, "monitor data request info is null");
+        AuthUtil.verify(CurrentThreadInfo.getUserId(), cid, ResourceType.CLUSTER, OperationType.GET);
+
+        TargetRequest targetRequest = fetchTargetRequest(targetId);
+        if (targetRequest == null) {
+            throw ApiException.wrapMessage(ResultStat.MONITOR_DATA_REQUEST_NOT_LEGAL, "target request info not exists");
         }
+        MonitorDataRequest monitorDataRequest = new MonitorDataRequest(
+                startTime,
+                endTime,
+                dataSpec,
+                targetRequest.getTargetType(),
+                targetRequest.getTargetInfos());
+
         if (!StringUtils.isBlank(monitorDataRequest.checkLegality())) {
             throw ApiException.wrapMessage(ResultStat.MONITOR_DATA_REQUEST_NOT_LEGAL, monitorDataRequest.checkLegality());
         }
@@ -449,4 +470,25 @@ public class MonitorServiceImpl implements MonitorService {
         }
         return containerPodMap;
     }
+
+
+    private TargetRequest fetchTargetRequest(long targetId) {
+
+        ObjectMapper mapper = new ObjectMapper();
+        String targetRequestJson = monitorBiz.getMonitorTargetById(targetId);
+        if (StringUtils.isBlank(targetRequestJson)) {
+            return null;
+        }
+
+        TargetRequest targetRequest;
+        try {
+            targetRequest = mapper.readValue(targetRequestJson, TargetRequest.class);
+        } catch (IOException e) {
+            logger.error("error processing json!", e);
+            return null;
+        }
+
+        return targetRequest;
+    }
+
 }

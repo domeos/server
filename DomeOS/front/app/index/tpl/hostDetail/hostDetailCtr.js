@@ -220,11 +220,13 @@ domeApp.controller('hostDetailCtr', ['$scope', '$stateParams', '$domeCluster', '
 			controller: 'selectContainerModalCtr',
 			size: 'md',
 			resolve: {
-				containerList: function() {
-					return $scope.instanceList[index].containers;
-				},
-				hostIp: function() {
-					return $scope.instanceList[index].hostIp;
+				info: function() {
+					return {
+						containerList: $scope.instanceList[index].containers,
+						hostIp: $scope.instanceList[index].hostIp,
+						resourceId: clusterId,
+						type: 'CLUSTER'
+					};
 				}
 			}
 		});

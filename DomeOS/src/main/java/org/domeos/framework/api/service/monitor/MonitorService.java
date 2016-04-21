@@ -1,7 +1,6 @@
 package org.domeos.framework.api.service.monitor;
 
 import org.domeos.framework.api.consolemodel.monitor.TargetRequest;
-import org.domeos.framework.api.consolemodel.monitor.MonitorDataRequest;
 import org.domeos.framework.api.model.monitor.falcon.GraphHistoryRequest;
 import org.domeos.framework.api.model.monitor.falcon.GraphHistoryResponse;
 import org.domeos.basemodel.HttpResponseTemp;
@@ -24,23 +23,29 @@ public interface MonitorService {
     /**
      *
      * @param targetId saved in database
+     * @param cid cluster id
      * @return targetRequest corresponding to specified targetId
      */
-    HttpResponseTemp<?> fetchTargets(long targetId);
+    HttpResponseTemp<?> fetchTargets(long targetId, int cid);
 
     /**
      *
-     * @param targetRequest defines targetType(node/pod/container) and targetInfos
+     * @param targetId defines targetType(node/pod/container) and targetInfos
+     * @param cid cluster id
      * @return CounterItems (cpuCounters/memCounters/diskCounters/networkCounters)
      */
-    HttpResponseTemp<?> retrieveCounters(TargetRequest targetRequest);
+    HttpResponseTemp<?> retrieveCounters(long targetId, int cid);
 
     /**
      *
-     * @param monitorDataRequest defines monitor data request info
-     * @return monitorResult
+     * @param targetId
+     * @param startTime
+     * @param endTime
+     * @param dataSpec
+     * @param cid
+     * @return
      */
-    HttpResponseTemp<?> getMonitorData(MonitorDataRequest monitorDataRequest);
+    HttpResponseTemp<?> getMonitorData(long targetId, long startTime, long endTime, String dataSpec, int cid);
 
     /**
      *

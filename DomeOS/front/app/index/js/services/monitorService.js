@@ -14,11 +14,13 @@ domeApp.factory('$domeMonitor', ['$http', '$q', '$util', function($http, $q, $ut
 		return $http.get('/api/monitor/target/' + targetId);
 	};
 
-	var getMonitorData = function(data) {
-		return $http.post('/api/monitor/data', angular.toJson(data));
+	var getMonitorData = function(targetId, start, end, dataSpec, clusterId) {
+		return $http.get('/api/monitor/data/' + targetId + '?start=' + start + '&end=' + end + '&dataSpec=' + dataSpec + '&cid=' + clusterId);
+
 	};
 	var toMonitorPage = function(clusterId, clusterName, monitorTargetInfo) {
 		var winRef = window.open('', '_blank');
+		var monitorType = monitorTargetInfo.targetType;
 		storeMonitorTarget(monitorTargetInfo).then(function(res) {
 			var id = res.data.result;
 			if (id === undefined) {
@@ -26,19 +28,12 @@ domeApp.factory('$domeMonitor', ['$http', '$q', '$util', function($http, $q, $ut
 				return;
 			}
 			setTimeout(function() {
-				winRef.location = '/monitor/monitor.html?cid=' + clusterId + '&cname=' + clusterName + '&id=' + id;
+				winRef.location = '/monitor/monitor.html?cid=' + clusterId + '&cname=' + clusterName + '&id=' + id + '&type=' + monitorType;
 			}, 0);
 		});
 	};
-	var getMonitorStatistical = function(monitorType, monitorInfo, monitorItems) {
+	var getMonitorStatistical = function(monitorType, clusterId, monitorInfo, monitorItems) {
 		var defered = $q.defer();
-		var monitorCondition = {
-			startTime: new Date().getTime() - 300000,
-			endTime: new Date().getTime(),
-			dataSpec: 'AVERAGE',
-			targetType: monitorType,
-			targetInfos: monitorInfo
-		};
 
 		function toDecimal(data, number, unitShow) {
 			if (data === null || isNaN(data)) return '——';
@@ -57,8 +52,13 @@ domeApp.factory('$domeMonitor', ['$http', '$q', '$util', function($http, $q, $ut
 			}
 			return parseFloat(data.toFixed(2));
 		}
-
-		getMonitorData(monitorCondition).then(function(res) {
+		storeMonitorTarget({
+			clusterId: clusterId,
+			targetType: monitorType,
+			targetInfos: monitorInfo
+		}).then(function(res) {
+			return getMonitorData(res.data.result, new Date().getTime() - 300000, new Date().getTime(), 'AVERAGE', clusterId);
+		}).then(function(res) {
 			var monitorData = res.data.result;
 			var cpuBusy, memPercet,
 				// 监控数据： {node1:{diskUsedData:[{item:'/var',value:20},{item:'/opt',value:10}],maxDiskUsed:20}}

@@ -9,15 +9,25 @@ import java.util.List;
  */
 public class TargetRequest {
 
+    private int clusterId;
     private String targetType;
     private List<TargetInfo> targetInfos;
 
     public TargetRequest() {
     }
 
-    public TargetRequest(String targetType, List<TargetInfo> targetInfos) {
+    public TargetRequest(int clusterId, String targetType, List<TargetInfo> targetInfos) {
+        this.clusterId = clusterId;
         this.targetType = targetType;
         this.targetInfos = targetInfos;
+    }
+
+    public int getClusterId() {
+        return clusterId;
+    }
+
+    public void setClusterId(int clusterId) {
+        this.clusterId = clusterId;
     }
 
     public String getTargetType() {

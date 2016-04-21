@@ -4,6 +4,7 @@ import org.domeos.client.kubernetesclient.definitions.v1.Event;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.TimeZone;
 
 /**
  * Created by xupeng on 16-4-6.
@@ -76,6 +77,7 @@ public class EventInfo {
 
     public static EventInfo fromK8sEvent(Event event) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
         EventInfo eventInfo = new EventInfo();
         eventInfo.namespace = event.getMetadata().getNamespace();
         eventInfo.eventKind = event.getInvolvedObject().getKind();

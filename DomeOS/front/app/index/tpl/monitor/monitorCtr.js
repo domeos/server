@@ -5,7 +5,7 @@ domeApp.controller('monitorCtr', ['$scope', '$domeCluster', '$domeDeploy', '$dom
 		descrition: '在这里您可以对主机、实例和容器进行多维度的实时监控。',
 		mod: 'monitor'
 	});
-	var loadingsIns = $scope.loadingIns = $domePublic.getLoadingInstance();
+	$scope.loadingsIns = $domePublic.getLoadingInstance();
 	$scope.monitorType = '主机';
 	$scope.currentEnv = {
 		text: '生产',
@@ -23,7 +23,7 @@ domeApp.controller('monitorCtr', ['$scope', '$domeCluster', '$domeDeploy', '$dom
 		pod: '',
 		isReverse: false
 	};
-	loadingsIns.startLoading('loadingCluster');
+	$scope.loadingsIns.startLoading('loadingCluster');
 	// 获取集群列表
 	$domeCluster.getClusterList().then(function(res) {
 		$scope.clusterListIns = $domeCluster.getInstance('ClusterList', res.data.result);
@@ -32,10 +32,10 @@ domeApp.controller('monitorCtr', ['$scope', '$domeCluster', '$domeDeploy', '$dom
 			$scope.toggleCluster(0);
 		}
 	}).finally(function(res) {
-		loadingsIns.finishLoading('loadingCluster');
+		$scope.loadingsIns.finishLoading('loadingCluster');
 	});
 	var freshNodeMonitor = function() {
-		loadingsIns.startLoading('loadingNode');
+		$scope.loadingsIns.startLoading('loadingNode');
 		$domeCluster.getNodeList($scope.clusterListIns.cluster.id).then(function(res) {
 			var nodeData = res.data.result || [];
 			$scope.nodeListIns = $domeCluster.getInstance('NodeList', nodeData);
@@ -53,17 +53,16 @@ domeApp.controller('monitorCtr', ['$scope', '$domeCluster', '$domeDeploy', '$dom
 				};
 				monitorItems.push(nodeData[i].name);
 			}
-			$domeMonitor.getMonitorStatistical('node', monitorInfo, monitorItems).then(function(monitorResult) {
+			$domeMonitor.getMonitorStatistical('node', $scope.clusterListIns.cluster.id, monitorInfo, monitorItems).then(function(monitorResult) {
 				var nodeList = $scope.nodeListIns.nodeList;
 				for (i = 0; i < nodeList.length; i++) {
 					angular.extend(nodeList[i], monitorResult[nodeList[i].name]);
 				}
-				console.log(nodeList);
 			});
 		}, function() {
 			$scope.nodeListIns = $domeCluster.getInstance('NodeList');
 		}).finally(function() {
-			loadingsIns.finishLoading('loadingNode');
+			$scope.loadingsIns.finishLoading('loadingNode');
 		});
 	};
 
@@ -92,12 +91,11 @@ domeApp.controller('monitorCtr', ['$scope', '$domeCluster', '$domeDeploy', '$dom
 			});
 			monitorItems.push(insList[i].instanceName);
 		}
-		$domeMonitor.getMonitorStatistical('pod', monitorInfo, monitorItems).then(function(monitorResult) {
+		$domeMonitor.getMonitorStatistical('pod', $scope.clusterListIns.cluster.id, monitorInfo, monitorItems).then(function(monitorResult) {
 			var instanceList = $scope.deployListIns.deployInstanceListIns.instanceList;
 			for (i = 0; i < instanceList.length; i++) {
 				angular.extend(instanceList[i], monitorResult[instanceList[i].instanceName]);
 			}
-			console.log(instanceList);
 		});
 	};
 
@@ -154,7 +152,6 @@ domeApp.controller('monitorCtr', ['$scope', '$domeCluster', '$domeDeploy', '$dom
 		if ($scope.monitorType == '主机') {
 			freshNodeMonitor();
 		} else if ($scope.monitorType == '实例') {
-			console.log($scope.deployListIns);
 			$scope.deployListIns.filterDeploy($scope.clusterListIns.cluster.name, $scope.currentEnv.value).finally(function() {
 				freshPodMonitor();
 			});
@@ -186,9 +183,12 @@ domeApp.controller('monitorCtr', ['$scope', '$domeCluster', '$domeDeploy', '$dom
 				freshNodeMonitor();
 			} else {
 				if (!$scope.deployListIns) {
+					$scope.loadingsIns.startLoading('deploy');
 					$domeDeploy.getDeployList().then(function(res) {
 						$scope.deployListIns = $domeDeploy.getInstance('DeployList', res.data.result);
 						initDeploy();
+					}).finally(function() {
+						$scope.loadingsIns.finishLoading('deploy');
 					});
 				} else {
 					initDeploy();
@@ -221,7 +221,7 @@ domeApp.controller('monitorCtr', ['$scope', '$domeCluster', '$domeDeploy', '$dom
 			});
 			monitorItems.push(containerList[i].containerId);
 		}
-		$domeMonitor.getMonitorStatistical('container', monitorInfo, monitorItems).then(function(monitorResult) {
+		$domeMonitor.getMonitorStatistical('container', $scope.clusterListIns.cluster.id, monitorInfo, monitorItems).then(function(monitorResult) {
 			for (i = 0; i < containerList.length; i++) {
 				angular.extend(containerList[i], monitorResult[containerList[i].containerId]);
 			}
@@ -246,6 +246,7 @@ domeApp.controller('monitorCtr', ['$scope', '$domeCluster', '$domeDeploy', '$dom
 	};
 	$scope.toMonitorDetail = function(monitorType, singleItem) {
 		var monitorTargetInfo = {
+				clusterId: $scope.clusterListIns.cluster.id,
 				targetType: monitorType,
 				targetInfos: []
 			},
@@ -353,6 +354,7 @@ domeApp.controller('monitorCtr', ['$scope', '$domeCluster', '$domeDeploy', '$dom
 	};
 	$scope.toMonitorDetail = function(singleItem) {
 		var monitorTargetInfo = {
+			clusterId: monitorParams.clusterId,
 			targetType: 'container',
 			targetInfos: []
 		};
