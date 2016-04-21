@@ -212,6 +212,9 @@ public class ProjectBizImpl extends BaseBizImpl implements ProjectBiz {
         for (RowMapperDao tmp : data) {
             BuildHistory buildHistory = checkResult(tmp, BuildHistory.class);
             if (buildHistory.getIsGC() == 0) {
+                if (buildHistory.getTaskName() == null) {
+                    buildHistory.setTaskName(buildHistoryMapper.getTaskName());
+                }
                 buildHistories.add(buildHistory);
             }
         }

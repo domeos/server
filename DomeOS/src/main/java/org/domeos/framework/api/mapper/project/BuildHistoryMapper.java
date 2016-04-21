@@ -36,8 +36,8 @@ public interface BuildHistoryMapper {
     @Select("SELECT dockerfileContent FROM build_history WHERE id=#{id}")
     String getDockerfileContentById(@Param("id") int buildId);
 
-    @Update("UPDATE build_history SET taskName=#{item.taskName}, state=#{item.state} WHERE id=#{item.id}")
-    void addTaskNameAndStatus(@Param("item") BuildHistory buildHistory, String data);
+    @Update("UPDATE build_history SET taskName=#{item.taskName}, state=#{item.state}, data=#{data} WHERE id=#{item.id}")
+    void addTaskNameAndStatus(@Param("item") BuildHistory buildHistory, @Param("data")String data);
 
     @Select("SELECT log FROM build_history WHERE id=#{id}")
     String getLogById(@Param("id") int buildId);
@@ -53,4 +53,7 @@ public interface BuildHistoryMapper {
 
     @Select("SELECT * FROM build_history where removed=0")
     List<RowMapperDao> getAllHistory();
+
+    @Select("SELECT taskName FROM build_history where removed=0")
+    String getTaskName();
 }

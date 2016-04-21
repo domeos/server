@@ -111,11 +111,12 @@ public class BuildStatusManager {
     public boolean deleteJob(KubeClient client, String jobName)
             throws KubeResponseException, IOException, KubeInternalErrorException {
         Job job = client.jobInfo(jobName);
-        Map<String, String> jobSelector = null;
-        if (job != null) {
-            client.deleteJob(jobName);
-            jobSelector = job.getSpec().getSelector().getMatchLabels();
+        if (job == null) {
+            return false;
         }
+        Map<String, String> jobSelector;
+        client.deleteJob(jobName);
+        jobSelector = job.getSpec().getSelector().getMatchLabels();
         if (jobSelector == null) {
             jobSelector = new HashMap<>();
             jobSelector.put("build", jobName);
