@@ -186,10 +186,20 @@ html(ng-app="monitorApp")
 								//- td(ng-bind="body.timeStamp | date:'yy-MM-dd HH:mm:ss'")
 								td(ng-repeat="item in selectedMonitor.netOutMult.tableData.item" )
 									span(popover-trigger="mouseenter" popover="{{body[item].tip}}" ng-bind="body[item].text")
+		script(type="text/ng-template" id="warningModal.html")
+			.d-modal-header 警告
+			.modal-body
+				p.txt-error(ng-bind="titleInfo" ng-class="{'font-size-16':detailInfo}")
+				p.txt-error.tool-wrap-break(ng-bind="detailInfo")
+			.modal-footer
+				button.ui-btn.ui-btn-error.ui-btn-sm(ng-click="cancel()") 确定
 		div
 		<!-- build:js /monitor/js/lib.min.js -->
 		script(type="text/javascript" src="../lib/js/jquery.min.js")
 		script(type="text/javascript" src="../lib/js/angular.min.js")
+		script(type="text/javascript" src="../lib/js/angular-locale_zh-cn.js")
+		script(type="text/javascript" src="../lib/js/ui-bootstrap-tpls.min.js")
+		script(type="text/javascript" src="../lib/js/angular-animate.min.js")
 		script(type="text/javascript" src="../lib/js/amcharts.js")
 		script(type="text/javascript" src="../lib/js/serial.js")
 		script(type="text/javascript" src="")
@@ -199,9 +209,6 @@ html(ng-app="monitorApp")
 		script(type="text/javascript" src="../common/publicModule/publicModule.js")
 		script(type="text/javascript" src="../common/publicModule/directive/publicDirective.js")
 		script(type="text/javascript" src="../common/domeModule/domeModule.js")
-		script(type="text/javascript" src="../lib/js/angular-animate.min.js")
-		script(type="text/javascript" src="../lib/js/angular-locale_zh-cn.js")
-		script(type="text/javascript" src="../lib/js/ui-bootstrap-tpls.min.js")
 		script(type="text/javascript" src="js/monitor.js")
 		script(type="text/javascript" src="")
 		<!-- endbuild -->

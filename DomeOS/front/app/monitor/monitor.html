@@ -268,9 +268,22 @@ ng\:form {
         </div>
       </div>
     </div>
+    <script type="text/ng-template" id="warningModal.html">
+      <div class="d-modal-header">警告</div>
+      <div class="modal-body">
+        <p ng-bind="titleInfo" ng-class="{'font-size-16':detailInfo}" class="txt-error"></p>
+        <p ng-bind="detailInfo" class="txt-error tool-wrap-break"></p>
+      </div>
+      <div class="modal-footer">
+        <button ng-click="cancel()" class="ui-btn ui-btn-error ui-btn-sm">确定</button>
+      </div>
+    </script>
     <div></div><!-- build:js /monitor/js/lib.min.js -->
     <script type="text/javascript" src="../lib/js/jquery.min.js"></script>
     <script type="text/javascript" src="../lib/js/angular.min.js"></script>
+    <script type="text/javascript" src="../lib/js/angular-locale_zh-cn.js"></script>
+    <script type="text/javascript" src="../lib/js/ui-bootstrap-tpls.min.js"></script>
+    <script type="text/javascript" src="../lib/js/angular-animate.min.js"></script>
     <script type="text/javascript" src="../lib/js/amcharts.js"></script>
     <script type="text/javascript" src="../lib/js/serial.js"></script>
     <script type="text/javascript" src=""></script><!-- endbuild -->
@@ -279,9 +292,6 @@ ng\:form {
     <script type="text/javascript" src="../common/publicModule/publicModule.js"></script>
     <script type="text/javascript" src="../common/publicModule/directive/publicDirective.js"></script>
     <script type="text/javascript" src="../common/domeModule/domeModule.js"></script>
-    <script type="text/javascript" src="../lib/js/angular-animate.min.js"></script>
-    <script type="text/javascript" src="../lib/js/angular-locale_zh-cn.js"></script>
-    <script type="text/javascript" src="../lib/js/ui-bootstrap-tpls.min.js"></script>
     <script type="text/javascript" src="js/monitor.js"></script>
     <script type="text/javascript" src=""></script><!-- endbuild -->
   </body>

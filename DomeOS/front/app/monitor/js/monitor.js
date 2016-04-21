@@ -1063,7 +1063,7 @@ monitorApp.service('$monitor', ['$http', '$q', '$util', '$filter', function($htt
 		return $http.get('/api/monitor/data/' + monitorCondition.targetId + '?start=' + monitorCondition.start + '&end=' + monitorCondition.end + '&dataSpec=' + monitorCondition.dataSpec + '&cid=' + monitorCondition.cid);
 	};
 }]);
-monitorApp.controller('monitorCtr', ['$scope', '$http', '$util', '$monitor', '$q', '$timeout', function($scope, $http, $util, $monitor, $q, $timeout) {
+monitorApp.controller('monitorCtr', ['$scope', '$http', '$util', '$monitor', '$q', '$timeout', '$domePublic', function($scope, $http, $util, $monitor, $q, $timeout, $domePublic) {
 	'use strict';
 	var i = 0;
 	$scope.sampleTypes = [{
@@ -1096,7 +1096,6 @@ monitorApp.controller('monitorCtr', ['$scope', '$http', '$util', '$monitor', '$q
 	$scope.isLoading = true;
 	$scope.isRealTime = false;
 	var timeout;
-
 	var getTargetInfo = function() {
 		var deferred = $q.defer();
 		if ($scope.targetInfos) {
@@ -1137,7 +1136,11 @@ monitorApp.controller('monitorCtr', ['$scope', '$http', '$util', '$monitor', '$q
 					$scope.singleItem = false;
 				}
 				deferred.resolve($scope.targetInfos);
-			}, function() {
+			}, function(res) {
+				$domePublic.openWarning({
+					title: '请求失败！',
+					msg: 'Message:' + res.data.resultMsg
+				});
 				deferred.reject();
 			});
 		}
@@ -1193,7 +1196,6 @@ monitorApp.controller('monitorCtr', ['$scope', '$http', '$util', '$monitor', '$q
 		}
 	};
 	$scope.currentSampleType = $scope.sampleTypes[2];
-
 	var recoverSelectedItem = function(item) {
 		var isFound = false;
 		if (!$scope.selectedMonitor[item]) return;
@@ -1217,6 +1219,7 @@ monitorApp.controller('monitorCtr', ['$scope', '$http', '$util', '$monitor', '$q
 		}
 
 		getTargetInfo().then(function() {
+
 			var monitorCondition = {
 				targetId: targetInfoId,
 				start: $scope.date.startDate,
@@ -1232,7 +1235,7 @@ monitorApp.controller('monitorCtr', ['$scope', '$http', '$util', '$monitor', '$q
 				$scope.intervalTime = data.interval * 1000;
 				$scope.monitorsInfo = null;
 				$scope.monitorsInfo = angular.copy($monitor.getMonitorsArr(monitorCondition, $scope.monitorItem, data, !$scope.isRealTime));
-					// 刷新时恢复到原来选择的项
+				// 刷新时恢复到原来选择的项
 				recoverSelectedItem('diskUsedMult');
 				recoverSelectedItem('diskReadMult');
 				recoverSelectedItem('diskWriteMult');
