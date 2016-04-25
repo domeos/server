@@ -6,7 +6,7 @@ div(ng-form name="clusterForm" role="form" ng-class="{'need-valid':needValid}")
 		li
 			span.info-name 集群名称
 			.info-content
-				input.ui-input-fill.line-single(ng-model="config.name" cluster-list="clusterList" name="clusterName" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" required)
+				input.ui-input-fill.line-single(ng-model="config.name" is-cluster-exist cluster-list="clusterList" name="clusterName" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" required)
 				span.txt-error(ng-if="(needValid||clusterForm.clusterName.$dirty)&&clusterForm.clusterName.$error.required") 必填
 				span.txt-error(ng-if="(needValid||clusterForm.clusterName.$dirty)&&clusterForm.clusterName.$error.isClusterExist") 集群已存在
 		li(ng-if="config.id")

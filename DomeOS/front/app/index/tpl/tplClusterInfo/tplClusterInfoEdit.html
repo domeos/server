@@ -3,7 +3,7 @@
   <ul class="com-list-info">
     <li><span class="info-name">集群名称</span>
       <div class="info-content">
-        <input ng-model="config.name" cluster-list="clusterList" name="clusterName" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" required="required" class="ui-input-fill line-single"/><span ng-if="(needValid||clusterForm.clusterName.$dirty)&amp;&amp;clusterForm.clusterName.$error.required" class="txt-error">必填</span><span ng-if="(needValid||clusterForm.clusterName.$dirty)&amp;&amp;clusterForm.clusterName.$error.isClusterExist" class="txt-error">集群已存在</span>
+        <input ng-model="config.name" is-cluster-exist="is-cluster-exist" cluster-list="clusterList" name="clusterName" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" required="required" class="ui-input-fill line-single"/><span ng-if="(needValid||clusterForm.clusterName.$dirty)&amp;&amp;clusterForm.clusterName.$error.required" class="txt-error">必填</span><span ng-if="(needValid||clusterForm.clusterName.$dirty)&amp;&amp;clusterForm.clusterName.$error.isClusterExist" class="txt-error">集群已存在</span>
       </div>
     </li>
     <li ng-if="config.id"><span class="info-name">创建者</span>
