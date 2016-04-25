@@ -1,37 +1,41 @@
 
 <div class="mod-image image-manage">
   <loading ng-if="isLoading"></loading>
+  <div class="detail-header">
+    <button ui-sref="mirrorCustom" class="ui-btn ui-btn-lg ui-btn-imgtool"> <i class="icon-tool"></i>镜像定制工具</button>
+  </div>
   <tabset class="mod-tab">
-    <tab heading="基础镜像">
+    <tab heading="基础镜像" active="tabActive[0].active" ui-sref="imageManage.baseimages">
       <div class="image-option">
-        <button ng-if="!isShowAdd" ng-click="toggleShowAdd(true)" class="btn btn-bright btn-sm">添加</button>
-        <button ng-if="isShowAdd" ng-click="toggleShowAdd(false)" class="btn btn-bright btn-sm">取消</button>
+        <button ng-if="!isShowAdd" ng-click="toggleShowAdd(true)" class="ui-btn ui-btn-bright ui-btn-sm">添加</button>
+        <button ng-if="isShowAdd" ng-click="toggleShowAdd(false)" class="ui-btn ui-btn-bright ui-btn-sm">取消</button>
         <div class="pull-right">共{{baseImagesFiltered.length}}个镜像
-          <input placeholder="输入镜像名称查找" ng-model="baseImageKey" class="input-fill input-search"/>
+          <input placeholder="输入镜像名称查找" ng-model="baseImageKey" class="ui-input-fill ui-input-search"/>
         </div>
       </div>
       <ul ng-form="ng-form" ng-class="{'need-valid':needValid.value}" name="imageForm" ng-show="isShowAdd" class="add-image">
         <li><span class="info-name">镜像名称</span>
-          <input ng-model="newImageInfo.imageName" ng-pattern="/^[^\s]*$/" name="imageName" required="required" class="input-info input-white"/>
+          <input ng-model="newImageInfo.imageName" ng-pattern="/^[^\s]*$/" name="imageName" required="required" class="ui-input-info ui-input-white"/>
         </li>
         <li><span class="info-name">镜像版本</span>
-          <input ng-model="newImageInfo.imageTag" is-tag-exist="is-tag-exist" baseimages="baseImages" imagename="newImageInfo.imageName" ng-pattern="/^[^\s]*$/" name="imageTag" required="required" class="input-info input-white"/><span ng-if="imageForm.imageTag.$error.isTagExist" class="inline-error">已存在</span>
+          <input ng-model="newImageInfo.imageTag" is-tag-exist="is-tag-exist" baseimages="baseImages" imagename="newImageInfo.imageName" ng-pattern="/^[^\s]*$/" name="imageTag" required="required" class="ui-input-info ui-input-white"/><span ng-if="imageForm.imageTag.$error.isTagExist" class="tool-inline-error">已存在</span>
         </li>
         <li><span class="info-name">镜像所在仓库</span>
-          <input ng-model="newImageInfo.registry" ng-pattern="/^[^\s]*$/" name="registry" required="required" class="input-info input-white"/>
+          <input ng-model="newImageInfo.registry" ng-pattern="/^[^\s]*$/" name="registry" required="required" class="ui-input-info ui-input-white"/>
         </li>
         <li><span class="info-name">镜像描述</span>
-          <input ng-model="newImageInfo.description" name="description" class="input-info input-white"/>
-          <button ng-disabled="isLoading" ng-click="needValid.value=true;imageForm.$valid&amp;&amp;createImage(imageForm);" class="btn btn-primary btn-sm">添加镜像</button>
+          <input ng-model="newImageInfo.description" name="description" class="ui-input-info ui-input-white"/>
+          <button ng-disabled="isLoading" ng-click="needValid.value=true;imageForm.$valid&amp;&amp;createImage(imageForm);" class="ui-btn ui-btn-primary ui-btn-sm">添加镜像</button>
         </li>
       </ul>
-      <table class="table-dome">
+      <table class="ui-table-dome">
         <thead>
           <tr>
             <th>镜像名称</th>
             <th>镜像版本</th>
             <th>仓库地址</th>
             <th>镜像描述</th>
+            <th>操作</th>
           </tr>
         </thead>
         <tbody>
@@ -43,17 +47,18 @@
             <td ng-bind="img.imageTag"></td>
             <td ng-bind="img.registry"></td>
             <td ng-bind="img.description"></td>
+            <td><a ng-click="deleteBaseImage(img.id)" class="icon-delete"></a></td>
           </tr>
         </tbody>
       </table>
     </tab>
-    <tab heading="项目镜像">
+    <tab heading="项目镜像" active="tabActive[1].active" ui-sref="imageManage.projectimages">
       <div class="image-option"><span class="registry-address">仓库地址：{{projectRegistry}}</span>
         <div class="pull-right">共{{projectImagesFiltered.length}}个镜像
-          <input placeholder="输入镜像名称查找" ng-model="projectImageKey" class="input-fill input-search"/>
+          <input placeholder="输入镜像名称查找" ng-model="projectImageKey" class="ui-input-fill ui-input-search"/>
         </div>
       </div>
-      <table class="table-dome">
+      <table class="ui-table-dome">
         <thead>
           <tr>
             <th>镜像名称</th>
@@ -73,13 +78,13 @@
         </tbody>
       </table>
     </tab>
-    <tab heading="非项目镜像">
+    <tab heading="非项目镜像" active="tabActive[2].active" ui-sref="imageManage.otherimages">
       <div class="image-option"><span class="registry-address">仓库地址：{{projectRegistry}}</span>
         <div class="pull-right">共{{otherImageFilterd.length}}个镜像
-          <input placeholder="输入镜像名称查找" ng-model="otherImageKey" class="input-fill input-search"/>
+          <input placeholder="输入镜像名称查找" ng-model="otherImageKey" class="ui-input-fill ui-input-search"/>
         </div>
       </div>
-      <table class="table-dome">
+      <table class="ui-table-dome">
         <thead>
           <tr>
             <th>镜像名称</th>
@@ -103,7 +108,7 @@
   <div ng-bind="imageName" class="d-modal-header"></div>
   <div class="d-modal-full">
     <loading ng-if="isLoading"></loading>
-    <table class="table-dome modal-full-table">
+    <table class="ui-table-dome modal-full-table">
       <thead>
         <tr>
           <th>版本名</th>

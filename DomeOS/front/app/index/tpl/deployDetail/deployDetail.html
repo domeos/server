@@ -6,32 +6,30 @@
     <div class="detail-item"><em class="item-name">上次升级时间</em><b ng-bind="parseDate(config.lastUpdateTime)" class="item-content"></b></div><i class="detail-sep"></i>
     <div class="detail-item"><em class="item-name">实例个数</em><b ng-bind="config.currentReplicas" class="item-content"></b></div><i class="detail-sep"></i>
     <div class="detail-item"><em class="item-name">当前版本</em><b ng-if="!config.currentVersions||config.currentVersions.length===0" class="item-content">无</b><b ng-repeat="version in config.currentVersions" ng-cloak="ng-cloak" class="item-content">version{{version.version}}</b></div><i class="detail-sep"></i>
-    <div class="detail-item"><em class="item-name">状态</em><b ng-switch="config.deploymentStatus" class="item-content"><span ng-switch-when="RUNNING" class="txt-success">运行中</span><span ng-switch-when="STOP" class="txt-error">停止</span><span ng-switch-when="DEPLOYING" class="txt-primary">部署中	</span><span ng-switch-default="ERROR" class="txt-warning">异常</span><span ng-switch-when="AB_TEST" class="txt-default">灰度发布</span></b></div>
+    <div class="detail-item"><em class="item-name">状态</em><b ng-switch="config.deploymentStatus" class="item-content"><span ng-switch-when="RUNNING" class="txt-success">运行中</span><span ng-switch-when="STOP" class="txt-error">停止</span><span ng-switch-when="DEPLOYING" class="txt-primary">部署中	</span><span ng-switch-default="ERROR" class="txt-warning">异常</span><span ng-switch-when="STOPPING" class="txt-primary">停止中</span><span ng-switch-when="UPDATING" class="txt-primary">升级中</span><span ng-switch-when="BACKROLLING" class="txt-primary">回滚中</span><span ng-switch-when="UPSCALING" class="txt-primary">扩容中</span><span ng-switch-when="DOWNSCALING" class="txt-primary">缩容中</span></b></div>
     <div ng-switch="config.deploymentStatus" class="deploy-option pull-right">
-      <button ng-switch-when="RUNNING" ng-disabled="isWaitingUpVersion" ng-click="updateVersion()" ng-if="!config.stateful" class="btn btn-bright btn-md">升级/回滚</button>
-      <button ng-switch-when="RUNNING" ng-disabled="isWaitingScale" ng-click="scaleVersion()" ng-if="!config.stateful" class="btn btn-bright btn-md">扩容/缩容</button>
-      <button ng-switch-when="AB_TEST" ng-if="!config.stateful" class="btn btn-bright btn-md">全部升级</button>
-      <button ng-switch-when="AB_TEST" ng-if="!config.stateful" class="btn btn-bright btn-md">全部回滚</button>
-      <button ng-switch-when="STOP" ng-disabled="isWaitingStart" ng-click="startVersion()" class="btn btn-bright btn-md">启动</button>
-      <button ng-switch-when="STOP" ng-click="deleteDeploy()" class="btn btn-bright btn-md">删除</button>
-      <button ng-switch-when="ERROR" ng-if="!config.stateful" ng-disabled="isWaitingRecover" ng-click="recover()" class="btn btn-bright btn-md">恢复</button>
-      <button ng-switch-when="RUNNING" ng-disabled="isWaitingStop" ng-click="stopVersion()" class="btn btn-bright btn-md">停止</button>
-      <button ng-switch-when="ERROR" ng-disabled="isWaitingStop" ng-click="stopVersion()" class="btn btn-bright btn-md">停止</button>
+      <button ng-switch-when="RUNNING" ng-disabled="isWaitingUpVersion" ng-click="updateVersion()" ng-if="!config.stateful" class="ui-btn ui-btn-bright ui-btn-md">升级/回滚</button>
+      <button ng-switch-when="RUNNING" ng-disabled="isWaitingScale" ng-click="scaleVersion()" ng-if="!config.stateful" class="ui-btn ui-btn-bright ui-btn-md">扩容/缩容</button>
+      <button ng-switch-when="STOP" ng-disabled="isWaitingStart" ng-click="startVersion()" class="ui-btn ui-btn-bright ui-btn-md">启动</button>
+      <button ng-switch-when="STOP" ng-click="deleteDeploy()" class="ui-btn ui-btn-bright ui-btn-md">删除</button>
+      <button ng-switch-when="ERROR" ng-if="!config.stateful" ng-disabled="isWaitingRecover" ng-click="recover()" class="ui-btn ui-btn-bright ui-btn-md">恢复</button>
+      <button ng-switch-when="RUNNING" ng-disabled="isWaitingStop" ng-click="stopVersion()" class="ui-btn ui-btn-bright ui-btn-md">停止</button>
+      <button ng-switch-when="ERROR" ng-disabled="isWaitingStop" ng-click="stopVersion()" class="ui-btn ui-btn-bright ui-btn-md">停止</button>
     </div>
   </div>
   <loading ng-if="isLoading=(loadingsIns.isLoading||(tabActive[0].active&amp;&amp;deployIns.loadingIns.isLoading)||(tabActive[1].active&amp;&amp;deployEditIns.loadingIns.isLoading))"></loading>
   <tabset>
-    <tab heading="部署详情" active="tabActive[0].active">
+    <tab heading="部署详情" active="tabActive[0].active" ui-sref="deployDetail.detail">
       <div class="deploy-info">
         <div class="deploy-rollback"><span ng-if="!config.stateful">部署版本：</span><span ng-if="config.stateful">该部署是有状态服务，只有一个部署版本：</span>
-          <div class="select-con">
-            <button class="btn btn-select btn-white">{{deployIns.config.version?'version'+deployIns.config.version:'选择版本'}}<i class="icon-down"></i></button>
+          <div select-con="select-con" class="com-select-con">
+            <button class="ui-btn ui-btn-select ui-btn-white"><i class="icon-down"></i>{{deployIns.config.version?'version'+deployIns.config.version:'选择版本'}}</button>
             <ul class="select-list">
               <li ng-repeat="version in deployIns.versionList" class="select-item"><a ng-click="toggleVersion(version.version)" ng-cloak="ng-cloak">version{{version.version}}</a></li>
             </ul>
           </div>
         </div>
-        <ul ng-repeat="containerDrafts in config.containerDrafts" ng-show="config.version" class="list-info mirror-con">
+        <ul ng-repeat="containerDrafts in config.containerDrafts" ng-show="config.version" class="com-list-info mirror-con">
           <li><span class="info-name">镜像名称</span>
             <div class="info-content"><span ng-bind="containerDrafts.image" style="font-weight:bold;" class="first-info"></span></div>
           </li>
@@ -44,7 +42,7 @@
           <li><span class="info-name">运行过程环境变量</span>
             <div class="info-content">
               <div class="line-long"><span ng-if="!containerDrafts.oldEnv||(containerDrafts.oldEnvcontainerDrafts.oldEnv.length===0&amp;&amp;containerDrafts.newEnv.length===0)" class="first-info">未设置</span>
-                <table ng-hide="!containerDrafts.oldEnv||(containerDrafts.oldEnv.length===0&amp;&amp;containerDrafts.newEnv.length===0)" class="table-primary table-env">
+                <table ng-hide="!containerDrafts.oldEnv||(containerDrafts.oldEnv.length===0&amp;&amp;containerDrafts.newEnv.length===0)" class="ui-table-primary ui-table-env">
                   <thead>
                     <tr>
                       <th>环境变量名</th>
@@ -75,22 +73,22 @@
           </li>
         </ul>
         <h4 class="mod-title txt-bright">部署设置</h4>
-        <ul class="list-info">
+        <ul class="com-list-info">
           <li ng-if="config.stateful"><span class="info-name">网络模式</span>
             <div ng-switch="config.networkMode" class="info-content"><span ng-switch-when="HOST" class="first-info">Host</span><span ng-switch-default="ng-switch-default" class="first-info">默认</span></div>
           </li>
           <li><span style="padding-top:8px;" class="info-name">筛选主机</span>
             <div class="info-content">
               <div ng-cloak="ng-cloak"><span class="small-info">集群：{{deployIns.clusterListIns.cluster.name}}</span><span class="small-info">部署环境：{{deployIns.envText}}</span></div>
-              <div ng-if="config.stateful" class="line-long"><span class="align-input">所选主机：</span>
-                <div class="host-txt-con line-element select-con">
+              <div ng-if="config.stateful" class="line-long"><span class="tool-align-input">所选主机：</span>
+                <div select-con="select-con" class="host-txt-con line-element com-select-con">
                   <ul class="selected-labels">
                     <li ng-repeat="host in config.hostList" ng-bind="host" class="select-label"></li>
                   </ul>
                 </div>
               </div>
-              <div ng-if="!config.stateful" class="line-long"><span class="align-input">主机标签：</span>
-                <div class="host-txt-con line-element select-con">
+              <div ng-if="!config.stateful" class="line-long"><span class="tool-align-input">主机标签：</span>
+                <div select-con="select-con" class="host-txt-con line-element com-select-con">
                   <ul class="selected-labels">
                     <li ng-repeat="(label,value) in deployIns.nodeListIns.labelsInfo|search:'isSelected':true|search:'isShow':true" ng-cloak="ng-cloak" class="select-label">{{label}}</li>
                   </ul>
@@ -105,19 +103,24 @@
               </ul>
             </div>
           </li>
+          <li> <span class="info-name">网络模式</span>
+            <div class="info-content">
+              <div ng-cloak="ng-cloak"><span class="small-info">{{showdeploy.networkMode=='HOST'?'Host':'Overlay'}}</span></div>
+            </div>
+          </li>
         </ul>
       </div>
     </tab>
-    <tab heading="升级" active="tabActive[1].active" ng-if="!config.stateful">
+    <tab heading="升级" active="tabActive[1].active" ng-if="!config.stateful" ui-sref="deployDetail.update">
       <div ng-form="ng-form" role="form" name="deployForm" ng-class="{'need-valid':needValid}" class="deploy-info">
         <div class="mod-title">镜像设置</div>
-        <div class="select-con add-mirror">
-          <input placeholder="添加镜像" ng-model="imageKey" class="input-white btn-select"/>
+        <div select-con="select-con" class="com-select-con add-mirror">
+          <input placeholder="添加镜像" ng-model="imageKey" class="ui-input-white ui-btn-select"/>
           <ul class="select-list">
             <li ng-repeat="image in deployEditIns.imageList|filter:{'imageName':imageKey}" class="select-item"><a ng-click="deployEditIns.addImage(image);imageKey=''">{{image.imageName}}<span class="txt-prompt pull-right">{{image.registry}}</span></a></li>
           </ul>
         </div><a ng-click="deployEditIns.addOtherImage()" class="link-safe add-other">添加其他镜像</a>
-        <ul ng-repeat="containerDrafts in editConfig.containerDrafts" ng-form="ng-form" name="childForm" mirror-collapse="mirror-collapse" class="list-info mirror-con mirror-collapse">
+        <ul ng-repeat="containerDrafts in editConfig.containerDrafts" ng-form="ng-form" name="childForm" mirror-collapse="mirror-collapse" class="com-list-info mirror-con mirror-collapse">
           <li class="cancel"><a ng-click="deployEditIns.deleteImage($index)" class="icon-cancel"></a></li>
           <li ng-click="toggleCollapse()" class="down"><i ng-class="{'up':!isCollapse}" class="icon-down-double"></i></li>
           <li><span class="info-name">镜像版本</span>
@@ -128,11 +131,11 @@
           </li>
           <li><span class="info-name">镜像版本</span>
             <div class="info-content">
-              <div class="line-short select-con">
-                <button ng-cloak="ng-cloak" class="btn btn-white btn-select">{{containerDrafts.tag}}<i class="icon-down"></i></button>
+              <div select-con="select-con" class="line-short com-select-con">
+                <button ng-cloak="ng-cloak" class="ui-btn ui-btn-white ui-btn-select"><i class="icon-down"></i>{{containerDrafts.tag}}</button>
                 <ul class="select-list">
                   <li ng-if="!containerDrafts.tagList||containerDrafts.tagList.length===0"><a>无版本信息</a></li>
-                  <li ng-repeat="tag in containerDrafts.tagList" class="select-item"><a ng-bind="tag.tag" ng-click="deployEditIns.toggleImageTag($parent.$index,tag.tag)"></a></li>
+                  <li ng-repeat="tag in containerDrafts.tagList" class="select-item"><a ng-click="deployEditIns.toggleImageTag($parent.$index,tag.tag)"><span ng-bind="parseDate(tag.createTime)" class="txt-prompt image-tag"></span><span ng-bind="tag.tag"></span></a></li>
                 </ul>
               </div>
             </div>
@@ -140,7 +143,7 @@
           <li ng-show="!isCollapse"><span class="info-name">运行过程环境变量</span>
             <div class="info-content">
               <div class="line-long">
-                <table ng-show="containerDrafts.oldEnv.length!==0" class="table-primary table-env">
+                <table ng-show="containerDrafts.oldEnv.length!==0" class="ui-table-primary ui-table-env">
                   <thead>
                     <tr>
                       <th>环境变量名</th>
@@ -152,7 +155,7 @@
                     <tr ng-repeat="env in containerDrafts.oldEnv">
                       <td ng-bind="env.key"></td>
                       <th class="txt-cell">
-                        <input ng-model="env.value" placeholder="环境变量值" class="input-fill"/>
+                        <input ng-model="env.value" placeholder="环境变量值" class="ui-input-fill"/>
                       </th>
                       <td ng-bind="env.description"></td>
                     </tr>
@@ -160,43 +163,39 @@
                 </table>
               </div>
               <div ng-repeat="env in containerDrafts.newEnv" class="line-long new-env-list">
-                <input ng-model="env.key" placeholder="环境变量名" is-required="is-required" param1="env.value" ng-pattern="/^[A-Za-z_][A-Za-z0-9_]*$/" class="input-fill line-element"/>
-                <input ng-model="env.value" placeholder="环境变量值" is-required="is-required" param1="env.key" class="input-fill line-element"/>
-                <input ng-model="env.description" placeholder="描述20字以内" class="input-fill line-element"/><span class="txt-wrap"><a ng-click="deployEditIns.deleteImageEnv($parent.$index,$index)" class="icon-delete"></a></span>
+                <input ng-model="env.key" placeholder="环境变量名" is-required="is-required" param1="env.value" ng-pattern="/^[A-Za-z_][A-Za-z0-9_]*$/" class="ui-input-fill line-element"/>
+                <input ng-model="env.value" placeholder="环境变量值" is-required="is-required" param1="env.key" class="ui-input-fill line-element"/>
+                <input ng-model="env.description" placeholder="描述20字以内" class="ui-input-fill line-element"/><span class="txt-wrap"><a ng-click="deployEditIns.deleteImageEnv($parent.$index,$index)" class="icon-delete"></a></span>
               </div>
               <div class="line-long new-env-list"><span ng-click="deployEditIns.addImageEnv($index)" class="add-env"><i class="icon-add"></i></span></div>
             </div>
           </li>
           <li ng-show="!isCollapse"><span class="info-name">容器大小</span>
             <div class="info-content">CPU（个）
-              <input ng-model="containerDrafts.cpu" name="cpu" ng-pattern="/^(\d*\.)?\d+$/" required="required" class="input-fill input-sm"/>内存（MB）
-              <input ng-model="containerDrafts.mem" name="mem" ng-pattern="/^(\d*\.)?\d+$/" required="required" class="input-fill input-sm"/><span ng-if="(needValid||childForm.cpu.$dirty)&amp;&amp;childForm.cpu.$invalid||(needValid||childForm.mem.$dirty)&amp;&amp;childForm.mem.$invalid" class="inline-error">请填写数字</span>
+              <input ng-model="containerDrafts.cpu" name="cpu" ng-pattern="/^(\d*\.)?\d+$/" required="required" class="ui-input-fill ui-input-sm"/>内存（MB）
+              <input ng-model="containerDrafts.mem" name="mem" ng-pattern="/^(\d*\.)?\d+$/" required="required" class="ui-input-fill ui-input-sm"/><span ng-if="(needValid||childForm.cpu.$dirty)&amp;&amp;childForm.cpu.$invalid||(needValid||childForm.mem.$dirty)&amp;&amp;childForm.mem.$invalid" class="tool-inline-error">请填写数字</span>
             </div>
           </li>
         </ul>
         <div class="mod-title txt-bright">部署设置</div>
-        <ul class="list-info">
+        <ul class="com-list-info">
           <li><span class="info-name">筛选主机</span>
             <div class="info-content">
               <div class="line-short">
-                <div class="select-con line-element">
-                  <button disabled="true" class="btn btn-white btn-select">{{deployEditIns.clusterListIns.cluster.name}} 
-                    <icon class="icon-down"></icon>
-                  </button>
+                <div select-con="select-con" class="com-select-con line-element">
+                  <button disabled="true" class="ui-btn ui-btn-white ui-btn-select"><i class="icon-down"></i>{{deployEditIns.clusterListIns.cluster.name}} </button>
                 </div>
-                <div class="select-con line-element">
-                  <button ng-cloak="ng-cloak" disabled="true" class="btn btn-white btn-select">{{deployEditIns.envText}}
-                    <icon class="icon-down"></icon>
-                  </button>
+                <div select-con="select-con" class="com-select-con line-element">
+                  <button ng-cloak="ng-cloak" disabled="true" class="ui-btn ui-btn-white ui-btn-select"><i class="icon-down"></i>{{deployEditIns.envText}}</button>
                   <input type="hidden" ng-model="editConfig.hostEnv" name="hostEnv" required="required"/><span ng-if="(needValid||validHost)&amp;&amp;deployForm.hostEnv.$invalid" class="txt-error">请选择部署环境</span>
                 </div>
               </div>
               <div class="line-long">
-                <div label="true" class="input-white host-txt-con select-con">
+                <div label="true" select-con="select-con" class="ui-input-white host-txt-con com-select-con">
                   <ul class="selected-labels">
                     <li ng-repeat="(label,value) in deployEditIns.nodeListIns.labelsInfo|search:'isSelected':true|search:'isShow':true" ng-cloak="ng-cloak" class="select-label">{{label}}<a ng-click="deployEditIns.nodeListIns.toggleLabel(label,false)" class="icon-cancel"></a></li>
                     <li class="select-input">
-                      <input placeholder="选择主机标签" ng-model="labelKey.key" ng-keydown="labelKeyDown($event,labelKey.key,labelsInfoFiltered)" class="line-element btn-select"/>
+                      <input placeholder="选择主机标签" ng-model="labelKey.key" ng-keydown="labelKeyDown($event,labelKey.key,labelsInfoFiltered)" class="line-element ui-btn-select"/>
                     </li>
                   </ul>
                   <ul class="select-list">
@@ -209,49 +208,52 @@
           </li>
           <li><span class="info-name">日志</span>
             <div class="info-content">
-              <button ng-click="deployEditIns.addLogDraft()" class="btn btn-sm btn-active add-log">添加</button>
+              <button ng-click="deployEditIns.addLogDraft()" class="ui-btn ui-btn-sm ui-btn-active add-log">添加</button>
               <div ng-form="ng-form" ng-repeat="log in editConfig.logDraft.logItemDrafts" name="childForm" class="log-item"><a ng-click="deployEditIns.deleteLogDraft($index)" class="icon-cancel cancel-log"></a>
-                <input placeholder="请输入日志路径，不能放在根目录下" ng-pattern="/^/.*[^/]$/" ng-model="log.logPath" name="logPath" is-required="is-required" param1="{{log.autoCollect&amp;&amp;log.logTopic}}" param2="{{log.autoCollect&amp;&amp;log.processCmd}}" param3="{{log.autoDelete&amp;&amp;log.logExpired}}" class="input-fill element-full"/><span ng-if="childForm.logPath.$dirty&amp;&amp;childForm.logPath.$error.pattern" class="txt-error">非法的格式</span>
+                <input placeholder="请输入日志路径，不能放在根目录下" ng-pattern="/^/.*[^/]$/" ng-model="log.logPath" name="logPath" is-required="is-required" param1="{{log.autoCollect&amp;&amp;log.logTopic}}" param2="{{log.autoCollect&amp;&amp;log.processCmd}}" param3="{{log.autoDelete&amp;&amp;log.logExpired}}" class="ui-input-fill element-full"/><span ng-if="childForm.logPath.$dirty&amp;&amp;childForm.logPath.$error.pattern" class="txt-error">非法的格式</span>
                 <div class="log-check">
-                  <input id="autoCollect{{$index}}" type="checkbox" name="autoCollect" ng-model="log.autoCollect" class="dome-check"/>
+                  <input id="autoCollect{{$index}}" type="checkbox" name="autoCollect" ng-model="log.autoCollect" class="ui-check"/>
                   <label for="autoCollect{{$index}}">自动收集日志</label>
                 </div>
                 <div ng-if="log.autoCollect" class="line-full"><span class="log-title"> 日志topic</span>
-                  <input placeholder="请输入日志topic" name="logTopic" ng-model="log.logTopic" required="required" class="input-fill line-element"/>
+                  <input placeholder="请输入日志topic" name="logTopic" ng-model="log.logTopic" required="required" class="ui-input-fill line-element"/>
                 </div>
                 <div ng-if="log.autoCollect" class="line-full"><span class="log-title"> 预处理命令</span>
                   <div class="line-element">
-                    <input placeholder="请输入预处理命令" name="processCmd" ng-model="log.processCmd" required="required" class="input-fill full"/><span class="txt-wrap"><a popover="对收集到的日志做进一步处理，比如筛选或增减字段等，可以用grep和awk命令完成，命令以管道形式执行，因此必须以“|”开始，比如一个典型的处理命令为：   | grep &quot;ERROR\\|WARN\\| EXCEPTION\\| statistic&quot; | awk -vnhost=&quot;$HOSTNAME&quot; '{print &quot;[&quot;nhost&quot;]--&quot;$0}'，该命令将只筛选包含四个对应关键字的行，并且会在行首添加&quot;[hostname]--&quot;的字符串，参照可完成其他复杂的处理方式" class="icon-help"></a></span>
+                    <input placeholder="请输入预处理命令" name="processCmd" ng-model="log.processCmd" required="required" class="ui-input-fill full"/><span class="txt-wrap"><a popover="对收集到的日志做进一步处理，比如筛选或增减字段等，可以用grep和awk命令完成，命令以管道形式执行，因此必须以“|”开始，比如一个典型的处理命令为：   | grep &quot;ERROR\\|WARN\\| EXCEPTION\\| statistic&quot; | awk -vnhost=&quot;$HOSTNAME&quot; '{print &quot;[&quot;nhost&quot;]--&quot;$0}'，该命令将只筛选包含四个对应关键字的行，并且会在行首添加&quot;[hostname]--&quot;的字符串，参照可完成其他复杂的处理方式" class="icon-help"></a></span>
                   </div>
                 </div>
                 <div class="log-check">
-                  <input id="autoDelete{{$index}}" type="checkbox" name="autoDelete" ng-model="log.autoDelete" class="dome-check"/>
+                  <input id="autoDelete{{$index}}" type="checkbox" name="autoDelete" ng-model="log.autoDelete" class="ui-check"/>
                   <label for="autoDelete{{$index}}">自动删除日志</label>
                 </div>
                 <div ng-if="log.autoDelete" class="line-full"><span class="log-title"> 过期时间</span>
-                  <input placeholder="过期则自动删除" name="logExpired" ng-model="log.logExpired" required="required" ng-pattern="/^[1-9]\d*$/" class="input-fill"/><span class="unit">小时</span>
+                  <input placeholder="过期则自动删除" name="logExpired" ng-model="log.logExpired" required="required" ng-pattern="/^[1-9]\d*$/" class="ui-input-fill"/><span class="unit">小时</span>
                 </div>
                 <div ng-if="(needValid||deployForm.logExpired.$dirty)&amp;&amp;deployForm.logExpired.$invalid" class="txt-error log-error">请输入大于0的整数</div>
               </div>
             </div>
           </li>
+          <li><span class="info-name">网络模式</span>
+            <div class="info-content"><span class="first-info">{{showdeploy.networkMode=='HOST'?'Host':'Overlay'}}</span></div>
+          </li>
         </ul>
-        <div class="bottom-option"><span class="span bottom-option-con">
-            <button ng-disabled="isWaitingUpdate||isLoading" ng-click="needValid=true;deployForm.$valid&amp;&amp;toUpdate();" class="btn btn-md btn-bright">保存升级设置</button>
+        <div class="com-bottom-option"><span class="span com-bottom-option-con">
+            <button ng-disabled="isWaitingUpdate||isLoading" ng-click="needValid=true;deployForm.$valid&amp;&amp;toUpdate();" class="ui-btn ui-btn-md ui-btn-bright">保存升级设置</button>
             <div ng-show="needValid&amp;&amp;deployForm.$invalid" class="txt-error">存在不合法数据，请修改后提交。</div></span></div>
       </div>
     </tab>
-    <tab heading="事件" active="tabActive[2].active">
+    <tab heading="事件" active="tabActive[2].active" ui-sref="deployDetail.event">
       <div class="events-con">
         <ul class="events-list">
           <li ng-if="eventsList.length===0" class="event-success">无事件信息</li>
-          <li ng-repeat="event in eventsList" ng-class="{'START':'event-building','PROCESSING':'event-building','SUCCESS':'event-success','FAILED':'event-failed'}[event.eventStatus]"><span class="icon-dot"><i class="dot-line"></i></span><span ng-bind="event.optTxt" class="event-name"></span><span ng-bind="event.statusTxt" class="event-status"></span><span ng-bind="event.date" class="event-date"></span><span ng-cloak="ng-cloak" class="event-author"><i tooltip="操作者" class="icon-user"></i>{{event.userName}}</span><span ng-bind="event.message" popover="{{event.message}}" popover-trigger="mouseenter" class="event-info nowrap"></span></li>
+          <li ng-repeat="event in eventsList" ng-class="{'START':'event-building','PROCESSING':'event-building','SUCCESS':'event-success','FAILED':'event-failed','KUBERNETES':'event-system'}[event.eventStatus]"><span class="icon-dot"><i class="dot-line"></i></span><span ng-bind="event.optTxt" class="event-name"></span><span ng-bind="event.statusTxt" class="event-result"></span><span ng-bind="event.date" class="event-date"></span><span ng-cloak="ng-cloak" class="event-author"><i tooltip="操作者" class="icon-user"></i>{{event.userName}}</span><span ng-if="event.operation!='KUBERNETES'" class="event-process"><span tooltip="起始状态" tooltip-placement="left" class="event-process-item"><i class="icon-process-dot start"></i><span ng-repeat="status in event.primarySnapshot" ng-bind="status.version+' , '+status.replicas" class="event-process-detail"></span></span><span tooltip="目标状态" tooltip-placement="left" class="event-process-item"><i class="icon-process-dot origin"></i><span ng-repeat="status in event.targetSnapshot" ng-bind="status.version+' , '+status.replicas" class="event-process-detail"></span></span><span tooltip="完成状态" tooltip-placement="left" class="event-process-item"><i class="icon-process-dot current"></i><span ng-repeat="status in event.currentSnapshot" ng-bind="status.version+' , '+status.replicas" class="event-process-detail"></span></span></span><span ng-if="event.operation=='KUBERNETES'" ng-bind="event.message" popover="{{event.message}}" popover-trigger="mouseenter" class="event-process tool-nowrap"></span><span ng-show="event.eventStatus=='FAILED'" popover="{{event.message}}" popover-trigger="mouseenter" class="txt-warning event-info">错误信息</span></li>
         </ul>
       </div>
     </tab>
-    <tab heading="实例" active="tabActive[3].active">
+    <tab heading="实例" active="tabActive[3].active" ui-sref="deployDetail.instance">
       <div class="instance-con">
-        <table class="table-dome instance-list">
+        <table class="ui-table-dome instance-list">
           <thead>
             <tr>
               <th>实例名称</th>
@@ -278,9 +280,9 @@
         </table>
       </div>
     </tab>
-    <tab heading="健康检查" active="tabActive[4].active">
+    <tab heading="健康检查" active="tabActive[4].active" ui-sref="deployDetail.healthcheck">
       <div class="health-con">
-        <ul class="list-info">
+        <ul class="com-list-info">
           <li><span class="info-name not-align-input">健康检查</span>
             <div ng-switch="config.healthCheckerDraft.type" class="info-content"><span ng-switch-default="ng-switch-default">None</span><span ng-switch-when="HTTP">Http检查</span><span ng-switch-when="TCP">Tcp检查</span>
               <div ng-if="config.healthCheckerDraft.type=='TCP'||config.healthCheckerDraft.type=='HTTP'" class="line-long"><span class="child-name">检查端口</span><span ng-bind="config.healthCheckerDraft.port" class="child-txt"></span></div>
@@ -292,26 +294,47 @@
         </ul>
       </div>
     </tab>
-    <tab heading="负载均衡" active="tabActive[5].active">
+    <tab heading="网络/访问" active="tabActive[5].active" ui-sref="deployDetail.network">
       <div class="health-con">
-        <ul ng-form="ng-form" name="healthFrom" ng-class="{'need-valid':healthNeedValid}" class="list-info">
-          <li><span class="info-name not-align-input">负载均衡</span>
-            <div class="info-content"><span ng-cloak="ng-cloak">{{deployIns.isOpenLoadBalance?'开启':'未开启'}}</span>
-              <div ng-repeat="loadbalance in config.loadBalanceDrafts" ng-if="!$last" class="log-item">
-                <div class="line-full"><span class="log-title not-align-input">服务监听端口</span><span ng-bind="loadbalance.targetPort"></span></div>
-                <div class="line-full"><span class="log-title"> 对外访问端口</span><span ng-bind="loadbalance.port"></span></div>
-                <div class="line-full"><span class="log-title not-align-input"> 对外访问IP</span>
-                  <div class="line-element">
-                    <div ng-repeat="ips in config.loadBalanceDrafts[$index].externalIPs" ng-bind="ips.ip" ng-if="!last" class="ips"></div>
+        <ul ng-form="ng-form" name="healthFrom" ng-class="{'need-valid':healthNeedValid}" class="com-list-info">
+          <li><span class="info-name not-align-input">网络模式</span>
+            <div class="info-content"><span class="small-info">{{showdeploy.networkMode=='HOST'?'Host':'Overlay'}}</span></div>
+          </li>
+          <li><span class="info-name not-align-input">访问设置</span>
+            <div class="info-content"><span class="small-info">{{showdeploy.visitSet}}</span>
+              <div ng-if="showdeploy.networkMode=='DEFAULT'">
+                <div ng-if="showdeploy.loadBalanceDrafts.length!==0">
+                  <div ng-repeat="loadbalance in showdeploy.loadBalanceDrafts" class="log-item">
+                    <div class="line-full"><span class="log-title not-align-input">服务监听端口</span><span ng-bind="loadbalance.targetPort"></span></div>
+                    <div class="line-full"><span class="log-title not-align-input"> 对外访问端口</span><span ng-bind="loadbalance.port"></span></div>
+                    <div class="line-full"><span class="log-title not-align-input"> 对外访问IP</span>
+                      <div ng-repeat="ips in showdeploy.loadBalanceDrafts[$index].externalIPs" class="line-element">
+                        <div ng-bind="ips" ng-if="!last" class="ips"></div>
+                      </div>
+                    </div>
                   </div>
+                </div>
+                <div ng-if="showdeploy.innerServiceDrafts.length!==0">
+                  <div ng-repeat="innerService in showdeploy.innerServiceDrafts" class="log-item">
+                    <div class="line-full"><span class="log-title not-align-input">服务监听端口</span><span ng-bind="innerService.targetPort"></span></div>
+                    <div class="line-full"><span class="log-title not-align-input"> 集群内访问端口</span><span ng-bind="innerService.port"></span></div>
+                  </div>
+                </div>
+              </div>
+              <div ng-if="showdeploy.networkMode=='HOST'&amp;&amp;showdeploy.exposePortNum!==0">
+                <div class="log-item">
+                  <div class="line-full"><span>对外暴露端口个数:&nbsp;</span><span ng-bind="showdeploy.exposePortNum"></span></div><span class="txt-prompt tool-align-input">Host网络下，系统会给每个实例分配若干个端口，用于对外服务和实例间通信。此外，在Host网络下，实例ip和宿主机ip一致。</span>
                 </div>
               </div>
             </div>
           </li>
+          <li><span class="info-name not-align-input">内网域名</span>
+            <div class="info-content"><span class="small-info">{{showdeploy.serviceDnsName}}</span></div>
+          </li>
         </ul>
       </div>
     </tab>
-    <tab heading="部署成员" active="tabActive[6].active" ng-hide="!hasMemberPermisson">
+    <tab heading="部署成员" active="tabActive[6].active" ng-hide="!hasMemberPermisson" ui-sref="deployDetail.user">
       <div ng-include="'index/tpl/tplUserList/tplUserList.html'" class="tab-member"></div>
     </tab>
   </tabset>
@@ -321,8 +344,8 @@
   <form name="versionFrom" ng-class="{'need-valid':needValid}" class="modal-body">
     <ul class="modal-item">
       <li><span class="modal-label">选择Version</span>
-        <div class="select-con modal-info">
-          <button class="btn btn-white btn-select">{{versionData.versionId?'version'+versionData.versionId:'选择Version'}}<i class="icon-down"></i></button>
+        <div select-con="select-con" class="com-select-con modal-info">
+          <button class="ui-btn ui-btn-white ui-btn-select"><i class="icon-down"></i>{{versionData.versionId?'version'+versionData.versionId:'选择Version'}}</button>
           <ul class="select-list">
             <li ng-repeat="version in versionList" class="select-item"><a ng-click="checkVersion(version.version)" ng-cloak="ng-cloak">version{{version.version}}</a></li>
           </ul>
@@ -333,13 +356,13 @@
       <li ng-if="!stateful">
         <div class="modal-label">启动实例个数</div>
         <div class="modal-info">
-          <input ng-model="versionData.replicas" name="replicas" required="required" ng-pattern="/^[1-9]\d*$/" class="input-white"/>
+          <input ng-model="versionData.replicas" name="replicas" required="required" ng-pattern="/^[1-9]\d*$/" class="ui-input-white"/>
         </div>
       </li>
     </ul>
   </form>
   <div class="modal-footer">
-    <button ng-click="needValid=true;versionFrom.$valid&amp;&amp;submit()" class="btn btn-primary btn-sm">确定</button>
+    <button ng-click="needValid=true;versionFrom.$valid&amp;&amp;submit()" class="ui-btn ui-btn-primary ui-btn-sm">确定</button>
   </div>
 </script>
 <script type="text/ng-template" id="scaleModal.html">
@@ -347,10 +370,10 @@
   <div class="modal-body text-center modal-scale">
     <ul ng-form="ng-form" role="form" name="replicasForm" ng-class="{'need-valid':needValid}">
       <li><span class="info-name">实例个数</span><span class="info-content">
-          <input ng-model="replicas" name="replicas" required="required" ng-pattern="/^[1-9]\d*$/" not-equal="oldReplicas" class="input-white"/>个<span ng-if="(needValid||replicasForm.replicas.$dirty)&amp;&amp;replicasForm.replicas.$error.pattern" class="txt-error">必须为大于0的整数</span><span ng-if="(needValid||replicasForm.replicas.$dirty)&amp;&amp;!replicasForm.replicas.$error.pattern&amp;&amp;replicasForm.replicas.$error.notEqual" class="txt-error">不能为当前实例个数</span></span></li>
+          <input ng-model="replicas" name="replicas" required="required" ng-pattern="/^[1-9]\d*$/" not-equal="oldReplicas" class="ui-input-white"/>个<span ng-if="(needValid||replicasForm.replicas.$dirty)&amp;&amp;replicasForm.replicas.$error.pattern" class="txt-error">必须为大于0的整数</span><span ng-if="(needValid||replicasForm.replicas.$dirty)&amp;&amp;!replicasForm.replicas.$error.pattern&amp;&amp;replicasForm.replicas.$error.notEqual" class="txt-error">不能为当前实例个数</span></span></li>
     </ul>
   </div>
   <div class="modal-footer">
-    <button ng-click="needValid=true;replicasForm.$valid&amp;&amp;submitScale()" class="btn btn-bright btn-sm pull-right">确定</button>
+    <button ng-click="needValid=true;replicasForm.$valid&amp;&amp;submitScale()" class="ui-btn ui-btn-bright ui-btn-sm pull-right">确定</button>
   </div>
 </script>

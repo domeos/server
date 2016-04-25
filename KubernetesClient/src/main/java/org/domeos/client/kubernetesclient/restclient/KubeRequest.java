@@ -6,6 +6,7 @@ package org.domeos.client.kubernetesclient.restclient;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.*;
@@ -48,6 +49,7 @@ public abstract class KubeRequest {
         ObjectMapper tmpObjectMapper = new ObjectMapper();
         tmpObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         tmpObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
+        tmpObjectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         // tmpObjectMapper.configure(SerializationFeature.WRITE_NULL_MAP_VALUES, false);
         return tmpObjectMapper;
     }

@@ -1,18 +1,8 @@
 @import "compass/css3";
 @import "common/css/common.scss";
 .deploy-detail{
-	.nav-tabs{
-		margin: 0 0-$page-padding 0  0-$page-padding;
-		li:first-child{
-			margin-left: 0;
-		}
-	}
-	.tab-content{
-		margin: 0 0-$page-padding 0  0-$page-padding;
-		min-height: 600px;
-	}
 	.disabled-prompt{
-		padding: 40px 0 0 $page-padding+$wider-padding;
+		padding: 40px 0 0 $wider-padding;
 		font-size: 16px;
 	}
 	.instance-con{
@@ -25,10 +15,10 @@
 			}
 			th,td{
 				&:first-child{
-					padding-left: $page-padding+$wider-padding;
+					padding-left: $wider-padding;
 				}
 				&:last-child{
-					padding-right: $page-padding+$wider-padding;
+					padding-right: $wider-padding;
 				}
 			}
 		}
@@ -39,6 +29,7 @@
 			li{
 				height: 78px;
 				padding:30px 0 0 72px;
+				white-space: nowrap;
 				&>span{
 					vertical-align: top;
 				}
@@ -68,22 +59,83 @@
 						background-color: dome-color(border,light);
 					}
 				}
-				.event-name{
+				.event-name,.event-status,.event-result,.event-date{
 					display: inline-block;
-					width: 10%;
-					margin-left: 60px;
+					width: 5%;
+					margin-left: 20px;
 				}
-				.event-status,.event-date,.event-author,.event-info{
+				.event-date{
+					min-width: 52px;
+				}
+				.event-author,.event-info{
 					display: inline-block;
-					width: 14%;
+					width: 11%;
+					margin-left: 20px;
 				}
-				.event-status{
+				.event-author{
+					width: 20%;
+					white-space: pre-wrap;
+				}
+				.event-process{
+					display: inline-block;
+					width: 350px;
+					.event-process-item{
+						display: inline-block;
+						margin-left: 12px;
+						&:first-child{
+							margin-left: 0;
+						}
+					}
+					.icon-process-dot{
+						display: inline-block;
+						vertical-align: middle;
+						width: 6px;
+						height: 6px;
+						margin-right: 2px;
+						background-color:dome-color(border,deep);
+						border-radius: 50%;
+						&.start{
+							background-color:dome-color(dome,primary);
+						}
+						&.origin{
+							background-color:dome-color(dome,warning);
+						}
+						&.current{
+							background-color:dome-color(dome,active);
+						}
+
+					}
+					.event-process-detail{
+						display: inline-block;
+						width: 106px;
+					}
+				}
+				.event-result{
 					color: dome-color(font,embed);
 				}
 				.event-info{
-					width: auto;
-					max-width: 22%;
+					width: 56px;
+					margin-left: 4%;
+					&:hover{
+						cursor: pointer;
+					}
 				}
+				@media (min-width: 1000px) {
+					.event-info{
+						margin-left: 12px;
+					}
+				}
+				@media (min-width: 1200px) {
+					.event-info{
+						margin-left: 6%;
+					}
+				}
+				@media (min-width: 1500px) {
+					.event-info{
+						margin-left: 10%;
+					}
+				}
+
 				.event-author{
 					word-wrap:break-word;
 					word-break:break-all;
@@ -107,7 +159,7 @@
 						}
 					}
 					.event-status{
-						color:  #f85959;;
+						color:  #f85959;
 					}
 				}
 				&.event-building{
@@ -119,6 +171,14 @@
 					}
 					.event-status{
 						color:  #5dabf3;;
+					}
+				}
+				&.event-system{
+					.icon-dot{
+						background-color: rgba(255,171,0,.2);
+						&:after{
+							background-color:  rgba(255,171,0,.4);
+						}
 					}
 				}
 				&:nth-child(2n+1){
@@ -139,7 +199,7 @@
 		.add-mirror{
 			display: inline-block;
 			width: 30%;
-			margin-left: $page-padding+$wider-padding;
+			margin-left: $wider-padding;
 			text-align: left;
 			.icon-add{
 				margin-right: 6px;
@@ -152,19 +212,23 @@
 			margin-left: 16px;
 		}
 		.deploy-rollback{
-			margin: 22px $page-padding+$wider-padding 0  $page-padding+$wider-padding;
-			.select-con{
+			margin: 22px $wider-padding 0  $wider-padding;
+			.com-select-con{
 				display:inline-block;
 			}
-			.btn-primary{
+			.ui-btn-primary{
 				margin-left: 12px;
 			}
 		}
 		.all-update{
 			color: dome-color(dome,bright);
 		}
-		.list-info{
-			margin: 20px  $page-padding+$wider-padding 0  $page-padding+$wider-padding;
+		.image-tag{
+			float: right;
+			margin-right: 4px;
+		}
+		.com-list-info{
+			margin: 20px  $wider-padding 0  $wider-padding;
 			li{
 				.info-name{
 					padding: 14px 0 12px 12px;
@@ -175,7 +239,7 @@
 						display: inline-block;
 						width: 180px;
 					}
-					.table-logdir{
+					.ui-table-logdir{
 						width: 100%;
 					}
 					.log-info{
@@ -209,7 +273,7 @@
 					padding-bottom: 30px;
 				}
 				li{
-					.table-env{
+					.ui-table-env{
 						width: 100%;
 						table-layout:fixed;
 						td{
@@ -233,7 +297,7 @@
 							margin-left: 10px;
 						}
 					}
-					.input-sm{
+					.ui-input-sm{
 						margin-right: 40px;
 					}
 					.txt-cell{
@@ -293,7 +357,7 @@
 			}
 		}
 	}
-	.select-con{
+	.com-select-con{
 		display: inline-block;
 	}
 }

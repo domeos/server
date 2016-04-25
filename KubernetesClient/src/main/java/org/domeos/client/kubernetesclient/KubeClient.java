@@ -13,7 +13,9 @@ import org.domeos.client.kubernetesclient.exception.KubeInternalErrorException;
 import org.domeos.client.kubernetesclient.exception.KubeResponseException;
 import org.domeos.client.kubernetesclient.responsehandler.UnitInputStreamResponseHandler;
 import org.domeos.client.kubernetesclient.restclient.KubeRESTClient;
+import org.domeos.client.kubernetesclient.unitstream.factory.EventInputStreamFactory;
 import org.domeos.client.kubernetesclient.unitstream.factory.LogInputStreamFactory;
+import org.domeos.client.kubernetesclient.unitstream.factory.PodInputStreamFactory;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -251,6 +253,42 @@ public class KubeClient {
                 .addHeader(getPatchJsonHeader())
                 .body(pod)
                 .query(Pod.class);
+    }
+    public void watchPod(String resourceVersion, Map<String, String> selectors,
+                         UnitInputStreamResponseHandler<Pod> handler)
+            throws KubeResponseException, IOException, KubeInternalErrorException {
+        logger.debug("watch pod with selectors=" + selectors);
+        restClient.get()
+                .path(getPathPrefix(v1) + "/" + getNameSpacePath() + "/pods")
+                .addParameter(getPrettyParameter())
+                .addParameter("labelSelector", formatSelector(selectors))
+                .addParameter("resourceVersion", resourceVersion)
+                .addParameter("watch", "true")
+                .queryWithResponseHandler(new PodInputStreamFactory(), handler);
+    }
+    public void watchPod(PodList podList, Map<String, String> selectors,
+                         UnitInputStreamResponseHandler<Pod> handler)
+            throws KubeResponseException, IOException, KubeInternalErrorException {
+        watchPod(podList.getMetadata().getResourceVersion(), selectors, handler);
+    }
+    public void watchPod(String resourceVersion,
+                         UnitInputStreamResponseHandler<Pod> handler)
+            throws KubeResponseException, IOException, KubeInternalErrorException {
+        watchPod(resourceVersion, null, handler);
+    }
+    public void watchPod(PodList podList, UnitInputStreamResponseHandler<Pod> handler)
+            throws KubeResponseException, IOException, KubeInternalErrorException {
+        watchPod(podList.getMetadata().getResourceVersion(), handler);
+    }
+
+    public void watchEvent(String resourceVersioin, UnitInputStreamResponseHandler<Event> handler)
+            throws KubeResponseException, IOException, KubeInternalErrorException {
+        restClient.get()
+                .path(getPathPrefix(v1) + "/events")
+                .addParameter(getPrettyParameter())
+                .addParameter("watch", "true")
+                .addParameter("resourceVersion", resourceVersioin)
+                .queryWithResponseHandler(new EventInputStreamFactory(), handler);
     }
 
     // for replication controller

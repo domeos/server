@@ -2,7 +2,7 @@ package org.domeos.api.controller.global;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import org.apache.shiro.util.ThreadContext;
-import org.domeos.api.model.global.GitConfig;
+import org.domeos.framework.api.model.global.GitConfig;
 import org.domeos.base.BaseTestCase;
 import org.domeos.basemodel.ResultStat;
 import org.junit.Before;

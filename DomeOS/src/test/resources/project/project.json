@@ -1,16 +1,14 @@
 {
   "id": 1,
-  "projectName": "test/domeos_test",
-  "type":"USER",
+  "name": "test/domeos_test",
   "description": "this is for test case",
-  "stateless": 1,
   "authority": 1,
   "dockerfileConfig": {
-    "baseImageName":"sohucs/redhat",
-    "baseImageTag":"7.0",
-    "baseImageRegistry":"private-registry.sohucs.com",
-    "codeStoragePath":"/code",
-    "startCmd":"/bin/sh"
+    "baseImageName": "sohucs/redhat",
+    "baseImageTag": "7.0",
+    "baseImageRegistry": "private-registry.sohucs.com",
+    "codeStoragePath": "/code",
+    "startCmd": "/bin/sh"
   },
   "confFiles": {
     "/file/file1": "file/file1",

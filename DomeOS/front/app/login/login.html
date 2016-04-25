@@ -2,9 +2,10 @@
 <html ng-app="loginApp">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>登录-DomeOs</title>
-    <link rel="stylesheet" href="/common/css/base.css" type="text/css">
+    <title>登录-DomeOS</title><!-- build:css /login/css/login.min.css -->
+    <link rel="stylesheet" href="../common/css/base.css" type="text/css">
     <link rel="stylesheet" href="css/login.css" type="text/css">
+    <link rel="stylesheet" type="text/css"><!-- endbuild -->
   </head>
   <body ng-controller="loginCtr">
     <div class="login-detail">
@@ -29,17 +30,20 @@
           <div class="login-form">
             <input placeholder="用户名" name="username" ng-model="username" required ng-change="hideError()" class="login-txt"><span ng-show="(needValid||loginForm.username.$dirty)&amp;&amp;loginForm.username.$error.required" class="txt-error">必填</span>
             <input placeholder="密码" type="password" name="password" ng-model="password" required ng-change="hideError()" class="login-txt"><span ng-show="(needValid||loginForm.password.$dirty)&amp;&amp;loginForm.password.$error.required" class="txt-error">必填</span><span ng-bind="hasError" ng-if="hasError!==''" class="txt-error"></span>
-            <button ng-click="needValid=true;loginForm.$valid&amp;&amp;login()" class="btn btn-login">登录</button>
+            <button ng-click="needValid=true;loginForm.$valid&amp;&amp;login()" class="ui-btn ui-btn-login">登录</button>
           </div>
           <div class="login-bottom"><span>提示：</span>
             <p>申请新账户或找回账户密码请联系管理员。</p>
           </div>
         </form>
       </div>
-    </div>
-    <script type="text/javascript" src="/lib/js/jquery.min.js"></script>
-    <script type="text/javascript" src="/lib/js/angular.min.js"></script>
+    </div><!-- build:js /login/js/lib.min.js -->
+    <script type="text/javascript" src="../lib/js/jquery.min.js"></script>
+    <script type="text/javascript" src="../lib/js/angular.min.js"></script>
+    <script type="text/javascript" src=""></script><!-- endbuild -->
+    <!-- build:js /login/js/loginApp.min.js -->
     <script type="text/javascript" src="js/loginApp.js"></script>
     <script type="text/javascript" src="js/loginCtr.js"></script>
+    <script type="text/javascript" src=""></script><!-- endbuild -->
   </body>
 </html>

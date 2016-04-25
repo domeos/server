@@ -23,10 +23,15 @@ public enum ResultStat {
 
     KUBE_EXCEPTION(600),
 
+    CREATOR_ERROR(700),
+
     // cluster related
-    CLUSTER_ALREADY_EXIST(1000),
-    CANNOT_DELETE_CLUSTER(1001),
-    CANNOT_UPDATE_CLUSTER(1002),
+    CLUSTER_NOT_LEGAL(1001),
+    CLUSTER_NOT_EXIST(1002),
+    CLUSTER_ALREADY_EXIST(1003),
+    CANNOT_SET_CLUSTER(1004),
+    CANNOT_DELETE_CLUSTER(1005),
+    CANNOT_UPDATE_CLUSTER(1006),
 
     // project related
     PROJECT_EXISTED(1100),
@@ -43,6 +48,7 @@ public enum ResultStat {
     DEPLOYMENT_STOP_FAILED(1204),
     DEPLOYMENT_START_FAILED(1205),
     DEPLOYMENT_GETVERSION_FAILED(1206),
+    DEPLOYMENT_STATUS_NOT_ALLOW(1207),
 
     // version related
     VERSION_NOT_EXIST(1300),
@@ -56,11 +62,14 @@ public enum ResultStat {
     BUILD_INFO_NOT_EXIST(1404),
     BUILD_INFO_NOT_MATCH(1405),
     REGISTRY_NOT_EXIST(1406),
+    WEBHOOK_ERROR(1407),
+    RSAKEYPAIR_ERROR(1408),
 
     // base image related
     BASE_IMAGE_MAPPING_ERROR(1500),
     BASE_IMAGE_ERROR(1501),
     BASE_IMAGE_ALREADY_EXIST(1502),
+    IMAGE_EXSIT_IN_REGISTRY(1503),
 
     // sshkey related
     DO(1600),
@@ -104,6 +113,11 @@ public enum ResultStat {
     // deployment scale related
     DEPLOYMENT_SCALE_NO_RC_FOUND(2200),
     DEPLOYMENT_SCALE_BAD_RC_FOUND(2201),
+
+    // monitor related
+    TARGET_REQUEST_NOT_LEGAL(2300),
+    MONITOR_DATA_REQUEST_NOT_LEGAL(2301),
+    MONITOR_DATA_QUERY_ERROR(2302),
 
     MAX(9999);
     //!!----------------do not modify code below------------------!!

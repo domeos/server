@@ -2,7 +2,7 @@
 -- USE GRAPH;
 -- set names utf8;
 -- grant all privileges on graph.* to 'domeos'@'%' with grant option;
-use graph
+use graph;
 
 DROP TABLE if exists `graph`.`endpoint`;
 CREATE TABLE `graph`.`endpoint` (

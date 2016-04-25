@@ -69,6 +69,13 @@ public abstract class BasicUnitInputStream<T> implements ClosableUnitInputStream
         T result = null;
         while (true) {
             tmpReadLength = input.read(tmpBuffer);
+            if (tmpReadLength == -1) {
+                isEnd = true;
+                if (outputStream.size() == 0) {
+                    return null;
+                }
+                return formatOutput(outputStream);
+            }
             logger.debug("[PIECE]" + new String(tmpBuffer, 0, tmpReadLength));
             int i = 0;
             int lastIdx = 0;
@@ -88,13 +95,7 @@ public abstract class BasicUnitInputStream<T> implements ClosableUnitInputStream
             if (result != null) {
                 return result;
             }
-            if (tmpReadLength == -1) {
-                isEnd = true;
-                if (outputStream.size() == 0) {
-                    return null;
-                }
-                return formatOutput(outputStream);
-            } else if (lastIdx != tmpReadLength) {
+            if (lastIdx != tmpReadLength) {
                 outputStream.write(tmpBuffer, lastIdx, tmpReadLength - lastIdx);
             }
         }

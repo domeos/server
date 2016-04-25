@@ -4,7 +4,7 @@
     <groupId>org.domeos</groupId>
     <artifactId>DomeOS</artifactId>
     <packaging>war</packaging>
-    <version>0.1-SNAPSHOT</version>
+    <version>0.2-SNAPSHOT</version>
     <name>DomeOS Maven Webapp</name>
     <url>http://maven.apache.org</url>
 
@@ -49,6 +49,16 @@
             <artifactId>spring-messaging</artifactId>
             <version>${spring.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-aspects</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>aspectj</groupId>
+            <artifactId>aspectjrt</artifactId>
+            <version>1.5.3</version>
+        </dependency>
 
         <!--shiro related start-->
         <dependency>
@@ -76,6 +86,12 @@
             <artifactId>shiro-spring</artifactId>
             <version>${shiro.version}</version>
         </dependency>
+        <!--shiro related end-->
+        <!--<dependency>-->
+        <!--<groupId>net.sf.ehcache</groupId>-->
+        <!--<artifactId>ehcache</artifactId>-->
+        <!--<version>2.10.0</version>-->
+        <!--</dependency>-->
 
 
         <dependency>
@@ -95,11 +111,11 @@
         </dependency>
 
 
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.7</version>
-        </dependency>
+        <!--<dependency>-->
+        <!--<groupId>org.slf4j</groupId>-->
+        <!--<artifactId>slf4j-api</artifactId>-->
+        <!--<version>1.7.7</version>-->
+        <!--</dependency>-->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
@@ -126,6 +142,11 @@
             <artifactId>httpclient</artifactId>
             <version>4.3.1</version>
         </dependency>
+        <!--<dependency>-->
+        <!--<groupId>org.apache.httpcomponents</groupId>-->
+        <!--<artifactId>httpclient-cache</artifactId>-->
+        <!--<version>4.3.1</version>-->
+        <!--</dependency>-->
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
@@ -241,15 +262,16 @@
             <version>1.8.5</version>
             <!--scope>test</scope-->
         </dependency>
-        <dependency>
-            <groupId>org.influxdb</groupId>
-            <artifactId>influxdb-java</artifactId>
-            <version>2.1</version>
-        </dependency>
+
         <dependency>
             <groupId>org.tmatesoft.svnkit</groupId>
             <artifactId>svnkit</artifactId>
             <version>1.8.5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20080701</version>
         </dependency>
         <dependency>
             <groupId>org.domeos</groupId>
@@ -259,10 +281,10 @@
         <dependency>
             <groupId>org.domeos</groupId>
             <artifactId>kubernetesclient</artifactId>
-            <version>1.2-SNAPSHOT</version>
+            <version>1.2.2-SNAPSHOT</version>
         </dependency>
-
     </dependencies>
+
     <build>
         <finalName>DomeOS</finalName>
         <plugins>
@@ -321,21 +343,19 @@
                     <target>1.7</target>
                 </configuration>
             </plugin>
-            <!--<plugin>-->
-                <!--<artifactId>maven-surefire-plugin</artifactId>-->
-                <!--<configuration>-->
-                    <!--<includes>-->
-                        <!--<include>**/*Tests.java</include>-->
-                    <!--</includes>-->
-                    <!--<testFailureIgnore>true</testFailureIgnore>-->
-                <!--</configuration>-->
-            <!--</plugin>-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
                 <configuration>
-                    <skip>true</skip>
+                    <configLocation>check-style.xml</configLocation>
+                    <consoleOutput>true</consoleOutput>
+                    <logViolationsToConsole>true</logViolationsToConsole>
+                    <failsOnError>true</failsOnError>
+                    <failOnViolation>true</failOnViolation>
+                    <suppressionsLocation>checkstyle-suppressions.xml</suppressionsLocation>
+                    <suppressionsFileExpression>checkstyle.suppressions.file</suppressionsFileExpression>
                 </configuration>
+                <version>2.13</version>
             </plugin>
         </plugins>
     </build>

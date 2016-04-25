@@ -3,183 +3,196 @@
  * Created by xxs on 15/12/29.
  */
 
-domeApp.factory('$domeMonitor', ['$http', '$q', function($http, $q) {
-	function getMonitorInfo() {
+domeApp.factory('$domeMonitor', ['$http', '$q', '$util', function($http, $q, $util) {
+	var getMonitorInfo = function() {
 		return $http.get('/api/global/monitor/info');
-	}
+	};
+	var storeMonitorTarget = function(targetInfos) {
+		return $http.post('/api/monitor/target', angular.toJson(targetInfos));
+	};
+	var getMonitorTarget = function(targetId) {
+		return $http.get('/api/monitor/target/' + targetId);
+	};
 
-	/**
-	 * POST /chart for monitor -- multi counters
-	 * @param type = "node"         | 主机监控
-	 *        type = "pod"          | pod监控
-	 *        type = "container"    | 容器监控
-	 * @param graphType = "h"       | Endpoint视角
-	 *        graphType = "k"       | Counter视角
-	 *        graphType = "a"       | 组合视角
-	 * @param monitorData = ["bx-42-197", "bx-42-198"]     | type == "node"
-	 *        monitorData = [{"podName": "test-1", "containers": [{"hostname": "bx-42-197", "containerId": "alongcontainerid"}, {...}]}, {...}]    | type == "pod"
-	 *        monitorData = [{"hostname": "bx-42-197", "containerId": "alongcontainerid"}, {...}]  | type == "container"
-	 * @param counters = ["cpu.busy", "memory.memused", "container.memory.usage"]   | 监控项
-	 * @param clusterId = "1"   | 集群ID, string类型
-	 */
-	function showChart(type, monitorData, counters, clusterId, graphType) {
-		var data = {
-			type: type,
-			data: monitorData,
-			counters: counters,
-			_r: Math.random()
-		};
-		var w = window.open();
-		var targetUrl;
-		if (graphType) {
-			data.graph_type = graphType;
-			targetUrl = '/api/monitor/charts/' + clusterId;
-		} else {
-			data.graph_type = 'h';
-			targetUrl = '/api/monitor/chart/big/' + clusterId;
-		}
-		$http.post('/api/monitor/chart/' + clusterId, angular.toJson(data)).then(function(res) {
-			var resData = res.data;
-			if (resData.ok) {
-				w.location = targetUrl + '?id=' + resData.id + '&domeosid=' + resData.domeosid;
+	var getMonitorData = function(targetId, start, end, dataSpec, clusterId) {
+		return $http.get('/api/monitor/data/' + targetId + '?start=' + start + '&end=' + end + '&dataSpec=' + dataSpec + '&cid=' + clusterId);
+
+	};
+	var toMonitorPage = function(clusterId, clusterName, monitorTargetInfo) {
+		var winRef = window.open('', '_blank');
+		var monitorType = monitorTargetInfo.targetType;
+		storeMonitorTarget(monitorTargetInfo).then(function(res) {
+			var id = res.data.result;
+			if (id === undefined) {
+				$domePublic.openWarning('请求错误！');
+				return;
 			}
+			setTimeout(function() {
+				winRef.location = '/monitor/monitor.html?cid=' + clusterId + '&cname=' + clusterName + '&id=' + id + '&type=' + monitorType;
+			}, 0);
 		});
-	}
+	};
+	var getMonitorStatistical = function(monitorType, clusterId, monitorInfo, monitorItems) {
+		var defered = $q.defer();
 
-	/**
-	 * POST /api/counters for listing node monitor items
-	 * @param type = "node"         | 主机监控
-	 *        type = "pod"          | pod监控
-	 *        type = "container"    | 容器监控
-	 * @param monitorData = ["bx-42-197", "bx-42-198"]     | type == "node"
-	 *        monitorData = [{"podName": "test-1", "containers": [{"hostname": "bx-42-197", "containerId": "alongcontainerid"}, {...}]}, {...}]    | type == "pod"
-	 *        monitorData = [{"hostname": "bx-42-197", "containerId": "alongcontainerid"}, {...}]  | type == "container"
-	 * @param filter = "cpu and multi selectors"    | 过滤条件，以空格分隔
-	 * @param clusterId = "1"   | 集群ID, string类型
-	 * @return items = [{"counter": "cpu.busy", "type": "原始值", "step": "10s"}]     | 返回监控项列表，对于 pod 和 contianer 的类型会去除末尾的 id=<containerId>
-	 */
-	// TODO return items with another parameters
-	function getCounterList(type, monitorData, filter, clusterId) {
-		var data = {
-			type: type,
-			data: monitorData,
-			filter: filter,
-			_r: Math.random()
-		};
-		var deferred = $q.defer();
-		$http.post('/api/monitor/counters/' + clusterId, angular.toJson(data)).then(function(res) {
-			var ret = res.data;
-			if (ret.ok) {
-				var items = [];
-				var retItems = ret.data;
-				var i, item;
-				if (type == 'node') {
-					for (i in retItems) {
-						item = {
-							'counter': retItems[i][0],
-							'type': '计数值',
-							'step': retItems[i][2]
-						};
-						if (retItems[i][1] == 'GAUGE') {
-							item.type = '原始值';
-						}
-						items.push(item);
-					}
-				} else if (type == 'pod' || type == 'container') {
-					for (i in retItems) {
-						var counter = retItems[i][0].split('/')[0];
-						var has = false;
-						for (var j = 0; j < items.length; j++) {
-							if (items[j].counter == counter) {
-								has = true;
-								break;
+		function toDecimal(data, number, unitShow) {
+			if (data === null || isNaN(data)) return '——';
+			if (!unitShow) unitShow = '';
+			data = parseFloat(data.toFixed(number));
+			if (unitShow) {
+				data += unitShow;
+			}
+			return data;
+		}
+
+		function formartBytesData(data, unit) {
+			data = $util.formartBytesData(data, unit);
+			if (data === null || data === undefined) {
+				return '——';
+			}
+			return parseFloat(data.toFixed(2));
+		}
+		storeMonitorTarget({
+			clusterId: clusterId,
+			targetType: monitorType,
+			targetInfos: monitorInfo
+		}).then(function(res) {
+			return getMonitorData(res.data.result, new Date().getTime() - 300000, new Date().getTime(), 'AVERAGE', clusterId);
+		}).then(function(res) {
+			var monitorData = res.data.result;
+			var cpuBusy, memPercet,
+				// 监控数据： {node1:{diskUsedData:[{item:'/var',value:20},{item:'/opt',value:10}],maxDiskUsed:20}}
+				monitorItemData = {},
+				// 监控项汇总： {cpuUsed:{'/var':{timeStamp:xxxxxx,node1:10,node2:20},'/opt':{...}, ...}
+				collectMonitorInfo = {},
+				i;
+			/**
+			 * @param item: 单项名字  eg:'diskUsed'(表示磁盘使用情况-->生成map的key1：diskUsedData(磁盘占用率详情：对应的磁盘各分区的占用量);key2:diskUsedCount(统计后的磁盘占用量))
+			 * @param countMethod: 'MAX/SUM'，生成[item]Count 的方法
+			 * @param sourceData: 需要处理的数据  eg：{'/分区1':{'host1':'hos1Data','host2':'host2Data'}}
+			 **/
+			function getMonitorItemData(item, countMethod, sourceData, unit) {
+				var dataName = item + 'Data',
+					countName = item + 'Count';
+				angular.forEach(sourceData, function(sigMonitorData, sigMonitorItem) {
+					// console.info(item, sigMonitorItem, sigMonitorData)
+					for (var key in sigMonitorData) {
+						if (sigMonitorData.hasOwnProperty(key) && key !== 'timeStamp' && monitorItemData[key]) {
+							var sigItemValue;
+							if (unit !== undefined) {
+								if (unit == '%') {
+									sigItemValue = toDecimal(sigMonitorData[key], 2, unit);
+								} else {
+									sigItemValue = formartBytesData(sigMonitorData[key], unit);
+								}
+							}
+							monitorItemData[key][dataName].push({
+								item: sigMonitorItem,
+								value: sigItemValue
+							});
+							if (monitorItemData[key][countName] === null && !sigMonitorData[key]) {
+								continue;
+							}
+							if (countMethod == 'MAX') {
+								if (sigMonitorData[key] > monitorItemData[key][countName]) {
+									monitorItemData[key][countName] = sigMonitorData[key];
+								}
+							} else if (countMethod == 'SUM') {
+								monitorItemData[key][countName] += sigMonitorData[key];
+								// console.info('SUM', key, countName, monitorItemData[key][countName])
 							}
 						}
-						if (!has) {
-							item = {
-								'counter': counter,
-								'type': '计数值',
-								'step': retItems[i][2]
-							};
-							if (retItems[i][1] == 'GAUGE') {
-								item.type = '原始值';
-							}
-							items.push(item);
+					}
+				});
+				if (unit !== undefined) {
+					angular.forEach(monitorItemData, function(data, item) {
+						if (unit == '%') {
+							data[countName] = toDecimal(data[countName], 2);
+						} else {
+							data[countName] = formartBytesData(data[countName], unit);
 						}
-					}
-				} else {
-					deferred.reject('typeError');
+					});
 				}
-				deferred.resolve(items);
-			} else {
-				deferred.reject('requestError:' + ret.msg);
 			}
-		}, function() {
-			deferred.reject('requestError');
-		});
 
-		return deferred.promise;
-	}
-
-	var CounterList = function() {
-		this.isCheckAll = false;
-	};
-	CounterList.prototype = {
-		init: function(counters) {
-			this.counterList = (function(counters) {
-				counters = counters || [];
-				for (var i = 0; i < counters.length; i++) {
-					counters[i].isSelected = false;
-				}
-				return counters;
-			})(counters);
-		},
-		// 切换单个counter的选中状态
-		toggleCheck: function(counter) {
-			var isAllHasChange = true;
-			if (counter.isSelected) {
-				// 是否为全选
-				for (var i = 0; i < this.counterList.length; i++) {
-					if (!this.counterList[i].isSelected) {
-						isAllHasChange = false;
-						break;
-					}
-				}
-				if (isAllHasChange) {
-					this.isCheckAll = true;
-				}
-			} else {
-				this.isCheckAll = false;
-			}
-		},
-		// 全选/全不选 
-		checkAllInstance: function(isCheckAll) {
-			this.isCheckAll = isCheckAll === undefined ? this.isCheckAll : isCheckAll;
-			for (var i = 0; i < this.counterList.length; i++) {
-				this.counterList[i].isSelected = this.isCheckAll;
-			}
-		}
-	};
-	var getInstance = function(className, initInfo) {
-		var ins;
-		switch (className) {
-			case 'CounterList':
-				ins = new CounterList();
-				break;
-			default:
-				ins = {};
-				ins.init = function() {
-					console.log('error:there is no ' + className);
+			if (monitorType == 'node') {
+				cpuBusy = monitorData.counterResults['cpu.busy'].slice(-3, -2)[0];
+				memPercet = monitorData.counterResults['mem.memused.percent'].slice(-3, -2)[0];
+				collectMonitorInfo = {
+					diskUsedMap: {},
+					diskReadMap: {},
+					diskWriteMap: {},
+					netInMap: {},
+					netOutMap: {}
 				};
-				break;
-		}
-		ins.init(initInfo);
-		return ins;
+
+				for (i = 0; i < monitorItems.length; i++) {
+					monitorItemData[monitorItems[i]] = {
+						diskUsedData: [],
+						diskUsedCount: 0,
+						diskReadData: [],
+						diskReadCount: 0,
+						diskWriteData: [],
+						diskWriteCount: 0,
+						netInData: [],
+						netInCount: 0,
+						netOutData: [],
+						netOutCount: 0,
+						cpuBusyCount: toDecimal(cpuBusy[monitorItems[i]], 2),
+						memPercentCount: toDecimal(memPercet[monitorItems[i]], 2)
+					};
+				}
+				angular.forEach(monitorData.counterResults, function(value, key) {
+					var param = key.split('=')[1];
+					if (key.indexOf('df.bytes.used.percent') !== -1) {
+						// 取倒数第三个点，前两个点可能没有数据
+						collectMonitorInfo.diskUsedMap[param] = value.slice(-3, -2)[0];
+					} else if (key.indexOf('disk.io.read_bytes') !== -1) {
+						collectMonitorInfo.diskReadMap[param] = value.slice(-3, -2)[0];
+					} else if (key.indexOf('disk.io.write_bytes') !== -1) {
+						collectMonitorInfo.diskWriteMap[param] = value.slice(-3, -2)[0];
+					} else if (key.indexOf('net.if.in.bytes') !== -1) {
+						collectMonitorInfo.netInMap[param] = value.slice(-3, -2)[0];
+					} else if (key.indexOf('net.if.out.bytes') !== -1) {
+						collectMonitorInfo.netOutMap[param] = value.slice(-3, -2)[0];
+					}
+				});
+
+				getMonitorItemData('diskUsed', 'MAX', collectMonitorInfo.diskUsedMap, '%');
+				getMonitorItemData('diskRead', 'SUM', collectMonitorInfo.diskReadMap, 'KB');
+				getMonitorItemData('diskWrite', 'SUM', collectMonitorInfo.diskWriteMap, 'KB');
+				getMonitorItemData('netIn', 'SUM', collectMonitorInfo.netInMap, 'KB');
+				getMonitorItemData('netOut', 'SUM', collectMonitorInfo.netOutMap, 'KB');
+
+			} else if (monitorType == 'pod' || monitorType == 'container') {
+				cpuBusy = monitorData.counterResults['container.cpu.usage.busy'].slice(-3, -2)[0];
+				memPercet = monitorData.counterResults['container.mem.usage.percent'].slice(-3, -2)[0];
+				collectMonitorInfo = {
+					netIn: monitorData.counterResults['container.net.if.in.bytes'].slice(-3, -2)[0],
+					netOut: monitorData.counterResults['container.net.if.out.bytes'].slice(-3, -2)[0]
+				};
+
+				for (i = 0; i < monitorItems.length; i++) {
+					monitorItemData[monitorItems[i]] = {
+						netInCount: formartBytesData(collectMonitorInfo.netIn[monitorItems[i]], 'KB'),
+						netOutCount: formartBytesData(collectMonitorInfo.netOut[monitorItems[i]], 'KB'),
+						cpuBusyCount: toDecimal(cpuBusy[monitorItems[i]], 2),
+						memPercentCount: toDecimal(memPercet[monitorItems[i]], 2)
+					};
+				}
+			}
+			defered.resolve(monitorItemData);
+		}, function() {
+			defered.reject();
+		});
+		return defered.promise;
 	};
 	return {
-		showChart: showChart,
-		getCounterList: getCounterList,
 		getMonitorInfo: getMonitorInfo,
-		getInstance: getInstance
+		getMonitorStatistical: getMonitorStatistical,
+		storeMonitorTarget: storeMonitorTarget,
+		getMonitorTarget: getMonitorTarget,
+		getMonitorData: getMonitorData,
+		toMonitorPage: toMonitorPage
 	};
 }]);

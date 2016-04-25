@@ -4,7 +4,7 @@ import org.apache.log4j.Logger;
 import org.domeos.api.model.deployment.UpdatePhase;
 import org.domeos.api.model.deployment.UpdateStatus;
 import org.domeos.global.GlobalConstant;
-import org.domeos.kubeutils.updater.ReplicationControllerUpdater;
+import org.domeos.framework.engine.k8s.updater.ReplicationControllerUpdater;
 import org.domeos.client.kubernetesclient.KubeClient;
 import org.domeos.client.kubernetesclient.definitions.v1.PodList;
 import org.domeos.client.kubernetesclient.definitions.v1.ReplicationController;

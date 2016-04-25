@@ -2,7 +2,7 @@ package org.domeos.api.controller.ci;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import org.apache.shiro.util.ThreadContext;
-import org.domeos.api.model.ci.BaseImage;
+import org.domeos.framework.api.model.image.BaseImage;
 import org.domeos.base.BaseTestCase;
 import org.domeos.basemodel.ResultStat;
 import org.junit.Before;

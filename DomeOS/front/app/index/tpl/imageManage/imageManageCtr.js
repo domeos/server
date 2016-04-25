@@ -1,4 +1,5 @@
-domeApp.controller('imageManageCtr', ['$scope', '$domeImage', '$domePublic', '$modal', function($scope, $domeImage, $domePublic, $modal) {
+domeApp.controller('imageManageCtr', ['$scope', '$state', '$domeImage', '$domePublic', '$modal', function($scope, $state, $domeImage, $domePublic, $modal) {
+	'use strict';
 	$scope.$emit('pageTitle', {
 		title: '镜像管理',
 		descrition: '在这里您可以查看并管理您的镜像仓库。',
@@ -11,6 +12,22 @@ domeApp.controller('imageManageCtr', ['$scope', '$domeImage', '$domePublic', '$m
 	$scope.isShowAdd = false;
 	$scope.newImageInfo = {};
 	$scope.projectRegistry = '';
+	$scope.tabActive = [{
+		active: false
+	}, {
+		active: false
+	}, {
+		active: false
+	}];
+	
+	var stateInfo = $state.$current.name;
+	if (stateInfo.indexOf('projectimages') !== -1) {
+		$scope.tabActive[1].active = true;
+	} else if (stateInfo.indexOf('otherimages') !== -1) {
+		$scope.tabActive[2].active = true;
+	} else {
+		$scope.tabActive[0].active = true;
+	}
 
 	$domeImage.getAllImages().then(function(res) {
 		var imageInfo = res.data.result || {};
@@ -41,6 +58,16 @@ domeApp.controller('imageManageCtr', ['$scope', '$domeImage', '$domePublic', '$m
 			resolve: {
 				imageName: function() {
 					return simpleImageName;
+				}
+			}
+		});
+	};
+	$scope.deleteBaseImage = function(id) {
+		$domeImage.deleteBaseImage(id).then(function() {
+			for (var i = 0; i < $scope.baseImages.length; i++) {
+				if ($scope.baseImages[i].id === id) {
+					$scope.baseImages.splice(i, 1);
+					break;
 				}
 			}
 		});

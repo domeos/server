@@ -1,13 +1,15 @@
 package org.domeos.util.code;
 
 
-import org.domeos.api.mapper.project.SubversionMapper;
-import org.domeos.api.model.ci.CodeType;
-import org.domeos.api.model.console.git.CodeSourceInfo;
-import org.domeos.api.model.git.Subversion;
-import org.domeos.api.service.project.impl.ProjectServiceImpl;
-import org.junit.Before;
+import org.domeos.framework.api.model.ci.CodeType;
+import org.domeos.framework.api.consolemodel.project.CodeSourceInfo;
+import org.domeos.framework.api.mapper.project.SubversionUserMapper;
+import org.domeos.framework.api.model.project.SubversionUser;
+import org.domeos.framework.api.service.project.impl.ProjectServiceImpl;
+import org.domeos.framework.engine.coderepo.CodeApiInterface;
+import org.domeos.framework.engine.coderepo.ReflectFactory;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +29,7 @@ import java.util.List;
 
 public class SubversionApiTest {
     @Autowired
-    protected SubversionMapper subversionMapper;
+    protected SubversionUserMapper subversionUserMapper;
     @Autowired
     protected ProjectServiceImpl projectService;
 
@@ -35,7 +37,7 @@ public class SubversionApiTest {
 
     @Before
     public void init(){
-        Subversion svn = new Subversion(20, "rkasdf", "123456", System.currentTimeMillis(), "svn://10.2.86.82/test123/trunk/ttttt");
+        SubversionUser svn = null;//new SubversionUser(20, "rkasdf", "123456", System.currentTimeMillis(), "svn://10.2.86.82/test123/trunk/ttttt");
         //subversionMapper.addSubversionInfo(svn);
         testsvnapi = ReflectFactory.createCodeApiInterface(CodeType.subversion.getCodeType(), 0);
         System.out.println("init");
@@ -45,7 +47,7 @@ public class SubversionApiTest {
 
     @After
     public void clean(){
-        subversionMapper.deleteSubversionInfoById(40);
+        subversionUserMapper.deleteSubversionInfoById(40);
         System.out.println("test");
 
     }

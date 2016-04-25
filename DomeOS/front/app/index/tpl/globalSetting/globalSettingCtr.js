@@ -1,4 +1,5 @@
 domeApp.controller('globalSettingCtr', ['$scope', '$domeGlobal', '$state', '$domeUser', '$modal', '$domePublic', '$q', function($scope, $domeGlobal, $state, $domeUser, $modal, $domePublic, $q) {
+	'use strict';
 	$scope.$emit('pageTitle', {
 		title: '全局配置',
 		descrition: '在这里您可以进行一些全局配置，保证domeos能够正常运行和使用。',
@@ -38,6 +39,24 @@ domeApp.controller('globalSettingCtr', ['$scope', '$domeGlobal', '$state', '$dom
 	$scope.currentUserType = 'USER';
 	// 普通用户列表
 	$scope.userList = [];
+
+	$scope.tabActive = [{
+		active: false
+	}, {
+		active: false
+	}, {
+		active: false
+	}, {
+		active: false
+	}, {
+		active: false
+	}, {
+		active: false
+	}, {
+		active: false
+	}, {
+		active: false
+	}];
 
 	function UserList() {}
 	UserList.prototype = {
@@ -164,7 +183,7 @@ domeApp.controller('globalSettingCtr', ['$scope', '$domeGlobal', '$state', '$dom
 	$domeUser.getUserList().then(function(res) {
 		var userList = res.data.result || [];
 		for (var i = 0; i < userList.length; i++) {
-			if (userList[i].login_type == 'LDAP') {
+			if (userList[i].loginType == 'LDAP') {
 				$scope.userList.push(userList[i]);
 				userList.splice(i, 1);
 				i--;
@@ -173,6 +192,8 @@ domeApp.controller('globalSettingCtr', ['$scope', '$domeGlobal', '$state', '$dom
 		$scope.userListIns = new UserList();
 		$scope.userListIns.init(userList);
 	});
+
+
 	$scope.toggleUserType = function(userType) {
 		if (userType !== $scope.currentUserType) {
 			$scope.currentUserType = userType;
@@ -215,12 +236,15 @@ domeApp.controller('globalSettingCtr', ['$scope', '$domeGlobal', '$state', '$dom
 		}
 	};
 	$scope.getMonitorInfo = function() {
+		function initMonitorInfo(info) {
+			$scope.monitorIns = new Monitor();
+			$scope.monitorIns.init(info);
+			$scope.monitorConfig = $scope.monitorIns.config;
+		}
 		if (!$scope.monitorConfig) {
 			monitorOptions.getData().then(function(info) {
-				$scope.monitorIns = new Monitor();
-				$scope.monitorIns.init(info);
-				$scope.monitorConfig = $scope.monitorIns.config;
-			});
+				initMonitorInfo(info);
+			}, initMonitorInfo());
 		}
 	};
 	$scope.getWebSsh = function() {
@@ -312,6 +336,32 @@ domeApp.controller('globalSettingCtr', ['$scope', '$domeGlobal', '$state', '$dom
 			}
 		});
 	};
+	
+	var stateInfo = $state.$current.name;
+	if (stateInfo.indexOf('ldapinfo') !== -1) {
+		$scope.tabActive[1].active = true;
+		$scope.getLdap();
+	} else if (stateInfo.indexOf('gitinfo') !== -1) {
+		$scope.tabActive[2].active = true;
+		$scope.getGitInfo();
+	} else if (stateInfo.indexOf('registryinfo') !== -1) {
+		$scope.tabActive[3].active = true;
+		$scope.getRegistryInfo();
+	} else if (stateInfo.indexOf('serverinfo') !== -1) {
+		$scope.tabActive[4].active = true;
+		$scope.getServerInfo();
+	} else if (stateInfo.indexOf('monitorinfo') !== -1) {
+		$scope.tabActive[5].active = true;
+		$scope.getMonitorInfo();
+	} else if (stateInfo.indexOf('sshinfo') !== -1) {
+		$scope.tabActive[6].active = true;
+		$scope.getWebSsh();
+	} else if (stateInfo.indexOf('clusterinfo') !== -1) {
+		$scope.tabActive[7].active = true;
+		$scope.getClusterInfo();
+	} else {
+		$scope.tabActive[0].active = true;
+	}
 }]).controller('newPasswdModalCtr', ['$scope', 'username', '$domeUser', '$modalInstance', '$domePublic', function($scope, username, $domeUser, $modalInstance, $domePublic) {
 	$scope.cancel = function() {
 		$modalInstance.dismiss();

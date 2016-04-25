@@ -2,19 +2,17 @@ package org.domeos.api.service;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.shiro.util.ThreadContext;
-import org.domeos.api.service.user.UserService;
 import org.domeos.basemodel.HttpResponseTemp;
 import org.domeos.basemodel.ResultStat;
-import org.domeos.api.model.user.ChangeUserPassword;
-import org.domeos.api.model.user.User;
-import org.domeos.api.model.console.user.UserInfo;
-import org.domeos.api.model.user.UserPassword;
-import org.domeos.global.DomeosPropertyConfigurer;
+import org.domeos.framework.api.consolemodel.auth.ChangeUserPassword;
+import org.domeos.framework.api.consolemodel.auth.UserPassword;
+import org.domeos.framework.api.model.auth.User;
+import org.domeos.framework.api.service.auth.UserService;
+import org.domeos.framework.engine.model.CustomObjectMapper;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.Assert;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +34,7 @@ public class UserServiceTest {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
-    protected ObjectMapper objectMapper;
+    protected CustomObjectMapper objectMapper;
     @Autowired
     protected UserService userService;
 

@@ -6,7 +6,7 @@
 
     <groupId>org.domeos</groupId>
     <artifactId>server</artifactId>
-    <version>0.1-SNAPSHOT</version>
+    <version>0.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <description>
@@ -45,7 +45,7 @@
             <dependency>
                 <groupId>org.domeos</groupId>
                 <artifactId>DomeOS</artifactId>
-                <version>0.1-SNAPSHOT</version>
+                <version>0.2-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.domeos</groupId>
@@ -79,7 +79,7 @@
                                 <artifactItem>
                                     <groupId>org.domeos</groupId>
                                     <artifactId>DomeOS</artifactId>
-                                    <version>0.1-SNAPSHOT</version>
+                                    <version>0.2-SNAPSHOT</version>
                                     <type>war</type>
                                     <destFileName>ROOT.war</destFileName>
                                 </artifactItem>

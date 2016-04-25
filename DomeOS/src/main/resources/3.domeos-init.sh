@@ -6,6 +6,7 @@ fi
 echo "use domeos;" > ./init.sql
 cat ./create-db.sql >> ./init.sql
 cat ./insert-data.sql >> ./init.sql
+cat ./create-monitor-table.sql >> ./init.sql
 
 
 

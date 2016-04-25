@@ -10,12 +10,12 @@
   <loading ng-if="loading"></loading>
   <div class="host-info">
     <tabset>
-      <tab heading="实例列表">
+      <tab heading="实例列表" active="tabActive[0].active" ui-sref="hostDetail.instancelist">
         <loading ng-if="isWaitingHost"></loading>
         <div class="info-options">
-          <input placeholder="输入实例名称查找" ng-model="insKey" class="input-fill input-white input-search pull-right"/><span ng-cloak="ng-cloak" class="info-count">共{{instanceListFiltered.length}}个实例</span>
+          <input placeholder="输入实例名称查找" ng-model="insKey" class="ui-input-fill ui-input-white ui-input-search pull-right"/><span ng-cloak="ng-cloak" class="info-count">共{{instanceListFiltered.length}}个实例</span>
         </div>
-        <table class="table-dome full">
+        <table class="ui-table-dome full">
           <thead>
             <tr>
               <th>实例名称</th>
@@ -42,24 +42,24 @@
           </tbody>
         </table>
       </tab>
-      <tab heading="主机设置">
-        <ul ng-form="ng-form" role="form" name="hostForm" ng-class="{'need-valid':needValidHost}" class="list-info">
+      <tab heading="主机设置" active="tabActive[1].active" ui-sref="hostDetail.info">
+        <ul ng-form="ng-form" role="form" name="hostForm" ng-class="{'need-valid':needValidHost}" class="com-list-info">
           <li><span class="info-name">工作场景</span>
-            <div class="info-content"><span class="check-con">
-                <input id="productionEnv" type="checkbox" ng-model="envData.prodEnv" class="dome-check"/>
-                <label for="productionEnv">生产环境</label></span><span class="check-con">
-                <input id="testEnv" type="checkbox" ng-model="envData.testEnv" class="dome-check"/>
+            <div class="info-content"><span class="com-check-con">
+                <input id="productionEnv" type="checkbox" ng-model="envData.prodEnv" class="ui-check"/>
+                <label for="productionEnv">生产环境</label></span><span class="com-check-con">
+                <input id="testEnv" type="checkbox" ng-model="envData.testEnv" class="ui-check"/>
                 <label for="testEnv">测试环境</label></span>
-              <button ng-click="modifyEnv()" class="btn btn-sm btn-primary">保存</button>
+              <button ng-click="modifyEnv()" class="ui-btn ui-btn-sm ui-btn-primary">保存</button>
             </div>
           </li>
           <li><span class="info-name">主机标签</span>
             <div class="info-content">
               <div class="line-short">
-                <input ng-model="hostSetting.labelTxt" name="labelTxt" class="input-white line-element"/>
-                <button ng-click="needValidHost=true;hostForm.$valid&amp;&amp;addLabel()" class="btn btn-primary btn-sm add-label">添加标签</button>
+                <input ng-model="hostSetting.labelTxt" name="labelTxt" class="ui-input-white line-element"/>
+                <button ng-click="needValidHost=true;hostForm.$valid&amp;&amp;addLabel()" class="ui-btn ui-btn-primary ui-btn-sm add-label">添加标签</button>
               </div>
-              <ul class="label-list host-label-con">
+              <ul class="com-label-list host-label-con">
                 <li ng-repeat="(label,value) in labelsList"><span ng-cloak="ng-cloak" class="label-item"><a ng-click="deleteLable(label)" class="icon-cancel"></a>{{label}}</span></li>
               </ul>
             </div>
@@ -72,8 +72,8 @@
           <li><span class="info-name">磁盘挂载点</span>
             <div class="info-content">
               <div class="line-short">
-                <input placeholder="请输入磁盘路径，用于保存有状态服务数据" ng-model="hostSetting.diskTxt" name="labelTxt" class="input-white line-element"/>
-                <button ng-click="saveDisk()" class="btn btn-primary btn-sm add-label">保存</button>
+                <input placeholder="请输入磁盘路径，用于保存有状态服务数据" ng-model="hostSetting.diskTxt" name="labelTxt" class="ui-input-white line-element"/>
+                <button ng-click="saveDisk()" class="ui-btn ui-btn-primary ui-btn-sm add-label">保存</button>
               </div>
             </div>
           </li>

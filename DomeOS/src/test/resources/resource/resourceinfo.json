@@ -1,11 +1,11 @@
 {
-  "resource_id":1,
-  "resource_type":"PROJECT",
+  "resourceId":1,
+  "resourceType":"PROJECT",
   "ownerInfos": [
     {
-      "owner_id":1,
-      "owner_type":"USER",
-      "role":"master"
+      "ownerId":1,
+      "ownerType":"USER",
+      "role":"MASTER"
     }
   ]
 }

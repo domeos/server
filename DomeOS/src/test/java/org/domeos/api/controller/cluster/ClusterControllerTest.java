@@ -2,7 +2,7 @@ package org.domeos.api.controller.cluster;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import org.apache.shiro.util.ThreadContext;
-import org.domeos.api.model.console.Cluster.Cluster;
+import org.domeos.framework.api.consolemodel.cluster.ClusterInfo;
 import org.domeos.base.BaseTestCase;
 import org.domeos.basemodel.ResultStat;
 import org.junit.Before;
@@ -25,7 +25,7 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppC
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ClusterControllerTest extends BaseTestCase {
-    Cluster cluster;
+    ClusterInfo cluster;
     String clusterStr;
     String namespace = "[\"test1\",\"test2\"]";
 
@@ -37,7 +37,7 @@ public class ClusterControllerTest extends BaseTestCase {
         FileInputStream inputStream = new FileInputStream("./src/test/resources/cluster/cluster.json");
         byte[] buff = new byte[inputStream.available()];
         inputStream.read(buff);
-        cluster = objectMapper.readValue(buff, Cluster.class);
+        cluster = objectMapper.readValue(buff, ClusterInfo.class);
         clusterStr = new String(buff);
 
         this.mockMvc = webAppContextSetup(this.wac).build();

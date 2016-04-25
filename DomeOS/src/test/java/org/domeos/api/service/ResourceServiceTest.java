@@ -1,29 +1,24 @@
 package org.domeos.api.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.shiro.util.ThreadContext;
-import org.domeos.api.mapper.group.UserGroupMapper;
-import org.domeos.api.mapper.resource.ResourceMapper;
-import org.domeos.api.model.resource.Resource;
-import org.domeos.api.model.resource.ResourceType;
-import org.domeos.api.model.user.ResourceOwnerType;
-import org.domeos.api.model.user.RoleType;
-import org.domeos.api.model.user.User;
-import org.domeos.api.service.group.UserGroupService;
-import org.domeos.api.service.resource.ResourceService;
-import org.domeos.api.service.user.UserService;
 import org.domeos.basemodel.HttpResponseTemp;
-import org.domeos.shiro.AuthUtil;
+import org.domeos.framework.api.biz.auth.AuthBiz;
+import org.domeos.framework.api.biz.resource.ResourceBiz;
+import org.domeos.framework.api.model.auth.User;
+import org.domeos.framework.api.model.auth.related.Role;
+import org.domeos.framework.api.model.resource.Resource;
+import org.domeos.framework.api.model.resource.related.ResourceOwnerType;
+import org.domeos.framework.api.model.resource.related.ResourceType;
+import org.domeos.framework.api.service.auth.UserGroupService;
+import org.domeos.framework.api.service.auth.UserService;
+import org.domeos.framework.engine.model.CustomObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.web.WebAppConfiguration;
-
-import java.util.Date;
-import java.util.List;
 
 /**
  * Created by zhenfengchen on 15-11-29.
@@ -33,19 +28,17 @@ import java.util.List;
 @ContextConfiguration(locations = {"file:src/main/webapp/WEB-INF/mvc-dispatcher-servlet.xml"})
 public class ResourceServiceTest {
     @Autowired
-    protected ObjectMapper objectMapper;
+    protected CustomObjectMapper objectMapper;
     @Autowired
     protected UserService userService;
     @Autowired
-    protected ResourceService resourceService;
-    @Autowired
     protected UserGroupService userGroupService;
+//    @Autowired
+//    protected AuthUtil authUtil;
     @Autowired
-    protected AuthUtil authUtil;
+    protected AuthBiz userGroupMapper;
     @Autowired
-    protected UserGroupMapper userGroupMapper;
-    @Autowired
-    protected ResourceMapper resourceMapper;
+    protected ResourceBiz resourceMapper;
     @Autowired
     protected org.apache.shiro.mgt.SecurityManager securityManager;
 
@@ -62,8 +55,8 @@ public class ResourceServiceTest {
         long userId = 5;
         long resourceId = 14;
 //        List<Long> groupIds = userGroupMapper.getGroupIds(userId);
-        List<Resource> res2 = authUtil.getResourceList(userId, ResourceType.PROJECT);
-//        Resource res2 = resourceMapper.getResource(userId, ResourceOwnerType.USER.getOwnerTypeName(),
+//        List<Resource> res2 = authUtil.getResourceList(userId, ResourceType.PROJECT);
+        Resource res2 = null; // = resourceMapper.getResource(userId, ResourceOwnerType.USER.getOwnerTypeName(),
 //            resourceId, ResourceType.PROJECT.getResourceName());
         try {
             System.out.println(objectMapper.writeValueAsString(res2));
@@ -84,14 +77,14 @@ public class ResourceServiceTest {
 
     @Test
     public void T002AddResource() {
-        long projectId = 14;
-        long userId = 5;
+        int projectId = 14;
+        int userId = 5;
         Resource resource = new Resource(projectId, ResourceType.PROJECT);
-        resource.setOwner_id(userId);
-        resource.setOwner_type(ResourceOwnerType.USER);
-        resource.setUpdate_time(new Date());
-        resource.setRole(RoleType.MASTER.getRoleName());
-        AuthUtil.addResource(resource);
+        resource.setOwnerId(userId);
+        resource.setOwnerType(ResourceOwnerType.USER);
+        resource.setUpdateTime(System.currentTimeMillis());
+        resource.setRole(Role.MASTER);
+//        AuthUtil.addResource(resource);
     }
 
     @Test
