@@ -27,6 +27,7 @@ import org.domeos.framework.api.service.project.impl.UpdateBuildStatusInfo;
 import org.domeos.framework.engine.exception.DaoException;
 import org.domeos.framework.engine.k8s.JobWrapper;
 import org.domeos.framework.engine.model.JobType;
+import org.domeos.global.CurrentThreadInfo;
 import org.domeos.global.GlobalConstant;
 import org.domeos.util.MD5Util;
 import org.slf4j.Logger;
@@ -65,7 +66,8 @@ public class BaseImageCustomServiceImpl implements BaseImageCustomService {
     FileContentBiz fileContentBiz;
 
     @Override
-    public HttpResponseTemp<?> addBaseImageCustom(String username, BaseImageCustom baseImageCustom) {
+    public HttpResponseTemp<?> addBaseImageCustom(BaseImageCustom baseImageCustom) {
+        String username = CurrentThreadInfo.getUserName();
 
         if (baseImageCustom == null) {
             throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "base image custom information is null.");
@@ -79,22 +81,22 @@ public class BaseImageCustomServiceImpl implements BaseImageCustomService {
             if (StringUtils.isBlank(sourceImage.getRegistryUrl())) {
                 sourceImage.setRegistryUrl(globalBiz.getRegistry().getUrl());
             }
-            baseImageCustom.setSourceImageJson(baseImageCustom.getSourceImage().toString());
         }
         baseImageCustom.setCreateTime(System.currentTimeMillis());
         baseImageCustom.setUsername(username);
 
         imageBiz.setBaseImageCustom(baseImageCustom);
 
-        HttpResponseTemp<?> ret = addRelatedInfo(baseImageCustom);
-        if (ret != null) {
-            imageBiz.deleteBaseImageCustomById(baseImageCustom.getId());
-            return ret;
+        try {
+            addRelatedFileInfo(baseImageCustom);
+        } catch (Exception e) {
+            throw  ApiException.wrapUnknownException(e);
         }
         return ResultStat.OK.wrap(baseImageCustom);
     }
 
-    public HttpResponseTemp<?> validation(long userId, String imageName, String imageTag) {
+    @Override
+    public HttpResponseTemp<?> validation(String imageName, String imageTag) {
         Registry registry = globalBiz.getRegistry();
         if (registry == null) {
             throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "registry in global configuation must be set");
@@ -121,7 +123,9 @@ public class BaseImageCustomServiceImpl implements BaseImageCustomService {
         return ResultStat.OK.wrap(JobType.NEITHER.name());
     }
 
-    public HttpResponseTemp<?> addRelatedInfo(BaseImageCustom baseImageCustom) {
+    public void addRelatedFileInfo(BaseImageCustom baseImageCustom) throws Exception {
+        // save the conf file info
+        // generate and save the dockerfile info
 
         // filter empty EnvSetting & FileInfo
         List<EnvSetting> newEnvSettings = new ArrayList<>();
@@ -177,7 +181,7 @@ public class BaseImageCustomServiceImpl implements BaseImageCustomService {
                         fileInfoJson.append(", ").append(fileInfo.toJson());
                     }
                 } catch (Exception e) {
-                    return ResultStat.PARAM_ERROR.wrap(null, e.getMessage());
+                    throw e;
                 }
                 dockerfile.append("COPY ").append(fileInfo.getFileName()).append(" ").append(fileInfo.getFilePath()).append("\n");
             }
@@ -198,19 +202,13 @@ public class BaseImageCustomServiceImpl implements BaseImageCustomService {
 
         baseImageCustom.setState(BuildState.Preparing.name());
         imageBiz.updateBaseImageCustomById(baseImageCustom);
-
-        return null;
     }
 
     @Override
-    public HttpResponseTemp<?> previewFile(long userId, BaseImageCustom baseImageCustom, String docMD5) {
+    public HttpResponseTemp<?> previewFile(BaseImageCustom baseImageCustom, String docMD5) {
         if (baseImageCustom == null) {
             throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "cannot find the custom base image");
         }
-        if (userId <= 0) {
-            throw ApiException.wrapResultStat(ResultStat.FORBIDDEN);
-        }
-
         byte[] content = fileContentBiz.getContentByMd5(docMD5);
         if (content == null) {
             return ResultStat.OK.wrap(null);
@@ -219,25 +217,18 @@ public class BaseImageCustomServiceImpl implements BaseImageCustomService {
     }
 
     @Override
-    public HttpResponseTemp<?> modifyBaseImageCustom(long userId, String username, BaseImageCustom baseImageCustom) {
+    public HttpResponseTemp<?> modifyBaseImageCustom(BaseImageCustom baseImageCustom) {
         if (baseImageCustom == null) {
             throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "base image custom info is null");
         }
-
-        if (userId <= 0) {
-            throw ApiException.wrapResultStat(ResultStat.FORBIDDEN);
-        }
-
         if (!StringUtils.isBlank(baseImageCustom.checkLegality())) {
             throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, baseImageCustom.checkLegality());
         }
-        return addBaseImageCustom(username, baseImageCustom);
+        return addBaseImageCustom(baseImageCustom);
     }
 
-    public HttpResponseTemp<?> deleteBaseImageCustom(long userId, int imageId) {
-        if (userId <= 0) {
-            throw ApiException.wrapResultStat(ResultStat.FORBIDDEN);
-        }
+    @Override
+    public HttpResponseTemp<?> deleteBaseImageCustom(int imageId) {
         BaseImageCustom baseImageCustom = imageBiz.getBaseImageCustomById(imageId);
         if (baseImageCustom == null) {
             throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "base image custom info is null");
@@ -247,11 +238,8 @@ public class BaseImageCustomServiceImpl implements BaseImageCustomService {
     }
 
     @Override
-    public HttpResponseTemp<?> startBuild(int imageId, long userId) {
+    public HttpResponseTemp<?> startBuild(int imageId) {
 
-        if (userId <= 0) {
-            throw ApiException.wrapResultStat(ResultStat.FORBIDDEN);
-        }
         BaseImageCustom baseImageCustom = imageBiz.getBaseImageCustomById(imageId);
         if (baseImageCustom == null) {
             throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "cannot find the Custom base image!");
@@ -316,10 +304,8 @@ public class BaseImageCustomServiceImpl implements BaseImageCustomService {
         return ResultStat.OK.wrap(null);
     }
 
-    public HttpResponseTemp<?> listBaseImageCustomInfo(long userId) {
-        if (userId <= 0) {
-            throw ApiException.wrapResultStat(ResultStat.FORBIDDEN);
-        }
+    @Override
+    public HttpResponseTemp<?> listBaseImageCustomInfo() {
         try {
             List<BaseImageCustom> customList = UpdateBuildStatusInfo.updateBaseImageCustoms(imageBiz.listBaseImageCustom());
             Collections.sort(customList, new BaseImageCustom.ProjectListInfoComparator());
@@ -329,6 +315,7 @@ public class BaseImageCustomServiceImpl implements BaseImageCustomService {
         }
     }
 
+    @Override
     public HttpResponseTemp<?> getBaseImageCustomInfo(int id) {
 
         BaseImageCustom baseImageCustom = imageBiz.getBaseImageCustomById(id);
@@ -347,7 +334,6 @@ public class BaseImageCustomServiceImpl implements BaseImageCustomService {
         } else {
             baseImageCustom.setRegistry(globalBiz.getRegistry().registryDomain());
         }
-        baseImageCustom.setSourceImageJson(null);
         baseImageCustom.setFileJson(null);
         baseImageCustom.setDockerfile(null);
         return ResultStat.OK.wrap(baseImageCustom);
@@ -363,6 +349,7 @@ public class BaseImageCustomServiceImpl implements BaseImageCustomService {
         return baseImageCustom.getDockerfileContent();
     }
 
+    @Override
     public String getFileJson(String secret, int imageId) {
         BaseImageCustom baseImageCustom = imageBiz.getBaseImageCustomById(imageId);
         if (baseImageCustom == null || !baseImageCustom.getSecret().equals(secret))
@@ -370,6 +357,7 @@ public class BaseImageCustomServiceImpl implements BaseImageCustomService {
         return baseImageCustom.getFileJson();
     }
 
+    @Override
     public byte[] downloadFile(String md5, String secret, int imageId) {
         BaseImageCustom baseImageCustom = imageBiz.getBaseImageCustomById(imageId);
         if (baseImageCustom == null || !baseImageCustom.getSecret().equals(secret)) {
@@ -386,11 +374,9 @@ public class BaseImageCustomServiceImpl implements BaseImageCustomService {
         return null;
     }
 
-    public HttpResponseTemp<?> downloadLogFile(int imageId, long userId) {
+    @Override
+    public HttpResponseTemp<?> downloadLogFile(int imageId) {
 
-        if (userId <= 0) {
-            throw ApiException.wrapResultStat(ResultStat.FORBIDDEN);
-        }
         String md5 = imageBiz.getBaseImageLogMD5(imageId);
         if (StringUtils.isBlank(md5)) {
             return ResultStat.OK.wrap(null);
@@ -403,6 +389,7 @@ public class BaseImageCustomServiceImpl implements BaseImageCustomService {
 
     }
 
+    @Override
     public HttpResponseTemp<?> setBuildStatus(BuildStatus buildStatus, String secret) {
 
         if (buildStatus != null) {
@@ -411,13 +398,16 @@ public class BaseImageCustomServiceImpl implements BaseImageCustomService {
                 throw ApiException.wrapResultStat(ResultStat.FORBIDDEN);
             }
             Registry registry = globalBiz.getRegistry();
+            baseImageCustom.setState(buildStatus.getStatus());
+            baseImageCustom.setMessage(buildStatus.getMessage());
+            baseImageCustom.setFinishTime(System.currentTimeMillis());
             if (registry != null && BuildState.Success.name().equals(buildStatus.getStatus())) {
                 baseImageCustom.setState(BuildState.Success.name());
                 BaseImage baseImage = new BaseImage(baseImageCustom.getImageName(), baseImageCustom.getImageTag(),
                         registry.fullRegistry(), baseImageCustom.getDescription());
                 double imageSize = PrivateRegistry.getImageSize(baseImage);
                 if (imageSize > 0) {
-                    buildStatus.setImageSize(imageSize);
+                    baseImageCustom.setImageSize(imageSize);
                 }
                 if (baseImageCustom.getPublish() == 1) {
                     BaseImage old = imageBiz.getBaseImageByNameAndTag(baseImage.getImageName(), baseImage.getImageTag(), baseImage.getRegistry());
@@ -426,7 +416,6 @@ public class BaseImageCustomServiceImpl implements BaseImageCustomService {
                     }
                 }
             }
-            baseImageCustom.setFinishTime(System.currentTimeMillis());
 
             imageBiz.updateBaseImageCustomById(baseImageCustom);
         }

@@ -35,8 +35,8 @@ public class BaseImageCustom extends RowModelBase {
     String imageName;
     String imageTag;
     String registry;
-    String fileJson;
-    String dockerfile;
+    String fileJson; //save for the files info on users input used for imagebuilder to download all input files
+    String dockerfile;  //dockerfile md5 used for dockerfile download
     String dockerfileContent;
     String secret;
     String logMD5;
@@ -221,16 +221,16 @@ public class BaseImageCustom extends RowModelBase {
         this.taskName = taskName;
     }
 
-    public SourceImage jsonToSourceImage(String soourceImageJson) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        try {
-            SourceImage sourceImage = objectMapper.readValue(sourceImageJson, SourceImage.class);
-            this.sourceImage = sourceImage;
-            return sourceImage;
-        } catch (IOException e) {
-            return null;
-        }
-    }
+//    public SourceImage jsonToSourceImage(String soourceImageJson) {
+//        ObjectMapper objectMapper = new ObjectMapper();
+//        try {
+//            SourceImage sourceImage = objectMapper.readValue(sourceImageJson, SourceImage.class);
+//            this.sourceImage = sourceImage;
+//            return sourceImage;
+//        } catch (IOException e) {
+//            return null;
+//        }
+//    }
 
     public List<FileInfo> jsonToFileInfo (String jsonString) {
         ObjectMapper mapper = new ObjectMapper();

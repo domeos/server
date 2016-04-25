@@ -5,7 +5,6 @@ import org.domeos.framework.api.model.image.BaseImageCustom;
 import org.domeos.framework.api.service.image.BaseImageCustomService;
 import org.domeos.basemodel.HttpResponseTemp;
 import org.domeos.framework.api.controller.ApiController;
-import org.domeos.framework.engine.AuthUtil;
 import org.domeos.framework.engine.exception.DaoException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -29,15 +28,13 @@ public class BaseImageCustomController extends ApiController {
     @ResponseBody
     @RequestMapping(value = "", method = RequestMethod.POST)
     public HttpResponseTemp<?> setBaseImageCustom(@RequestBody BaseImageCustom baseImageCustom) {
-        String username = AuthUtil.getCurrentUserName();
-        return baseImageCustomService.addBaseImageCustom(username, baseImageCustom);
+        return baseImageCustomService.addBaseImageCustom(baseImageCustom);
     }
 
     @ResponseBody
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
     public HttpResponseTemp<?> deleteBaseImageCustomById(@PathVariable int id) {
-        long userId = AuthUtil.getUserId();
-        return baseImageCustomService.deleteBaseImageCustom(userId, id);
+        return baseImageCustomService.deleteBaseImageCustom(id);
     }
 
     @ResponseBody
@@ -74,23 +71,19 @@ public class BaseImageCustomController extends ApiController {
     @ResponseBody
     @RequestMapping(value = "/preview/{docMD5}", method = RequestMethod.GET)
     public HttpResponseTemp<?> previewFile(@PathVariable String docMD5, @RequestBody BaseImageCustom baseImageCustom) {
-        long userId = AuthUtil.getUserId();
-        return baseImageCustomService.previewFile(userId, baseImageCustom, docMD5);
+        return baseImageCustomService.previewFile(baseImageCustom, docMD5);
     }
 
     @ResponseBody
     @RequestMapping(value = "", method = RequestMethod.PUT)
     public HttpResponseTemp<?> modifyBaseImageCustom(@RequestBody BaseImageCustom baseImageCustom) {
-        long userId = AuthUtil.getUserId();
-        String username = AuthUtil.getCurrentUserName();
-        return baseImageCustomService.modifyBaseImageCustom(userId, username, baseImageCustom);
+        return baseImageCustomService.modifyBaseImageCustom(baseImageCustom);
     }
 
     @ResponseBody
     @RequestMapping(value = "/download/{imageId}", method = RequestMethod.GET)
     public HttpResponseTemp<?> downloadLogFile(@PathVariable int imageId) {
-        long userId = AuthUtil.getUserId();
-        return baseImageCustomService.downloadLogFile(imageId, userId);
+        return baseImageCustomService.downloadLogFile(imageId);
     }
 
     @ResponseBody
@@ -103,22 +96,19 @@ public class BaseImageCustomController extends ApiController {
     @ResponseBody
     @RequestMapping(value = "", method = RequestMethod.GET)
     public HttpResponseTemp<?> listInfo() {
-        long userId = AuthUtil.getUserId();
-        return baseImageCustomService.listBaseImageCustomInfo(userId);
+        return baseImageCustomService.listBaseImageCustomInfo();
     }
 
     @ResponseBody
     @RequestMapping(value = "/build/{imageId}", method = RequestMethod.POST)
     public HttpResponseTemp<?> startBuild(@PathVariable int imageId) {
-        long userId = AuthUtil.getUserId();
-        return baseImageCustomService.startBuild(imageId, userId);
+        return baseImageCustomService.startBuild(imageId);
     }
 
     @ResponseBody
     @RequestMapping(value = "/validate", method = RequestMethod.POST)
     public HttpResponseTemp<?> validation(@RequestParam String imageName, @RequestParam String imageTag) {
-        long userId = AuthUtil.getUserId();
-        return baseImageCustomService.validation(userId, imageName, imageTag);
+        return baseImageCustomService.validation(imageName, imageTag);
     }
 
 }

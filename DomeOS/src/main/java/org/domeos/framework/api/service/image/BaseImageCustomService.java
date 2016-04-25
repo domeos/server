@@ -16,14 +16,14 @@ public interface BaseImageCustomService {
      *
      * @return
      */
-    HttpResponseTemp<?> addBaseImageCustom(String username, BaseImageCustom baseImageCustom);
+    HttpResponseTemp<?> addBaseImageCustom(BaseImageCustom baseImageCustom);
 
     /**
      * build a base image custom started by user
      * @param imageId the Id of baseImageCustom
      * @return
      */
-    HttpResponseTemp<?> startBuild(int imageId, long userId);
+    HttpResponseTemp<?> startBuild(int imageId);
 
     /**
      * use md5 and the id of a base image custom to download file
@@ -57,10 +57,9 @@ public interface BaseImageCustomService {
     /**
      * download log file api
      * @param imageId the id of base image custom
-     * @param userId
      * @return
      */
-    HttpResponseTemp<?> downloadLogFile(int imageId, long userId);
+    HttpResponseTemp<?> downloadLogFile(int imageId);
 
     /**
      * set build status of the image build
@@ -73,46 +72,41 @@ public interface BaseImageCustomService {
 
     /**
      * list all the base image custom info
-     * @param userId
      * @return
      */
-    HttpResponseTemp<?> listBaseImageCustomInfo(long userId);
+    HttpResponseTemp<?> listBaseImageCustomInfo();
 
     /**
      * get the content of some file
-     * @param userId
      * @param baseImageCustom can be find in api/model/ci/BaseImageCustom.java
      * @param docMD5 the md5 of one file
      * @return
      */
-    HttpResponseTemp<?> previewFile(long userId, BaseImageCustom baseImageCustom, String docMD5);
+    HttpResponseTemp<?> previewFile(BaseImageCustom baseImageCustom, String docMD5);
 
     /**
      * modify and generate a new custom base image
-     * @param userId
      * @param baseImageCustom can be found in api/ci/BaseImageCustom.java
      * @return
      */
-    HttpResponseTemp<?> modifyBaseImageCustom(long userId, String username, BaseImageCustom baseImageCustom);
+    HttpResponseTemp<?> modifyBaseImageCustom(BaseImageCustom baseImageCustom);
 
     /**
      * delete the custom base image
-     * @param userId
-     * @param userId can be found in api/ci/BaseImageCustom.java
+     * @param imageId can be found in api/ci/BaseImageCustom.java
      * @return
      */
-    HttpResponseTemp<?> deleteBaseImageCustom(long userId, int imageId);
+    HttpResponseTemp<?> deleteBaseImageCustom(int imageId);
 
     /**
      * validate the imageName and imageTag is duplicate
      * find the imageName and imageTag duplicate with base image
      * find the imageName duplicate with the projectBasic
-     * @param userId
      * @param imageName
      * @param imageTag
      * @return
      */
-    HttpResponseTemp<?> validation(long userId, String imageName, String imageTag);
+    HttpResponseTemp<?> validation(String imageName, String imageTag);
 
     /**
      * get the detailed info of a custom base image
