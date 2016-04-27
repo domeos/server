@@ -203,7 +203,10 @@ graph (https://github.com/domeos/server/blob/v0.2-beta/DomeOS/src/main/resources
 
 初始用户: 
 
-insert-data.sql (https://github.com/domeos/server/blob/v0.2-beta/DomeOS/src/main/resources/insert-data.sql)，会创建一个DomeOS系统的超级管理员用户，user: admin  pwd: admin
+insert-data.sql 
+(https://github.com/domeos/server/blob/v0.2-beta/DomeOS/src/main/resources/insert-data.sql)
+
+会创建一个DomeOS系统的超级管理员用户，user: admin  pwd: admin
 
 说明:
 
