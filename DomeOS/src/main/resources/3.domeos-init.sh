@@ -6,8 +6,5 @@ fi
 echo "use domeos;" > ./init.sql
 cat ./create-db.sql >> ./init.sql
 cat ./insert-data.sql >> ./init.sql
-cat ./create-monitor-table.sql >> ./init.sql
-
-
 
 mysql -u${MYSQL_USER} -P ${MYSQL_PORT} -h ${MYSQL_HOST} -p${MYSQL_PASSWORD} < ./init.sql
