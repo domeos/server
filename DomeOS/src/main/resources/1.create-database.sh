@@ -5,11 +5,9 @@ if [ -z "$MYSQL_PORT" ]; then
 fi
 
 echo "
-create database if not exists `domeos`;
-create database if not exists `graph`;
-grant all privileges on domeos.* to 'domeos'@'%' with grant option;
-grant all privileges on graph.* to 'domeos'@'%' with grant option;
+create database if not exists domeos;
+create database if not exists graph;
 " > ./create.sql;
 
-mysql -uroot -h ${MYSQL_HOST} -P ${MYSQL_PORT} -p${MYSQL_ROOT_PASSWORD} < ./create.sql;
+mysql -h ${MYSQL_HOST} -P ${MYSQL_PORT} -u ${MYSQL_USERNAME} -p${MYSQL_PASSWORD} < ./create.sql;
 

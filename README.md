@@ -203,7 +203,10 @@ graph (https://github.com/domeos/server/blob/v0.2-beta/DomeOS/src/main/resources
 
 初始用户: 
 
-insert-data.sql (https://github.com/domeos/server/blob/v0.2-beta/DomeOS/src/main/resources/insert-data.sql)，会创建一个DomeOS系统的超级管理员用户，user: admin  pwd: admin
+insert-data.sql 
+(https://github.com/domeos/server/blob/v0.2-beta/DomeOS/src/main/resources/insert-data.sql)
+
+会创建一个DomeOS系统的超级管理员用户，user: admin  pwd: admin
 
 说明:
 
@@ -437,6 +440,7 @@ insert-data.sql (https://github.com/domeos/server/blob/v0.2-beta/DomeOS/src/main
   6. 脚本成功执行后，将以systemctl的形式启动flanneld、docker、kube-proxy、kubelet，将以docker容器形式启动用于监控的agent，将为该结点打上指定的标签。
   
   7. 通过运行stop-k8s-node.sh可摘除node，运行在该节点上的所有容器被停止，docker和flannel也会被停止。
+  
 参数说明:
 
     --api-server: kubernetes集群kube-apiserver服务地址。必需
