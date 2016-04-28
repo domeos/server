@@ -299,7 +299,7 @@ insert-data.sql
   
   命令: 
   
-    sudo docker run -d --restart=always --name <_domeos_server_name> -p <_domeos_server_port>:8080 -e MYSQL_HOST=<_mysql_host> -e MYSQL_PORT=<_mysql_port> -e MYSQL_USERNAME=<_mysql_username> MYSQL_PASSWORD=<_mysql_password> MYSQL_DB=<_mysql_db> pub.domeos.org/domeos/server:1.2.3
+    sudo docker run -d --restart=always --name <_domeos_server_name> -p <_domeos_server_port>:8080 -e MYSQL_HOST=<_mysql_host> -e MYSQL_PORT=<_mysql_port> -e MYSQL_USERNAME=<_mysql_username> -e  MYSQL_PASSWORD=<_mysql_password> -e MYSQL_DB=<_mysql_db> pub.domeos.org/domeos/server:1.2.3
   
   参数说明:
   
@@ -313,7 +313,7 @@ insert-data.sql
 	
   样例:
   
-    sudo docker run -d --restart=always --name domeos_server -e MYSQL_HOST=10.16.42.199 -e MYSQL_PORT=3307 -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=mypassword MYSQL_DB=domeos -p 8080:8080 pub.domeos.org/domeos/server:1.2.3
+    sudo docker run -d --restart=always --name domeos_server -e MYSQL_HOST=10.16.42.199 -e MYSQL_PORT=3307 -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=mypassword -e MYSQL_DB=domeos -p 8080:8080 pub.domeos.org/domeos/server:1.2.3
   
 测试:
 
