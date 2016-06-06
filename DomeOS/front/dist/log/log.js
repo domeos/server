@@ -13,9 +13,7 @@
 		logHasChange = false,
 		logEle = $('#log'),
 		logWrapEle = $('body'),
-		isNeedScroll = true,
-		scrollTop = 0,
-		interval;
+		isNeedScroll = true;
 
 	var onMessage = function(event) {
 		logHasChange = true;
@@ -48,7 +46,7 @@
 		logSocket.onclose = function() {
 			console.log('连接被关闭！');
 		};
-		interval = setInterval(function() {
+		setInterval(function() {
 			if (logHasChange) {
 				logEle.append(logStr);
 				if (isNeedScroll) {

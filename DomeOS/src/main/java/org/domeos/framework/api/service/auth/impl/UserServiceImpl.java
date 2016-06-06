@@ -26,6 +26,7 @@ import org.domeos.framework.api.biz.global.GlobalBiz;
 import org.domeos.framework.engine.AuthUtil;
 import org.domeos.framework.engine.coderepo.GitlabApiWrapper;
 import org.domeos.framework.shiro.token.MultiAuthenticationToken;
+import org.domeos.global.CurrentThreadInfo;
 import org.domeos.util.CryptoUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -118,7 +119,8 @@ public class UserServiceImpl implements UserService {
         return ResultStat.OK.wrap(null);
     }
 
-    public HttpResponseTemp<?> createUser(int userId, User user, boolean flag) {
+    public HttpResponseTemp<?> createUser(User user, boolean flag) {
+        int userId = CurrentThreadInfo.getUserId();
         if (flag) {
             if (!AuthUtil.isAdmin(userId)) {
                 throw ApiException.wrapMessage(ResultStat.USER_NOT_LEGAL, "must be admin");
@@ -140,7 +142,7 @@ public class UserServiceImpl implements UserService {
         user.setCreateTime(System.currentTimeMillis());
 
         authBiz.addUser(user);
-        return ResultStat.OK.wrap(null);
+        return ResultStat.OK.wrap(user);
     }
 
     public boolean createUserForLDAP(User user) {
@@ -152,6 +154,13 @@ public class UserServiceImpl implements UserService {
             user.setCreateTime(System.currentTimeMillis());
             user.setState(UserState.NORMAL);
             user.setPassword("NULL");
+            LdapInfo ldapInfo = globalBiz.getLdapInfo();
+            if (ldapInfo != null) {
+                String ldapEmailSuffix = ldapInfo.getEmailSuffix();
+                if (!StringUtils.isBlank(ldapEmailSuffix)) {
+                    user.setEmail(user.getUsername());
+                }
+            }
             authBiz.addUser(user);
             return true;
         } else {
@@ -163,16 +172,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public HttpResponseTemp<?> createUser(int userId, User user) {
-        return createUser(userId, user, true);
+    public HttpResponseTemp<?> createUser(User user) {
+        return createUser(user, true);
     }
 
     @Override
-    public HttpResponseTemp<?> deleteUser(int userId, String username) {
+    public HttpResponseTemp<?> deleteUser(int id) {
+        int userId = CurrentThreadInfo.getUserId();
         if (!AuthUtil.isAdmin(userId)) {
             throw ApiException.wrapMessage(ResultStat.USER_NOT_LEGAL, "must be admin");
         }
-        User user = authBiz.getUserByName(username);
+        User user = authBiz.getUserById(id);
         if (user == null) {
             throw ApiException.wrapResultStat(ResultStat.USER_NOT_EXIST);
         }
@@ -183,29 +193,28 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public HttpResponseTemp<?> modifyUser(int userId, String username, String email) {
-        User user = getUser(username);
+    public HttpResponseTemp<?> modifyUser(User user) {
+        int userId = CurrentThreadInfo.getUserId();
         if (user == null) {
-            throw ApiException.wrapMessage(ResultStat.USER_NOT_EXIST, "user is null");
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "user is blank");
+        }
+        User currentUser = authBiz.getUserById(user.getId());
+        if (currentUser == null) {
+            throw ApiException.wrapMessage(ResultStat.USER_NOT_EXIST, "user not exists");
         }
         if (AuthUtil.isAdmin(userId) || user.getId() == userId) {
-            if (email != null) {
-                user.setEmail(email);
+            if (user.getEmail() != null) {
+                currentUser.setEmail(user.getEmail());
             }
-            return modifyUser(user);
+            if (user.getPhone() != null) {
+                currentUser.setPhone(user.getPhone());
+            }
+            currentUser.setUpdateTime(System.currentTimeMillis());
+            authBiz.modifyUser(currentUser);
+            return ResultStat.OK.wrap(null);
         } else {
             throw ApiException.wrapResultStat(ResultStat.USER_NOT_LEGAL);
         }
-    }
-
-    @Override
-    public HttpResponseTemp<?> modifyUser(User user) {
-        if (user == null) {
-            throw ApiException.wrapMessage(ResultStat.USER_NOT_LEGAL, "user is null");
-        }
-        user.setUpdateTime(System.currentTimeMillis());
-        authBiz.modifyUser(user);
-        return ResultStat.OK.wrap("");
     }
 
     @Override
@@ -233,7 +242,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public HttpResponseTemp<?> changePasswordByAdmin(int userId, UserPassword userPassword) {
+    public HttpResponseTemp<?> changePasswordByAdmin(UserPassword userPassword) {
+        int userId = CurrentThreadInfo.getUserId();
         if (!AuthUtil.isAdmin(userId)) {
             throw ApiException.wrapMessage(ResultStat.USER_NOT_LEGAL, "must be admin");
         }

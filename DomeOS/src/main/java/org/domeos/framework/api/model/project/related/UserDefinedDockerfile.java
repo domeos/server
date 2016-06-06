@@ -6,6 +6,7 @@ package org.domeos.framework.api.model.project.related;
 public class UserDefinedDockerfile {
     String buildPath;
     String branch;
+    String tag;
     String dockerfilePath;
 
     public String getBuildPath() {
@@ -22,6 +23,14 @@ public class UserDefinedDockerfile {
 
     public void setBranch(String branch) {
         this.branch = branch;
+    }
+
+    public String getTag() {
+        return tag;
+    }
+
+    public void setTag(String tag) {
+        this.tag = tag;
     }
 
     public String getDockerfilePath() {

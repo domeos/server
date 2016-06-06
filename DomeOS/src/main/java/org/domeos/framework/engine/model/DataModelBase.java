@@ -2,7 +2,6 @@ package org.domeos.framework.engine.model;
 
 
 import com.fasterxml.jackson.annotation.JsonFilter;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ser.FilterProvider;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
@@ -24,7 +23,7 @@ public class DataModelBase implements IJsonable {
         return 1;
     }
 
-    protected static ObjectMapper objectMapper = new ObjectMapper();
+    protected static CustomObjectMapper objectMapper = new CustomObjectMapper();
 
     private int ver = 1;
     private String fqcn = "";

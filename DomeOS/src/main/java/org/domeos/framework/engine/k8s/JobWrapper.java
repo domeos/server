@@ -16,6 +16,7 @@ import org.domeos.client.kubernetesclient.util.PodUtils;
 import org.domeos.exception.JobLogException;
 import org.domeos.exception.JobNotFoundException;
 import org.domeos.framework.engine.model.JobType;
+import org.domeos.global.GlobalConstant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -118,10 +119,9 @@ public class JobWrapper {
     }
 
     public Volume[] fetchBuildVolumes() {
-        Volume[] volumes = new Volume[3];
+        Volume[] volumes = new Volume[2];
         volumes[0] = new Volume().putName("v1").putHostPath(new HostPathVolumeSource().putPath("/var/run/docker.sock"));
-        volumes[1] = new Volume().putName("v2").putHostPath(new HostPathVolumeSource().putPath("/usr/bin/docker"));
-        volumes[2] = new Volume().putName("v3").putHostPath(new HostPathVolumeSource().putPath("/lib64"));
+        volumes[1] = new Volume().putName("v2").putEmptyDir(new EmptyDirVolumeSource());
         return volumes;
     }
 
@@ -135,10 +135,9 @@ public class JobWrapper {
         Container[] container = new Container[]{new Container()};
         container[0].setName(name);
         container[0].setImage(image);
-        VolumeMount[] mountPoint = new VolumeMount[3];
+        VolumeMount[] mountPoint = new VolumeMount[2];
         mountPoint[0] = new VolumeMount().putName("v1").putMountPath("/var/run/docker.sock");
-        mountPoint[1] = new VolumeMount().putName("v2").putMountPath("/usr/bin/docker");
-        mountPoint[2] = new VolumeMount().putName("v3").putMountPath("/lib64").putReadOnly(true);
+        mountPoint[1] = new VolumeMount().putName("v2").putMountPath(GlobalConstant.BUILD_CODE_PATH);
         container[0].putVolumeMounts(mountPoint);
         container[0].putEnv(envVars);
         container[0].putImagePullPolicy("Always");

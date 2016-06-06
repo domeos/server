@@ -40,9 +40,7 @@
   "healthCheckerDraft": {
     "type": "NONE"
   },
-  "logDraft": {
-    "logItemDrafts": []
-  },
+  "logDraft": null,
   "accessType": "K8S_SERVICE",
   "exposePortNum": 0,
   "innerServiceDrafts": []

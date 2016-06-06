@@ -5,6 +5,7 @@ import org.domeos.framework.api.consolemodel.project.ProjectCreate;
 import org.domeos.framework.api.model.project.GitlabUser;
 import org.domeos.framework.api.model.project.Project;
 import org.domeos.framework.api.model.project.SubversionUser;
+import org.domeos.framework.api.model.project.related.CodeConfiguration;
 
 /**
  */
@@ -101,6 +102,14 @@ public interface ProjectService {
     HttpResponseTemp<?> getBranches(int id);
 
     /**
+     * get branches of a project in git
+     *
+     * @param codeConfig is the CodeConfiguration
+     * @return
+     */
+    HttpResponseTemp<?> getBranches(CodeConfiguration codeConfig);
+
+    /**
      * get readme of a project in git
      *
      * @param id     is the project id in database
@@ -115,4 +124,11 @@ public interface ProjectService {
      * @return
      */
     HttpResponseTemp<?> getTags(int id);
+    /**
+     * get tags of a project in git
+     *
+     * @param codeConfig is the CodeConfiguration
+     * @return
+     */
+    HttpResponseTemp<?> getTags(CodeConfiguration codeConfig);
 }

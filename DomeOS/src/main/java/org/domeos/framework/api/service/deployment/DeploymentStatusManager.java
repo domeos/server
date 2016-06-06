@@ -1,9 +1,10 @@
 package org.domeos.framework.api.service.deployment;
 
+import org.domeos.exception.DeploymentEventException;
+import org.domeos.framework.api.model.auth.User;
+import org.domeos.framework.api.model.deployment.related.DeployOperation;
 import org.domeos.framework.api.model.deployment.related.DeploymentSnapshot;
 import org.domeos.framework.api.model.deployment.related.DeploymentStatus;
-import org.domeos.framework.api.model.auth.User;
-import org.domeos.exception.DeploymentEventException;
 
 import java.io.IOException;
 import java.util.List;
@@ -17,80 +18,21 @@ public interface DeploymentStatusManager {
      *
      * @param deployId
      * @param user
-     * @param dstSnapshot
-     * @throws DeploymentEventException
-     * @throws IOException
-     */
-    void registerStartEvent(int deployId, User user, List<DeploymentSnapshot> dstSnapshot)
-            throws DeploymentEventException, IOException;
-
-    /**
-     *
-     * @param deployId
-     * @param user
-     * @param srcSnapshot
-     * @param currentSnapshot
-     * @throws DeploymentEventException
-     * @throws IOException
-     */
-    void registerStopEvent(int deployId, User user, List<DeploymentSnapshot> srcSnapshot,
-                           List<DeploymentSnapshot> currentSnapshot) throws DeploymentEventException, IOException;
-
-    /**
-     *
-     * @param deployId
-     * @param user
      * @param srcSnapshot
      * @param currentSnapshot
      * @param dstSnapshot
-     * @throws IOException
      * @throws DeploymentEventException
      */
-    void registerStartUpdateEvent(int deployId, User user, List<DeploymentSnapshot> srcSnapshot,
-                                  List<DeploymentSnapshot> currentSnapshot, List<DeploymentSnapshot> dstSnapshot)
-            throws IOException, DeploymentEventException;
+    long registerEvent(int deployId, DeployOperation operation, User user, List<DeploymentSnapshot> srcSnapshot,
+                       List<DeploymentSnapshot> currentSnapshot, List<DeploymentSnapshot> dstSnapshot) throws DeploymentEventException, IOException;
 
     /**
-     *
+     * register abort operation event
      * @param deployId
      * @param user
-     * @param srcSnapshot
-     * @param currentSnapshot
-     * @param dstSnapshot
-     * @throws IOException
      * @throws DeploymentEventException
      */
-    void registerStartRollbackEvent(int deployId, User user, List<DeploymentSnapshot> srcSnapshot,
-                                    List<DeploymentSnapshot> currentSnapshot, List<DeploymentSnapshot> dstSnapshot)
-            throws IOException, DeploymentEventException;
-
-    /**
-     *
-     * @param deployId
-     * @param user
-     * @param srcSnapshot
-     * @param currentSnapshot
-     * @param dstSnapshot
-     * @throws IOException
-     * @throws DeploymentEventException
-     */
-    void registerScaleUpEvent (int deployId, User user, List<DeploymentSnapshot> srcSnapshot,
-                               List<DeploymentSnapshot> currentSnapshot, List<DeploymentSnapshot> dstSnapshot)
-            throws IOException, DeploymentEventException;
-
-    /**
-     *
-     * @param deployId
-     * @param user
-     * @param srcSnapshot
-     * @param currentSnapshot
-     * @param dstSnapshot
-     * @throws IOException
-     * @throws DeploymentEventException
-     */
-    void registerScaleDownEvent(int deployId, User user, List<DeploymentSnapshot> srcSnapshot,
-                                List<DeploymentSnapshot> currentSnapshot, List<DeploymentSnapshot> dstSnapshot)
-            throws IOException, DeploymentEventException;
+    long registerAbortEvent(int deployId, User user) throws DeploymentEventException, IOException;
 
     /**
      *
@@ -125,15 +67,6 @@ public interface DeploymentStatusManager {
 
     /**
      *
-     * @param deployId
-     * @return
-     * @throws IOException
-     */
-    DeploymentStatus getDeploymentStatus(int deployId) throws IOException;
-
-
-    /**
-     *
      * @param deploymentId
      * @param currentSnapshot
      * @param message
@@ -142,4 +75,11 @@ public interface DeploymentStatusManager {
      */
     void failedEventForDeployment(int deploymentId, List<DeploymentSnapshot> currentSnapshot, String message)
             throws IOException, DeploymentEventException;
+
+    /**
+     * check available deployment state from current state
+     * @param curState current deployment state
+     * @param dstState destination deployment state
+     */
+    void checkStateAvailable(DeploymentStatus curState, DeploymentStatus dstState);
 }

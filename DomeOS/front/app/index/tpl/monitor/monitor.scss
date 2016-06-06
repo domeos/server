@@ -4,7 +4,7 @@
 	min-height: 700px;
 	padding-bottom: 400px;
 	.monitor-options{
-		padding: 20px $page-padding 20px $page-padding;
+		padding: 8px $page-padding 20px $page-padding;
 		border-bottom: $light-border;
 		.option-title{
 			display: inline-block;
@@ -17,14 +17,28 @@
 		.monitor-option{
 			display: inline-block;
 			margin-right: 18px;
-			margin-bottom: 12px;
+			margin-top: 12px;
 		}
 		.monitor-line{
+			margin-top: 12px;
 			.host-label{
-				width: 895px;
+				width: 746px;
 			}
 		}
+		.com-select-con{
+			width: 190px;
+		}
 	}
+
+	@media (max-width: 1170px) {
+		.monitor-line .host-label{
+			width: 644px !important;
+		}
+		.com-select-con{
+			width: 156px !important;
+		}
+	}
+	// }
 	.monitor-info{
 		padding: 16px $page-padding 16px $page-padding;
 	}
@@ -61,5 +75,5 @@
 		width: 127px;
 		word-break:break-all;
 	}
-	
+
 }

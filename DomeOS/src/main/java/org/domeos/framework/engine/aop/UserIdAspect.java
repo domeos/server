@@ -9,11 +9,13 @@ import org.domeos.framework.engine.AuthUtil;
 import org.domeos.global.CurrentThreadInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * Created by xupeng on 16-4-5.
  */
 @Aspect
+@Component("userIdAspect")
 public class UserIdAspect {
 
     private static Logger logger = LoggerFactory.getLogger(UserIdAspect.class);

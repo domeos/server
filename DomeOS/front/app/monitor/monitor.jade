@@ -11,7 +11,7 @@ html(ng-app="monitorApp")
 		<!-- endbuild -->
 		style
 			include ../common/css/ng-cloak.css
-	body(ng-controller="monitorCtr")
+	body(ng-controller="MonitorCtr")
 		loading(ng-if="isLoading")
 		div.monitor-header(ng-cloak) Dome OS {{monitorTypeName}}监控
 		div.datepicker-component(datepicker-component date-options="[{interval:'1h',text:'实时',isDefault:true},{interval:'24h',text:'1天'}]")

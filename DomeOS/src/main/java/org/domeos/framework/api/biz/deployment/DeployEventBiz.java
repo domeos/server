@@ -1,6 +1,5 @@
 package org.domeos.framework.api.biz.deployment;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.domeos.framework.api.model.deployment.DeployEvent;
 
 import java.io.IOException;
@@ -14,9 +13,8 @@ public interface DeployEventBiz {
     /**
      *
      * @param event
-     * @throws JsonProcessingException
      */
-    void createEvent(DeployEvent event) throws JsonProcessingException;
+    long createEvent(DeployEvent event);
 
     /**
      *
@@ -38,17 +36,14 @@ public interface DeployEventBiz {
      *
      * @param deployId
      * @return
-     * @throws IOException
      */
     DeployEvent getNewestEventByDeployId(int deployId) throws IOException;
 
     /**
      *
-     * @param eid
      * @param event
-     * @throws JsonProcessingException
      */
-    void updateEvent(long eid, DeployEvent event) throws JsonProcessingException;
+    void updateEvent(DeployEvent event);
 
     /**
      *

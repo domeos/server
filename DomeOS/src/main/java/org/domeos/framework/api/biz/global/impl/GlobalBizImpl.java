@@ -76,6 +76,16 @@ public class GlobalBizImpl implements GlobalBiz {
         globalMapper.deleteGlobalInfoByType(GlobalType.SERVER);
     }
 
+    public Registry getPublicRegistry() {
+        GlobalInfo url = globalMapper.getGlobalInfoByType(GlobalType.PUBLIC_REGISTRY_URL);
+        Registry registry = null;
+        if (url != null) {
+            registry = new Registry();
+            registry.setUrl(url.getValue());
+        }
+        return registry;
+    }
+
     public Registry getRegistry() {
         GlobalInfo url = globalMapper.getGlobalInfoByType(GlobalType.REGISTRY_URL);
         GlobalInfo description = globalMapper.getGlobalInfoByType(GlobalType.REGISTRY_DESCRIPTION);
@@ -177,6 +187,38 @@ public class GlobalBizImpl implements GlobalBiz {
         if (query != null) {
             clusterMonitor.setQuery(query.getValue());
         }
+        GlobalInfo hbs = globalMapper.getGlobalInfoByType(GlobalType.MONITOR_HBS);
+        if (hbs != null) {
+            clusterMonitor.setHbs(hbs.getValue());
+        }
+        GlobalInfo judge = globalMapper.getGlobalInfoByType(GlobalType.MONITOR_JUDGE);
+        if (judge != null) {
+            clusterMonitor.setJudge(judge.getValue());
+        }
+        GlobalInfo alarm = globalMapper.getGlobalInfoByType(GlobalType.MONITOR_ALARM);
+        if (alarm != null) {
+            clusterMonitor.setAlarm(alarm.getValue());
+        }
+        GlobalInfo sender = globalMapper.getGlobalInfoByType(GlobalType.MONITOR_SENDER);
+        if (sender != null) {
+            clusterMonitor.setSender(sender.getValue());
+        }
+        GlobalInfo nodata = globalMapper.getGlobalInfoByType(GlobalType.MONITOR_NODATA);
+        if (nodata != null) {
+            clusterMonitor.setNodata(nodata.getValue());
+        }
+        GlobalInfo redis = globalMapper.getGlobalInfoByType(GlobalType.MONITOR_REDIS);
+        if (redis != null) {
+            clusterMonitor.setRedis(redis.getValue());
+        }
+        GlobalInfo apiSms = globalMapper.getGlobalInfoByType(GlobalType.MONITOR_API_SMS);
+        if (apiSms != null) {
+            clusterMonitor.setApiSms(apiSms.getValue());
+        }
+        GlobalInfo apiMail = globalMapper.getGlobalInfoByType(GlobalType.MONITOR_API_MAIL);
+        if (apiMail != null) {
+            clusterMonitor.setApiMail(apiMail.getValue());
+        }
         return clusterMonitor;
     }
 
@@ -184,6 +226,14 @@ public class GlobalBizImpl implements GlobalBiz {
         globalMapper.deleteGlobalInfoByType(GlobalType.MONITOR_TRANSFER);
         globalMapper.deleteGlobalInfoByType(GlobalType.MONITOR_GRAPH);
         globalMapper.deleteGlobalInfoByType(GlobalType.MONITOR_QUERY);
+        globalMapper.deleteGlobalInfoByType(GlobalType.MONITOR_HBS);
+        globalMapper.deleteGlobalInfoByType(GlobalType.MONITOR_JUDGE);
+        globalMapper.deleteGlobalInfoByType(GlobalType.MONITOR_ALARM);
+        globalMapper.deleteGlobalInfoByType(GlobalType.MONITOR_SENDER);
+        globalMapper.deleteGlobalInfoByType(GlobalType.MONITOR_NODATA);
+        globalMapper.deleteGlobalInfoByType(GlobalType.MONITOR_REDIS);
+        globalMapper.deleteGlobalInfoByType(GlobalType.MONITOR_API_SMS);
+        globalMapper.deleteGlobalInfoByType(GlobalType.MONITOR_API_MAIL);
     }
 
     public void addMonitor(ClusterMonitor clusterMonitor) {
@@ -199,6 +249,38 @@ public class GlobalBizImpl implements GlobalBiz {
         if (!StringUtils.isBlank(clusterMonitor.getQuery())) {
             GlobalInfo query = new GlobalInfo(GlobalType.MONITOR_QUERY, clusterMonitor.getQuery(), time, time);
             globalMapper.addGlobalInfo(query);
+        }
+        if (!StringUtils.isBlank(clusterMonitor.getHbs())) {
+            GlobalInfo hbs = new GlobalInfo(GlobalType.MONITOR_HBS, clusterMonitor.getHbs(), time, time);
+            globalMapper.addGlobalInfo(hbs);
+        }
+        if (!StringUtils.isBlank(clusterMonitor.getJudge())) {
+            GlobalInfo judge = new GlobalInfo(GlobalType.MONITOR_JUDGE, clusterMonitor.getJudge(), time, time);
+            globalMapper.addGlobalInfo(judge);
+        }
+        if (!StringUtils.isBlank(clusterMonitor.getAlarm())) {
+            GlobalInfo alarm = new GlobalInfo(GlobalType.MONITOR_ALARM, clusterMonitor.getAlarm(), time, time);
+            globalMapper.addGlobalInfo(alarm);
+        }
+        if (!StringUtils.isBlank(clusterMonitor.getSender())) {
+            GlobalInfo sender = new GlobalInfo(GlobalType.MONITOR_SENDER, clusterMonitor.getSender(), time, time);
+            globalMapper.addGlobalInfo(sender);
+        }
+        if (!StringUtils.isBlank(clusterMonitor.getNodata())) {
+            GlobalInfo nodata = new GlobalInfo(GlobalType.MONITOR_NODATA, clusterMonitor.getNodata(), time, time);
+            globalMapper.addGlobalInfo(nodata);
+        }
+        if (!StringUtils.isBlank(clusterMonitor.getRedis())) {
+            GlobalInfo redis = new GlobalInfo(GlobalType.MONITOR_REDIS, clusterMonitor.getRedis(), time, time);
+            globalMapper.addGlobalInfo(redis);
+        }
+        if (!StringUtils.isBlank(clusterMonitor.getApiSms())) {
+            GlobalInfo apiSms = new GlobalInfo(GlobalType.MONITOR_API_SMS, clusterMonitor.getApiSms(), time, time);
+            globalMapper.addGlobalInfo(apiSms);
+        }
+        if (!StringUtils.isBlank(clusterMonitor.getApiMail())) {
+            GlobalInfo apiMail = new GlobalInfo(GlobalType.MONITOR_API_MAIL, clusterMonitor.getApiMail(), time, time);
+            globalMapper.addGlobalInfo(apiMail);
         }
     }
 
@@ -218,6 +300,46 @@ public class GlobalBizImpl implements GlobalBiz {
         if (!StringUtils.isBlank(clusterMonitor.getQuery())) {
             GlobalInfo query = new GlobalInfo(GlobalType.MONITOR_QUERY, clusterMonitor.getQuery(), clusterMonitor.getCreateTime(), time);
             globalMapper.addGlobalInfo(query);
+        }
+        globalMapper.deleteGlobalInfoByType(GlobalType.MONITOR_HBS);
+        if (!StringUtils.isBlank(clusterMonitor.getHbs())) {
+            GlobalInfo hbs = new GlobalInfo(GlobalType.MONITOR_HBS, clusterMonitor.getHbs(), clusterMonitor.getCreateTime(), time);
+            globalMapper.addGlobalInfo(hbs);
+        }
+        globalMapper.deleteGlobalInfoByType(GlobalType.MONITOR_JUDGE);
+        if (!StringUtils.isBlank(clusterMonitor.getJudge())) {
+            GlobalInfo judge = new GlobalInfo(GlobalType.MONITOR_JUDGE, clusterMonitor.getJudge(), clusterMonitor.getCreateTime(), time);
+            globalMapper.addGlobalInfo(judge);
+        }
+        globalMapper.deleteGlobalInfoByType(GlobalType.MONITOR_ALARM);
+        if (!StringUtils.isBlank(clusterMonitor.getAlarm())) {
+            GlobalInfo alarm = new GlobalInfo(GlobalType.MONITOR_ALARM, clusterMonitor.getAlarm(), clusterMonitor.getCreateTime(), time);
+            globalMapper.addGlobalInfo(alarm);
+        }
+        globalMapper.deleteGlobalInfoByType(GlobalType.MONITOR_SENDER);
+        if (!StringUtils.isBlank(clusterMonitor.getSender())) {
+            GlobalInfo sender = new GlobalInfo(GlobalType.MONITOR_SENDER, clusterMonitor.getSender(), clusterMonitor.getCreateTime(), time);
+            globalMapper.addGlobalInfo(sender);
+        }
+        globalMapper.deleteGlobalInfoByType(GlobalType.MONITOR_NODATA);
+        if (!StringUtils.isBlank(clusterMonitor.getNodata())) {
+            GlobalInfo nodata = new GlobalInfo(GlobalType.MONITOR_NODATA, clusterMonitor.getNodata(), clusterMonitor.getCreateTime(), time);
+            globalMapper.addGlobalInfo(nodata);
+        }
+        globalMapper.deleteGlobalInfoByType(GlobalType.MONITOR_REDIS);
+        if (!StringUtils.isBlank(clusterMonitor.getRedis())) {
+            GlobalInfo redis = new GlobalInfo(GlobalType.MONITOR_REDIS, clusterMonitor.getRedis(), clusterMonitor.getCreateTime(), time);
+            globalMapper.addGlobalInfo(redis);
+        }
+        globalMapper.deleteGlobalInfoByType(GlobalType.MONITOR_API_SMS);
+        if (!StringUtils.isBlank(clusterMonitor.getApiSms())) {
+            GlobalInfo apiSms = new GlobalInfo(GlobalType.MONITOR_API_SMS, clusterMonitor.getApiSms(), clusterMonitor.getCreateTime(), time);
+            globalMapper.addGlobalInfo(apiSms);
+        }
+        globalMapper.deleteGlobalInfoByType(GlobalType.MONITOR_API_MAIL);
+        if (!StringUtils.isBlank(clusterMonitor.getApiMail())) {
+            GlobalInfo apiMail = new GlobalInfo(GlobalType.MONITOR_API_MAIL, clusterMonitor.getApiMail(), clusterMonitor.getCreateTime(), time);
+            globalMapper.addGlobalInfo(apiMail);
         }
     }
 
@@ -258,26 +380,36 @@ public class GlobalBizImpl implements GlobalBiz {
         GlobalInfo ldapServer = new GlobalInfo(GlobalType.LDAP_SERVER, ldapInfo.getServer(), ldapInfo.getCreateTime(), ldapInfo.getLastUpdate());
         globalMapper.addGlobalInfo(ldapServer);
         ldapInfo.setId(ldapServer.getId());
-        if (!StringUtils.isBlank(ldapInfo.getEmailSuffix())) {
-            GlobalInfo ldapPrefix = new GlobalInfo(GlobalType.LDAP_PREFIX, ldapInfo.getEmailSuffix(), ldapInfo.getCreateTime(), ldapInfo.getLastUpdate());
-            globalMapper.addGlobalInfo(ldapPrefix);
+        if (StringUtils.isBlank(ldapInfo.getEmailSuffix())) {
+            ldapInfo.setEmailSuffix("");
         }
+        GlobalInfo ldapPrefix = new GlobalInfo(GlobalType.LDAP_PREFIX, ldapInfo.getEmailSuffix(), ldapInfo.getCreateTime(), ldapInfo.getLastUpdate());
+        globalMapper.addGlobalInfo(ldapPrefix);
     }
 
     public void updateLdapInfo(LdapInfo ldapInfo) {
         GlobalInfo ldapServer = new GlobalInfo(GlobalType.LDAP_SERVER, ldapInfo.getServer(), ldapInfo.getCreateTime(), System.currentTimeMillis());
         globalMapper.updateGlobalInfoByType(ldapServer);
-        if (!StringUtils.isBlank(ldapInfo.getEmailSuffix())) {
-            GlobalInfo ldapPrefix = new GlobalInfo(GlobalType.LDAP_PREFIX, ldapInfo.getEmailSuffix(), ldapInfo.getCreateTime(), System.currentTimeMillis());
-            globalMapper.updateGlobalInfoByType(ldapPrefix);
+        if (StringUtils.isBlank(ldapInfo.getEmailSuffix())) {
+            ldapInfo.setEmailSuffix("");
         }
+        GlobalInfo ldapPrefix = new GlobalInfo(GlobalType.LDAP_PREFIX, ldapInfo.getEmailSuffix(), ldapInfo.getCreateTime(), System.currentTimeMillis());
+        globalMapper.updateGlobalInfoByType(ldapPrefix);
     }
 
     public CiCluster getCiCluster() {
         GlobalInfo host = globalMapper.getGlobalInfoByType(GlobalType.CI_CLUSTER_HOST);
         GlobalInfo namespace = globalMapper.getGlobalInfoByType(GlobalType.CI_CLUSTER_NAMESPACE);
-        if (host != null && namespace != null) {
-            return new CiCluster(host.getId(), namespace.getValue(), host.getValue(), host.getCreateTime(), host.getLastUpdate());
+        GlobalInfo clusterId = globalMapper.getGlobalInfoByType(GlobalType.CI_CLUSTER_ID);
+        GlobalInfo clusterName = globalMapper.getGlobalInfoByType(GlobalType.CI_CLUSTER_NAME);
+        if (host != null && namespace != null && clusterId != null && clusterName != null) {
+            return new CiCluster(host.getId(),
+                    namespace.getValue(),
+                    host.getValue(),
+                    Integer.parseInt(clusterId.getValue()),
+                    clusterName.getValue(),
+                    host.getCreateTime(),
+                    host.getLastUpdate());
         }
         return null;
     }
@@ -291,11 +423,17 @@ public class GlobalBizImpl implements GlobalBiz {
         ciCluster.setId(host.getId());
         GlobalInfo namespace = new GlobalInfo(GlobalType.CI_CLUSTER_NAMESPACE, ciCluster.getNamespace(), time, time);
         globalMapper.addGlobalInfo(namespace);
+        GlobalInfo clusterId = new GlobalInfo(GlobalType.CI_CLUSTER_ID, String.valueOf(ciCluster.getClusterId()), time, time);
+        globalMapper.addGlobalInfo(clusterId);
+        GlobalInfo clusterName = new GlobalInfo(GlobalType.CI_CLUSTER_NAME, ciCluster.getClusterName(), time, time);
+        globalMapper.addGlobalInfo(clusterName);
     }
 
     public void deleteCiCluster() {
         globalMapper.deleteGlobalInfoByType(GlobalType.CI_CLUSTER_HOST);
         globalMapper.deleteGlobalInfoByType(GlobalType.CI_CLUSTER_NAMESPACE);
+        globalMapper.deleteGlobalInfoByType(GlobalType.CI_CLUSTER_ID);
+        globalMapper.deleteGlobalInfoByType(GlobalType.CI_CLUSTER_NAME);
     }
 
     public void updateCiCluster(CiCluster ciCluster) {
@@ -304,6 +442,10 @@ public class GlobalBizImpl implements GlobalBiz {
         globalMapper.updateGlobalInfoByType(host);
         GlobalInfo namespace = new GlobalInfo(GlobalType.CI_CLUSTER_NAMESPACE, ciCluster.getNamespace(), ciCluster.getCreateTime(), time);
         globalMapper.updateGlobalInfoByType(namespace);
+        GlobalInfo clusterId = new GlobalInfo(GlobalType.CI_CLUSTER_ID, String.valueOf(ciCluster.getClusterId()), ciCluster.getCreateTime(), time);
+        globalMapper.updateGlobalInfoByType(clusterId);
+        GlobalInfo clusterName = new GlobalInfo(GlobalType.CI_CLUSTER_NAME, ciCluster.getClusterName(), ciCluster.getCreateTime(), time);
+        globalMapper.updateGlobalInfoByType(clusterName);
     }
 
     public BuildImage getBuildImage() {

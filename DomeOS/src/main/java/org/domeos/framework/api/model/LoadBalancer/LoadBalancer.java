@@ -1,19 +1,43 @@
 package org.domeos.framework.api.model.LoadBalancer;
 
-import org.domeos.framework.api.model.LoadBalancer.related.LoadBalanceProtocol;
 import org.domeos.framework.api.model.LoadBalancer.related.LoadBalanceType;
+import org.domeos.framework.api.model.LoadBalancer.related.LoadBalancerPort;
 import org.domeos.framework.api.model.deployment.Deployment;
+import org.domeos.framework.engine.exception.DaoConvertingException;
 import org.domeos.framework.engine.model.RowModelBase;
 import sun.net.util.IPAddressUtil;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by xupeng on 16-4-5.
  */
 public class LoadBalancer extends RowModelBase {
+    @Override
+    public int VERSION_NOW() {
+        return 2;
+    }
+
+    @Override
+    public LoadBalancer fromString(String str, int ver) throws DaoConvertingException {
+        if (str == null || str.length() == 0) {
+            return null;
+        }
+        try {
+            if (ver == VERSION_NOW()) {
+                return fromString(str);
+            } else if (ver == 1) {
+                String fqcn = "org.domeos.framework.api.model.LoadBalancer.LoadBalancerV1";
+                Class clazz = Class.forName(fqcn);
+                LoadBalancerV1 loadBalancerV1 = (LoadBalancerV1)objectMapper.readValue(str, clazz);
+                return fromLoadBalancerV1(loadBalancerV1);
+            } else {
+                return null;
+            }
+        } catch (Exception e) {
+            throw new DaoConvertingException("Parse Data from JSON failed, str = " + str + e.getMessage(), e);
+        }
+    }
 
     @Override
     public Set<String> excludeForJSON() {
@@ -25,29 +49,28 @@ public class LoadBalancer extends RowModelBase {
         add("deploys");
     }};
 
-    int port; // service port
-    int targetPort; // container port
-    LoadBalanceType type;
-    List<String> externalIPs;
-    LoadBalanceProtocol protocol; // tcp or http
-    int clusterId; // used for unique cluster and port
-    String dnsName;  // domain name
-    List<Deployment> deploys;
+    private int clusterId; // used for unique cluster and port
+    private String namespace;
+    private LoadBalanceType type;
+    private List<LoadBalancerPort> loadBalancerPorts;
+    private List<String> externalIPs;
+    private List<Deployment> deploys;
+    private String dnsName;  // domain name
 
-    public int getPort() {
-        return port;
+    public String getNamespace() {
+        return namespace;
     }
 
-    public void setPort(int port) {
-        this.port = port;
+    public void setNamespace(String namespace) {
+        this.namespace = namespace;
     }
 
-    public int getTargetPort() {
-        return targetPort;
+    public List<LoadBalancerPort> getLoadBalancerPorts() {
+        return loadBalancerPorts;
     }
 
-    public void setTargetPort(int targetPort) {
-        this.targetPort = targetPort;
+    public void setLoadBalancerPorts(List<LoadBalancerPort> loadBalancerPorts) {
+        this.loadBalancerPorts = loadBalancerPorts;
     }
 
     public LoadBalanceType getType() {
@@ -64,14 +87,6 @@ public class LoadBalancer extends RowModelBase {
 
     public void setExternalIPs(List<String> externalIPs) {
         this.externalIPs = externalIPs;
-    }
-
-    public LoadBalanceProtocol getProtocol() {
-        return protocol;
-    }
-
-    public void setProtocol(LoadBalanceProtocol protocol) {
-        this.protocol = protocol;
     }
 
     public int getClusterId() {
@@ -127,5 +142,32 @@ public class LoadBalancer extends RowModelBase {
             return "externalIPs is empty";
         }
         return "";
+    }
+
+    public LoadBalancer fromLoadBalancerV1(LoadBalancerV1 loadBalancerV1) {
+        LoadBalancer loadBalancer = new LoadBalancer();
+        loadBalancer.setVer(VERSION_NOW());
+        loadBalancer.setFqcn("org.domeos.framework.api.model.LoadBalancerService.LoadBalancerService");
+        loadBalancer.setId(loadBalancerV1.getId());
+        loadBalancer.setName(loadBalancerV1.getName());
+        loadBalancer.setDescription(loadBalancerV1.getDescription());
+        loadBalancer.setState(loadBalancerV1.getState());
+        loadBalancer.setCreateTime(loadBalancerV1.getCreateTime());
+        loadBalancer.setRemoveTime(loadBalancerV1.getRemoveTime());
+        loadBalancer.setRemoved(loadBalancerV1.isRemoved());
+        loadBalancer.setType(loadBalancerV1.getType());
+        loadBalancer.setExternalIPs(loadBalancerV1.getExternalIPs());
+        loadBalancer.setClusterId(loadBalancerV1.getClusterId());
+        LoadBalancerPort loadBalancerPort = new LoadBalancerPort();
+        loadBalancerPort.setPort(loadBalancerV1.getPort());
+        loadBalancerPort.setTargetPort(loadBalancerV1.getTargetPort());
+        loadBalancerPort.setProtocol(loadBalancerV1.getProtocol());
+        List<LoadBalancerPort> loadBalancerPorts = new ArrayList<>();
+        loadBalancerPorts.add(loadBalancerPort);
+        loadBalancer.setLoadBalancerPorts(loadBalancerPorts);
+        // TODO(openxxs) update database data to assign dnsName and namespace
+        loadBalancer.setDnsName(loadBalancerV1.getDnsName());
+        loadBalancer.setNamespace(loadBalancerV1.getNamespace());
+        return loadBalancer;
     }
 }

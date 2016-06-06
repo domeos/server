@@ -2,6 +2,7 @@ package org.domeos.framework.api.mapper.deployment;
 
 import org.apache.ibatis.annotations.*;
 import org.domeos.framework.api.biz.deployment.DeployEventBiz;
+import org.domeos.framework.api.model.deployment.DeployEvent;
 import org.domeos.framework.api.model.deployment.DeployEventDBProto;
 import org.domeos.framework.api.model.deployment.related.DeployEventStatus;
 import org.springframework.stereotype.Repository;
@@ -14,9 +15,9 @@ import java.util.List;
 public interface DeployEventMapper {
 
     @Insert("INSERT INTO " + DeployEventBiz.DEPLOY_EVENT_NAME + " (deployId, operation, eventStatus, statusExpire, content) values" +
-            "(#{deployId}, #{operation}, #{eventStatus}, #{statusExpire}, #{content})")
-    @Options(useGeneratedKeys = true, keyProperty = "eid", keyColumn = "eid")
-    void createEvent(DeployEventDBProto proto);
+            "(#{item.deployId}, #{item.operation}, #{item.eventStatus}, #{item.statusExpire}, #{data})")
+    @Options(useGeneratedKeys = true, keyProperty = "item.eid", keyColumn = "eid")
+    void createEvent(@Param("item")DeployEvent item, @Param("data") String data);
 
     @Select("SELECT * FROM " + DeployEventBiz.DEPLOY_EVENT_NAME + " WHERE eid=#{eid}")
     DeployEventDBProto getEvent(@Param("eid") long eid);
@@ -32,7 +33,6 @@ public interface DeployEventMapper {
     void updateEvent(@Param("eid") long eid, @Param("status") DeployEventStatus status,
                      @Param("statusExpire") long statusExpire, @Param("content") String content);
 
-    @Select("SELECT * FROM " + DeployEventBiz.DEPLOY_EVENT_NAME + " WHERE eventStatus not in ('SUCCESS', 'FAILED')")
+    @Select("SELECT * FROM " + DeployEventBiz.DEPLOY_EVENT_NAME + " WHERE eventStatus not in ('SUCCESS', 'FAILED', 'ABORTED')")
     List<DeployEventDBProto> getUnfinishedEvent();
-
 }

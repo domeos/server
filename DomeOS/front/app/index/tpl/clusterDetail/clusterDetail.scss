@@ -9,6 +9,12 @@
 		.info-options{
 			padding :16px $page-padding 16px $wider-padding;
 			overflow: hidden;
+			.info-right{
+				float: right;
+				.info-count{
+					padding-top: 8px;
+				}
+			}
 			.namespace-title{
 				display: block;
 				float: left;
@@ -27,14 +33,12 @@
 						margin-right: 12px;
 					}
 				}
+				.namespace-description {
+					margin-bottom: 16px;
+				}
 				.namespace-list{
 					margin-top: 28px;
 				}
-			}
-			.info-count{
-				display: block;
-				// padding-left:  $wider-padding;
-				padding-top: 8px;
 			}
 		}
 	}
@@ -43,5 +47,33 @@
 	}
 	.tab-cluster{
 		padding:6px $page-padding 40px $page-padding;
+	}
+}
+.modal-addlabel{
+	padding-left: 40px;
+	.labels-wrap{
+		display: inline-block;
+		width: 430px;
+		margin-left: 34px;
+		vertical-align: top;
+	}
+	.label-name{
+		display: inline-block;
+		padding-top: 8px;
+	}
+	.ui-input{
+		width: 338px;
+	}
+	.ui-btn{
+		float: right;
+		&+.ui-btn{
+			margin-right: 16px;
+		}
+	}
+	p{
+		margin-top: 10px;
+	}
+	.label{
+		color: dome-color(font,default);
 	}
 }

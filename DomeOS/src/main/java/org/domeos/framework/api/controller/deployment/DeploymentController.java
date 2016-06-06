@@ -7,6 +7,7 @@ import org.domeos.framework.api.consolemodel.deployment.DeploymentDraft;
 import org.domeos.framework.api.consolemodel.deployment.DeploymentInfo;
 import org.domeos.framework.api.controller.ApiController;
 import org.domeos.framework.api.model.deployment.DeployEvent;
+import org.domeos.framework.api.model.deployment.Policy;
 import org.domeos.framework.api.service.deployment.DeploymentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -40,7 +41,7 @@ public class DeploymentController extends ApiController {
     @ResponseBody
     @RequestMapping(value = "/id/{deployId}", method = RequestMethod.POST)
     public HttpResponseTemp<Void> modifyDeployment(@PathVariable int deployId,
-                                                @RequestBody DeploymentDraft deploymentDraft) throws Exception {
+                                                   @RequestBody DeploymentDraft deploymentDraft) throws Exception {
         deploymentService.modifyDeployment(deployId, deploymentDraft);
         return ResultStat.OK.wrap(null);
     }
@@ -60,10 +61,17 @@ public class DeploymentController extends ApiController {
     @ResponseBody
     @RequestMapping(value = "/action/start", method = RequestMethod.POST)
     public HttpResponseTemp<Void> startDeployment(@RequestParam(value = "deployId", required = true) int deployId,
-                                               @RequestParam(value = "version", required = true) long versionId,
-                                               @RequestParam(value = "replicas", required = false, defaultValue = "-1") int replicas)
+                                                  @RequestParam(value = "version", required = true) int versionId,
+                                                  @RequestParam(value = "replicas", required = false, defaultValue = "-1") int replicas)
             throws Exception {
         deploymentService.startDeployment(deployId, versionId, replicas);
+        return ResultStat.OK.wrap(null);
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "/action/abort", method = RequestMethod.POST)
+    public HttpResponseTemp<Void> abortDeployOperation(@RequestParam(value = "deployId", required = true) int deployId) throws Exception {
+        deploymentService.abortDeployOperation(deployId);
         return ResultStat.OK.wrap(null);
     }
 
@@ -77,25 +85,27 @@ public class DeploymentController extends ApiController {
     @ResponseBody
     @RequestMapping(value = "/action/update", method = RequestMethod.POST)
     public HttpResponseTemp<?> startUpdate(@RequestParam(value = "deployId", required = true) int deployId,
-                                           @RequestParam(value = "version", required = true) long versionId,
-                                           @RequestParam(value = "replicas", required = false, defaultValue = "-1") int replicas)
+                                           @RequestParam(value = "version", required = true) int versionId,
+                                           @RequestParam(value = "replicas", required = false, defaultValue = "-1") int replicas,
+                                           @RequestBody(required = false) Policy policy)
             throws Exception {
-        return deploymentService.startUpdate(deployId, versionId, replicas);
+        return deploymentService.startUpdate(deployId, versionId, replicas, policy);
     }
 
     @ResponseBody
     @RequestMapping(value = "/action/rollback", method = RequestMethod.POST)
     public HttpResponseTemp<?> startRollback(@RequestParam(value = "deployId", required = true) int deployId,
-                                             @RequestParam(value = "version", required = true) long versionId,
-                                             @RequestParam(value = "replicas", required = false, defaultValue = "-1") int replicas)
+                                             @RequestParam(value = "version", required = true) int versionId,
+                                             @RequestParam(value = "replicas", required = false, defaultValue = "-1") int replicas,
+                                             @RequestBody(required = false) Policy policy)
             throws Exception {
-        return deploymentService.startRollback(deployId, versionId, replicas);
+        return deploymentService.startRollback(deployId, versionId, replicas, policy);
     }
 
     @ResponseBody
     @RequestMapping(value = "/action/scaleup", method = RequestMethod.POST)
     public HttpResponseTemp<?> scaleupDeployment(@RequestParam(value = "deployId", required = true) int deployId,
-                                                 @RequestParam(value = "version", required = true) long versionId,
+                                                 @RequestParam(value = "version", required = true) int versionId,
                                                  @RequestParam(value = "replicas", required = false, defaultValue = "-1") int replicas)
             throws Exception {
         return deploymentService.scaleUpDeployment(deployId, versionId, replicas);
@@ -104,7 +114,7 @@ public class DeploymentController extends ApiController {
     @ResponseBody
     @RequestMapping(value = "/action/scaledown", method = RequestMethod.POST)
     public HttpResponseTemp<?> scaledownDeployment(@RequestParam(value = "deployId", required = true) int deployId,
-                                                   @RequestParam(value = "version", required = true) long versionId,
+                                                   @RequestParam(value = "version", required = true) int versionId,
                                                    @RequestParam(value = "replicas", required = false, defaultValue = "-1") int replicas)
             throws Exception {
         return deploymentService.scaleDownDeployment(deployId, versionId, replicas);

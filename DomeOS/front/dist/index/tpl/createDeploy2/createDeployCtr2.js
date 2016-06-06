@@ -1,4 +1,4 @@
-domeApp.controller('createDeployCtr2', ['$scope', '$state', '$domeData', '$modal', '$domeDeploy', '$domeCluster', '$domePublic', '$domeUser', function($scope, $state, $domeData, $modal, $domeDeploy, $domeCluster, $domePublic, $domeUser) {
+domeApp.controller('CreateDeployCtr2', ['$scope', '$state', '$domeData', '$modal', '$domeDeploy', '$domeCluster', '$domePublic', '$domeUser', function ($scope, $state, $domeData, $modal, $domeDeploy, $domeCluster, $domePublic, $domeUser) {
 	'use strict';
 	$scope.$emit('pageTitle', {
 		title: '新建部署',
@@ -10,70 +10,39 @@ domeApp.controller('createDeployCtr2', ['$scope', '$state', '$domeData', '$modal
 		$state.go('createDeploy/1');
 		return;
 	}
-	
-	$scope.isExternalIPsValid = true;
-	$scope.deployIns = angular.copy(createDeployInfo);
+
+	$scope.deployIns = createDeployInfo;
 	$domeData.delData('createDeployInfo');
 	$scope.config = $scope.deployIns.config;
-	$scope.visitMode = $scope.deployIns.visitMode;
-	$scope.externalIsnull={
-		date:true
-	};
 
 	$scope.labelKey = {
 		key: ''
 	};
-	var loadingsIns = $scope.loadingsIns = $domePublic.getLoadingInstance();
-	loadingsIns.startLoading('cluster');
-	loadingsIns.startLoading('userGroup');
-
-	$domeCluster.getClusterList().then(function(res) {
-		$scope.deployIns.clusterListIns.init(res.data.result);
-		$scope.deployIns.toggleCluster();
-	}).finally(function() {
-		loadingsIns.finishLoading('cluster');
-	});
-
-	$domeUser.getGroupList().then(function(res) {
-		$scope.deployIns.userGroupListIns.init(res.data.result);
-	}).finally(function() {
-		loadingsIns.finishLoading('userGroup');
-	});
-	$scope.toLastStep = function() {
-		$domeData.setData('createDeployInfo1', createDeployInfo);
+	$scope.loadingsIns = $domePublic.getLoadingInstance();
+	if ($scope.deployIns.clusterListIns.clusterList.length === 0) {
+		$scope.deployIns.initCluster();
+	}
+	$scope.toLastStep = function () {
+		$domeData.setData('createDeployInfo1', $scope.deployIns);
 		$state.go('createDeploy/1');
 	};
-	$scope.selectFocus = function() {
+	$scope.selectFocus = function () {
 		$scope.validHost = true;
 	};
-	$scope.$watch('config.loadBalanceDrafts[0].externalIPs', function(newValue, oldValue) {
-	  	var lenth=newValue.length;
-	  	var flag=lenth;
-	  	for(var i=0;i<lenth;i++){
-	  		if(newValue[i].ip&&newValue[i].ip!==''){
-	  			$scope.externalIsnull.date=false;
-	  			flag--;
-	  		}
-	  	}
-	  	if(lenth==flag){
-	  		$scope.externalIsnull.date=true;
-	  	}
-	},true);
-  
-	$scope.labelKeyDown = function(event, str, labelsInfoFiltered) {
+	$scope.labelKeyDown = function (event, str, labelsInfoFiltered) {
 		var lastSelectLabelKey;
 		var labelsInfo = $scope.deployIns.nodeListIns.labelsInfo;
 		var hasSelected = false;
 		if (event.keyCode == 13 && labelsInfoFiltered) {
-			angular.forEach(labelsInfoFiltered, function(value, label) {
+			angular.forEach(labelsInfoFiltered, function (value, label) {
 				if (!hasSelected && !value.isSelected) {
 					$scope.deployIns.nodeListIns.toggleLabel(label, true);
 					$scope.labelKey.key = '';
 				}
 				hasSelected = true;
 			});
-		} else if ((!str || str === '') && event.keyCode == 8) {
-			angular.forEach(labelsInfo, function(value, key) {
+		} else if (!str && event.keyCode == 8) {
+			angular.forEach(labelsInfo, function (value, key) {
 				if (value.isSelected) {
 					lastSelectLabelKey = key;
 				}
@@ -83,14 +52,13 @@ domeApp.controller('createDeployCtr2', ['$scope', '$state', '$domeData', '$modal
 			}
 		}
 	};
-	$scope.toCreate = function() {
-		loadingsIns.startLoading('create');
-		// console.log($scope.config);
-		// console.log($scope.visitMode);
-		$scope.deployIns.create().then(function() {
+	$scope.toCreate = function () {
+		$scope.loadingsIns.startLoading('create');
+
+		$scope.deployIns.create().then(function () {
 			$domePublic.openPrompt('创建成功！');
 			$state.go('deployManage');
-		}, function(res) {
+		}, function (res) {
 			if (res.type == 'namespace') {
 				$domePublic.openWarning({
 					title: '创建namespace失败！',
@@ -102,8 +70,8 @@ domeApp.controller('createDeployCtr2', ['$scope', '$state', '$domeData', '$modal
 					msg: 'Message:' + res.msg
 				});
 			}
-		}).finally(function() {
-			loadingsIns.finishLoading('create');
+		}).finally(function () {
+			$scope.loadingsIns.finishLoading('create');
 		});
 	};
 }]);

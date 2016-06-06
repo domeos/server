@@ -1,4 +1,4 @@
-.member-con(ng-controller="tplUserListCtr")
+.member-con(ng-controller="TplUserListCtr")
 	.title-con
 		input.ui-input.ui-input-fill.ui-input-search.pull-right(placeholder="搜索{{resourceName}}成员" ng-model="userKey1")
 		h3.member-title.txt-bright(ng-cloak) {{resourceName}}成员
@@ -8,7 +8,7 @@
 		.member-way(ng-hide="resourceType=='group'")
 			a.select-type(ng-click="toggleWay('member')" ng-class="{'active':selectWay=='member'}") 导入成员
 			a.select-type(ng-click="toggleWay('group')" ng-class="{'active':selectWay=='group'}") 导入组成员
-			a.select-type(ng-click="toggleWay('item')" ng-class="{'active':selectWay=='item'}") 导入{{resourceName}}成员
+			a.select-type(ng-click="toggleWay('item')" ng-class="{'active':selectWay=='item'}" ng-hide="resourceType=='ALARM'") 导入{{resourceName}}成员
 		.member-search
 			//- 导入成员
 			.com-select-con(select-con label="true" ng-if="selectWay=='member'")
@@ -29,16 +29,26 @@
 					i.icon-down
 					| {{selectedGroup.name||'选择组'}}
 				ul.select-list
+					li(ng-if="!groupList||groupList.length===0")
+						a 无相关组信息
 					li.select-item(ng-repeat="group in groupList")
 						a(ng-bind="group.name" ng-click="toggleGroup(group.name,group.id)")
 			//- 导入项目/部署/集群成员
 			.com-select-con(select-con ng-if="selectWay=='item'")
 				button.ui-btn.ui-btn-white.ui-btn-select(ng-cloak)
 					i.icon-down
-					| {{selectResource.resourceName||'选择'+resourceName}}
+					span
+						| {{selectResource.resourceName||'选择'+resourceName}}
+					span.tool-item-next.txt-prompt(ng-show="selectResource.clusterName") (集群：{{selectResource.clusterName}}
+					span.tool-item-next.txt-prompt(ng-show="selectResource.namespace")
+						| namespace:{{selectResource.namespace}})
 				ul.select-list
 					li.select-item(ng-repeat="resource in selectResourceUser")
-						a(ng-bind="resource.resourceName" ng-click="toggleResource($index)")
+						a(ng-click="toggleResource($index)")
+							span(ng-bind="resource.resourceName")
+							span.item-right
+								span.txt-prompt(ng-show="resource.clusterName" ng-cloak) 集群：{{resource.clusterName}}
+								span.tool-item-next.txt-prompt(ng-show="resource.namespace" ng-cloak) namespace:{{resource.namespace}}
 			.com-select-con(select-con)
 				button.ui-btn.ui-btn-white.ui-btn-select
 					i.icon-down
@@ -61,7 +71,7 @@
 				tr
 					th 用户名称
 					th(ng-cloak) {{resourceName}}内权限
-					th 
+					th
 			tbody
 				tr(ng-if="!userInfos||userinfoFilterred1.length===0")
 					td(colspan="3") 无相关用户信息
@@ -94,7 +104,7 @@
 				tr
 					th 用户名称
 					th(ng-cloak) {{resourceName}}内权限
-					th 
+					th
 			tbody
 				tr(ng-if="userinfoFilterred2.length===0")
 					td(colspan="3") 无相关用户信息

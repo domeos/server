@@ -1,119 +1,140 @@
 doctype html
 html(ng-app="moduleApp")
-	head
-		meta(http-equiv="Content-Type",content="text/html; charset=utf-8")
-		title DomeOS-导航
-		<!-- build:css /module/css/moduleApp.min.css -->
-		link(rel="stylesheet" href='../lib/css/bootstrap.css' type="text/css")
-		link(rel="stylesheet" href='../common/css/base.css' type="text/css")
-		link(rel="stylesheet" href='css/module.css' type="text/css")
-		link(rel="stylesheet" type="text/css")
-		<!-- endbuild -->
-		style
-			include ../common/css/ng-cloak.css
-	body(ng-controller="appCtr")
-		.module-con
-			.log-con
-				img.logo(src="/module/images/logo-white.png")
-				span.version(ng-bind="domeVersion")
-			.option-con
-				a.link-doc(href="http://doc.domeos.org" target="_blank")
-					i.icon-doc
-					| 文档
-				.user-con(select-con)
-					button.ui-btn.ui-btn-none.username.ui-btn-select(ng-cloak)
-						i.icon-down.up.drop
-						| {{loginUser.username}}
-					ul.com-user-option.select-list
-						li.arrow
-						li(select-item ng-if="loginUser.login_type=='USER'")
-							a(ng-click="modifyPw()") 修改密码
-						li(select-item)
-							a(ng-click="logout()") 退出登录
-			ul.list-module
-				li
-					a.module(href="/#/projectManage")
-						h4
-							i.icon-project
-							| 项目管理
-					a.module(href="/#/clusterManage")
-						h4
-							i.icon-cluster
-							|  集群管理
-				li
-					a.module(href="/#/deployManage")
-						h4
-							i.icon-deploy
-							| 部署
-					a.module(href="/#/groupManage")
-						h4
-							i.icon-user
-							| 组管理
-				li
-					a.module(href="/#/monitor")
-						h4
-							i.icon-monitor
-							| 监控
-					a.module(href="/#/appStore")
-						h4
-							i.icon-app
-							| 应用商店
-				li
-					a.module(href="/#/image")
-						h4
-							i.icon-image
-							| 镜像
-					a.module(href="/#/globalSetting" ng-hide="loginUser.username!='admin'")
-						h4
-							i.icon-global
-							| 全局配置
-		script(type="text/ng-template" id="promptModal.html")
-			.d-modal-header 提示
-			.modal-body
-				p(ng-bind="promptTxt")
-			.modal-footer
-				button.ui-btn.ui-btn-primary.ui-btn-sm(ng-click="cancel()") 确定
-		script(type="text/ng-template" id="warningModal.html")
-			.d-modal-header 警告
-			.modal-body
-				p.txt-error(ng-bind="titleInfo" ng-class="{'font-size-16':detailInfo}")
-				p.txt-error.tool-wrap-break(ng-bind="detailInfo")
-			.modal-footer
-				button.ui-btn.ui-btn-error.ui-btn-sm(ng-click="cancel()") 确定
-		script(type="text/ng-template" id="modifyPwModal.html")
-			.d-modal-header 修改密码
-			.modal-body
-				ul.modal-info(ng-form name="pwForm" role="form" ng-class="{'need-valid':needValid}")
-					li
-						label.info-name 原密码
-						.info-txt.text-left
-							input.full.ui-input-white(placeholder="请输入原密码" type="password" name="oldPw" ng-model="pwObj.oldpassword" required)
-					li
-						label.info-name 新密码
-						.info-txt.text-left
-							input.full.ui-input-white(placeholder="8-20位" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" type="password" name="newPw" ng-model="pwObj.newpassword" required ng-minlength="8" ng-maxlength="20")
-							span.txt-error(ng-if="(needValid||pwForm.newPw.$dirty)&&(pwForm.newPw.$error.minlength||pwForm.newPw.$error.maxlength)") 长度必须为8-20位
-					li
-						label.info-name 确认新密码
-						.info-txt.text-left
-							input.full.ui-input-white(placeholder="再次输入新密码" type="password" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}"  name="newPwAgain" ng-model="newPwAgain" required equal="pwObj.newpassword")
-							span.txt-error(ng-if="(needValidUser.valid||pwForm.newPwAgain.$dirty)&&pwForm.newPwAgain.$error.equal") 两次密码不一致
-			.modal-footer
-				button.ui-btn.ui-btn-white.ui-btn-sm(ng-click="cancel()") 取消
-				button.ui-btn.ui-btn-sm.ui-btn-primary(ng-click="needValid=true;pwForm.$valid&&modiftPw()") 确定
-		div
-		<!-- build:js /module/js/lib.min.js -->
-		script(type="text/javascript" src="../lib/js/jquery.min.js")
-		script(type="text/javascript" src="../lib/js/angular.min.js")
-		script(type="text/javascript" src="../lib/js/angular-animate.min.js")
-		script(type="text/javascript" src="../lib/js/ui-bootstrap-tpls.min.js")
-		script(type="text/javascript" src="../common/publicModule/publicModule.js")
-		script(type="text/javascript" src="../common/publicModule/directive/publicDirective.js")
-		script(type="text/javascript" src="../common/domeModule/domeModule.js")
-		script(type="text/javascript" src="../common/userModule/userModule.js")
-		script(type="text/javascript" src="")
-		<!-- endbuild -->
-		<!-- build:js /module/js/moduleApp.min.js -->
-		script(type="text/javascript" src="js/module.js")
-		script(type="text/javascript" src="")
-		<!-- endbuild -->
+    head
+        meta(http-equiv="Content-Type",content="text/html; charset=utf-8")
+        title DomeOS-导航
+        <!-- build:css /module/css/moduleApp.min.css -->
+        link(rel="stylesheet" href='../lib/css/bootstrap.css' type="text/css")
+        link(rel="stylesheet" href='../common/css/base.css' type="text/css")
+        link(rel="stylesheet" href='css/module.css' type="text/css")
+        link(rel="stylesheet" type="text/css")
+        <!-- endbuild -->
+        style
+            include ../common/css/ng-cloak.css
+    body(ng-controller="appCtr")
+        .module-con
+            .log-con
+                img.logo(src="/module/images/logo-white.png")
+                span.version(ng-bind="domeVersion")
+            .option-con
+                a.link-doc(href="http://doc.domeos.org" target="_blank")
+                    i.icon-doc
+                    | 文档
+                .user-con(select-con)
+                    button.ui-btn.ui-btn-none.username.ui-btn-select(ng-cloak)
+                        i.icon-down.up.drop
+                        | {{loginUser.username}}
+                    ul.com-user-option.select-list
+                        li.arrow
+                        li(select-item) 
+                            a(ng-click="modifySelfInfo()") 修改资料 
+                        li(select-item ng-if="loginUser.loginType=='USER'")
+                            a(ng-click="modifyPw()") 修改密码
+                        li(select-item)
+                            a(ng-click="logout()") 退出登录
+            ul.list-module
+                li
+                    a.module(href="/#/projectManage")
+                        h4
+                            i.icon-project
+                            | 项目管理
+                    a.module(href="/#/clusterManage")
+                        h4
+                            i.icon-cluster
+                            |  集群管理
+                li
+                    a.module(href="/#/deployManage")
+                        h4
+                            i.icon-deploy
+                            | 部署
+                    a.module(href="/#/groupManage")
+                        h4
+                            i.icon-user
+                            | 组管理
+                li
+                    a.module(href="/#/monitor")
+                        h4
+                            i.icon-monitor
+                            | 监控报警
+                    a.module(href="/#/appStore")
+                        h4
+                            i.icon-app
+                            | 应用商店
+                li
+                    a.module(href="/#/image")
+                        h4
+                            i.icon-image
+                            | 镜像
+                    a.module(href="/#/globalSetting" ng-hide="loginUser.username!='admin'")
+                        h4
+                            i.icon-global
+                            | 全局配置
+        script(type="text/ng-template" id="promptModal.html")
+            .d-modal-header 提示
+            .modal-body
+                p(ng-bind="promptTxt")
+            .modal-footer
+                button.ui-btn.ui-btn-primary.ui-btn-sm(ng-click="cancel()") 确定
+        script(type="text/ng-template" id="warningModal.html")
+            .d-modal-header 警告
+            .modal-body
+                p.txt-error(ng-bind="titleInfo" ng-class="{'font-size-16':detailInfo}")
+                p.txt-error.tool-wrap-break(ng-bind="detailInfo")
+            .modal-footer
+                button.ui-btn.ui-btn-error.ui-btn-sm(ng-click="cancel()") 确定
+        script(type="text/ng-template" id="modifyPwModal.html")
+            .d-modal-header 修改密码
+            .modal-body
+                ul.modal-info(ng-form name="pwForm" role="form" ng-class="{'need-valid':needValid}")
+                    li
+                        label.info-name 原密码
+                        .info-txt.text-left
+                            input.full.ui-input-white(placeholder="请输入原密码" type="password" name="oldPw" ng-model="pwObj.oldpassword" required)
+                    li
+                        label.info-name 新密码
+                        .info-txt.text-left
+                            input.full.ui-input-white(placeholder="8-20位" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" type="password" name="newPw" ng-model="pwObj.newpassword" required ng-minlength="8" ng-maxlength="20")
+                            span.txt-error(ng-if="(needValid||pwForm.newPw.$dirty)&&(pwForm.newPw.$error.minlength||pwForm.newPw.$error.maxlength)") 长度必须为8-20位
+                    li
+                        label.info-name 确认新密码
+                        .info-txt.text-left
+                            input.full.ui-input-white(placeholder="再次输入新密码" type="password" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}"  name="newPwAgain" ng-model="newPwAgain" required equal="pwObj.newpassword")
+                            span.txt-error(ng-if="(needValidUser.valid||pwForm.newPwAgain.$dirty)&&pwForm.newPwAgain.$error.equal") 两次密码不一致
+            .modal-footer
+                button.ui-btn.ui-btn-white.ui-btn-sm(ng-click="cancel()") 取消
+                button.ui-btn.ui-btn-sm.ui-btn-primary(ng-click="needValid=true;pwForm.$valid&&modiftPw()") 确定
+        script(type="text/ng-template" id="modifyUserInfoModal.html")
+            .d-modal-header(ng-cloak) 修改资料
+            .modal-body.text-center.modal-newpw(ng-form role="form" name="userInfoForm")
+                ul.modal-info
+                    li
+                        span.info-name 用户名
+                        .info-content.text-left
+                            span.align-input(ng-bind="user.username" )
+                    li
+                        span.info-name 邮箱
+                        .info-content.text-left
+                            input.ui-input-white.full(ng-model="user.email" name="email")
+                    li
+                        span.info-name 电话
+                        .info-content.text-left
+                            input.ui-input-white.full(ng-model="user.phone" name="phone")
+            .modal-footer
+                button.ui-btn.ui-btn-sm.ui-btn-white(ng-click="cancel()") 取消
+                button.ui-btn.ui-btn-sm.ui-btn-safe(ng-click="submit()") 保存
+        div
+        <!-- build:js /module/js/lib.min.js -->
+        script(type="text/javascript" src="../lib/js/jquery.min.js")
+        script(type="text/javascript" src="../lib/js/angular.min.js")
+        script(type="text/javascript" src="../lib/js/angular-animate.min.js")
+        script(type="text/javascript" src="../lib/js/ui-bootstrap-tpls.min.js")
+        script(type="text/javascript" src="../common/publicModule/publicModule.js")
+        script(type="text/javascript" src="../common/publicModule/directive/publicDirective.js")
+        script(type="text/javascript" src="../common/domeModule/domeModule.js")
+        script(type="text/javascript" src="../common/userModule/userModule.js")
+        script(type="text/javascript" src="")
+        <!-- endbuild -->
+        <!-- build:js /module/js/moduleApp.min.js -->
+        script(type="text/javascript" src="js/module.js")
+        script(type="text/javascript" src="")
+        <!-- endbuild -->

@@ -25,9 +25,9 @@ public class DeployEventBizImpl implements DeployEventBiz {
     CustomObjectMapper objectMapper;
 
     @Override
-    public void createEvent(DeployEvent event) throws JsonProcessingException {
-        DeployEventDBProto proto = buildDBProto(event);
-        deployEventMapper.createEvent(proto);
+    public long createEvent(DeployEvent event) {
+        deployEventMapper.createEvent(event, event.toString());
+        return event.getEid();
     }
 
     @Override
@@ -49,7 +49,7 @@ public class DeployEventBizImpl implements DeployEventBiz {
     }
 
     @Override
-    public DeployEvent getNewestEventByDeployId(int deployId) throws IOException {
+    public DeployEvent getNewestEventByDeployId(int deployId) throws IOException{
         return buildEvent(deployEventMapper.gentNewestEvent(deployId));
     }
 
@@ -64,11 +64,9 @@ public class DeployEventBizImpl implements DeployEventBiz {
 //    }
 
     @Override
-    public void updateEvent(long eid, DeployEvent event) throws JsonProcessingException {
-        DeployEventDBProto proto = buildDBProto(event);
-        proto.setEid(event.getEid());
-        deployEventMapper.updateEvent(proto.getEid(), proto.getEventStatus(),
-                proto.getStatusExpire(), objectMapper.writeValueAsString(event));
+    public void updateEvent(DeployEvent event)  {
+        deployEventMapper.updateEvent(event.getEid(), event.getEventStatus(),
+                event.getStatusExpire(), event.toString());
     }
 
     @Override

@@ -5,10 +5,10 @@
   </div>
   <loading ng-if="isLoading"></loading>
   <ul class="cluster-list">
-    <li ng-if="!clusterList||clusterList.length===0" class="no-cluster"><span>暂无集群，可以新建一个 </span></li>
+    <li ng-if="!clusterList||clusterList.length===0" class="no-cluster"><span>暂无集群，可以新建一个</span></li>
     <li ng-repeat="cluster in clusterList">
       <div class="cluster-item text-center">
-        <div class="cluster-header"><a ui-sref="clusterDetail({'id':cluster.id})" class="ui-btn ui-btn-sm ui-btn-link ui-btn-white pull-right">管理</a><em ng-bind="cluster.name" class="cluster-name"></em></div>
+        <div class="cluster-header"><a ui-sref="clusterDetail({'id':cluster.id})" class="ui-btn ui-btn-sm ui-btn-link ui-btn-white pull-right">管理</a><em ng-bind="cluster.name" class="cluster-name"></em><span ng-if="cluster.buildConfig===1" class="build-cluster-title">|<em>构建集群</em></span></div>
         <div class="cluster-content"><span ng-if="cluster.nodeNum===0" class="no-host">暂无主机，您可以：</span><span ng-if="cluster.nodeNum!==0" class="cluster-info">主机数<br/><span ng-cloak="ng-cloak" class="cluster-embed txt-bright">{{cluster.nodeNum}}个</span></span><span ng-if="cluster.nodeNum!==0" class="cluster-info">实例数<br/><span ng-cloak="ng-cloak" class="cluster-embed txt-safe">{{cluster.podNum}}个</span></span></div><a ui-sref="addHost({id:cluster.id})" class="ui-btn ui-btn-lg ui-btn-primary addhost">添加主机</a>
       </div>
     </li>

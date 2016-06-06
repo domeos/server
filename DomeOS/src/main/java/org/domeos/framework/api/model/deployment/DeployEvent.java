@@ -1,34 +1,68 @@
 package org.domeos.framework.api.model.deployment;
 
+import org.domeos.framework.api.model.auth.User;
 import org.domeos.framework.api.model.deployment.related.DeployEventStatus;
 import org.domeos.framework.api.model.deployment.related.DeployOperation;
 import org.domeos.framework.api.model.deployment.related.DeploymentSnapshot;
+import org.domeos.framework.engine.model.DataModelBase;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  */
-public class DeployEvent {
+public class DeployEvent extends DataModelBase{
+    @Override
+    public Set<String> excludeForJSON() {
+        return toExclude;
+    }
+
+    public static Set<String> toExclude = new HashSet<String>() {{
+        add("eid");
+        add("deployId");
+        add("operation");
+        add("eventStatus");
+        add("statusExpire");
+    }};
+
     long eid;
     int deployId;
-    long startTime;
-    long lastModify;
     DeployOperation operation;
-    long userId;
-    String userName;
     DeployEventStatus eventStatus;
     long statusExpire;
+
+    long startTime;
+    long lastModify;
+    int userId;
+    String userName;
     String message;
     List<DeploymentSnapshot> primarySnapshot;
     List<DeploymentSnapshot> targetSnapshot;
     List<DeploymentSnapshot> currentSnapshot;
 
-    public long getEid() {
-        return eid;
+    public DeployEvent() {
+    }
+    public DeployEvent(int deployId, DeployOperation operation, DeployEventStatus eventStatus, User user,
+                       List<DeploymentSnapshot> primarySnapshot, List<DeploymentSnapshot> targetSnapshot, List<DeploymentSnapshot> currentSnapshot) {
+        this.deployId = deployId;
+        this.operation = operation;
+        this.eventStatus = eventStatus;
+        this.startTime = System.currentTimeMillis();
+        this.lastModify = this.startTime;
+        this.userId = user.getId();
+        this.userName = user.getUsername();
+        this.primarySnapshot = primarySnapshot;
+        this.targetSnapshot = targetSnapshot;
+        this.currentSnapshot = currentSnapshot;
     }
 
-    public void setEid(long eid) {
-        this.eid = eid;
+    public List<DeploymentSnapshot> getCurrentSnapshot() {
+        return currentSnapshot;
+    }
+
+    public void setCurrentSnapshot(List<DeploymentSnapshot> currentSnapshot) {
+        this.currentSnapshot = currentSnapshot;
     }
 
     public int getDeployId() {
@@ -39,44 +73,12 @@ public class DeployEvent {
         this.deployId = deployId;
     }
 
-    public long getStartTime() {
-        return startTime;
+    public long getEid() {
+        return eid;
     }
 
-    public void setStartTime(long startTime) {
-        this.startTime = startTime;
-    }
-
-    public long getLastModify() {
-        return lastModify;
-    }
-
-    public void setLastModify(long lastModify) {
-        this.lastModify = lastModify;
-    }
-
-    public DeployOperation getOperation() {
-        return operation;
-    }
-
-    public void setOperation(DeployOperation operation) {
-        this.operation = operation;
-    }
-
-    public long getUserId() {
-        return userId;
-    }
-
-    public void setUserId(long userId) {
-        this.userId = userId;
-    }
-
-    public String getUserName() {
-        return userName;
-    }
-
-    public void setUserName(String userName) {
-        this.userName = userName;
+    public void setEid(long eid) {
+        this.eid = eid;
     }
 
     public DeployEventStatus getEventStatus() {
@@ -87,12 +89,12 @@ public class DeployEvent {
         this.eventStatus = eventStatus;
     }
 
-    public long getStatusExpire() {
-        return statusExpire;
+    public long getLastModify() {
+        return lastModify;
     }
 
-    public void setStatusExpire(long statusExpire) {
-        this.statusExpire = statusExpire;
+    public void setLastModify(long lastModify) {
+        this.lastModify = lastModify;
     }
 
     public String getMessage() {
@@ -103,12 +105,36 @@ public class DeployEvent {
         this.message = message;
     }
 
+    public DeployOperation getOperation() {
+        return operation;
+    }
+
+    public void setOperation(DeployOperation operation) {
+        this.operation = operation;
+    }
+
     public List<DeploymentSnapshot> getPrimarySnapshot() {
         return primarySnapshot;
     }
 
     public void setPrimarySnapshot(List<DeploymentSnapshot> primarySnapshot) {
         this.primarySnapshot = primarySnapshot;
+    }
+
+    public long getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(long startTime) {
+        this.startTime = startTime;
+    }
+
+    public long getStatusExpire() {
+        return statusExpire;
+    }
+
+    public void setStatusExpire(long statusExpire) {
+        this.statusExpire = statusExpire;
     }
 
     public List<DeploymentSnapshot> getTargetSnapshot() {
@@ -119,11 +145,19 @@ public class DeployEvent {
         this.targetSnapshot = targetSnapshot;
     }
 
-    public List<DeploymentSnapshot> getCurrentSnapshot() {
-        return currentSnapshot;
+    public int getUserId() {
+        return userId;
     }
 
-    public void setCurrentSnapshot(List<DeploymentSnapshot> currentSnapshot) {
-        this.currentSnapshot = currentSnapshot;
+    public void setUserId(int userId) {
+        this.userId = userId;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 }

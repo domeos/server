@@ -37,7 +37,7 @@ publicModule.directive('selectCon', function() {
 			transclude: true,
 			replace: true,
 			template: '<div ng-transclude></div>',
-			controller: ['$scope', '$element', '$attrs', function($scope, $element, $attrs) {
+			controller: ['$scope', function($scope) {
 				this.hideSelect = function() {
 					$scope.hideSelect();
 				};
@@ -46,9 +46,7 @@ publicModule.directive('selectCon', function() {
 				var dropEle = element.find('.select-list'),
 					selectEle = element.find('.ui-btn-select'),
 					iconEle = element.find('.drop'),
-					selectItemEle = element.find('.select-item'),
-					showSelect = false,
-					clickEvent;
+					showSelect = false;
 				if (selectEle.length === 0) {
 					return;
 				}
@@ -83,7 +81,7 @@ publicModule.directive('selectCon', function() {
 						toggleShowDropList();
 					});
 				}
-				if (attrs.label == "true") {
+				if (attrs.label == 'true') {
 					element.on('click', function() {
 						selectEle.focus();
 					});
@@ -127,6 +125,38 @@ publicModule.directive('selectCon', function() {
 			restrict: 'AE',
 			template: '<div class="com-loading"><div class="dot1"></div><div class="dot2"></div></div>',
 			replace: true
+		};
+	}).directive('domeRadio', function() {
+		'use strict';
+		return {
+			restrict: 'E',
+			scope: {
+				radioModel: '=dModel',
+				label: '@dLabel',
+				name: '@dName',
+				id: '@dId',
+				disabled : '@dDisabled',
+				value: '@dValue',
+				changeEvent: '&dChange'
+			},
+			replace: true,
+			template: '<span><input id="{{id}}" type="radio" name="{{name}}" class="ui-radio" ng-value="{{value}}" ng-model="radioModel" ng-change="changeEvent({model:radioModel})" ng-disabled="{{disabled}}"/><label ng-bind="label" for="{{id}}"></label></span>'
+		};
+	}).directive('domeCheck', function() {
+		'use strict';
+		return {
+			restrict: 'E',
+			scope: {
+				checkModel: '=ngModel',
+				label: '@dLabel',
+				name: '@dName',
+				id: '@dId',
+				trueValue: '@dTrueValue',
+				falseValue: '@dFalseValue',
+				changeEvent: '&dChange'
+			},
+			replace: true,
+			template: '<span><input id="{{id}}" type="checkbox" name="{{name}}" class="ui-check" ng-true-value="{{trueValue||true}}"  ng-false-value="{{falseValue||false}}" ng-model="checkModel" ng-change="changeEvent({model:checkModel})" /><label ng-bind="label" for="{{id}}"></label></span>'
 		};
 	});
 

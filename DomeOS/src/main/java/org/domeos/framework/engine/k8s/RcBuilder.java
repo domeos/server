@@ -19,19 +19,21 @@ import java.util.regex.Pattern;
 public class RcBuilder {
     Deployment deployment;
     Version version;
-    List<LoadBalancer> loadBalancer;
+    List<LoadBalancer> loadBalancers;
     List<EnvDraft> extraEnvs;
+    int replicas;
     int index = -1;
     List<String> nodeIpList = null;
 
     public RcBuilder() {
     }
 
-    public RcBuilder(Deployment deployment, List<LoadBalancer> loadBalancer, Version version, List<EnvDraft> extraEnvs) {
+    public RcBuilder(Deployment deployment, List<LoadBalancer> loadBalancers, Version version, List<EnvDraft> extraEnvs, int replicas) {
         this.deployment = deployment;
-        this.loadBalancer = loadBalancer;
+        this.loadBalancers = loadBalancers;
         this.version = version;
         this.extraEnvs = extraEnvs;
+        this.replicas = replicas;
     }
 
     public ReplicationController build() {
@@ -83,11 +85,15 @@ public class RcBuilder {
 //        if (extra != null) {
 //            annotations.put("accessType", extra.getDeploymentAccessType().toString());
 //        }
+        // TODO (openxxs) tmp solution: for old load balancer
+        Map<String, String> podLabels = buildRCLabelWithSpecifyVersionAndLoadBalancer(deployment, version, loadBalancers);
         rcSpec.putTemplate(new PodTemplateSpec())
             .getTemplate()
             .putMetadata(new ObjectMeta())
             .getMetadata()
-            .putLabels(rcSelector)
+            // TODO (openxxs) tmp solution: for old load balancer
+            .putLabels(podLabels)
+//            .putLabels(rcSelector)
             .putAnnotations(annotations)
             .putDeletionGracePeriodSeconds(0);
         // *** create node selector
@@ -140,6 +146,7 @@ public class RcBuilder {
             Volume[] volumes = LogDraft.formatPodVolume(version.getLogDraft());
             rcSpec.getTemplate().getSpec().setVolumes(volumes);
         }
+        rcSpec.setReplicas(replicas);
         rc.setSpec(rcSpec);
         return rc;
     }
@@ -162,11 +169,24 @@ public class RcBuilder {
 
     // these two function buildRCLabelWithSpecifyVersion and buildRCSelectorWithSpecifyVersion
     // are very important because they will get the basic information to query what RC and pod
-    // a depolyment occupy. And it will avoid overlap pods between different deployment and
+    // a deployment occupy. And it will avoid overlap pods between different deployment and
     // different version
     public static Map<String, String> buildRCLabelWithSpecifyVersion(Deployment deployment, Version version) {
         Map<String, String> label = buildRCLabel(deployment);
         label.put(GlobalConstant.VERSION_STR, String.valueOf(version.getVersion()));
+        return label;
+    }
+
+    // TODO (openxxs) tmp solution: for old load balancer
+    public static Map<String, String> buildRCLabelWithSpecifyVersionAndLoadBalancer(
+            Deployment deployment, Version version, List<LoadBalancer> loadBalancers) {
+        Map<String, String> label = buildRCLabel(deployment);
+        label.put(GlobalConstant.VERSION_STR, String.valueOf(version.getVersion()));
+        if (loadBalancers != null) {
+            for (LoadBalancer loadBalancer : loadBalancers) {
+                label.put(GlobalConstant.WITH_LB_PREFIX + loadBalancer.getId(), GlobalConstant.WITH_LB_VALUE);
+            }
+        }
         return label;
     }
 
@@ -184,8 +204,6 @@ public class RcBuilder {
         }
         int size = version.getContainerDrafts().size();
         List<Container> containers = new ArrayList<>(size);
-        HealthChecker healthChecker = deployment.getHealthChecker();
-        Probe probe = buildProbe(healthChecker);
 
         List<EnvDraft> allExtraEnvs = new LinkedList<>();
         if (extraEnvs != null) {
@@ -230,6 +248,15 @@ public class RcBuilder {
             EnvVar[] envs = envVarList.toArray(new EnvVar[envVarList.size()]);
             container.setEnv(envs);
 
+            // health checker
+            HealthChecker deploymentHealthChecker = deployment.getHealthChecker();
+            HealthChecker containerHealthChecker = containerDraft.getHealthChecker();
+            Probe probe;
+            if (containerHealthChecker != null) {
+                probe = buildProbe(containerHealthChecker);
+            } else {
+                probe = buildProbe(deploymentHealthChecker);
+            }
             if (probe != null) {
                 container.setLivenessProbe(probe);
             }
@@ -272,7 +299,7 @@ public class RcBuilder {
         }
         Probe probe = new Probe();
         probe.setTimeoutSeconds(healthChecker.getTimeout());
-        probe.setInitialDelaySeconds(30);
+        probe.setInitialDelaySeconds(healthChecker.getDelay());
         switch (healthChecker.getType()) {
             case HTTP:
                 HTTPGetAction httpGetAction = new HTTPGetAction();

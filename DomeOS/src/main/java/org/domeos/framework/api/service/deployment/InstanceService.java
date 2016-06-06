@@ -1,7 +1,9 @@
 package org.domeos.framework.api.service.deployment;
 
 import org.domeos.basemodel.HttpResponseTemp;
+import org.domeos.framework.api.model.deployment.related.Instance;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -24,4 +26,12 @@ public interface InstanceService {
      * @return
      */
     HttpResponseTemp<?> setPodAnnotation(String clusterName, String namespace, String podName, Map<String, String> annotations);
+
+    /**
+     * get instances for specific deployment
+     * @param deployId deployment id
+     * @return
+     * @throws Exception
+     */
+    List<Instance> getInstances(int deployId) throws Exception;
 }

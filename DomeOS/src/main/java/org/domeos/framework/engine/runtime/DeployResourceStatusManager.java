@@ -1,9 +1,6 @@
 package org.domeos.framework.engine.runtime;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.domeos.api.model.deployment.DeployRunningContainer;
-import org.domeos.api.model.deployment.MonitorCounterInfo;
-import org.domeos.api.model.deployment.QueryData;
 import org.domeos.client.kubernetesclient.KubeClient;
 import org.domeos.client.kubernetesclient.definitions.v1.ContainerStatus;
 import org.domeos.client.kubernetesclient.definitions.v1.Pod;
@@ -22,7 +19,9 @@ import org.domeos.global.GlobalConstant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,6 +35,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by xxs on 16/1/15.
  */
+@Component
 public class DeployResourceStatusManager implements IResourceStatus {
 
     static ClusterBiz clusterBiz;
@@ -46,6 +46,7 @@ public class DeployResourceStatusManager implements IResourceStatus {
     private static final long RUN_INTERVAL_SECONDS = 300;
     private static boolean resourceStatusManagerIsRunning = false;
 
+    @PostConstruct
     public void init() {
         if (!resourceStatusManagerIsRunning) {
             startUpdateResourceStatus();

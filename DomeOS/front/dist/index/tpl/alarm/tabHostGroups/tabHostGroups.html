@@ -1,0 +1,61 @@
+
+<div class="tab-hostsgroups">
+  <div class="com-btn-group">
+    <input placeholder="请输入主机组名称" ng-model="vmHostGroup.newHostGroup" class="ui-input ui-input-white"/>
+    <button ng-disabled="!vmHostGroup.newHostGroup" ng-click="vmHostGroup.addHostGroup()" class="ui-btn ui-btn-primary ui-btn-sm">添加主机组</button>
+  </div>
+  <ul class="list-hostgroups">
+    <li ng-repeat="hostgroup in vmHostGroup.hostGroupList" class="hostgroup-wrap">
+      <div class="hostgroup">
+        <div class="hostgroup-header">
+          <h4 ng-bind="hostgroup.hostGroupName" class="hostgroup-name"></h4><span ng-clock="ng-clock" class="hostgroup-detail txt-prompt">创建者：{{hostgroup.creatorName}} 创建时间：{{vmDome.parseDate(hostgroup.createTime)}}</span>
+          <div select-con="select-con" ng-if="vm.permission.role&amp;&amp;vm.permission.role!='REPORTER'" class="hostgroup-opt">
+            <button class="ui-btn-none ui-btn-select"><i class="icon-down-round"></i></button>
+            <ul class="select-list">
+              <li class="select-item"><a ng-click="vmHostGroup.rename(hostgroup)">重命名</a></li>
+              <li class="select-item"><a ng-click="vmHostGroup.deleteHostGroup(hostgroup.id)">删除该组</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="hostgroup-body">
+          <div class="hostgroup-left">
+            <h5 class="hostgroup-left-header"><a ui-sref="alarmAddHosts({id:hostgroup.id,name:hostgroup.hostGroupName})" ng-if="vm.permission.role&amp;&amp;vm.permission.role!='REPORTER'" class="link-addhost link-primary">+添加主机</a><em class="txt-embed">主机</em></h5>
+            <div class="list-hosts-wrap">
+              <ul class="list-hosts">
+                <li ng-repeat="host in hostgroup.hostList" class="sig-host">
+                  <div ng-mouseenter="hostGroupPopover.name=host.hostname;hostGroupPopover.ip=host.ip;" popover-template="'hostGroupPopover.html'" popover-trigger="mouseenter" class="sig-host-info-wrap"><a ng-if="vm.permission.role&amp;&amp;vm.permission.role!='REPORTER'" ng-click="vmHostGroup.deleteNode(hostgroup,$index)" class="icon-cancel"></a><em ng-bind="host.hostname" class="txt-embed tool-nowrap"></em><span ng-bind="host.ip" class="txt-prompt tool-nowrap"></span></div>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div class="hostgroup-right">
+            <h5 class="hostgroup-right-header txt-embed">报警模板</h5>
+            <ul class="list-tpls">
+              <li ng-repeat="tpl in hostgroup.templateList">
+                <div popover="{{tpl.templateName}}" popover-trigger="mouseenter" class="tool-nowrap tpl-wrap"><a ng-bind="tpl.templateName" ui-sref="alarmTemplateDetail({id:tpl.id})" class="txt-primary"></a></div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </li>
+  </ul>
+</div>
+<script type="text/ng-template" id="hostGroupPopover.html">
+  <div ng-bind="hostGroupPopover.name" class="text-center"></div>
+  <div ng-bind="hostGroupPopover.ip" class="text-center"></div>
+</script>
+<script type="text/ng-template" id="renameHostGroupModal.html">
+  <div ng-cloak="ng-cloak" class="d-modal-header">{{vmRename.hostGroup.hostGroupName}}重命名</div>
+  <ul role="form" ng-form="ng-form" name="hostGroupForm" ng-class="{'need-valid':needValid}" class="modal-branchcheck modal-info">
+    <li><span class="info-name">输入新名称</span>
+      <div class="info-txt">
+        <input is-hostgroup-exist="is-hostgroup-exist" name="hostGroupName" ng-model="vmRename.hostGroupName" hostgroup-list="vmRename.hostGroupList" is-required="is-required" class="ui-input-fill full"/><span ng-if="(vmRename.needValid||hostGroupForm.hostGroupName.$dirty)&amp;&amp;hostGroupForm.hostGroupName.$error.isHostgroupExist" class="txt-error text-left"> 名称已存在</span>
+      </div>
+    </li>
+  </ul>
+  <div class="modal-footer">
+    <button ng-click="vmRename.cancel()" class="ui-btn ui-btn-sm ui-btn-white">取消</button>
+    <button ng-click="vmRename.needValid=true;hostGroupForm.$valid&amp;&amp;vmRename.submitName();" class="ui-btn ui-btn-sm ui-btn-bright">确定</button>
+  </div>
+</script>

@@ -255,18 +255,20 @@ CREATE TABLE IF NOT EXISTS `monitor_targets` (
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS `k8s_events` (
-  `id` INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `id` INT(20) NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `version` VARCHAR(255) NOT NULL,
   `clusterId` INT(11) NOT NULL,
+  `deployId` INT(11) NOT NULL DEFAULT -1,
   `namespace` VARCHAR(255) NOT NULL,
   `eventKind` VARCHAR(255) NOT NULL,
   `name` VARCHAR(255) NOT NULL,
   `host` VARCHAR(255),
   `content` TEXT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-CREATE INDEX `k8s_events_index1` ON k8s_events(`clusterId`, `namespace`, `eventKind`);
-CREATE INDEX `k8s_events_index2` ON k8s_events(`clusterId`, `name`);
-CREATE INDEX `k8s_events_index3` ON k8s_events(`host`);
+CREATE INDEX `k8s_events_kind_index` ON k8s_events(`clusterId`, `namespace`, `eventKind`);
+CREATE INDEX `k8s_events_name_index` ON k8s_events(`clusterId`, `namespace`, `name`);
+CREATE INDEX `k8s_events_host_index` ON k8s_events(`host`);
+CREATE INDEX `k8s_events_deploy_index` ON k8s_events(`clusterId`, `namespace`, `deployId`);
 
 CREATE TABLE IF NOT EXISTS `test` (
   `id` INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -291,10 +293,6 @@ CREATE TABLE IF NOT EXISTS `uniq_port_index` (
   `clusterId` INT(11) NOT NULL
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 CREATE UNIQUE INDEX `uniq_port_index_cluster_port` ON uniq_port_index(`port`, `clusterId`);
-
-CREATE INDEX `k8s_events_kind_index` ON k8s_events(`clusterId`, `namespace`, `eventKind`);
-CREATE UNIQUE INDEX `k8s_events_name_index` ON k8s_events(`clusterId`, `namespace`, `name`);
-CREATE INDEX `k8s_events_host_index` ON k8s_events(`host`);
 
 -- test, test
 insert into users(username, password, salt, loginType, state) VALUES ('admin','5fdf2372d4f23bdecfd2b8e8d7aacce1','0ea3abcf42700bb1bbcca6c27c92a821','USER','NORMAL');

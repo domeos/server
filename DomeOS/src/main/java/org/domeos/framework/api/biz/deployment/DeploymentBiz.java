@@ -17,8 +17,11 @@ public interface DeploymentBiz extends BaseBiz {
 
     void update(Deployment deployment) throws DaoException;
 
-    List<Deployment> listDeploymentByClutesrId(int id);
+    List<Deployment> listDeploymentByClusterId(int id);
 
+    List<Deployment> getDeployment(int clusterId, String deployName);
+
+    List<Deployment> listUnfinishedStatusDeployment();
 //    /**
 //     *
 //     * @param deployId

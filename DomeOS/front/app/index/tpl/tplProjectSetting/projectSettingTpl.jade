@@ -1,0 +1,223 @@
+table.table-info.projectinfo(ng-form role="form" name="proInfoForm")
+	tr(ng-if="config.id")
+		td 项目配置类型
+		td
+			span.setting-type(ng-class="{'active':!config.userDefineDockerfile&&!project.isUseCustom}" ng-click="toggleProjectType('allType');proInfoForm.$setPristine();valid.needValid=false")
+				h4 通用配置
+				p 适合各种编程语言的项目，在页面上配置Dockerfile以及运行过程的相关信息。
+			span.setting-type(ng-class="{'active':!config.userDefineDockerfile&&project.isUseCustom&&project.customConfig.customType=='java'}" ng-click="toggleProjectType('java');proInfoForm.$setPristine();valid.needValid=false;" ng-if="config.codeInfo")
+				h4 Java专属配置
+				p 专为Java项目打造，分离编译和构建过程，精简项目镜像。
+			span.setting-type(ng-class="{'active':config.userDefineDockerfile}" ng-click="toggleUseDockerfile();proInfoForm.$setPristine();valid.needValid=false;" ng-if="config.codeInfo")
+				h4 代码内Dockerfile
+				p 使用代码项目内的Dockerfile。请确保构建所用的代码分支或tag中存在可用的Dockerfile。
+	tbody(ng-if="!config.userDefineDockerfile")
+		tr(ng-if="project.isUseCustom&&project.customConfig.customType=='java'")
+			td 编译镜像
+			td
+				p.txt-prompt.setting-title 编译镜像用于代码编译并打包，请在编译镜像内配置好编译环境。
+				dome-radio(d-id="compilePublic" d-name="compileCustom" d-model="project.projectImagesIns.imageInfo.compileIsPublic" d-value="1" d-label="DomeOS官方镜像库" d-change="project.projectImagesIns.toggleIsPublicImage('compile',model)")
+				dome-radio.private-img(d-id="compilePrivate" d-name="compileCustom" d-model="project.projectImagesIns.imageInfo.compileIsPublic" d-value="0" d-label="DomeOS私有镜像库" d-change="project.projectImagesIns.toggleIsPublicImage('compile',model)")
+				a.icon-help(tooltip="可以通过手动push或使用镜像定制工具，添加Java编译镜像。镜像名必须为“compileimage-java”，镜像版本可以自行指定，推荐使用maven和jdk版本信息作为镜像版本。")
+				p(ng-cloak) 镜像仓库地址：{{project.projectImagesIns.selectedCompileImage.registryUrl||'无'}}
+				.com-select-con.image-select-con(select-con)
+					button.ui-btn-select.ui-btn.ui-btn-white
+						i.icon-down
+						| {{project.projectImagesIns.selectedCompileImage.imageTxt||'选择镜像'}}
+					ul.select-list
+						li.select-item(ng-if="project.projectImagesIns.currentCompileList.length===0")
+							a 无相关镜像
+						li.select-item(ng-repeat="image in project.projectImagesIns.currentCompileList")
+							a(ng-cloak ng-click="project.projectImagesIns.toggleImage('compile',$index)")
+								| {{image.imageTxt}}
+								span.item-right.txt-prompt(ng-bind="image.createDate")
+				span.tool-inline-error(ng-show="(valid.needValid||proInfoForm.compileImage.$dirty)&&proInfoForm.compileImage.$error.required") 请选择镜像
+				input(type="hidden" ng-model="project.projectImagesIns.selectedCompileImage.imageTxt" name="compileImage" required)
+				p.setting-title 编译镜像内代码存放路径。请确认该路径下可以执行编译命令。（必填）
+				input.info-txt.ui-input-fill(name="codeStoragePath" ng-model="project.customConfig.codeStoragePath" ng-pattern="/^\/.+/" required placeholder="代码存放路径，要求绝对路径，例如：/code")
+				span.tool-inline-error(ng-show="(valid.needValid||proInfoForm.codeStoragePath.$dirty)&&!proInfoForm.codeStoragePath.$error.required&&proInfoForm.codeStoragePath.$invalid") 非法的路径
+				p.setting-title 编译结果在编译镜像中的存放路径。可填写多个。（至少填一个）
+				ul.settting-list
+					li(ng-repeat="createdFileStoragePath in project.customConfig.createdFileStoragePath")
+						input.info-txt.ui-input-fill(placeholder="请填写绝对路径。文件夹以“/”结尾，文件以文件名结尾" ng-model="createdFileStoragePath.name" ng-pattern="/^\/.+/" ng-change="validCreatedFileStoragePath()" ng-focus="$last&&project.addCreatedFileStoragePath()")
+						span.delete-con
+							a.icon-delete(ng-if="project.customConfig.createdFileStoragePath.length>1" ng-click="project.deleteCreatedFileStoragePath($index)")
+				p.txt-error(ng-if="valid.needValid&&!valid.createdFileStoragePath") 至少填一个路径
+				span.tool-inline-error(ng-show="(valid.needValid||proInfoForm.createdFileStoragePath.$dirty)&&!proInfoForm.createdFileStoragePath.$error.required&&proInfoForm.createdFileStoragePath.$invalid") 非法的路径
+				p.setting-title 编译命令。多条命令请用“&&”连接。（必填）
+				textarea.info-txt.ui-input-fill(name="compileCmd" ng-model="project.customConfig.compileCmd" required)
+				p.setting-title 编译过程的环境变量
+				ul.settting-list
+					li(ng-repeat="compileEnv in project.customConfig.compileEnv")
+						.setting-group
+							input.info-txt.ui-input-fill.env-name(placeholder="环境变量名" is-required param1="{{compileEnv.envValue}}" ng-model="compileEnv.envName" ng-focus="$last&&project.addCompileEnv()")
+							input.info-txt.ui-input-fill.env-value(placeholder="环境变量值" param1="{{compileEnv.envName}}" ng-model="compileEnv.envValue")
+						span.delete-con
+							a.icon-delete(ng-if="project.customConfig.compileEnv.length>1" ng-click="project.deleteCompileEnv($index)")
+		tr(ng-if="project.isUseCustom&&project.customConfig.customType=='java'")
+			td 运行镜像
+			td
+				p.txt-prompt.setting-title 运行镜像用于运行编译结果，请在运行镜像内配置好运行环境。
+				dome-radio(d-id="runPublic" d-name="runCustom" d-model="project.projectImagesIns.imageInfo.runIsPublic" d-value="1" d-label="DomeOS官方镜像库" d-change="project.projectImagesIns.toggleIsPublicImage('run',model)")
+				dome-radio.private-img(d-id="runPrivate" d-name="runCustom" d-model="project.projectImagesIns.imageInfo.runIsPublic" d-value="0" d-label="DomeOS私有镜像库" d-change="project.projectImagesIns.toggleIsPublicImage('run',model)")
+				a.icon-help(tooltip="可以通过手动push或使用镜像定制工具，添加Java运行镜像。镜像名必须为“runimage-java”，镜像版本可以自行指定，推荐使用tomcat和jre版本信息作为镜像版本。")
+				p(ng-cloak) 镜像仓库地址：{{project.projectImagesIns.selectedRunImage.registryUrl||'无'}}
+				.com-select-con.image-select-con(select-con)
+					button.ui-btn-select.ui-btn.ui-btn-white
+						i.icon-down
+						| {{project.projectImagesIns.selectedRunImage.imageTxt||'选择镜像'}}
+					ul.select-list
+						li.select-item(ng-if="project.projectImagesIns.currentRunList.length===0")
+							a 无相关镜像
+						li.select-item(ng-repeat="image in project.projectImagesIns.currentRunList")
+							a(ng-cloak ng-click="project.projectImagesIns.toggleImage('run',$index)")
+								| {{image.imageTxt}}
+								span.item-right.txt-prompt(ng-bind="image.createDate")
+				span.tool-inline-error(ng-show="(valid.needValid||proInfoForm.runImage.$dirty)&&proInfoForm.runImage.$error.required") 请选择镜像
+				input(type="hidden" ng-model="project.projectImagesIns.selectedRunImage.imageTxt" name="runImage" required)
+				p.setting-title 编译结果在运行镜像中的存放路径。只能填写一个。（必填）
+				input.info-txt.ui-input-fill(name="runFileStoragePath" ng-model="project.projectImagesIns.selectedRunImage.runFileStoragePath" ng-pattern="/^\/.+/" required placeholder="请填写绝对路径，必须以文件夹结尾")
+				span.tool-inline-error(ng-show="(valid.needValid||proInfoForm.runFileStoragePath.$dirty)&&!proInfoForm.runFileStoragePath.$error.required&&proInfoForm.runFileStoragePath.$invalid") 非法的路径
+				p.setting-title 运行镜像的启动命令。多条命令请用“&&”连接。（必填）
+				textarea.info-txt.ui-input-fill(name="startCmd" ng-model="project.projectImagesIns.selectedRunImage.startCommand" required)
+				p.setting-title 请列出项目运行镜像需要配置的环境变量，给予默认值并加以描述，用于部署时提示运维人员配置。
+				ul.settting-list
+					li(ng-repeat="envConfDefault in config.envConfDefault")
+						.setting-group
+							input.info-txt.ui-input-fill.env-name(placeholder="环境变量名" ng-model="envConfDefault.key" ng-focus="$last&&project.addEnvConfDefault()" is-required param1="{{envConfDefault.value}}")
+							input.info-txt.ui-input-fill.env-value(placeholder="环境变量值" ng-model="envConfDefault.value" is-required param1="{{envConfDefault.key}}")
+							input.info-txt.ui-input-fill.env-description(placeholder="描述：20字以内" ng-model="envConfDefault.description" )
+						span.delete-con
+							a.icon-delete(ng-if="config.envConfDefault.length>1" ng-click="project.deleteArrItem('envConfDefault',$index)")
+		tr(ng-if="!project.isUseCustom")
+			td 基础镜像
+			td
+				.image-drop.com-select-con(select-con)
+					input.ui-input-search.ui-input-fill.ui-btn-select(placeholder="{{project.customConfig.baseImageName?'当前选择：'+project.customConfig.baseImageName:'搜索基础镜像'}}" name="baseImageKey" ng-model="baseImageKey")
+					input(type="hidden" ng-model="project.customConfig.baseImageName" name="baseImage" required)
+					ul.select-list
+						li(ng-if="imageListFilter.length ===0")
+							a 无相关信息
+						li.select-item(ng-repeat="image in imageListFilter =(imageList|filter:{'imageName':baseImageKey})")
+							a(ng-click="project.toggleBaseImage(image.imageName,image.imageTag,image.registry);$parent.baseImageKey=''")
+								span(ng-bind="image.imageName")
+								span(ng-bind="image.imageTag")
+								span(ng-bind="image.description")
+					span.tool-inline-error(ng-show="(valid.needValid||proInfoForm.baseImageKey.$dirty)&&proInfoForm.baseImage.$error.required") 必须选择一个镜像
+		tr(ng-if="!project.isUseCustom")
+			td 安装依赖命令
+			td
+				textarea.info-txt.ui-input-fill(name="installCmd" ng-model="project.customConfig.installCmd" )
+		tr(ng-if="!project.isUseCustom")
+			td 代码存放路径 *
+			td
+				input.info-txt.ui-input-fill(name="codeStoragePath" ng-model="project.customConfig.codeStoragePath" ng-pattern="/^\/.+/" required placeholder="镜像内存放代码的路径，要求绝对路径，例如：/code" is-enable)
+				span.tool-inline-error(ng-show="(valid.needValid||proInfoForm.codeStoragePath.$dirty)&&!proInfoForm.codeStoragePath.$error.required&&proInfoForm.codeStoragePath.$invalid") 非法的路径
+		tr(ng-if="!project.isUseCustom")
+			td 编译命令
+			td
+				.txt-prompt.setting-title 多条命令请用“&&”连接。
+				textarea.info-txt.ui-input-fill(name="compileCmd" ng-model="project.customConfig.compileCmd")
+		tr
+			td 工作目录
+			td
+				input.info-txt.ui-input-fill(name="workDir" ng-model="project.customConfig.workDir" ng-pattern="/^\//" placeholder="要求绝对路径，默认为根目录")
+				span.tool-inline-error(ng-show="(valid.needValid||proInfoForm.workDir.$dirty)&&!proInfoForm.workDir.$error.required&&proInfoForm.workDir.$invalid") 非法的路径
+		tr(ng-if="!project.isUseCustom")
+			td 启动命令 *
+			td
+				.txt-prompt.setting-title 多条命令请用“&&”连接。
+				textarea.info-txt.ui-input-fill(name="startCmd" ng-model="project.customConfig.startCmd" required )
+		tr
+			td user in docker
+			td
+				input.info-txt.ui-input-fill(ng-model="project.customConfig.user")
+		tr(ng-if="!project.isUseCustom")
+			td 编译过程环境变量
+			td
+				.txt-prompt.setting-title build过程的环境变量。会被写入Dockerfile，在运行期间也会生效。
+				ul.settting-list
+					li(ng-repeat="compileEnv in project.customConfig.compileEnv")
+						.setting-group
+							input.info-txt.ui-input-fill.env-name(placeholder="环境变量名" is-required param1="{{compileEnv.envValue}}" ng-model="compileEnv.envName" ng-focus="$last&&project.addCompileEnv()")
+							input.info-txt.ui-input-fill.env-value(placeholder="环境变量值" param1="{{compileEnv.envName}}" ng-model="compileEnv.envValue")
+						span.delete-con
+							a.icon-delete(ng-if="project.customConfig.compileEnv.length>1" ng-click="project.deleteCompileEnv($index)")
+		tr
+			td 项目可见性
+			td
+				span.txt-visible
+					input#toPublic.ui-check(type="checkbox" ng-true-value="1" ng-false-value="0" ng-model="config.authority")
+					label(for="toPublic") 对所有人可见
+		tr
+			td 配置文件模板
+			td
+				.txt-prompt.setting-title(ng-non-bindable) 配置文件模版中，用"{{.Env.PATH}}"来表示名称为"PATH"的变量。
+				ul.settting-list
+					li(ng-repeat="confFile in config.confFiles")
+						.setting-group
+							input.info-txt.ui-input-fill.env-name(placeholder="模板路径" is-required param1="{{confFile.originDir}}" ng-model="confFile.tplDir" ng-focus="$last&&project.addConfFiles()" ng-pattern="/^\//")
+							input.info-txt.ui-input-fill.env-value(placeholder="目标路径" is-required  param1="{{confFile.tplDir}}" ng-pattern="/^\//" ng-model="confFile.originDir")
+						span.delete-con
+							a.icon-delete(ng-if="config.confFiles.length>1" ng-click="project.deleteArrItem('confFiles',$index)")
+		tr(ng-if="!project.isUseCustom")
+			td 运行过程环境变量
+			td
+				.txt-prompt.setting-title 请列出项目运行镜像需要配置的环境变量，给予默认值并加以描述，用于部署时提示运维人员配置。
+				ul.settting-list
+					li(ng-repeat="envConfDefault in config.envConfDefault")
+						.setting-group
+							input.info-txt.ui-input-fill.env-name(placeholder="环境变量名" ng-model="envConfDefault.key" ng-focus="$last&&project.addEnvConfDefault()" is-required param1="{{envConfDefault.value}}")
+							input.info-txt.ui-input-fill.env-value(placeholder="环境变量值" ng-model="envConfDefault.value" is-required param1="{{envConfDefault.key}}")
+							input.info-txt.ui-input-fill.env-description(placeholder="环境变量描述" ng-model="envConfDefault.description" )
+						span.delete-con
+							a.icon-delete(ng-if="config.envConfDefault.length>1" ng-click="project.deleteArrItem('envConfDefault',$index)")
+	tbody(ng-if="config.userDefineDockerfile")
+		tr
+			td 构建目录
+			td
+				input.info-txt.ui-input-fill(ng-model="config.dockerfileInfo.buildPath" name="buildDir" placeholder="以“/”开头，系统会在该目录下执行构建命令" ng-pattern="/^\//" ng-change="changeDockerfilePath(config.dockerfileInfo.buildPath);")
+				span.tool-inline-error(ng-show="(needValid||proInfoForm.buildDir.$dirty)&&proInfoForm.buildDir.$invalid") 非法的路径
+		tr
+			td Dockerfile路径
+			td
+				p.txt-prompt.setting-title 镜像内的Dockerfile存放路径。需要具体到Dockerfile文件名，Dockerfile文件可随意命名。推荐在构建目录下存放Dockerfile。
+				input.info-txt.ui-input-fill(ng-model="config.dockerfileInfo.dockerfilePath" name="dockerfilePath" placeholder="/Dockerfile" required)
+				span.tool-inline-error(ng-show="(needValid||proInfoForm.dockerfilePath.$dirty)&&proInfoForm.dockerfilePath.$error.required")
+				span.tool-inline-error(ng-show="(needValid||proInfoForm.dockerfilePath.$dirty)&&!proInfoForm.dockerfilePath.$error.required&&proInfoForm.dockerfilePath.$invalid") 非法的路径
+		tr
+			td 项目可见性
+			td
+				span.txt-visible
+					input#toPublic.ui-check(type="checkbox" ng-true-value="1" ng-false-value="0" ng-model="config.authority")
+					label(for="toPublic") 对所有人可见
+		tr
+			td 运行过程环境变量
+			td
+				.txt-prompt.setting-title 请列出项目需要配置的环境变量，给予默认值并加以描述，用于部署时提示运维人员配置。
+				ul.settting-list
+					li(ng-repeat="envConfDefault in config.envConfDefault")
+						.setting-group
+							input.info-txt.ui-input-fill.env-name(placeholder="环境变量名" ng-model="envConfDefault.key" ng-focus="$last&&project.addEnvConfDefault()" is-required param1="{{envConfDefault.value}}")
+							input.info-txt.ui-input-fill.env-value(placeholder="环境变量值" ng-model="envConfDefault.value" is-required param1="{{envConfDefault.key}}")
+							input.info-txt.ui-input-fill.env-description(placeholder="环境变量描述" ng-model="envConfDefault.description" )
+						span.delete-con
+							a.icon-delete(ng-if="config.envConfDefault.length>1" ng-click="project.deleteArrItem('envConfDefault',$index)")
+	//- tr
+		td 上传本地文件
+		td
+			.fileupload-con
+				button.ui-btn.ui-btn-safe 上传本地文件
+				input.upfile(type="file" nv-file-select uploader="uploader" multiple)
+			ul.settting-list.list-input.list-file
+				li(ng-repeat="file in config.uploadFile")
+					a.link(href="/api/project/download/file?md5={{file.md5}}&file={{file.location.split('/').pop()}}" target="_blank" ng-bind="file.location")
+					span.delete-con
+						a.icon-delete(ng-click="project.deleteArrItem('uploadFile',$index)")
+			ul.settting-list.list-input.list-file
+				li(ng-repeat="item in uploader.queue")
+					.setting-group
+						span.filename(ng-bind="item.file.name")
+						input.info-txt.ui-input-fill(placeholder="请输入文件存放路径，以“/”开头" name="fileDir" ng-model="item.file.location" required  ng-pattern="/^\//")
+					span.delete-con
+						a.icon-delete(ng-click="item.remove()")

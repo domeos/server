@@ -9,7 +9,26 @@
 		padding: 14px 0 0 $page-padding;
 	}
 }
-.projectlist-con{
+.modal-projects{
 	max-height: 540px;
 	overflow: auto;
+	.filter-con{
+		padding: 16px $page-padding 16px $page-padding;
+		overflow: hidden;
+		.tool-align-input{
+			display: inline-block;
+		}
+		.ui-input-search{
+			float: right;
+		}
+	}
+	td,th{
+		&:first-child{
+			padding-left: $page-padding;
+		}
+		&:last-child{
+			padding-right: $page-padding;
+		}
+	}
+
 }

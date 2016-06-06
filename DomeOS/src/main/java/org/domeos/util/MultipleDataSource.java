@@ -1,6 +1,7 @@
 package org.domeos.util;
 
 import org.apache.commons.lang3.StringUtils;
+import org.domeos.global.GlobalConstant;
 import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
 
 /**
@@ -14,6 +15,7 @@ public class MultipleDataSource extends AbstractRoutingDataSource {
                 || StringUtils.isBlank(System.getenv("MYSQL_DB"))) {
             return DatabaseType.H2;
         } else {
+            GlobalConstant.DATABASETYPE = DatabaseType.MYSQL;
             return DatabaseType.MYSQL;
         }
     }

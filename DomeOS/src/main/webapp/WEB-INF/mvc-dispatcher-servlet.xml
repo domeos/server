@@ -4,7 +4,6 @@
        xmlns:p="http://www.springframework.org/schema/p"
        xmlns:mvc="http://www.springframework.org/schema/mvc"
        xmlns:jdbc="http://www.springframework.org/schema/jdbc"
-       xmlns:cache="http://www.springframework.org/schema/cache"
        xmlns:aop="http://www.springframework.org/schema/aop"
 
        xsi:schemaLocation="http://www.springframework.org/schema/beans
@@ -15,8 +14,6 @@
         http://www.springframework.org/schema/mvc/spring-mvc.xsd
         http://www.springframework.org/schema/jdbc
         http://www.springframework.org/schema/jdbc/spring-jdbc.xsd
-        http://www.springframework.org/schema/cache
-        http://www.springframework.org/schema/cache/spring-cache-3.1.xsd
         http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
 
     <context:annotation-config/>
@@ -33,7 +30,6 @@
             <bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter" p:objectMapper-ref="modelObjectMapper"/>
         </mvc:message-converters>
     </mvc:annotation-driven>
-    <bean id="modelObjectMapper" class="org.domeos.framework.engine.model.ModelObjectMapper" />
 
     <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
         <property name="prefix" value="/WEB-INF/pages/"/>
@@ -41,17 +37,16 @@
     </bean>
     <bean class="org.domeos.global.StartupListener"/>
     <bean id="mysqlDataSource" class="org.domeos.util.MysqlDriverManagerDataSource">
-        <property name="driverClassName" value="${jdbc.driver}"/>
-        <property name="url" value="${jdbc.url}"/>
-        <property name="username" value="${jdbc.username}"/>
-        <property name="password" value="${jdbc.password}"/>
+        <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+        <property name="url" value=""/>
+        <property name="username" value=""/>
+        <property name="password" value=""/>
     </bean>
     <jdbc:embedded-database id="h2DataSource" type="H2">
         <jdbc:script location="classpath:create-db.sql" />
         <jdbc:script location="classpath:insert-data.sql" />
     </jdbc:embedded-database>
     <bean id="multipleDataSource" class="org.domeos.util.MultipleDataSource">
-        <!--<property name="defaultTargetDataSource" ref="mysqlDataSource"/>-->
         <property name="targetDataSources">
             <map key-type="org.domeos.util.DatabaseType">
                 <entry key="MYSQL" value-ref="mysqlDataSource"/>
@@ -82,11 +77,6 @@
         <property name="authorizationCachingEnabled" value="true"/>
         <property name="authorizationCacheName" value="authorizationCache"/>
         <property name="name" value="USER"/>
-    </bean>
-    <!--<bean id="ldapContextFactory" class="org.apache.shiro.realm.ldap.JndiLdapContextFactory">-->
-        <!--<property name="url" value="ldap://${ldap.server}:389" />-->
-    <!--</bean>-->
-    <bean id="ldapContextFactory" class="org.domeos.framework.shiro.realm.NewLdapContextFactory">
     </bean>
     <bean id="ldapRealm" class="org.domeos.framework.shiro.realm.LdapRealm">
         <property name="contextFactory" ref="ldapContextFactory" />
@@ -165,6 +155,7 @@
             <value>
                 /api/ci/build/autobuild = anon
                 /api/ci/build/builddockerfile/** = anon
+                /api/ci/build/compilefile/** = anon
                 /api/ci/build/status = anon
                 /api/ci/build/upload/** = anon
                 /api/ci/build/log/** = anon
@@ -178,6 +169,10 @@
                 /api/global/registry/private/certification = anon
                 /anon/* = anon
                 /anon/js/* = anon
+                /api/alarm/action/** = anon
+                /api/alarm/group/users/** = anon
+                /api/alarm/link/** = anon
+                /api/alarm/send/** = anon
 
                 /common/** = anon
                 /lib/** = anon
@@ -196,11 +191,7 @@
         </property>
     </bean>
     <bean id="lifecycleBeanPostProcessor" class="org.apache.shiro.spring.LifecycleBeanPostProcessor"/>
-    <bean id="objectMapper" class="org.domeos.framework.engine.model.CustomObjectMapper"/>
-    <bean id="userIdAspect" class="org.domeos.framework.engine.aop.UserIdAspect"/>
-    <bean id="loggerAspect" class="org.domeos.framework.engine.aop.LoggerAspect"/>
     <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
-        <!--<property name="dataSource" ref="dataSource"/>-->
         <property name="dataSource" ref="multipleDataSource"/>
         <property name="configLocation" value="/WEB-INF/conf/mybatis-config.xml"/>
     </bean>
@@ -213,29 +204,10 @@
     <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
         <property name="basePackage" value="org.domeos.framework.api.mapper"/>
     </bean>
-    <bean id="configProperties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
-        <property name="locations">
-            <list>
-                <value>/WEB-INF/domeos.properties</value>
-            </list>
-        </property>
-    </bean>
     <bean id="multipartResolver"
           class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
         <property name="defaultEncoding" value="utf-8"/>
         <property name="maxUploadSize" value="10760000"/>
         <property name="maxInMemorySize" value="40960"/>
     </bean>
-    <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PreferencesPlaceholderConfigurer">
-        <property name="properties" ref="configProperties"/>
-    </bean>
-    <bean id="authUtil" class="org.domeos.framework.engine.AuthUtil"/>
-    <bean id="updateBuildStatusInfo" class="org.domeos.framework.api.service.project.impl.UpdateBuildStatusInfo"/>
-    <bean id="kubeServiceInfo" class="org.domeos.framework.api.service.project.impl.KubeServiceInfo"/>
-    <bean id="gitlabInfo" class="org.domeos.framework.engine.coderepo.GitlabInfo"/>
-    <bean id="eventUpdater" class="org.domeos.framework.engine.k8s.updater.EventUpdater" init-method="init"/>
-    <bean id="deployResourceStatusManager" class="org.domeos.framework.engine.runtime.DeployResourceStatusManager" depends-on="kubeServiceInfo" init-method="init"/>
-    <bean id="subversionInfo" class="org.domeos.framework.engine.coderepo.SubversionInfo"/>
-    <bean class="org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor"/>
-    <bean id="buildStatusManager" class="org.domeos.framework.engine.k8s.BuildStatusManager" init-method="init"/>
 </beans>

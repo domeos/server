@@ -5,7 +5,6 @@ import org.domeos.framework.api.biz.cluster.ClusterBiz;
 import org.domeos.framework.api.model.cluster.Cluster;
 import org.domeos.framework.engine.exception.DaoException;
 import org.domeos.framework.engine.k8s.updater.EventUpdater;
-import org.domeos.global.GlobalConstant;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,4 +52,9 @@ public class EventUpdaterTest {
         TimeUnit.SECONDS.sleep(10);
 
     }
+
+//    @Test
+//    public void T020init() {
+//        System.out.println(SpringContextManager.getBean(AuthUtil.class));
+//    }
 }

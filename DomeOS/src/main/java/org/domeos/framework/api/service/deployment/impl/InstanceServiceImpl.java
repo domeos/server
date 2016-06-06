@@ -31,10 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TimeZone;
+import java.util.*;
 
 /**
  * Created by feiliu206363 on 2015/12/18.
@@ -83,7 +80,8 @@ public class InstanceServiceImpl implements InstanceService {
         if (cluster == null) {
             throw ApiException.wrapMessage(ResultStat.CLUSTER_NOT_EXIST, "The cluster with clusterId " + deployment.getClusterId() + " does not exist.");
         }
-        Map<String, String> labels = DeploymentServiceImpl.buildRCSelector(deployment);
+        Map<String, String> labels = new HashMap<>();
+        labels.put(GlobalConstant.DEPLOY_ID_STR, String.valueOf(deployment.getId()));
         NodeWrapper nodeWrapper = new NodeWrapper().init(cluster.getId(), deployment.getNamespace());
         PodList podList = nodeWrapper.getPods(labels);
         Filter.getPodSuccessRunningFilter().filter(podList);

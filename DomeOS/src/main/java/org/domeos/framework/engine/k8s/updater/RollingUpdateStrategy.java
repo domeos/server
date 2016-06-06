@@ -1,8 +1,8 @@
 package org.domeos.framework.engine.k8s.updater;
 
 import org.apache.log4j.Logger;
-import org.domeos.api.model.deployment.UpdatePolicy;
-import org.domeos.api.model.deployment.UpdateReplicationCount;
+import org.domeos.framework.engine.k8s.model.UpdatePolicy;
+import org.domeos.framework.engine.k8s.model.UpdateReplicationCount;
 import org.domeos.client.kubernetesclient.definitions.v1.PodList;
 import org.domeos.client.kubernetesclient.util.PodUtils;
 

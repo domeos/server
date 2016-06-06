@@ -6,5 +6,6 @@ public enum DeployEventStatus {
     START,
     PROCESSING,
     SUCCESS,
-    FAILED
+    FAILED,
+    ABORTED
 }

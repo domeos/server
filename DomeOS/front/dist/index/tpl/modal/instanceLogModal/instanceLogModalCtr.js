@@ -1,4 +1,4 @@
-domeApp.controller('instanceLogModalCtr', ['$scope', 'instanceInfo', '$location', function($scope, instanceInfo, $location) {
+domeApp.controller('InstanceLogModalCtr', ['$scope', 'instanceInfo', '$location', function($scope, instanceInfo, $location) {
 	'use strict';
 	var requestUrl = 'ws://' + $location.host();
 	if ($location.port()) {

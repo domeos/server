@@ -1,4 +1,5 @@
 .mod-project.project-detail
+	loading(ng-if="isLoading")
 	.project-options
 		button.ui-btn.ui-btn-md.ui-btn-bright(ng-click="openBuild(config.projectId,!!config.codeInfo)") 构建
 		//- button.ui-btn.ui-btn-md.ui-btn-bright 部署
@@ -11,42 +12,37 @@
 				span(ng-if="!config.codeInfo") 该项目没有关联代码仓库
 			.markdown(markdown projectid="projectId" branch="branch")
 		tab(heading="项目配置" active="tabActive[1].active" ui-sref="projectDetail.config")
-			form(name="proInfoForm" ng-class="{'need-valid':needValid}" novalidate).proInfo-form
-				.pull-right.dockerfile-options
-					button.ui-btn.ui-btn-sm.ui-btn-white.ui-btn-dockerfile(ng-if="!edit" ng-click="getDockerfile()") 查看Dockerfile
-					button.ui-btn.ui-btn-sm.ui-btn-white(ng-click="checkEdit()" ng-show="!edit") 编辑
-					button.ui-btn.ui-btn-sm.ui-btn-white(ng-click="checkEdit()" ng-show="edit") 取消编辑
-				.dockerfile-setting(ng-if="config.codeInfo")
-					span.s1 使用代码内Dockerfile
-					span.s2(ng-show="edit")
-						dome-toggle(ng-class="{'on':config.userDefineDockerfile}" ng-click="config.userDefineDockerfile=!config.userDefineDockerfile")
-					span.s3(ng-if="edit") 启用前清确保代码内存在Dockerfile
-					span.s4(ng-if="config.userDefineDockerfile&&!edit") On
-					span.s4(ng-if="!config.userDefineDockerfile&&!edit") Off
-				ng-include(src="'index/tpl/tplProjectSetting/projectSettingInfoTpl1.html'" ng-if="!config.userDefineDockerfile&&!edit")
-				ng-include(src="'index/tpl/tplProjectSetting/projectSettingTpl1.html'" ng-if="!config.userDefineDockerfile&&edit")
-				ng-include(src="'index/tpl/tplProjectSetting/projectSettingInfoTpl2.html'" ng-if="config.userDefineDockerfile&&!edit")
-				ng-include(src="'index/tpl/tplProjectSetting/projectSettingTpl2.html'" ng-if="config.userDefineDockerfile&&edit")
-				.ui-btn-options(ng-show="edit")
-					button.ui-btn.ui-btn-md.ui-btn-bright(ng-click="checkEdit()") 取消
-					button.ui-btn.ui-btn-md.ui-btn-bright(ng-click="needValid=true;proInfoForm.$valid&&submitModify()" ng-disabled="isWaitingForModify") 保存修改
-					button.ui-btn.ui-btn-md.ui-btn-safe(ng-click="needValid=true;proInfoForm.$valid&&getDockerfile()") 预览Dockerfile
+			div(name="projectForm" ng-form ng-class="{'need-valid':valid.needValid}").proInfo-form
+				.dockerfile-options.pull-right
+					button.ui-btn.ui-btn-sm.ui-btn-safe(ng-if="!edit" ng-click="getDockerfile()" ng-disabled="isLoading") 查看Dockerfile
+					button.ui-btn.ui-btn-sm.ui-btn-bright(ng-click="checkEdit()" ng-show="!edit" ng-disabled="isLoading") 编辑
+					button.ui-btn.ui-btn-sm.ui-btn-bright(ng-click="checkEdit()" ng-show="edit") 取消编辑
+				ng-include(src="'index/tpl/tplProjectSetting/projectSettingInfoTpl.html'" ng-if="!edit")
+				ng-include(src="'index/tpl/tplProjectSetting/projectSettingTpl.html'" ng-if="edit")
+				.com-bottom-option(ng-show="edit")
+					span.com-bottom-option-con
+						button.ui-btn.ui-btn-md.ui-btn-bright(ng-click="checkEdit();valid.needValid = false;") 取消
+						button.ui-btn.ui-btn-md.ui-btn-bright(ng-click="valid.needValid=true;validCreatedFileStoragePath();projectForm.$valid&&valid.createdFileStoragePath&&submitModify()" ng-disabled="isWaitingForModify") 保存修改
+						button.ui-btn.ui-btn-md.ui-btn-safe(ng-click="valid.needValid=true;validCreatedFileStoragePath();projectForm.$valid&&valid.createdFileStoragePath&&getDockerfile()") 预览Dockerfile
+						span.txt-error(ng-if="valid.needValid&&(!valid.createdFileStoragePath||projectForm.$invalid)") 存在不合法数据，请修改后提交！
 		tab(heading="持续集成" active="tabActive[2].active" ui-sref="projectDetail.autobuild")
 			p.tool-noinfo(ng-if="!config.codeInfo") 该项目未关联代码仓库，无法持续集成
 			.ci-con(ng-if="config.codeInfo")
 				span.ci-title 自动构建
-				span.branch-check
-					input#buildMaster.ui-check(type="checkbox" name="buildBranch" ng-model="config.autoBuildInfo.master")
-					label(for="buildMaster") master
-				span.branch-check
-					input#buildTag.ui-check(type="checkbox" name="buildBranch"  ng-true-value="1"  ng-false-value="0" ng-model="config.autoBuildInfo.tag")
-					label(for="buildTag") tag
-				span.branch-check
-					input#buildOther.ui-check(type="checkbox" name="buildBranch" ng-model="config.autoBuildInfo.other")
-					label(for="buildOther" ng-if="!config.autoBuildInfo.other") 指定其他分支
-					label(for="buildOther" ng-if="config.autoBuildInfo.other")
-					input.ui-input-white(ng-model="config.autoBuildInfo.branches" ng-show="config.autoBuildInfo.other" placeholder="请输入分支名称，用逗号分隔 e.g. dev,fix-bug"  )
-			.ui-btn-options(ng-show="config.codeInfo")
+				.ci-content
+					p.txt-prompt 当所选分支更新或出现新tag时，会自动触发构建，生成新的项目镜像。请不要在频繁push的分支上开启自动构建，以免频繁触发构建，造成资源浪费。
+					span.branch-check
+						input#buildMaster.ui-check(type="checkbox" name="buildBranch" ng-model="config.autoBuildInfo.master")
+						label(for="buildMaster") master
+					span.branch-check
+						input#buildTag.ui-check(type="checkbox" name="buildBranch"  ng-true-value="1"  ng-false-value="0" ng-model="config.autoBuildInfo.tag")
+						label(for="buildTag") tag
+					span.branch-check
+						input#buildOther.ui-check(type="checkbox" name="buildBranch" ng-model="config.autoBuildInfo.other")
+						label(for="buildOther" ng-if="!config.autoBuildInfo.other") 指定其他分支
+						label(for="buildOther" ng-if="config.autoBuildInfo.other")
+						input.ui-input-white(ng-model="config.autoBuildInfo.branches" ng-show="config.autoBuildInfo.other" placeholder="请输入分支名称，用逗号分隔 e.g. dev,fix-bug"  )
+			.com-bottom-option(ng-show="config.codeInfo")
 				button.ui-btn.ui-btn-md.ui-btn-bright(ng-click="modifyCI()" ng-disabled="isWaitingForModify") 保存修改
 		tab(heading="构建记录" ng-click="getBuildList()" active="tabActive[3].active" ui-sref="projectDetail.buildlog")
 			.chose-log
@@ -79,34 +75,11 @@
 									span(ng-switch-when="Preparing" class="txt-normal") 准备中
 									span(ng-switch-when="Send" class="txt-normal") 准备中
 									span(ng-switch-default class="txt-normal") 构建中
-								td(ng-bind="parseDate(log.createTime)")
-								td(ng-bind="getInterval($index)")
+								td(ng-bind="log.createTime")
+								td(ng-bind="log.interval")
 								td
-									a.link-safe(href="{{log.logHref}}" target="_blank" ng-click="stopPropagation($event)") 日志
+									a.link-safe(href="{{log.logHref}}" target="_blank" ng-click="vmDome.stopPropagation($event)") 日志
 								td
 									i.icon-down.up(ng-class="{'up':$index!==currentIndex}")
 		tab(heading="项目成员" ng-hide="!hasMemberPermisson" active="tabActive[4].active" ui-sref="projectDetail.user")
 			div.tab-member(ng-include="'index/tpl/tplUserList/tplUserList.html'")
-script(type="text/ng-template" id="dockerfileModal.html")
-	.d-modal-header 查看Dockerfile
-	.modal-dockerfile.text-left
-		div.dockerfile-content(ng-bind-html="dockerfileTxt")
-	.modal-footer
-		button.ui-btn.ui-btn-sm.ui-btn-bright(ng-click="cancel()") 确定
-script(type="text/ng-template" id="branchCheckModal.html")
-	.d-modal-header 选择分支查看
-	ul.modal-branchcheck.modal-info(role="form" ng-form)
-		li
-			span.info-name 选择分支:
-			.info-txt.com-select-con(select-con)
-				button.ui-btn.ui-btn-white.ui-btn-select
-					i.icon-down
-					| {{selectedBranch}}
-				ul.select-list
-					li(ng-if="!branches||branches.length===0")
-						a 无分支信息
-					li.select-item(ng-repeat="branch in branches")
-						a(ng-bind="branch" ng-click="toggleBranch(branch)")
-	.modal-footer
-		button.ui-btn.ui-btn-sm.ui-btn-white(ng-click="cancel()") 取消
-		button.ui-btn.ui-btn-sm.ui-btn-bright(ng-disabled="!selectedBranch" ng-click="selectedBranch&&submitBranch();") 确定

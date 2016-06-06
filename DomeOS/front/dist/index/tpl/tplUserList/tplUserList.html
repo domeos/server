@@ -1,5 +1,5 @@
 
-<div ng-controller="tplUserListCtr" class="member-con">
+<div ng-controller="TplUserListCtr" class="member-con">
   <div class="title-con">
     <input placeholder="搜索{{resourceName}}成员" ng-model="userKey1" class="ui-input ui-input-fill ui-input-search pull-right"/>
     <h3 ng-cloak="ng-cloak" class="member-title txt-bright">{{resourceName}}成员</h3>
@@ -7,7 +7,7 @@
     <button ng-click="isEdit=false" ng-show="isEdit" class="ui-btn ui-btn-safe ui-btn-sm">退出编辑</button>
   </div>
   <div ng-if="isEdit" class="member-select">
-    <div ng-hide="resourceType=='group'" class="member-way"><a ng-click="toggleWay('member')" ng-class="{'active':selectWay=='member'}" class="select-type">导入成员</a><a ng-click="toggleWay('group')" ng-class="{'active':selectWay=='group'}" class="select-type">导入组成员</a><a ng-click="toggleWay('item')" ng-class="{'active':selectWay=='item'}" class="select-type">导入{{resourceName}}成员</a></div>
+    <div ng-hide="resourceType=='group'" class="member-way"><a ng-click="toggleWay('member')" ng-class="{'active':selectWay=='member'}" class="select-type">导入成员</a><a ng-click="toggleWay('group')" ng-class="{'active':selectWay=='group'}" class="select-type">导入组成员</a><a ng-click="toggleWay('item')" ng-class="{'active':selectWay=='item'}" ng-hide="resourceType=='ALARM'" class="select-type">导入{{resourceName}}成员</a></div>
     <div class="member-search">
       <div select-con="select-con" label="true" ng-if="selectWay=='member'" class="com-select-con">
         <ul class="selected-labels">
@@ -24,13 +24,14 @@
       <div select-con="select-con" ng-if="selectWay=='group'" class="com-select-con">
         <button ng-cloak="ng-cloak" class="ui-btn ui-btn-white ui-btn-select"><i class="icon-down"></i>{{selectedGroup.name||'选择组'}}</button>
         <ul class="select-list">
+          <li ng-if="!groupList||groupList.length===0"><a>无相关组信息</a></li>
           <li ng-repeat="group in groupList" class="select-item"><a ng-bind="group.name" ng-click="toggleGroup(group.name,group.id)"></a></li>
         </ul>
       </div>
       <div select-con="select-con" ng-if="selectWay=='item'" class="com-select-con">
-        <button ng-cloak="ng-cloak" class="ui-btn ui-btn-white ui-btn-select"><i class="icon-down"></i>{{selectResource.resourceName||'选择'+resourceName}}</button>
+        <button ng-cloak="ng-cloak" class="ui-btn ui-btn-white ui-btn-select"><i class="icon-down"></i><span>{{selectResource.resourceName||'选择'+resourceName}}</span><span ng-show="selectResource.clusterName" class="tool-item-next txt-prompt">(集群：{{selectResource.clusterName}}</span><span ng-show="selectResource.namespace" class="tool-item-next txt-prompt">namespace:{{selectResource.namespace}})</span></button>
         <ul class="select-list">
-          <li ng-repeat="resource in selectResourceUser" class="select-item"><a ng-bind="resource.resourceName" ng-click="toggleResource($index)"></a></li>
+          <li ng-repeat="resource in selectResourceUser" class="select-item"><a ng-click="toggleResource($index)"><span ng-bind="resource.resourceName"></span><span class="item-right"><span ng-show="resource.clusterName" ng-cloak="ng-cloak" class="txt-prompt">集群：{{resource.clusterName}}</span><span ng-show="resource.namespace" ng-cloak="ng-cloak" class="tool-item-next txt-prompt">namespace:{{resource.namespace}}</span></span></a></li>
         </ul>
       </div>
       <div select-con="select-con" class="com-select-con">
@@ -52,7 +53,7 @@
         <tr>
           <th>用户名称</th>
           <th ng-cloak="ng-cloak">{{resourceName}}内权限</th>
-          <th> </th>
+          <th></th>
         </tr>
       </thead>
       <tbody>
@@ -90,7 +91,7 @@
         <tr>
           <th>用户名称</th>
           <th ng-cloak="ng-cloak">{{resourceName}}内权限</th>
-          <th> </th>
+          <th></th>
         </tr>
       </thead>
       <tbody>

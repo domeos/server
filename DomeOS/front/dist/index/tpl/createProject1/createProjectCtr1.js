@@ -1,4 +1,4 @@
-domeApp.controller('createProjectCtr1', ['$scope', '$state', '$domeData', '$modal', '$domeProject', '$domeUser', '$domePublic', function($scope, $state, $domeData, $modal, $domeProject, $domeUser, $domePublic) {
+domeApp.controller('CreateProjectCtr1', ['$scope', '$state', '$domeData', '$modal', '$domeProject', '$domePublic', function ($scope, $state, $domeData, $modal, $domeProject, $domePublic) {
 		'use strict';
 		$scope.$emit('pageTitle', {
 			title: '新建项目',
@@ -8,21 +8,39 @@ domeApp.controller('createProjectCtr1', ['$scope', '$state', '$domeData', '$moda
 		$scope.pageNo = 1;
 		$scope.pageSize = 8;
 		$scope.projectList = [];
+		$scope.creator = {};
 		$scope.codeManager = 'gitlab';
-		$scope.userDefineDockerfile = false;
 		$scope.autoBuildInfo = {
 			tag: 0,
 			master: false,
 			other: false,
 			branches: ''
 		};
-		$scope.groupList = [];
-		$scope.currentGroup = {};
+		$scope.role = 'user';
+		$scope.projectType = 'common'; // 'common' / 'custom' / 'dockerfile'
+		// $scope.currentGroup = {};
 		$scope.currentProject = {};
 		//  如果是“上一步”进入本页面
 		var createProjectInfo1 = angular.copy($domeData.getData('createProjectInfo1'));
 		if (createProjectInfo1) {
 			$domeData.delData('createProjectInfo1');
+			if (createProjectInfo1.info.codeInfo) {
+				$scope.currentProject = (function () {
+					var codeInfo = createProjectInfo1.info.codeInfo;
+					return {
+						nameWithNamespace: codeInfo.nameWithNamespace,
+						sshUrl: codeInfo.codeSshUrl,
+						httpUrl: codeInfo.codeHttpUrl,
+						projectId: codeInfo.codeId
+					};
+				})();
+				$scope.currentUserId = createProjectInfo1.info.codeInfo.codeManagerUserId;
+			}
+			$scope.codeManager = createProjectInfo1.codeManager;
+			$scope.creator = {
+				id: createProjectInfo1.creatorDraft.creatorId,
+				type: createProjectInfo1.creatorDraft.creatorType
+			};
 			$scope.projectName = createProjectInfo1.info.name;
 			if (createProjectInfo1.info.autoBuildInfo) {
 				$scope.autoBuildInfo = createProjectInfo1.info.autoBuildInfo;
@@ -34,100 +52,77 @@ domeApp.controller('createProjectCtr1', ['$scope', '$state', '$domeData', '$moda
 					branches: ''
 				};
 			}
-			// 如果codeInfo存在，则初始化
-			if (createProjectInfo1.info.codeInfo) {
-				$scope.codeManager = createProjectInfo1.info.codeInfo.codeManager;
-			} else {
-				$scope.codeManager = null;
-			}
-			$scope.userDefineDockerfile = createProjectInfo1.userDefineDockerfile;
+			$scope.projectType = createProjectInfo1.projectType;
 		}
-		$scope.setProjectList = function(info) {
+		$scope.setProjectList = function (info) {
 			$scope.pageNo = 1;
 			$scope.currentUserId = info.id;
 			$scope.projectList = info.projectInfos;
 		};
-		var getGitLabInfo = function() {
+		var getGitLabInfo = function () {
 			$scope.isLoading = true;
-			$domeProject.getGitLabInfo().then(function(res) {
+			$domeProject.projectService.getGitLabInfo().then(function (res) {
 				$scope.gitLabInfo = res.data.result;
 				// 判断是否从“上一步”返回该页面，并初始化。
-				var isFindLastProject = false;
-				if ($domeData.getData('projectInfo') && $domeData.getData('projectInfo').info.codeInfo) {
-					var codeInfo = $domeData.getData('projectInfo').info.codeInfo;
+				if ($scope.currentUserId && $scope.currentProject) {
 					for (var i = 0; i < $scope.gitLabInfo.length; i++) {
-						if ($scope.gitLabInfo[i].id === codeInfo.userInfo) {
+						if ($scope.gitLabInfo[i].id === $scope.currentUserId) {
 							$scope.setProjectList($scope.gitLabInfo[i]);
 							for (var j = 0; j < $scope.projectList.length; j++) {
-								if ($scope.projectList[j].projectId === codeInfo.codeId) {
+								if ($scope.projectList[j].projectId === $scope.currentProject.projectId) {
 									$scope.setCurrentProject($scope.projectList[j]);
 									break;
 								}
 							}
-							isFindLastProject = true;
 							break;
 						}
 					}
-				}
-				if (!isFindLastProject) {
+				} else {
 					if ($scope.gitLabInfo[0]) {
 						$scope.setProjectList($scope.gitLabInfo[0]);
 					}
 				}
-			}).finally(function() {
+			}).finally(function () {
 				$scope.isLoading = false;
 			});
 		};
 		getGitLabInfo();
-		$scope.toggleDockerFile = function() {
-			$scope.userDefineDockerfile = !$scope.userDefineDockerfile;
-		};
-		$scope.toggleGroup = function(group) {
-			$scope.currentGroup.projectBelong = group.name;
-			$scope.currentGroup.type = group.type;
-			$scope.currentGroup.id = group.id;
-		};
-		$scope.toggleCodeManager=function(codeManager){
-			$scope.codeManager=codeManager;
-			$scope.$broadcast('changeScrollList',new Date());
-		};
-		$domeUser.getGroupList().then(function(res) {
-			$scope.groupList = res.data.result ? res.data.result : [];
-			if (createProjectInfo1) {
-				for (var i = 0; i < $scope.groupList.length; i++) {
-					if (createProjectInfo1.info.projectBelong === $scope.groupList[i].name) {
-						$scope.toggleGroup($scope.groupList[i]);
-					}
-				}
-			} else {
-				$scope.toggleGroup($scope.groupList[0]);
+
+		$scope.toggleCodeManager = function (codeManager) {
+			$scope.codeManager = codeManager;
+			if (!codeManager && ($scope.projectType == 'dockerfile' || $scope.projectType == 'custom')) {
+				$scope.projectType = 'common';
 			}
-		});
-		$scope.toRelated = function() {
+			$scope.$broadcast('changeScrollList', new Date());
+		};
+		$scope.toRelated = function () {
 			var loginModalIns = $modal.open({
 				templateUrl: 'loginModal.html',
-				controller: 'loginModalCtr',
+				controller: 'LoginModalCtr',
 				size: 'md'
 			});
-			loginModalIns.result.then(function() {
+			loginModalIns.result.then(function () {
 				$domePublic.openPrompt('关联成功！');
 				getGitLabInfo();
 			});
 		};
-		$scope.toNext = function() {
+		$scope.changeCreator = function (user) {
+			$scope.creator = user;
+		};
+		$scope.toNext = function () {
 			if ($scope.codeManager && !$scope.currentProject.projectId) {
 				$domePublic.openWarning('请选择一个项目！');
 				return;
 			}
 			var creatorInfo = {
-				creatorType: $scope.currentGroup.type,
-				creatorId:$scope.currentGroup.id
+				creatorType: $scope.creator.type,
+				creatorId: $scope.creator.id
 			};
 			var proInfo = {
-				name : $scope.projectName,
-				projectBelong : $scope.currentGroup.projectBelong
+				name: $scope.projectName,
+				projectBelong: $scope.creator.name
 			};
-			
+
 			//使用gitlab
 			if ($scope.codeManager) {
 				//自动构建
@@ -140,29 +135,29 @@ domeApp.controller('createProjectCtr1', ['$scope', '$state', '$domeData', '$moda
 					codeId: $scope.currentProject.projectId,
 					codeManagerUserId: $scope.currentUserId
 				};
-			} else if ($scope.userDefineDockerfile) {
-				$scope.userDefineDockerfile = false;
 			}
+
 			$domeData.setData('projectInfo', {
-				creatorDraft:creatorInfo,
+				creatorDraft: creatorInfo,
+				codeManager: $scope.codeManager,
 				info: proInfo,
-				userDefineDockerfile: $scope.userDefineDockerfile
+				projectType: $scope.projectType
 			});
 			$state.go('createProject/2');
 		};
-		$scope.isDescriptionNull = function(str) {
+		$scope.isDescriptionNull = function (str) {
 			var result = str;
-			if (!str || str === '') {
+			if (!str) {
 				result = '无描述信息';
 			}
 			return result;
 		};
-		$scope.setCurrentProject = function(pro) {
+		$scope.setCurrentProject = function (pro) {
 			$scope.currentProject = pro;
 		};
 	}])
-	.controller('loginModalCtr', ['$scope', '$http', '$modalInstance', '$domeUser', '$domePublic', function($scope, $http, $modalInstance, $domeUser, $domePublic) {
-		$scope.toLogin = function() {
+	.controller('LoginModalCtr', ['$scope', '$http', '$modalInstance', '$domeUser', function ($scope, $http, $modalInstance, $domeUser) {
+		$scope.toLogin = function () {
 			$scope.errorTxt = '';
 			$scope.isWaiting = true;
 			var index = $scope.username.indexOf('@');
@@ -174,14 +169,14 @@ domeApp.controller('createProjectCtr1', ['$scope', '$state', '$domeData', '$moda
 				login: username,
 				password: $scope.password
 			};
-			$domeUser.relatedGitLab(data).then(function(userInfo) {
+			$domeUser.relatedGitLab(data).then(function () {
 				$modalInstance.close();
-			}, function() {
+			}, function () {
 				$scope.errorTxt = '关联失败，请重试！';
 				$scope.isWaiting = false;
 			});
 		};
-		$scope.close = function() {
+		$scope.close = function () {
 			$modalInstance.dismiss('cancel');
 		};
 	}]);

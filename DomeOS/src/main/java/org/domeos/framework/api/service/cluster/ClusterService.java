@@ -93,10 +93,10 @@ public interface ClusterService {
     /**
      *
      * @param id
-     * @param nodeLabel
+     * @param nodeLabels
      * @return
      */
-    HttpResponseTemp<?> setNodeLabelsByNodeName(int id, NodeLabel nodeLabel);
+    HttpResponseTemp<?> setNodeLabels(int id, List<NodeLabel> nodeLabels);
 
     /**
      *
@@ -109,11 +109,10 @@ public interface ClusterService {
     /**
      *
      * @param id
-     * @param nodeName
-     * @param label
+     * @param nodeLabels
      * @return
      */
-    HttpResponseTemp<?> deleteLabelsByClusterId(int id, String nodeName, String label);
+    HttpResponseTemp<?> deleteNodeLabels(int id, List<NodeLabel> nodeLabels);
 
     /**
      *

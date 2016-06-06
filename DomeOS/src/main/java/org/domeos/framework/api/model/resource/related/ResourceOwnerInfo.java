@@ -12,6 +12,8 @@ public class ResourceOwnerInfo {
     int resourceId;
     ResourceType resourceType;
     String resourceName;
+    String clusterName;
+    String namespace;
     List<ResourceUserInfo> userInfos;
     ResourceGroupInfo groupInfo;
 
@@ -37,6 +39,22 @@ public class ResourceOwnerInfo {
 
     public void setResourceName(String resourceName) {
         this.resourceName = resourceName;
+    }
+
+    public String getClusterName() {
+        return clusterName;
+    }
+
+    public void setClusterName(String clusterName) {
+        this.clusterName = clusterName;
+    }
+
+    public String getNamespace() {
+        return namespace;
+    }
+
+    public void setNamespace(String namespace) {
+        this.namespace = namespace;
     }
 
     public List<ResourceUserInfo> getUserInfos() {

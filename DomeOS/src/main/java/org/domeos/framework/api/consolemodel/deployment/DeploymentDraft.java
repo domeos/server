@@ -1,7 +1,6 @@
 package org.domeos.framework.api.consolemodel.deployment;
 
 import org.apache.commons.lang3.StringUtils;
-import org.domeos.api.model.deployment.*;
 import org.domeos.framework.api.consolemodel.CreatorDraft;
 import org.domeos.framework.api.model.LoadBalancer.LoadBalancer;
 import org.domeos.framework.api.model.LoadBalancer.related.*;
@@ -9,6 +8,7 @@ import org.domeos.framework.api.model.LoadBalancer.related.LoadBalanceType;
 import org.domeos.framework.api.model.deployment.Deployment;
 import org.domeos.framework.api.model.deployment.Version;
 import org.domeos.framework.api.model.deployment.related.*;
+import org.domeos.global.GlobalConstant;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -262,24 +262,30 @@ public final class DeploymentDraft {
 
     public List<LoadBalancer> toLoadBalancer() {
         List<LoadBalancer> result = new ArrayList<>();
-        if (loadBalanceDrafts != null && loadBalanceDrafts.size() != 0) {
-            LoadBalanceDraft draft = loadBalanceDrafts.get(0);
+        if ( (loadBalanceDrafts != null && loadBalanceDrafts.size() != 0) ||
+             (innerServiceDrafts != null && innerServiceDrafts.size() !=0) ) {
             LoadBalancer loadBalancer = new LoadBalancer();
             loadBalancer.setClusterId(clusterId);
-            loadBalancer.setExternalIPs(draft.getExternalIPs());
-            loadBalancer.setPort(draft.getPort());
-            loadBalancer.setProtocol(LoadBalanceProtocol.TCP);
-            loadBalancer.setType(LoadBalanceType.EXTERNAL_SERVICE);
-            loadBalancer.setTargetPort(draft.getTargetPort());
-            result.add(loadBalancer);
-        } else if (innerServiceDrafts != null && innerServiceDrafts.size() != 0){
-            InnerServiceDraft draft = innerServiceDrafts.get(0);
-            LoadBalancer loadBalancer = new LoadBalancer();
-            loadBalancer.setPort(draft.getPort());
-            loadBalancer.setProtocol(LoadBalanceProtocol.TCP);
-            loadBalancer.setType(LoadBalanceType.INNER_SERVICE);
-            loadBalancer.setTargetPort(draft.getTargetPort());
-            loadBalancer.setClusterId(clusterId);
+            loadBalancer.setNamespace(namespace);
+            loadBalancer.setDnsName(deployName);
+            loadBalancer.setName(GlobalConstant.RC_NAME_PREFIX + deployName);
+            List<LoadBalancerPort> loadBalancerPorts = new ArrayList<>();
+            LoadBalancerPort loadBalancerPort = new LoadBalancerPort();
+            if (loadBalanceDrafts != null && loadBalanceDrafts.size() != 0) {
+                LoadBalanceDraft draft = loadBalanceDrafts.get(0);
+                loadBalancerPort.setPort(draft.getPort());
+                loadBalancerPort.setTargetPort(draft.getTargetPort());
+                loadBalancer.setExternalIPs(draft.getExternalIPs());
+                loadBalancer.setType(LoadBalanceType.EXTERNAL_SERVICE);
+            } else {
+                InnerServiceDraft draft = innerServiceDrafts.get(0);
+                loadBalancerPort.setPort(draft.getPort());
+                loadBalancerPort.setTargetPort(draft.getTargetPort());
+                loadBalancer.setType(LoadBalanceType.INNER_SERVICE);
+            }
+            loadBalancerPort.setProtocol(LoadBalanceProtocol.TCP);
+            loadBalancerPorts.add(loadBalancerPort);
+            loadBalancer.setLoadBalancerPorts(loadBalancerPorts);
             result.add(loadBalancer);
         }
         return result;

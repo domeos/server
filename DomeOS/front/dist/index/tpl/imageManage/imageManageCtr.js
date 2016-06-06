@@ -1,4 +1,4 @@
-domeApp.controller('imageManageCtr', ['$scope', '$domeImage', '$domePublic', '$modal', function($scope, $domeImage, $domePublic, $modal) {
+domeApp.controller('ImageManageCtr', ['$scope', '$state', '$domeImage', '$domePublic', '$modal', function ($scope, $state, $domeImage, $domePublic, $modal) {
 	'use strict';
 	$scope.$emit('pageTitle', {
 		title: '镜像管理',
@@ -12,42 +12,59 @@ domeApp.controller('imageManageCtr', ['$scope', '$domeImage', '$domePublic', '$m
 	$scope.isShowAdd = false;
 	$scope.newImageInfo = {};
 	$scope.projectRegistry = '';
+	$scope.tabActive = [{
+		active: false
+	}, {
+		active: false
+	}, {
+		active: false
+	}];
 
-	$domeImage.getAllImages().then(function(res) {
+	var stateInfo = $state.$current.name,
+		imageService = $domeImage.imageService;
+	if (stateInfo.indexOf('projectimages') !== -1) {
+		$scope.tabActive[1].active = true;
+	} else if (stateInfo.indexOf('otherimages') !== -1) {
+		$scope.tabActive[2].active = true;
+	} else {
+		$scope.tabActive[0].active = true;
+	}
+
+	imageService.getAllImages().then(function (res) {
 		var imageInfo = res.data.result || {};
 		var i = 0;
 		$scope.baseImages = imageInfo.baseImages || [];
 		$scope.projectImages = imageInfo.projectImages || [];
 		$scope.otherImages = imageInfo.otherImages || [];
 		for (i = 0; i < $scope.baseImages.length; i++) {
-			if (!$scope.baseImages[i].description || $scope.baseImages[i].description === '') {
+			if (!$scope.baseImages[i].description) {
 				$scope.baseImages[i].description = '无';
 			}
 		}
 		if ($scope.projectImages.length !== 0) {
 			$scope.projectRegistry = $scope.projectImages[0].registry;
 		}
-	}).finally(function() {
+	}).finally(function () {
 		$scope.isLoading = false;
 	});
-	$scope.toggleShowAdd = function(isShow) {
+	$scope.toggleShowAdd = function (isShow) {
 		$scope.isShowAdd = isShow;
 	};
-	$scope.openTagModal = function(simpleImageName) {
+	$scope.openTagModal = function (simpleImageName) {
 		$modal.open({
 			animation: true,
 			templateUrl: 'imageTagModal.html',
-			controller: 'imageTagModalCtr',
+			controller: 'ImageTagModalCtr',
 			size: 'lg',
 			resolve: {
-				imageName: function() {
+				imageName: function () {
 					return simpleImageName;
 				}
 			}
 		});
 	};
-	$scope.deleteBaseImage = function(id) {
-		$domeImage.deleteBaseImage(id).then(function() {
+	$scope.deleteBaseImage = function (id) {
+		$domeImage.deleteBaseImage(id).then(function () {
 			for (var i = 0; i < $scope.baseImages.length; i++) {
 				if ($scope.baseImages[i].id === id) {
 					$scope.baseImages.splice(i, 1);
@@ -56,9 +73,9 @@ domeApp.controller('imageManageCtr', ['$scope', '$domeImage', '$domePublic', '$m
 			}
 		});
 	};
-	$scope.createImage = function(form) {
+	$scope.createImage = function (form) {
 		$scope.isLoading = true;
-		$domeImage.createBaseImage($scope.newImageInfo).then(function(res) {
+		imageService.createBaseImage($scope.newImageInfo).then(function (res) {
 			$domePublic.openPrompt('添加成功！');
 			$scope.newImageInfo = {};
 			if (res.data.result) {
@@ -66,20 +83,20 @@ domeApp.controller('imageManageCtr', ['$scope', '$domeImage', '$domePublic', '$m
 			}
 			$scope.needValid = false;
 			form.$setPristine();
-		}, function() {
+		}, function () {
 			$domePublic.openWarning('添加失败,请重试！');
-		}).finally(function() {
+		}).finally(function () {
 			$scope.isLoading = false;
 		});
 	};
-}]).controller('imageTagModalCtr', ['$scope', 'imageName', '$modalInstance', '$domeImage', '$util', function($scope, imageName, $modalInstance, $domeImage, $util) {
+}]).controller('ImageTagModalCtr', ['$scope', 'imageName', '$modalInstance', '$domeImage', '$util', function ($scope, imageName, $modalInstance, $domeImage, $util) {
 	$scope.imageName = imageName;
 	$scope.tagInfo = [];
 	$scope.isLoading = true;
 	$scope.parseDate = $util.getPageDate;
-	$domeImage.getGlobalImageInfo(imageName).then(function(res) {
+	$domeImage.imageService.getImageInfo(imageName).then(function (res) {
 		$scope.tagInfo = res.data.result || [];
-	}).finally(function() {
+	}).finally(function () {
 		$scope.isLoading = false;
 	});
 }]);

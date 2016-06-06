@@ -48,12 +48,9 @@ public interface BuildHistoryMapper {
     @Update("UPDATE build_history SET state=#{state} WHERE id=#{id}")
     void setHistoryStatus(@Param("id") int id, @Param("state") BuildState state);
 
-    @Select("SELECT taskName FROM build_history where id=#{id}")
+    @Select("SELECT taskName FROM build_history WHERE id=#{id} AND removed=0")
     String getBuildTaskNameById(@Param("id") int buildId);
 
-    @Select("SELECT * FROM build_history where removed=0")
+    @Select("SELECT * FROM build_history WHERE removed=0")
     List<RowMapperDao> getAllHistory();
-
-    @Select("SELECT taskName FROM build_history where removed=0")
-    String getTaskName();
 }

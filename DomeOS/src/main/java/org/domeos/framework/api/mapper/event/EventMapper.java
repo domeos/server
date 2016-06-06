@@ -1,5 +1,6 @@
 package org.domeos.framework.api.mapper.event;
 
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -15,9 +16,8 @@ import java.util.List;
 @Repository
 public interface EventMapper {
 
-    @Insert("INSERT INTO k8s_events (version, clusterId, namespace, eventKind, name, host, content) " +
-            "VALUES (#{version}, #{clusterId}, #{namespace}, #{eventKind}, #{name}, #{host}, #{content}) " +
-            "ON DUPLICATE KEY UPDATE version=VALUES(version), content=VALUES(content)")
+    @Insert("INSERT INTO k8s_events (version, clusterId, namespace, eventKind, deployId, name, host, content) " +
+            "VALUES (#{version}, #{clusterId}, #{namespace}, #{eventKind}, #{deployId}, #{name}, #{host}, #{content})")
     void createEvent(EventDBProto proto);
 
     // get by max id
@@ -41,4 +41,22 @@ public interface EventMapper {
     @Select("SELECT * FROM k8s_events WHERE clusterId = #{clusterId} AND name LIKE 'dmo-${deployName}-v%'")
     List<EventDBProto> getEventsByDeployName(@Param("clusterId") int clusterId,
                                              @Param("deployName") String deployName);
+
+    @Select("SELECT * FROM k8s_events WHERE clusterId = #{clusterId} AND deployId = #{deployId} ORDER BY id DESC LIMIT 40")
+    List<EventDBProto> getEventsByDeployId(@Param("clusterId") int clusterId,
+                                           @Param("deployId") int deployId);
+
+    @Delete("DELETE FROM k8s_events WHERE deployId = #{deployId} AND clusterId = #{clusterId} ")
+    void clearDeployEvents(@Param("clusterId") int clusterId,
+                           @Param("deployId") int deployId);
+
+    // DELETE from k8s_events WHERE clusterId = 5 AND deployId = 76 AND id <= (select * from
+    //     (select id from k8s_events WHERE clusterId = 5 AND deployId = 76 ORDER BY id DESC limit 200, 1) as t);
+    @Delete("DELETE from k8s_events WHERE clusterId = #{clusterId} AND deployId = #{deployId} AND id <= " +
+            "(select * from (select id from k8s_events WHERE clusterId = #{clusterId} AND deployId = #{deployId} " +
+            "ORDER BY id DESC limit #{remaining}, 1) as t)")
+    long deleteOldDeployEvents(@Param("clusterId") int clusterId,
+                               @Param("deployId") int deployId,
+                               @Param("remaining") int remaining);
+
 }

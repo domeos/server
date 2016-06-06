@@ -10,13 +10,13 @@ import java.util.List;
 public interface VersionBiz {
     String VERSION_TABLE_NAME = "version";
 
-    long insertRow(Version version);
+    int insertRow(Version version);
 
-    long insertVersionWithLogCollect(Version version, Cluster cluster);
+    int insertVersionWithLogCollect(Version version, Cluster cluster);
 
     void disableAllVersion(int deployId);
 
-    Version getVersion(int deployId, long version);
+    Version getVersion(int deployId, int version);
 
     List<Version> getAllVersionByDeployId(int deployId);
 //    /**

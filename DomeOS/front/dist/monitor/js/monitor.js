@@ -1,5 +1,5 @@
 var monitorApp = angular.module('monitorApp', ['ngAnimate', 'ui.bootstrap', 'publicModule', 'amchartsModule', 'domeModule']);
-monitorApp.directive('datepickerComponent', ['$util', function($util) {
+monitorApp.directive('datepickerComponent', ['$util', function ($util) {
 	'use strict';
 	var tplArr = [];
 	tplArr.push('      <div class="js-dateoptions btn-group" role="group" aria-label="..." >');
@@ -35,7 +35,7 @@ monitorApp.directive('datepickerComponent', ['$util', function($util) {
 		},
 		replce: true,
 		template: tplArr.join(''),
-		link: function(scope, element, attrs) {
+		link: function (scope, element) {
 			var dateOptionsEle = element.find('.js-dateoptions'),
 				datePickersEle = element.find('.js-datepicker-con'),
 				optionEles, customEle,
@@ -46,47 +46,47 @@ monitorApp.directive('datepickerComponent', ['$util', function($util) {
 			};
 			scope.today = new Date();
 			datePickersEle.hide();
-			scope.setDateInterval = function(interval) {
+			scope.setDateInterval = function (interval) {
 				var day, day1, day2;
 				switch (interval) {
-					case '30m':
-						scope.date.startDate = new Date().getTime() - 1800000;
-						scope.date.endDate = new Date().getTime();
-						break;
-					case '1h':
-						scope.date.startDate = new Date().getTime() - (1000 * 60 * 60);
-						scope.date.endDate = new Date().getTime();
-						break;
-					case '6h':
-						scope.date.startDate = new Date().getTime() - (1000 * 60 * 60 * 6);
-						scope.date.endDate = new Date().getTime();
-						break;
-					case '12h':
-						scope.date.startDate = new Date().getTime() - (1000 * 60 * 60 * 12);
-						scope.date.endDate = new Date().getTime();
-						break;
-					case '24h':
-						scope.date.startDate = new Date().getTime() - (1000 * 60 * 60 * 24);
-						scope.date.endDate = new Date().getTime();
-						break;
-					case '7d':
-						day = $util.calculateDate(new Date(), -7).split('-');
-						scope.date.startDate = new Date(day[0], day[1] - 1, day[2], 0, 0, 0).getTime();
-						scope.date.endDate = new Date().getTime();
-						break;
-					case '30d':
-						day = $util.calculateDate(new Date(), -30).split('-');
-						scope.date.startDate = new Date(day[0], day[1] - 1, day[2], 0, 0, 0).getTime();
-						scope.date.endDate = new Date().getTime();
-						break;
-					case 'self':
-						day1 = $util.calculateDate(new Date(scope.selectDate.startDate), 0).split('-');
-						day2 = $util.calculateDate(new Date(scope.selectDate.endDate), 1).split('-');
-						scope.date.startDate = new Date(day1[0], day1[1] - 1, day1[2], 0, 0, 0).getTime();
-						scope.date.endDate = (new Date(day2[0], day2[1] - 1, day2[2], 0, 0, 0)).getTime() - 1;
-						break;
-					default:
-						return;
+				case '30m':
+					scope.date.startDate = new Date().getTime() - 1800000;
+					scope.date.endDate = new Date().getTime();
+					break;
+				case '1h':
+					scope.date.startDate = new Date().getTime() - 1000 * 60 * 60;
+					scope.date.endDate = new Date().getTime();
+					break;
+				case '6h':
+					scope.date.startDate = new Date().getTime() - 1000 * 60 * 60 * 6;
+					scope.date.endDate = new Date().getTime();
+					break;
+				case '12h':
+					scope.date.startDate = new Date().getTime() - 1000 * 60 * 60 * 12;
+					scope.date.endDate = new Date().getTime();
+					break;
+				case '24h':
+					scope.date.startDate = new Date().getTime() - 1000 * 60 * 60 * 24;
+					scope.date.endDate = new Date().getTime();
+					break;
+				case '7d':
+					day = $util.calculateDate(new Date(), -7).split('-');
+					scope.date.startDate = new Date(day[0], day[1] - 1, day[2], 0, 0, 0).getTime();
+					scope.date.endDate = new Date().getTime();
+					break;
+				case '30d':
+					day = $util.calculateDate(new Date(), -30).split('-');
+					scope.date.startDate = new Date(day[0], day[1] - 1, day[2], 0, 0, 0).getTime();
+					scope.date.endDate = new Date().getTime();
+					break;
+				case 'self':
+					day1 = $util.calculateDate(new Date(scope.selectDate.startDate), 0).split('-');
+					day2 = $util.calculateDate(new Date(scope.selectDate.endDate), 1).split('-');
+					scope.date.startDate = new Date(day1[0], day1[1] - 1, day1[2], 0, 0, 0).getTime();
+					scope.date.endDate = (new Date(day2[0], day2[1] - 1, day2[2], 0, 0, 0)).getTime() - 1;
+					break;
+				default:
+					return;
 				}
 				scope.$emit('dateIntervalChange', scope.date);
 			};
@@ -106,7 +106,7 @@ monitorApp.directive('datepickerComponent', ['$util', function($util) {
 
 			optionEles = element.find('.js-interval');
 			customEle = element.find('.js-custom');
-			optionEles.bind('click', function() {
+			optionEles.bind('click', function () {
 				var thisEle = angular.element(this);
 				if (!thisEle.hasClass('active')) {
 					optionEles.removeClass('active');
@@ -118,14 +118,14 @@ monitorApp.directive('datepickerComponent', ['$util', function($util) {
 				scope.selectDate = angular.copy(scope.date);
 				scope.$digest();
 			});
-			customEle.bind('click', function() {
+			customEle.bind('click', function () {
 				if (datePickersEle.is(':visible')) {
 					datePickersEle.hide();
 				} else {
 					datePickersEle.show();
 				}
 			});
-			scope.submitSelfDate = function() {
+			scope.submitSelfDate = function () {
 				scope.setDateInterval('self');
 				datePickersEle.hide();
 				if (!customEle.hasClass('active')) {
@@ -135,23 +135,23 @@ monitorApp.directive('datepickerComponent', ['$util', function($util) {
 			};
 		}
 	};
-}]).directive('chartHeight', function() {
+}]).directive('chartHeight', function () {
 	return {
 		restrict: 'A',
-		link: function(scope, element, attrs) {
+		link: function (scope, element, attrs) {
 			scope.chartWraperHeight = 0;
-			scope.$watch(function() {
+			scope.$watch(function () {
 				return attrs.chartHeight;
-			}, function(newValue, oldValue) {
+			}, function (newValue) {
 				newValue = parseInt(newValue);
 				scope.chartWraperHeight = 330 + newValue * 15;
 			});
-			scope.getFullChartStyle = function() {
+			scope.getFullChartStyle = function () {
 				return {
 					'height': scope.chartWraperHeight + 'px'
 				};
 			};
-			scope.getShortChatStyle = function() {
+			scope.getShortChatStyle = function () {
 				return {
 					'height': scope.chartWraperHeight - 43 + 'px'
 				};
@@ -159,11 +159,10 @@ monitorApp.directive('datepickerComponent', ['$util', function($util) {
 		}
 	};
 });
-monitorApp.service('$monitor', ['$http', '$q', '$util', '$filter', function($http, $q, $util, $filter) {
+monitorApp.service('$monitor', ['$http', '$q', '$util', '$filter', function ($http, $q, $util, $filter) {
 	'use strict';
 	var self = this;
 	var _tableInfo, _monitorInfo, _monitorCountResult;
-	initMonitorData();
 
 	function initMonitorData() {
 		// _monitorCountResult = null;
@@ -198,7 +197,7 @@ monitorApp.service('$monitor', ['$http', '$q', '$util', '$filter', function($htt
 		};
 		_monitorInfo = {
 			monitorItem: [],
-			monitorCondition: {}
+			monitorType: ''
 		};
 		_tableInfo = {
 			tableLength: 6,
@@ -215,52 +214,72 @@ monitorApp.service('$monitor', ['$http', '$q', '$util', '$filter', function($htt
 	}
 
 	function formartBytesData(data, unit) {
-		data = $util.formartBytesData(data, unit);
 		if (data === null || data === undefined) {
 			return '——';
 		}
-		return data.toFixed(2);
+		return $util.formartBytesData(data, unit);
 	}
-
-	self.getAmchartConfig = function(cusConfig) {
+	initMonitorData();
+	self.getAmchartConfig = function (monitorTitle, monitorData, monitorUnit) {
 		var config = {
-			"type": "serial",
-			"categoryField": "timeStamp",
-			"pathToImages": "/lib/images/amcharts/",
-			"zoomOutButtonAlpha": 0.26,
-			"startDuration": 0,
-			"chartScrollbar": {},
-			"chartCursor": {
-				"categoryBalloonDateFormat": "JJ:NN:SS"
+			type: 'serial',
+			categoryField: 'timeStamp',
+			pathToImages: '/lib/images/amcharts/',
+			zoomOutButtonAlpha: 0.26,
+			startDuration: 0,
+			chartScrollbar: {},
+			chartCursor: {
+				categoryBalloonDateFormat: 'JJ:NN:SS'
 			},
-			"categoryAxis": {
-				"minPeriod": "ss",
-				"parseDates": true,
-				"labelOffset": 6,
-				"offset": 1,
-				"equalSpacing": true
+			categoryAxis: {
+				minPeriod: 'ss',
+				parseDates: true,
+				labelOffset: 6,
+				offset: 1,
+				equalSpacing: true
 			},
-			"trendLines": [],
-			"guides": [],
-			"valueAxes": [],
-			"allLabels": [],
-			"balloon": {},
-			"legend": {
-				"useGraphSettings": true,
-				"valueWidth": 120
-			}
+			graphs: [],
+			titles: [{
+				id: 'Title-1',
+				size: 15,
+				text: monitorTitle
+			}],
+			dataProvider: monitorData,
+			trendLines: [],
+			guides: [],
+			valueAxes: [],
+			allLabels: [],
+			balloon: {}
 		};
-		return angular.extend(config, cusConfig);
+		if (monitorTitle === '') {
+			config.titles = [];
+		}
+		for (var i = 0; i < _monitorInfo.monitorItem.length; i++) {
+			config.graphs.push({
+				bullet: 'round',
+				id: 'AmGraph' + i,
+				title: _monitorInfo.monitorItem[i],
+				bulletField: _monitorInfo.monitorItem[i],
+				balloonText: '[[' + _monitorInfo.monitorItem[i] + ']]' + monitorUnit,
+				valueField: _monitorInfo.monitorItem[i]
+			});
+			config.legend = {
+				useGraphSettings: true,
+				valueWidth: 120,
+				valueText: '[[value]]' + monitorUnit
+			};
+		}
+		return config;
 
 	};
 
 	function getSelfMonitor(monitorTitle, monitorData, monitorUnit) {
 		var monitorConfig = {
 			graphs: [],
-			"titles": [{
-				"id": "Title-1",
-				"size": 15,
-				"text": monitorTitle
+			titles: [{
+				id: 'Title-1',
+				size: 15,
+				text: monitorTitle
 			}],
 			dataProvider: monitorData
 		};
@@ -269,13 +288,18 @@ monitorApp.service('$monitor', ['$http', '$q', '$util', '$filter', function($htt
 		}
 		for (var i = 0; i < _monitorInfo.monitorItem.length; i++) {
 			monitorConfig.graphs.push({
-				"bullet": "round",
-				"id": "AmGraph" + i,
-				"title": _monitorInfo.monitorItem[i],
-				"bulletField": _monitorInfo.monitorItem[i],
-				"balloonText": "[[" + _monitorInfo.monitorItem[i] + "]]" + monitorUnit,
-				"valueField": _monitorInfo.monitorItem[i]
+				bullet: 'round',
+				id: 'AmGraph' + i,
+				title: _monitorInfo.monitorItem[i],
+				bulletField: _monitorInfo.monitorItem[i],
+				balloonText: '[[' + _monitorInfo.monitorItem[i] + ']]' + monitorUnit,
+				valueField: _monitorInfo.monitorItem[i]
 			});
+			monitorConfig.legend = {
+				useGraphSettings: true,
+				valueWidth: 120,
+				valueText: '[[value]]' + monitorUnit
+			};
 		}
 		return monitorConfig;
 	}
@@ -327,7 +351,7 @@ monitorApp.service('$monitor', ['$http', '$q', '$util', '$filter', function($htt
 				}
 			}
 		}
-		angular.forEach(countResult, function(value, key) {
+		angular.forEach(countResult, function (value, key) {
 			if (value.countHasData !== 0) {
 				value.average = value.sum / value.countHasData;
 			}
@@ -370,7 +394,7 @@ monitorApp.service('$monitor', ['$http', '$q', '$util', '$filter', function($htt
 					text: value.average
 				};
 			}
-			if (_monitorInfo.monitorCondition.targetType == 'container') {
+			if (_monitorInfo.monitorType == 'container') {
 				key = key.substring(0, 12);
 			}
 			tableResult[0][key] = value.min;
@@ -404,7 +428,7 @@ monitorApp.service('$monitor', ['$http', '$q', '$util', '$filter', function($htt
 				};
 
 				for (j = 0; j < _monitorInfo.monitorItem.length; j++) {
-					var keyName = _monitorInfo.monitorCondition.targetType === 'container' ? _monitorInfo.monitorItem[j].substring(0, 12) : _monitorInfo.monitorItem[j];
+					var keyName = _monitorInfo.monitorType === 'container' ? _monitorInfo.monitorItem[j].substring(0, 12) : _monitorInfo.monitorItem[j];
 					if (unit == '%') {
 						result[keyName] = {
 							text: toDecimal(counter[i][_monitorInfo.monitorItem[j]], 2, '%')
@@ -543,7 +567,7 @@ monitorApp.service('$monitor', ['$http', '$q', '$util', '$filter', function($htt
 					},
 					average: {
 						text: toDecimal(average, 2, unit)
-					},
+					}
 				};
 			} else {
 				result = {
@@ -557,21 +581,21 @@ monitorApp.service('$monitor', ['$http', '$q', '$util', '$filter', function($htt
 					},
 					average: {
 						text: formartBytesData(average, unit)
-					},
+					}
 				};
 			}
 		} else {
 			result = {
 				max: {
-					text: max.vale,
+					text: toDecimal(max.value,2),
 					tip: formartDate(max.time)
 				},
 				min: {
-					text: min.value,
+					text: toDecimal(min.value,2),
 					tip: formartDate(min.time)
 				},
 				average: {
-					text: sum / counter.length
+					text: toDecimal(sum / counter.length,2)
 				}
 			};
 		}
@@ -611,9 +635,8 @@ monitorApp.service('$monitor', ['$http', '$q', '$util', '$filter', function($htt
 		return table;
 	}
 
-	self.getMonitorsArr = function(monitorCondition, monitorItem, monitorResult, isShowCountTable) {
-		var monitorConfig,
-			i,
+	self.getMonitorsArr = function (monitorCondition, monitorItem, monitorResult, isShowCountTable) {
+		var i,
 			// 单个监控项名字
 			singleItemName,
 			startIndex, endIndex,
@@ -629,7 +652,7 @@ monitorApp.service('$monitor', ['$http', '$q', '$util', '$filter', function($htt
 		if (monitorItem.length < 2) {
 			singleItemName = monitorItem[0];
 		}
-		tableHead = function() {
+		tableHead = function () {
 			var head = angular.copy(monitorItem);
 			head.unshift(tableKeyName);
 			return head;
@@ -649,9 +672,9 @@ monitorApp.service('$monitor', ['$http', '$q', '$util', '$filter', function($htt
 		_tableInfo.tableHead = tableHead;
 
 		_monitorInfo.monitorItem = monitorItem;
-		_monitorInfo.monitorCondition = monitorCondition;
+		_monitorInfo.monitorType = monitorResult.targetType;
 
-		if (monitorCondition.targetType == 'node') {
+		if (monitorResult.targetType == 'node') {
 			// 主机：cpu占用率数据
 			if (monitorResult.counterResults['cpu.busy']) {
 				currentCounterData = monitorResult.counterResults['cpu.busy'];
@@ -660,7 +683,6 @@ monitorApp.service('$monitor', ['$http', '$q', '$util', '$filter', function($htt
 					item: [],
 					body: []
 				};
-				monitorConfig = getSelfMonitor('CPU使用率(%)', formartToDecimalArr(monitorItem, currentCounterData), '%');
 				// 查看单个监控项
 				if (singleItemName !== undefined) {
 					tableData.head = [tableKeyName, 'busy', 'user', 'nice', 'system', 'iowait', 'irq', 'softirq', 'switches'];
@@ -674,7 +696,7 @@ monitorApp.service('$monitor', ['$http', '$q', '$util', '$filter', function($htt
 							iowait: getCounterCountResult(monitorResult.counterResults['cpu.iowait'], '%', singleItemName),
 							irq: getCounterCountResult(monitorResult.counterResults['cpu.irq'], '%', singleItemName),
 							softirq: getCounterCountResult(monitorResult.counterResults['cpu.softirq'], '%', singleItemName),
-							switches: getCounterCountResult(monitorResult.counterResults['cpu.switches'], '%', singleItemName)
+							switches: getCounterCountResult(monitorResult.counterResults['cpu.switches'], '', singleItemName)
 						};
 						tableData.body = getCounterCountTable(tableData.item, counterCountResults);
 					} else {
@@ -719,11 +741,11 @@ monitorApp.service('$monitor', ['$http', '$q', '$util', '$filter', function($htt
 					generateMultData(isShowCountTable, tableData, currentCounterData, '%');
 				}
 				_monitorCountResult.cpu = {
-					chartData: self.getAmchartConfig(monitorConfig),
+					chartData: self.getAmchartConfig('CPU使用率(%)', formartToDecimalArr(monitorItem, currentCounterData), '%'),
 					tableData: tableData
 				};
 			}
-			angular.forEach(monitorResult.counterResults, function(value, key) {
+			angular.forEach(monitorResult.counterResults, function (value, key) {
 				var param = key.split('=')[1];
 				if (!param) {
 					return;
@@ -735,7 +757,6 @@ monitorApp.service('$monitor', ['$http', '$q', '$util', '$filter', function($htt
 						item: [],
 						body: []
 					};
-					monitorConfig = getSelfMonitor('', formartToDecimalArr(monitorItem, value), '%');
 
 					if (singleItemName !== undefined) {
 						tableData.head = [tableKeyName, '磁盘占用(GB)', '磁盘总量(GB)', '磁盘占用率'];
@@ -761,10 +782,10 @@ monitorApp.service('$monitor', ['$http', '$q', '$util', '$filter', function($htt
 											text: toDecimal(getArrEleWithKey(value, startIndex, singleItemName), 2, '%')
 										},
 										mountused: {
-											text: formartBytesData((getArrEleWithKey(monitorResult.counterResults['df.bytes.used/mount=' + param], startIndex, singleItemName)), 'GB')
+											text: formartBytesData(getArrEleWithKey(monitorResult.counterResults['df.bytes.used/mount=' + param], startIndex, singleItemName), 'GB')
 										},
 										mounttotal: {
-											text: formartBytesData((getArrEleWithKey(monitorResult.counterResults['df.bytes.total/mount=' + param], startIndex, singleItemName)), 'GB')
+											text: formartBytesData(getArrEleWithKey(monitorResult.counterResults['df.bytes.total/mount=' + param], startIndex, singleItemName), 'GB')
 										}
 									});
 								}
@@ -775,7 +796,7 @@ monitorApp.service('$monitor', ['$http', '$q', '$util', '$filter', function($htt
 					}
 					_monitorCountResult.diskUsedMult.push({
 						name: param,
-						chartData: self.getAmchartConfig(monitorConfig),
+						chartData: self.getAmchartConfig('', formartToDecimalArr(monitorItem, value), '%'),
 						tableData: tableData
 					});
 				} else if (key.indexOf('disk.io.read_bytes/') !== -1 || key.indexOf('disk.io.write_bytes/') !== -1) {
@@ -787,7 +808,6 @@ monitorApp.service('$monitor', ['$http', '$q', '$util', '$filter', function($htt
 						body: []
 					};
 
-					monitorConfig = getSelfMonitor('', formartFlowArr(monitorItem, value, 'KB'), 'KB/s');
 
 					if (singleItemName !== undefined) {
 						tableData.head = isRead ? [tableKeyName, '读取数据(KB/s)'] : [tableKeyName, '写入数据(KB/s)'];
@@ -807,7 +827,7 @@ monitorApp.service('$monitor', ['$http', '$q', '$util', '$filter', function($htt
 											text: formartDate(getArrEleWithKey(value, startIndex, 'timeStamp'))
 										},
 										data: {
-											text: toDecimal(getArrEleWithKey(value, startIndex, singleItemName), 2)
+											text: formartBytesData(getArrEleWithKey(value, startIndex, singleItemName), 'KB')
 										}
 									});
 								}
@@ -819,13 +839,13 @@ monitorApp.service('$monitor', ['$http', '$q', '$util', '$filter', function($htt
 					if (isRead) {
 						_monitorCountResult.diskReadMult.push({
 							name: param,
-							chartData: self.getAmchartConfig(monitorConfig),
+							chartData: self.getAmchartConfig('', formartFlowArr(monitorItem, value, 'KB'), 'KB/s'),
 							tableData: tableData
 						});
 					} else {
 						_monitorCountResult.diskWriteMult.push({
 							name: param,
-							chartData: self.getAmchartConfig(monitorConfig),
+							chartData: self.getAmchartConfig('', formartFlowArr(monitorItem, value, 'KB'), 'KB/s'),
 							tableData: tableData
 						});
 					}
@@ -838,7 +858,6 @@ monitorApp.service('$monitor', ['$http', '$q', '$util', '$filter', function($htt
 						body: []
 					};
 
-					monitorConfig = getSelfMonitor('', formartFlowArr(monitorItem, value, 'KB'), 'KB/s');
 
 					if (singleItemName !== undefined) {
 						tableData.head = isOut ? [tableKeyName, '流出数据(KB/s)'] : [tableKeyName, '流入数据(KB/s)'];
@@ -858,7 +877,7 @@ monitorApp.service('$monitor', ['$http', '$q', '$util', '$filter', function($htt
 											text: formartDate(getArrEleWithKey(value, startIndex, 'timeStamp'))
 										},
 										netdata: {
-											text: toDecimal(getArrEleWithKey(value, startIndex, singleItemName), 2)
+											text: formartBytesData(getArrEleWithKey(value, startIndex, singleItemName), 'KB')
 										}
 									});
 								}
@@ -870,13 +889,13 @@ monitorApp.service('$monitor', ['$http', '$q', '$util', '$filter', function($htt
 					if (isOut) {
 						_monitorCountResult.netOutMult.push({
 							name: param,
-							chartData: self.getAmchartConfig(monitorConfig),
+							chartData: self.getAmchartConfig('', formartFlowArr(monitorItem, value, 'KB'), 'KB/s'),
 							tableData: tableData
 						});
 					} else {
 						_monitorCountResult.netInMult.push({
 							name: param,
-							chartData: self.getAmchartConfig(monitorConfig),
+							chartData: self.getAmchartConfig('', formartFlowArr(monitorItem, value, 'KB'), 'KB/s'),
 							tableData: tableData
 						});
 					}
@@ -893,7 +912,6 @@ monitorApp.service('$monitor', ['$http', '$q', '$util', '$filter', function($htt
 					item: [],
 					body: []
 				};
-				monitorConfig = getSelfMonitor('CPU占用率(%)', formartToDecimalArr(monitorItem, currentCounterData), '%');
 				// 查看单个监控项
 				if (singleItemName !== undefined) {
 					tableData.head = [tableKeyName, 'busy', 'user', 'system'];
@@ -932,12 +950,12 @@ monitorApp.service('$monitor', ['$http', '$q', '$util', '$filter', function($htt
 					generateMultData(isShowCountTable, tableData, currentCounterData, '%');
 				}
 				_monitorCountResult.cpu = {
-					chartData: self.getAmchartConfig(monitorConfig),
+					chartData: self.getAmchartConfig('CPU占用率(%)', formartToDecimalArr(monitorItem, currentCounterData), '%'),
 					tableData: tableData
 				};
 			}
 
-			angular.forEach(['container.net.if.in.bytes', 'container.net.if.out.bytes'], function(name, key) {
+			angular.forEach(['container.net.if.in.bytes', 'container.net.if.out.bytes'], function (name) {
 				if (!monitorResult.counterResults[name]) {
 					return;
 				}
@@ -949,7 +967,6 @@ monitorApp.service('$monitor', ['$http', '$q', '$util', '$filter', function($htt
 					item: [],
 					body: []
 				};
-				monitorConfig = getSelfMonitor(isIn ? '网络流入(KB/s)' : '网络流出(KB/s)', formartFlowArr(monitorItem, currentCounterData, 'KB'), 'KB/s');
 				// 查看单个监控项
 				if (singleItemName !== undefined) {
 					tableData.head = isIn ? [tableKeyName, '流入数据(KB/s)'] : [tableKeyName, '流出数据(KB/s)'];
@@ -969,7 +986,7 @@ monitorApp.service('$monitor', ['$http', '$q', '$util', '$filter', function($htt
 										text: formartDate(getArrEleWithKey(currentCounterData, startIndex, 'timeStamp'))
 									},
 									netdata: {
-										text: toDecimal(getArrEleWithKey(currentCounterData, startIndex, singleItemName), 2)
+										text: formartBytesData(getArrEleWithKey(currentCounterData, startIndex, singleItemName), 'KB')
 									}
 								});
 							}
@@ -980,13 +997,13 @@ monitorApp.service('$monitor', ['$http', '$q', '$util', '$filter', function($htt
 				}
 				if (isIn) {
 					_monitorCountResult.netIn = {
-						chartData: self.getAmchartConfig(monitorConfig),
+						chartData: self.getAmchartConfig('网络流入(KB/s)', formartFlowArr(monitorItem, currentCounterData, 'KB'), 'KB/s'),
 						tableData: tableData
 					};
 
 				} else {
 					_monitorCountResult.netOut = {
-						chartData: self.getAmchartConfig(monitorConfig),
+						chartData: self.getAmchartConfig('网络流出(KB/s)', formartFlowArr(monitorItem, currentCounterData, 'KB'), 'KB/s'),
 						tableData: tableData
 					};
 				}
@@ -1010,7 +1027,6 @@ monitorApp.service('$monitor', ['$http', '$q', '$util', '$filter', function($htt
 				usedTotalData = monitorResult.counterResults['container.mem.limit'];
 				usedData = monitorResult.counterResults['container.mem.usage'];
 			}
-			monitorConfig = getSelfMonitor('内存占用率(%)', formartToDecimalArr(monitorItem, usedPercetData), '%');
 
 			if (singleItemName !== undefined) {
 				if (monitorResult.counterResults['mem.memused.percent']) {
@@ -1053,19 +1069,18 @@ monitorApp.service('$monitor', ['$http', '$q', '$util', '$filter', function($htt
 				generateMultData(isShowCountTable, tableData, usedPercetData, '%');
 			}
 			_monitorCountResult.mem = {
-				chartData: self.getAmchartConfig(monitorConfig),
+				chartData: self.getAmchartConfig('内存占用率(%)', formartToDecimalArr(monitorItem, usedPercetData), '%'),
 				tableData: tableData
 			};
 		}
 		return _monitorCountResult;
 	};
-	self.getMonitor = function(monitorCondition) {
-		return $http.post('/api/monitor/data', monitorCondition);
+	self.getMonitor = function (monitorCondition) {
+		return $http.get('/api/monitor/data/' + monitorCondition.targetId + '?start=' + monitorCondition.start + '&end=' + monitorCondition.end + '&dataSpec=' + monitorCondition.dataSpec + '&cid=' + monitorCondition.cid);
 	};
 }]);
-monitorApp.controller('monitorCtr', ['$scope', '$http', '$util', '$monitor', '$q', '$timeout', function($scope, $http, $util, $monitor, $q, $timeout) {
+monitorApp.controller('MonitorCtr', ['$scope', '$http', '$util', '$monitor', '$q', '$timeout', '$domePublic', function ($scope, $http, $util, $monitor, $q, $timeout, $domePublic) {
 	'use strict';
-	var i = 0;
 	$scope.sampleTypes = [{
 		type: 'MIN',
 		text: '最小值'
@@ -1076,6 +1091,7 @@ monitorApp.controller('monitorCtr', ['$scope', '$http', '$util', '$monitor', '$q
 		type: 'AVERAGE',
 		text: '平均值'
 	}];
+
 	var targetInfoId = $util.getQueryString('id'),
 		clusterId = $util.getQueryString('cid');
 	$scope.clusterName = $util.getQueryString('cname');
@@ -1085,48 +1101,51 @@ monitorApp.controller('monitorCtr', ['$scope', '$http', '$util', '$monitor', '$q
 	$scope.isLoading = true;
 	$scope.isRealTime = false;
 	var timeout;
-
-	var getTargetInfo = function() {
+	var getTargetInfo = function () {
 		var deferred = $q.defer();
 		if ($scope.targetInfos) {
 			deferred.resolve($scope.targetInfos);
 		} else {
-			$http.get('/api/monitor/target/' + targetInfoId).then(function(res) {
+			$http.get('/api/monitor/target/' + targetInfoId + '?cid=' + clusterId).then(function (res) {
 				$scope.targetInfos = res.data.result;
 				$scope.monitorItem = [];
 				var monitorTargetInfos = $scope.targetInfos.targetInfos,
 					i;
 				switch ($scope.targetInfos.targetType) {
-					case 'node':
-						$scope.monitorTypeName = '主机';
-						$scope.singleItem = monitorTargetInfos[0].node;
-						for (i = 0; i < monitorTargetInfos.length; i++) {
-							$scope.monitorItem.push(monitorTargetInfos[i].node);
-						}
-						break;
-					case 'pod':
-						$scope.monitorTypeName = '实例';
-						$scope.singleItem = monitorTargetInfos[0].pod.podName;
-						for (i = 0; i < monitorTargetInfos.length; i++) {
-							$scope.monitorItem.push(monitorTargetInfos[i].pod.podName);
-						}
-						break;
-					case 'container':
-						$scope.monitorTypeName = '容器';
-						$scope.singleItem = monitorTargetInfos[0].container.containerId.substring(0, 12);
-						for (i = 0; i < monitorTargetInfos.length; i++) {
-							$scope.monitorItem.push(monitorTargetInfos[i].container.containerId);
-						}
-						break;
-					default:
-						$scope.singleItem = false;
-						break;
+				case 'node':
+					$scope.monitorTypeName = '主机';
+					$scope.singleItem = monitorTargetInfos[0].node;
+					for (i = 0; i < monitorTargetInfos.length; i++) {
+						$scope.monitorItem.push(monitorTargetInfos[i].node);
+					}
+					break;
+				case 'pod':
+					$scope.monitorTypeName = '实例';
+					$scope.singleItem = monitorTargetInfos[0].pod.podName;
+					for (i = 0; i < monitorTargetInfos.length; i++) {
+						$scope.monitorItem.push(monitorTargetInfos[i].pod.podName);
+					}
+					break;
+				case 'container':
+					$scope.monitorTypeName = '容器';
+					$scope.singleItem = monitorTargetInfos[0].container.containerId.substring(0, 12);
+					for (i = 0; i < monitorTargetInfos.length; i++) {
+						$scope.monitorItem.push(monitorTargetInfos[i].container.containerId);
+					}
+					break;
+				default:
+					$scope.singleItem = false;
+					break;
 				}
 				if ($scope.monitorItem.length > 1) {
 					$scope.singleItem = false;
 				}
 				deferred.resolve($scope.targetInfos);
-			}, function() {
+			}, function (res) {
+				$domePublic.openWarning({
+					title: '请求失败！',
+					msg: 'Message:' + res.data.resultMsg
+				});
 				deferred.reject();
 			});
 		}
@@ -1182,8 +1201,7 @@ monitorApp.controller('monitorCtr', ['$scope', '$http', '$util', '$monitor', '$q
 		}
 	};
 	$scope.currentSampleType = $scope.sampleTypes[2];
-
-	var recoverSelectedItem = function(item) {
+	var recoverSelectedItem = function (item) {
 		var isFound = false;
 		if (!$scope.selectedMonitor[item]) return;
 		if ($scope.selectedMonitor[item].name !== '') {
@@ -1200,20 +1218,21 @@ monitorApp.controller('monitorCtr', ['$scope', '$http', '$util', '$monitor', '$q
 			$scope.toggleSelectedMonitor(item, 0);
 		}
 	};
-	var freshMonitor = function() {
+	var freshMonitor = function () {
 		if (timeout) {
 			$timeout.cancel(timeout);
 		}
 
-		getTargetInfo().then(function(targetInfo) {
+		getTargetInfo().then(function () {
+
 			var monitorCondition = {
-				startTime: $scope.date.startDate,
-				endTime: $scope.date.endDate,
+				targetId: targetInfoId,
+				start: $scope.date.startDate,
+				end: $scope.date.endDate,
 				dataSpec: $scope.currentSampleType.type,
-				targetType: targetInfo.targetType,
-				targetInfos: targetInfo.targetInfos
+				cid: clusterId
 			};
-			$monitor.getMonitor(monitorCondition).then(function(res) {
+			$monitor.getMonitor(monitorCondition).then(function (res) {
 				var data = res.data.result || {};
 				if (!data.interval || data.interval < 5) {
 					data.interval = 5;
@@ -1228,33 +1247,33 @@ monitorApp.controller('monitorCtr', ['$scope', '$http', '$util', '$monitor', '$q
 				recoverSelectedItem('netInMult');
 				recoverSelectedItem('netOutMult');
 				if ($scope.isRealTime) {
-					timeout = $timeout(function() {
+					timeout = $timeout(function () {
 						$scope.date.endDate = new Date().getTime();
 						$scope.date.startDate = $scope.date.endDate - 3600000;
 						freshMonitor();
 					}, $scope.intervalTime);
 				}
-			}).finally(function() {
+			}).finally(function () {
 				$scope.isLoading = false;
 			});
-		}, function() {
+		}, function () {
 			$scope.isLoading = false;
 		});
 	};
-	$scope.toggleSelectedMonitor = function(kind, index) {
+	$scope.toggleSelectedMonitor = function (kind, index) {
 		if (!$scope.monitorsInfo[kind]) {
 			return;
 		}
 		$scope.selectedMonitor[kind] = $scope.monitorsInfo[kind][index];
 	};
-	$scope.toggleSampleType = function(index) {
+	$scope.toggleSampleType = function (index) {
 		$scope.isLoading = true;
 		$scope.currentSampleType = $scope.sampleTypes[index];
 		freshMonitor();
 	};
 
 
-	$scope.$on('dateIntervalChange', function(event, msg) {
+	$scope.$on('dateIntervalChange', function (event, msg) {
 		$scope.date = msg;
 		$scope.isLoading = true;
 		if ($scope.date.endDate - new Date().getTime() < 2000 && $scope.date.endDate - $scope.date.startDate < 3700000) {

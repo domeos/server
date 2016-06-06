@@ -10,7 +10,7 @@
     <div ng-bind="config.api" class="info-content"></div>
   </li>
   <li><span class="info-name">dns服务器</span>
-    <div ng-bind="isStrNull(config.dns)" class="info-content"></div>
+    <div ng-bind="vmDome.isStrNull(config.dns)" class="info-content"></div>
   </li>
   <li><span class="info-name">etcd</span>
     <div class="info-content">
@@ -18,7 +18,7 @@
     </div>
   </li>
   <li><span class="info-name">domain</span>
-    <div class="info-content"><span ng-bind="isStrNull(config.domain)"></span></div>
+    <div class="info-content"><span ng-bind="vmDome.isStrNull(config.domain)"></span></div>
   </li>
   <li><span class="info-name">日志自动收集</span>
     <div ng-switch="config.logConfig" class="info-content"><span ng-switch-when="1">On</span><span ng-switch-default="ng-switch-default">Off</span></div>
@@ -36,7 +36,7 @@
   <li ng-if="config.logConfig===1"><span class="info-name">日志容器</span>
     <div class="info-content">
       <div class="line-singgle"><span>镜像名 : </span><span ng-bind="config.clusterLog.imageName" class="cluster-log"></span></div>
-      <div class="line-singgle"><span>镜像版本 : </span><span ng-bind="isStrNull(config.clusterLog.imageTag)" class="cluster-log"></span></div>
+      <div class="line-singgle"><span>镜像版本 : </span><span ng-bind="vmDome.isStrNull(config.clusterLog.imageTag)" class="cluster-log"></span></div>
     </div>
   </li>
 </ul>

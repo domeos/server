@@ -1,98 +1,119 @@
-domeApp.controller('domeCtr', ['$scope', '$modal', '$util', '$domeUser', '$q', function($scope, $modal, $util, $domeUser, $q) {
-	$scope.currentMod = {
-		mod: ''
-	};
-	$scope.$on("pageTitle", function(event, msg) {
-		$scope.title = msg.title;
-		$scope.descrition = msg.descrition;
-		$scope.currentMod.mod = msg.mod;
-	});
-	$scope.loginUser = {};
+(function () {
+    'use strict';
+    domeApp.controller('DomeCtr', DomeCtr);
 
-	$scope.getLoginUser = function() {
-		var deferred = $q.defer();
-		if ($scope.loginUser.id) {
-			deferred.resolve($scope.loginUser);
-		} else {
-			$domeUser.getCurrentUser().then(function(res) {
-				$scope.loginUser = res.data.result;
-				deferred.resolve($scope.loginUser);
-			});
-		}
-		return deferred.promise;
-	};
-	$scope.getLoginUser();
-	$scope.parseDate = function(seconds) {
-		return $util.getPageDate(seconds);
-	};
-	$scope.objLength = $util.objLength;
-	$scope.logout = function() {
-		$domeUser.logout();
-	};
-	$scope.modifyPw = function() {
-		$modal.open({
-			animate: true,
-			templateUrl: 'modifyPwModal.html',
-			controller: 'modifyPwModalCtr',
-			size: 'md',
-			resolve: {
-				loginUser: function() {
-					return $scope.loginUser;
-				}
-			}
-		});
-	};
-	$scope.isStrNull = function(str) {
-		var resTxt = str;
-		if (!str) {
-			resTxt = '未设置';
-		}
-		return resTxt;
-	};
-	$scope.stopPropagation = function(event) {
-		return event.stopPropagation();
-	};
-}]).controller('sureDeleteCtrl', ['$scope', '$modalInstance', function($scope, $modalInstance) {
-	$scope.delete = function() {
-		$modalInstance.close();
-	};
+    function DomeCtr($scope, $modal, $util, $domeUser, $publicApi, $q) {
+        var vm = this;
+        vm.currentMod = {
+            mod: ''
+        };
+        vm.loginUser = {};
+        vm.showPrompt = false;
+        $scope.$on('pageTitle', function (event, msg) {
+            vm.title = msg.title;
+            vm.descrition = msg.descrition;
+            vm.currentMod.mod = msg.mod;
+        });
+        $publicApi.getDbConfig().then(function (res) {
+            vm.showPrompt = res.data.result == 'H2' ? true : false;
+        });
+        vm.getLoginUser = function () {
+            var deferred = $q.defer();
+            if (vm.loginUser.id) {
+                deferred.resolve(vm.loginUser);
+            } else {
+                $domeUser.userService.getCurrentUser().then(function (res) {
+                    vm.loginUser = res.data.result;
+                    deferred.resolve(vm.loginUser);
+                });
+            }
+            return deferred.promise;
+        };
+        vm.getLoginUser();
+        vm.parseDate = function (seconds) {
+            return $util.getPageDate(seconds);
+        };
+        vm.objLength = $util.objLength;
+        vm.logout = function () {
+            $domeUser.userService.logout();
+        };
+        vm.modifyPw = function () {
+            $modal.open({
+                animate: true,
+                templateUrl: 'modifyPwModal.html',
+                controller: 'ModifyPwModalCtr',
+                size: 'md',
+                resolve: {
+                    loginUser: function () {
+                        return vm.loginUser;
+                    }
+                }
+            });
+        };
+        vm.modifySelfInfo = function () {
+            $domeUser.getLoginUser().then(function (loginUser) {
+                var modalInstance = $modal.open({
+                    templateUrl: 'modifyUserInfoModal.html',
+                    controller: 'ModifyUserInfoCtr',
+                    size: 'md',
+                    resolve: {
+                        user: function () {
+                            return angular.copy(loginUser);
+                        }
+                    }
+                });
+                modalInstance.result.then(function (userInfo) {
+                    angular.extend(loginUser, userInfo);
+                });
+            });
+        };
+        vm.isStrNull = function (str) {
+            var resTxt = str;
+            if (!str) {
+                resTxt = '未设置';
+            }
+            return resTxt;
+        };
+        vm.stopPropagation = function (event) {
+            return event.stopPropagation();
+        };
+    }
+    DomeCtr.$inject = ['$scope', '$modal', '$util', '$domeUser', '$publicApi', '$q'];
 
-	$scope.cancel = function() {
-		$modalInstance.dismiss('cancel');
-	};
-}]).controller('promptModalCtrl', ['$scope', '$modalInstance', 'promptTxt', '$timeout', function($scope, $modalInstance, promptTxt, $timeout) {
-	$scope.promptTxt = promptTxt;
-	$timeout(function() {
-		$modalInstance.dismiss('cancel');
-	}, 1000);
-	$scope.cancel = function() {
-		$modalInstance.dismiss('cancel');
-	};
-}]).controller('warningModalCtrl', ['$scope', '$modalInstance', 'promptTxt', function($scope, $modalInstance, promptTxt) {
-	if (typeof promptTxt === 'string') {
-		$scope.titleInfo = promptTxt;
-	} else {
-		$scope.titleInfo = promptTxt.title;
-		$scope.detailInfo = promptTxt.msg;
-	}
-	$scope.cancel = function() {
-		$modalInstance.dismiss('cancel');
-	};
-}]).controller('confirmModalCtr', ['$scope', '$modalInstance', 'promptTxt', function($scope, $modalInstance, promptTxt) {
-	$scope.promptTxt = promptTxt;
-	$scope.cancel = function() {
-		$modalInstance.dismiss('cancel');
-	};
-	$scope.sure = function() {
-		$modalInstance.close();
-	};
-}]).controller('deleteModalCtr', ['$scope', '$modalInstance', 'promptTxt', function($scope, $modalInstance, promptTxt) {
-	$scope.promptTxt = promptTxt || '确定要删除吗？';
-	$scope.delete = function() {
-		$modalInstance.close();
-	};
+    domeApp.controller('PromptModalCtrl', ['$scope', '$modalInstance', 'promptTxt', '$timeout', function ($scope, $modalInstance, promptTxt, $timeout) {
+        $scope.promptTxt = promptTxt;
+        $timeout(function () {
+            $modalInstance.dismiss('cancel');
+        }, 1000);
+        $scope.cancel = function () {
+            $modalInstance.dismiss('cancel');
+        };
+    }]).controller('WarningModalCtrl', ['$scope', '$modalInstance', 'promptTxt', function ($scope, $modalInstance, promptTxt) {
+        if (typeof promptTxt === 'string') {
+            $scope.titleInfo = promptTxt;
+        } else {
+            $scope.titleInfo = promptTxt.title;
+            $scope.detailInfo = promptTxt.msg;
+        }
+        $scope.cancel = function () {
+            $modalInstance.dismiss('cancel');
+        };
+    }]).controller('ConfirmModalCtr', ['$scope', '$modalInstance', 'promptTxt', function ($scope, $modalInstance, promptTxt) {
+        $scope.promptTxt = promptTxt;
+        $scope.cancel = function () {
+            $modalInstance.dismiss('cancel');
+        };
+        $scope.sure = function () {
+            $modalInstance.close();
+        };
+    }]).controller('DeleteModalCtr', ['$scope', '$modalInstance', 'promptTxt', function ($scope, $modalInstance, promptTxt) {
+        $scope.promptTxt = promptTxt || '确定要删除吗？';
+        $scope.delete = function () {
+            $modalInstance.close();
+        };
 
-	$scope.cancel = function() {
-		$modalInstance.dismiss('cancel');
-	};
-}]);
+        $scope.cancel = function () {
+            $modalInstance.dismiss('cancel');
+        };
+    }]);
+})();

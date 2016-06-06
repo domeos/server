@@ -5,20 +5,26 @@ package org.domeos.framework.api.service.resource.impl;
  */
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
 import org.domeos.basemodel.HttpResponseTemp;
 import org.domeos.basemodel.ResultStat;
 import org.domeos.framework.api.biz.auth.AuthBiz;
+import org.domeos.framework.api.biz.cluster.ClusterBiz;
+import org.domeos.framework.api.biz.deployment.DeploymentBiz;
 import org.domeos.framework.api.biz.resource.ResourceBiz;
 import org.domeos.framework.api.controller.exception.ApiException;
 import org.domeos.framework.api.controller.exception.PermitException;
 import org.domeos.framework.api.model.auth.User;
 import org.domeos.framework.api.model.auth.UserGroupMap;
 import org.domeos.framework.api.model.auth.related.Role;
+import org.domeos.framework.api.model.cluster.Cluster;
+import org.domeos.framework.api.model.deployment.Deployment;
 import org.domeos.framework.api.model.operation.OperationType;
 import org.domeos.framework.api.model.resource.Resource;
 import org.domeos.framework.api.model.resource.related.*;
 import org.domeos.framework.api.service.resource.ResourceService;
 import org.domeos.framework.engine.AuthUtil;
+import org.domeos.global.ClientConfigure;
 import org.domeos.global.CurrentThreadInfo;
 import org.domeos.global.GlobalConstant;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +32,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 /**
  * Created by zhenfengchen on 15-11-29.
@@ -35,7 +44,13 @@ public class ResourceServiceImpl implements ResourceService {
     @Autowired
     ResourceBiz resourceBiz;
     @Autowired
+    DeploymentBiz deploymentBiz;
+    @Autowired
+    ClusterBiz clusterBiz;
+    @Autowired
     AuthBiz authBiz;
+
+    private static Logger logger = Logger.getLogger(ResourceServiceImpl.class);
 
 
     @Override
@@ -160,14 +175,19 @@ public class ResourceServiceImpl implements ResourceService {
             return ResultStat.OK.wrap(null);
         }
         List<ResourceOwnerInfo> ownerInfos = new LinkedList<>();
+        List<Future<ResourceOwnerInfo>> futures = new LinkedList<>();
         for (Resource tmpResource : resourceList) {
-            List<Resource> resources = resourceBiz.getResourceByResourceIdAndType(tmpResource.getResourceId(), resourceType);
-            if (resources == null || resources.size() == 0) {
-                continue;
-            }
-            ResourceOwnerInfo ownerInfo = getResourceOwnerInfo(resources, tmpResource.getResourceId(), resourceType);
-            if (ownerInfo != null) {
-                ownerInfos.add(ownerInfo);
+            Future<ResourceOwnerInfo> future = ClientConfigure.executorService.submit(new GetResourceOwnerInfoTask(tmpResource, resourceType));
+            futures.add(future);
+        }
+        for (Future<ResourceOwnerInfo> future : futures) {
+            try {
+                ResourceOwnerInfo info = future.get();
+                if (info != null) {
+                    ownerInfos.add(info);
+                }
+            } catch (InterruptedException | ExecutionException e) {
+                logger.warn("get resource owner info error, message is " + e.getMessage());
             }
         }
         return ResultStat.OK.wrap(ownerInfos);
@@ -184,14 +204,19 @@ public class ResourceServiceImpl implements ResourceService {
             return ResultStat.OK.wrap(null);
         }
         List<ResourceOwnerInfo> ownerInfos = new LinkedList<>();
+        List<Future<ResourceOwnerInfo>> futures = new LinkedList<>();
         for (Resource tmpResource : resourceList) {
-            List<Resource> resources = resourceBiz.getResourceByResourceIdAndType(tmpResource.getResourceId(), resourceType);
-            if (resources == null || resources.size() == 0) {
-                continue;
-            }
-            ResourceOwnerInfo ownerInfo = getResourceOwnerInfoUserOnly(resources, tmpResource.getResourceId(), resourceType);
-            if (ownerInfo != null) {
-                ownerInfos.add(ownerInfo);
+            Future<ResourceOwnerInfo> future = ClientConfigure.executorService.submit(new GetResourceOwnerInfoUserOnlyTask(tmpResource, resourceType));
+            futures.add(future);
+        }
+        for (Future<ResourceOwnerInfo> future : futures) {
+            try {
+                ResourceOwnerInfo info = future.get();
+                if (info != null) {
+                    ownerInfos.add(info);
+                }
+            } catch (InterruptedException | ExecutionException e) {
+                logger.warn("get resource owner info error, message is " + e.getMessage());
             }
         }
         return ResultStat.OK.wrap(ownerInfos);
@@ -274,6 +299,16 @@ public class ResourceServiceImpl implements ResourceService {
         }
         ownerInfo.setResourceName(resourceName);
         ownerInfo.setResourceType(resourceType);
+        if (resourceType == ResourceType.DEPLOY) {
+            Deployment deployment = deploymentBiz.getDeployment(resourceId);
+            if (deployment != null) {
+                ownerInfo.setNamespace(deployment.getNamespace());
+                Cluster cluster = clusterBiz.getClusterById(deployment.getClusterId());
+                if (cluster != null) {
+                    ownerInfo.setClusterName(cluster.getName());
+                }
+            }
+        }
         if (resources == null) {
             return ownerInfo;
         }
@@ -314,6 +349,16 @@ public class ResourceServiceImpl implements ResourceService {
         }
         ownerInfo.setResourceName(resourceName);
         ownerInfo.setResourceType(resourceType);
+        if (resourceType == ResourceType.DEPLOY) {
+            Deployment deployment = deploymentBiz.getDeployment(resourceId);
+            if (deployment != null) {
+                ownerInfo.setNamespace(deployment.getNamespace());
+                Cluster cluster = clusterBiz.getClusterById(deployment.getClusterId());
+                if (cluster != null) {
+                    ownerInfo.setClusterName(cluster.getName());
+                }
+            }
+        }
         if (resources == null) {
             return ownerInfo;
         }
@@ -358,6 +403,46 @@ public class ResourceServiceImpl implements ResourceService {
                 return null;
         }
         return resourceBiz.getNameById(tableName, resourceId);
+    }
+
+    public class GetResourceOwnerInfoTask implements Callable<ResourceOwnerInfo> {
+        Resource resource;
+        ResourceType resourceType;
+
+        public GetResourceOwnerInfoTask(Resource resource, ResourceType resourceType) {
+            this.resource = resource;
+            this.resourceType = resourceType;
+        }
+
+        @Override
+        public ResourceOwnerInfo call() throws Exception {
+            List<Resource> resources = resourceBiz.getResourceByResourceIdAndType(resource.getResourceId(), resourceType);
+            if (resources == null || resources.size() == 0) {
+                return null;
+            }
+            ResourceOwnerInfo ownerInfo = getResourceOwnerInfo(resources, resource.getResourceId(), resourceType);
+            return ownerInfo;
+        }
+    }
+
+    public class GetResourceOwnerInfoUserOnlyTask implements Callable<ResourceOwnerInfo> {
+        Resource resource;
+        ResourceType resourceType;
+
+        public GetResourceOwnerInfoUserOnlyTask(Resource resource, ResourceType resourceType) {
+            this.resource = resource;
+            this.resourceType = resourceType;
+        }
+
+        @Override
+        public ResourceOwnerInfo call() throws Exception {
+            List<Resource> resources = resourceBiz.getResourceByResourceIdAndType(resource.getResourceId(), resourceType);
+            if (resources == null || resources.size() == 0) {
+                return null;
+            }
+            ResourceOwnerInfo ownerInfo = getResourceOwnerInfoUserOnly(resources, resource.getResourceId(), resourceType);
+            return ownerInfo;
+        }
     }
 }
 

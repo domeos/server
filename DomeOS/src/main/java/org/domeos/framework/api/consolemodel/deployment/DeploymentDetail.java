@@ -1,10 +1,6 @@
 package org.domeos.framework.api.consolemodel.deployment;
 
-import org.domeos.api.model.deployment.*;
-import org.domeos.framework.api.model.deployment.related.DeploymentAccessType;
-import org.domeos.framework.api.model.deployment.related.DeploymentStatus;
-import org.domeos.framework.api.model.deployment.related.HealthChecker;
-import org.domeos.framework.api.model.deployment.related.NetworkMode;
+import org.domeos.framework.api.model.deployment.related.*;
 
 import java.util.List;
 

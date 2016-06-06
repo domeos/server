@@ -1,5 +1,5 @@
 /*
- * @description: dome console bussiness stylesheet 
+ * @description: dome console bussiness stylesheet
  * @version: 0.1
  */
  @import "compass/css3";
@@ -12,6 +12,18 @@
 		.module{
 			padding:0;
 		}
+	}
+}
+.top-prompt{
+	height: 34px;
+	padding: 7px $page-padding 0 $page-padding;
+	background-color: #ffe3a6;
+	.txt-bright{
+		text-decoration: underline;
+	}
+	.icon-cancel{
+		float: right;
+		margin-top: 4px;
 	}
 }
 // top header
@@ -129,7 +141,7 @@
 	}
 }
 
-// (eg: deploy detail header) 
+// (eg: deploy detail header)
 .detail-header{
 	padding: 20px $page-padding 24px $page-padding;
 	border-bottom: 10px solid dome-color(background,primary);
@@ -154,7 +166,7 @@
 		display: block;
 		height: 30px;
 		width: 2px;
-		margin: 13px 30px 0 30px;
+		margin: 13px 22px 0 22px;
 		background-color: dome-color(border,light);
 	}
 
@@ -164,7 +176,45 @@
 	font-size: 14px;
 	margin: 18px 0 18px 42px;
 }
-// list info display.(eg: create deploy、create cluster) 
+.mod-project{
+	.setting-type{
+		display: inline-block;
+		width: 200px;
+		height: 100px;
+		margin-right: 20px;
+		padding: 12px 6px 12px;
+		border: 2px solid transparent;
+		background-color: dome-color(background,light);
+		border-radius: $default-radius;
+		vertical-align: top;
+		@include transition(background-color .2s);
+		&:hover{
+			cursor: pointer;
+		}
+		&:hover,&.active{
+			border:2px solid dome-color(dome,bright);
+			background-color: #fff;
+		}
+		h4{
+			margin-bottom: 14px;
+			font-size: 14px;
+			font-weight: bold;
+		}
+		p{font-size: 12px;}
+	}
+}
+.com-creator-selection{
+	display: inline-block;
+	.com-select-con{
+		display: inline-block;
+	}
+	.role-select{
+		width: 80px;
+		margin-right: 10px;
+	}
+}
+
+// list info display.(eg: create deploy、create cluster)
 .com-list-info{
 	&>li{
 		display: table;
@@ -215,11 +265,11 @@
 				height: auto;
 				min-height: 34px;
 			}
-			.com-select-con{
-				&:not(:first-child){
-					margin-left: 10px;
-				}
-			}
+			// .com-select-con{
+			// 	&:not(:first-child){
+			// 		margin-left: 10px;
+			// 	}
+			// }
 			.line-short,.line-long,.line-single,.line-longer{
 				position: relative;
 				width: 40%;
@@ -273,6 +323,10 @@
 			}
 			.top-margin{
 				margin-top: 20px;
+			}
+			.align-name{
+				display: block;
+				padding-top: 4px;
 			}
 		}
 		&.has-border{
@@ -365,10 +419,10 @@
 		display: inline-block;
 		margin-top: 6px;
 	}
-	.info-content{
-		margin-left:12px;width:300px;display:inline-block;
-		vertical-align: top;
-	}
+	// .info-content{
+	// 	margin-left:12px;width:300px;display:inline-block;
+	// 	vertical-align: top;
+	// }
 }
 // modal: /index/tpl/modal/selectContainerModal/selectContainerModal.html
 .modal-container{
@@ -411,5 +465,12 @@
 			width: 126px;
 			margin-right: 10px;
 		}
+	}
+}
+// page: /index/tpl/alarmTemplateDetail/alarmTemplateDetail.html
+.alarm-tpl-detail{
+	.btn-edit{
+		margin: 18px 0 20px 42px;
+		margin-bottom: 12px;
 	}
 }

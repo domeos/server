@@ -24,29 +24,31 @@ ng\:form {
 /*# sourceMappingURL=../../maps/common/css/ng-cloak-8dd5fbe918.css.map */
 
     </style>
-    <link rel="stylesheet" href="index/css/domeStyle-6ee4106033.min.css">
+    <link rel="stylesheet" href="index/css/domeStyle-b5dd8aa86d.min.css">
   </head>
-  <body ng-controller="domeCtr" resize-body>
+  <body ng-controller="DomeCtr as vmDome" resize-body>
     <div class="page">
       <ng-include src="'index/tpl/nav/nav.html'"></ng-include>
       <div class="content">
+        <div ng-show="vmDome.showPrompt" class="top-prompt ng-hide">为了方便试用DomeOS，目前正在使用H2内存数据库。如果DomeOS Server重启，则该数据库信息会丢失。您可以配置MySQL作为数据库，MySQL配置详见<a href="http://doc.domeos.org" target="_blank" class="txt-bright">使用文档</a>。<a ng-click="vmDome.showPrompt = false" class="icon-cancel pull-right"></a></div>
         <header class="header">
           <ul class="pull-right header-item">
             <li class="header-doc"><a href="http://doc.domeos.org" target="_blank"><span class="icon-doc"></span>文档</a></li>
             <li class="header-user">
               <div select-con>
-                <button ng-cloak class="ui-btn ui-btn-none username ui-btn-select">{{loginUser.username}}<i class="icon-down-white up drop"></i></button>
+                <button ng-cloak class="ui-btn ui-btn-none username ui-btn-select">{{vmDome.loginUser.username}}<i class="icon-down-white up drop"></i></button>
                 <ul class="com-user-option select-list">
                   <li class="arrow"></li>
-                  <li select-item ng-if="loginUser.loginType=='USER'"><a ng-click="modifyPw()">修改密码</a></li>
-                  <li select-item><a ng-click="logout()">退出登录</a></li>
+                  <li select-item><a ng-click="vmDome.modifySelfInfo()">修改资料</a></li>
+                  <li select-item ng-if="vmDome.loginUser.loginType=='USER'"><a ng-click="vmDome.modifyPw()">修改密码</a></li>
+                  <li select-item><a ng-click="vmDome.logout()">退出登录</a></li>
                 </ul>
               </div>
             </li>
           </ul>
           <div class="breadcrunmbs"><span ncy-breadcrumb ncy-breadcrumb-text-separator=" &gt; "></span></div>
           <div class="page-info">
-            <h1 ng-bind="title" class="page-title"></h1><span ng-bind="descrition" class="page-detail"></span>
+            <h1 ng-bind="vmDome.title" class="page-title"></h1><span ng-bind="vmDome.descrition" class="page-detail"></span>
           </div>
         </header>
         <div ui-view="" class="module container"></div>
@@ -120,7 +122,31 @@ ng\:form {
         <button ng-click="needValid=true;pwForm.$valid&amp;&amp;modiftPw()" class="ui-btn ui-btn-sm ui-btn-primary">确定</button>
       </div>
     </script>
+    <script type="text/ng-template" id="modifyUserInfoModal.html">
+      <div class="d-modal-header">修改资料</div>
+      <div ng-form role="form" name="userInfoForm" class="modal-body text-center modal-newpw">
+        <ul class="modal-info">
+          <li><span class="info-name">用户名</span>
+            <div class="info-content text-left"><span ng-bind="user.username" class="align-input"></span></div>
+          </li>
+          <li><span class="info-name">邮箱</span>
+            <div class="info-content text-left">
+              <input ng-model="user.email" name="email" class="ui-input-white full">
+            </div>
+          </li>
+          <li><span class="info-name">电话</span>
+            <div class="info-content text-left">
+              <input ng-model="user.phone" name="phone" class="ui-input-white full">
+            </div>
+          </li>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button ng-click="cancel()" class="ui-btn ui-btn-sm ui-btn-white">取消</button>
+        <button ng-click="submit()" class="ui-btn ui-btn-sm ui-btn-safe">保存</button>
+      </div>
+    </script>
     <script src="index/js/lib-1893bc0231.min.js"></script>
-    <script src="index/js/domeApp-5bff90af21.min.js"></script>
+    <script src="index/js/domeApp-5c850b0915.min.js"></script>
   </body>
 </html>

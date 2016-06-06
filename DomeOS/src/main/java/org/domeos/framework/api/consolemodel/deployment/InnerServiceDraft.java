@@ -19,9 +19,13 @@ public class InnerServiceDraft {
 
     public InnerServiceDraft(LoadBalancer loadBalancer) {
         name = loadBalancer.getName();
-        port = loadBalancer.getPort();
-        targetPort = loadBalancer.getTargetPort();
-        protocol = InnerServiceProtocol.valueOf(loadBalancer.getProtocol().toString());
+        // TODO(openxxs) check
+//        port = loadBalancer.getPort();
+//        targetPort = loadBalancer.getTargetPort();
+//        protocol = InnerServiceProtocol.valueOf(loadBalancer.getProtocol().toString());
+        port = loadBalancer.getLoadBalancerPorts().get(0).getPort();
+        targetPort = loadBalancer.getLoadBalancerPorts().get(0).getTargetPort();
+        protocol = InnerServiceProtocol.valueOf(loadBalancer.getLoadBalancerPorts().get(0).getProtocol().toString());
     }
 
 

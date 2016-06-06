@@ -1,5 +1,5 @@
 nav.left-nav(ondragstart="return false" onselectstart="return false" onselect="document.selection.empty()" oncopy="document.selection.empty()" onbeforecopy="return false" ng-scrollbar rebuild-on-resize)
-	ul.nav-lists(dome-nav current-mod="currentMod.mod" login-user="loginUser")
+	ul.nav-lists(dome-nav current-mod="vmDome.currentMod.mod" login-user="vmDome.loginUser")
 		li.dome-logo
 			a(href="/module/module.html")
 				img(src="index/images/logo-nav.png")
@@ -16,7 +16,7 @@ nav.left-nav(ondragstart="return false" onselectstart="return false" onselect="d
 		li(data-info="monitor")
 			a.nav-item(ui-sref="monitor")
 				span.nav-mod-monitor.icon-nav
-				| 监控
+				| 监控报警
 				i.nav-border
 		li(data-info="image")
 			a.nav-item(ui-sref="imageManage")

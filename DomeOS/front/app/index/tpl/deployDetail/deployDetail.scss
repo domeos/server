@@ -1,6 +1,11 @@
 @import "compass/css3";
 @import "common/css/common.scss";
 .deploy-detail{
+	.item-content{
+		max-width: 130px;
+		word-wrap: break-word;
+		word-break: break-all;
+	}
 	.disabled-prompt{
 		padding: 40px 0 0 $wider-padding;
 		font-size: 16px;
@@ -27,8 +32,7 @@
 		padding-top: 16px;
 		.events-list{
 			li{
-				height: 78px;
-				padding:30px 0 0 72px;
+				padding:30px 0 26px 72px;
 				white-space: nowrap;
 				&>span{
 					vertical-align: top;
@@ -54,7 +58,7 @@
 						position: absolute;
 						top: 14px;
 						left:7px;
-						height: 67px;
+						height: 78px;
 						width: 1px;
 						background-color: dome-color(border,light);
 					}
@@ -63,6 +67,7 @@
 					display: inline-block;
 					width: 5%;
 					margin-left: 20px;
+					vertical-align: middle;
 				}
 				.event-date{
 					min-width: 52px;
@@ -71,6 +76,7 @@
 					display: inline-block;
 					width: 11%;
 					margin-left: 20px;
+					vertical-align: middle;
 				}
 				.event-author{
 					width: 20%;
@@ -79,6 +85,7 @@
 				.event-process{
 					display: inline-block;
 					width: 350px;
+					vertical-align: middle;
 					.event-process-item{
 						display: inline-block;
 						margin-left: 12px;
@@ -107,7 +114,11 @@
 					}
 					.event-process-detail{
 						display: inline-block;
-						width: 106px;
+						max-width: 106px;
+						vertical-align: middle;
+					}
+					.sig-event-process{
+						display: block;
 					}
 				}
 				.event-result{
@@ -211,6 +222,10 @@
 		.add-other{
 			margin-left: 16px;
 		}
+		.no-log{
+			margin-top: 4px;
+			margin-bottom: 0;
+		}
 		.deploy-rollback{
 			margin: 22px $wider-padding 0  $wider-padding;
 			.com-select-con{
@@ -269,6 +284,9 @@
 				height: auto;
 				border:1px solid #eee;
 				border-radius: $default-radius;
+				.health-info{
+					margin-top: 10px;
+				}
 				&.mirror-collapse{
 					padding-bottom: 30px;
 				}

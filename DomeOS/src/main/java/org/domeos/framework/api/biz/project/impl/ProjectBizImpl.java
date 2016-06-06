@@ -213,7 +213,7 @@ public class ProjectBizImpl extends BaseBizImpl implements ProjectBiz {
             BuildHistory buildHistory = checkResult(tmp, BuildHistory.class);
             if (buildHistory.getIsGC() == 0) {
                 if (buildHistory.getTaskName() == null) {
-                    buildHistory.setTaskName(buildHistoryMapper.getTaskName());
+                    buildHistory.setTaskName(buildHistoryMapper.getBuildTaskNameById(buildHistory.getId()));
                 }
                 buildHistories.add(buildHistory);
             }

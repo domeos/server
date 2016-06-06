@@ -48,8 +48,7 @@ public class EventController extends ApiController {
 
     @ResponseBody
     @RequestMapping(value = "/get/bydeploy", method = RequestMethod.GET)
-    HttpResponseTemp<List<EventInfo>> getEventsByDeployName(@RequestParam(required = true) int clusterId,
-                                          @RequestParam(required = true) String deployName) throws IOException {
-        return eventService.getEventsByDeployName(clusterId, deployName);
+    HttpResponseTemp<List<EventInfo>> getEventsByDeployId(@RequestParam(required = true) int deployId) throws IOException {
+        return eventService.getEventsByDeployId(deployId);
     }
 }

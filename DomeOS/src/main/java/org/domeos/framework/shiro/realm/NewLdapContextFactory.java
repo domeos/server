@@ -8,6 +8,7 @@ import org.domeos.framework.api.biz.global.GlobalBiz;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import javax.naming.AuthenticationException;
 import javax.naming.NamingException;
@@ -21,7 +22,7 @@ import java.util.Map;
 /**
  * Created by feiliu206363 on 2015/12/29.
  */
-
+@Component("ldapContextFactory")
 public class NewLdapContextFactory implements LdapContextFactory {
 
     protected static final String SUN_CONNECTION_POOLING_PROPERTY = "com.sun.jndi.ldap.connect.pool";

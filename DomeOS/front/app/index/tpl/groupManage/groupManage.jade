@@ -22,9 +22,9 @@
 					td(colspan="6") 无相关组信息
 				tr(ng-repeat="group in groupListFiltered=(groupList|filter:{'name':groupKey})")
 					td
-						a(ui-sref="groupDetail({'id':group.id})" ng-bind="group.name")
+						a.ui-table-link(ui-sref="groupDetail({'id':group.id})" ng-bind="group.name")
 					td(ng-bind="group.countMap.memberCount")
 					td(ng-bind="group.countMap.projectCount")
 					td(ng-bind="group.countMap.deployCount")
 					td(ng-bind="group.countMap.clusterCount")
-					td(ng-bind="group.createTime.split(' ')[0]")
+					td(ng-bind="vmDome.parseDate(group.createTime)")

@@ -30,6 +30,8 @@ public interface GlobalBiz {
 
     void deleteServer();
 
+    Registry getPublicRegistry();
+
     Registry getRegistry();
 
     void deleteRegistry();

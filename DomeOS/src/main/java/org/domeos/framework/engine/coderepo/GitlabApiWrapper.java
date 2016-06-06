@@ -375,19 +375,25 @@ public class GitlabApiWrapper implements CodeApiInterface {
             throw new Exception(e.getMessage());
         }
 
-        try (CloseableHttpResponse response = HttpsClient.getHttpClient().execute(post)) {
-            HttpEntity entity = response.getEntity();
-            if (entity != null) {
-                String result = EntityUtils.toString(entity);
-                JsonNode node = mapper.readValue(result, JsonNode.class);
-                if (node.has("private_token")) {
-                    return node.get("private_token").asText();
-                } else {
-                    throw new GitlabTokenException("no token info fetched");
+        try {
+            CloseableHttpResponse response = HttpsClient.getHttpClient().execute(post);
+            if (response != null) {
+                HttpEntity entity = response.getEntity();
+                if (entity != null) {
+                    String result = EntityUtils.toString(entity);
+                    JsonNode node = mapper.readValue(result, JsonNode.class);
+                    if (node.has("private_token")) {
+                        return node.get("private_token").asText();
+                    } else {
+                        throw new GitlabTokenException("no token info fetched");
+                    }
                 }
+                response.close();
             }
         } catch (IOException e) {
             throw new ProjectHookException(e.getMessage());
+        } finally {
+            post.completed();
         }
         return null;
     }

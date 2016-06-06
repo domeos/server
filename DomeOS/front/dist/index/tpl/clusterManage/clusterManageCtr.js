@@ -1,4 +1,4 @@
-domeApp.controller('clusterManageCtr', ['$scope', '$domeCluster', function($scope, $domeCluster) {
+domeApp.controller('ClusterManageCtr', ['$scope', '$domeCluster', function($scope, $domeCluster) {
 	'use strict';
 	$scope.$emit('pageTitle', {
 		title: '集群管理',
@@ -6,7 +6,8 @@ domeApp.controller('clusterManageCtr', ['$scope', '$domeCluster', function($scop
 		mod: 'cluster'
 	});
 	$scope.isLoading = true;
-	$domeCluster.getClusterList().then(function(res) {
+	var clusterService = $domeCluster.getInstance('ClusterService');
+	clusterService.getData().then(function(res) {
 		$scope.clusterList = res.data.result || [];
 	}).finally(function() {
 		$scope.isLoading = false;

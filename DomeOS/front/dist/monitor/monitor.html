@@ -2,7 +2,7 @@
 <html ng-app="monitorApp">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <link rel="stylesheet" href="/monitor/css/moniorApp-253d5ed35f.min.css">
+    <link rel="stylesheet" href="/monitor/css/moniorApp-a83eda7be0.min.css">
     <style>[ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .translate-cloak, .x-ng-cloak, .ng-hide {
   display: none !important; }
 
@@ -25,9 +25,9 @@ ng\:form {
 
     </style>
   </head>
-  <body ng-controller="monitorCtr">
+  <body ng-controller="MonitorCtr">
     <loading ng-if="isLoading"></loading>
-    <div class="monitor-header">Dome OS 主机监控</div>
+    <div ng-cloak class="monitor-header">Dome OS {{monitorTypeName}}监控</div>
     <div datepicker-component date-options="[{interval:'1h',text:'实时',isDefault:true},{interval:'24h',text:'1天'}]" class="datepicker-component"></div>
     <ul class="monitor-options">
       <li ng-cloak>集群：{{clusterName}}</li>
@@ -50,7 +50,7 @@ ng\:form {
           <table class="ui-table">
             <thead>
               <tr>
-                <th ng-repeat="head in monitorsInfo.cpu.tableData.head"><span tooltip="{{monitorsInfo.keyMap[head]}}" ng-bind="head"></span></th>
+                <th ng-repeat="head in monitorsInfo.cpu.tableData.head"><span tooltip="{{monitorsInfo.keyMap[head]}}" tooltip-placement="{{$last?'left':'top'}}" ng-bind="head"></span></th>
               </tr>
             </thead>
             <tbody>
@@ -264,7 +264,17 @@ ng\:form {
         </div>
       </div>
     </div>
-    <script src="/monitor/js/lib-3b773734fc.min.js"></script>
-    <script src="/monitor/js/monitorApp-f20c67fe86.min.js"></script>
+    <script type="text/ng-template" id="warningModal.html">
+      <div class="d-modal-header">警告</div>
+      <div class="modal-body">
+        <p ng-bind="titleInfo" ng-class="{'font-size-16':detailInfo}" class="txt-error"></p>
+        <p ng-bind="detailInfo" class="txt-error tool-wrap-break"></p>
+      </div>
+      <div class="modal-footer">
+        <button ng-click="cancel()" class="ui-btn ui-btn-error ui-btn-sm">确定</button>
+      </div>
+    </script>
+    <script src="/monitor/js/lib-730edfca83.min.js"></script>
+    <script src="/monitor/js/monitorApp-36814f5997.min.js"></script>
   </body>
 </html>

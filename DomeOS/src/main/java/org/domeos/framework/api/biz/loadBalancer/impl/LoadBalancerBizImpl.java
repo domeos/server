@@ -59,9 +59,13 @@ public class LoadBalancerBizImpl extends BaseBizImpl implements LoadBalancerBiz{
             }
         }
         for (LoadBalancer lb : externalLBs) {
-            Integer id = uniqPortMapper.getLoadBalancerId(lb.getPort(), lb.getClusterId());
+            // TODO(openxxs) check
+//            Integer id = uniqPortMapper.getLoadBalancerId(lb.getPort(), lb.getClusterId());
+            Integer id = uniqPortMapper.getLoadBalancerId(lb.getLoadBalancerPorts().get(0).getPort(), lb.getClusterId());
             if (id != null) {
-                throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "port " + lb.getPort() + " already exist");
+                // TODO(openxxs) check
+//                throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "port " + lb.getPort() + " already exist");
+                throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "port " + lb.getLoadBalancerPorts().get(0).getPort() + " already exist");
             }
         }
         for (LoadBalancer lb: loadBalancers) {
@@ -72,7 +76,9 @@ public class LoadBalancerBizImpl extends BaseBizImpl implements LoadBalancerBiz{
             loadBalancerMapper.insertLoadBalancer(lb, lb.toString());
         }
         for (LoadBalancer lb : externalLBs) {
-            uniqPortMapper.insertIndex(lb.getId(), lb.getPort(), lb.getClusterId());
+            // TODO(openxxs) check
+//            uniqPortMapper.insertIndex(lb.getId(), lb.getPort(), lb.getClusterId());
+            uniqPortMapper.insertIndex(lb.getId(), lb.getLoadBalancerPorts().get(0).getPort(), lb.getClusterId());
         }
         for (LoadBalancer lb: loadBalancers) {
             DeployLoadBalancerPair pair = new DeployLoadBalancerPair();

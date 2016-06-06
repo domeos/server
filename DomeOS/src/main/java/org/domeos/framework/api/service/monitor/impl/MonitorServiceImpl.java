@@ -453,6 +453,36 @@ public class MonitorServiceImpl implements MonitorService {
                 monitorResult.getCounterResults().get(counter).add(targetValueMap);
             }
         }
+
+        // change pod memory usage percent
+        if (monitorDataRequest.getTargetType().equals("pod")) {
+            int length = monitorResult.getCounterResults().get("container.mem.usage.percent").size();
+            if (monitorResult.getCounterResults().get("container.mem.usage").size() < length) {
+                length = monitorResult.getCounterResults().get("container.mem.usage").size();
+            }
+            if (monitorResult.getCounterResults().get("container.mem.limit").size() < length) {
+                length = monitorResult.getCounterResults().get("container.mem.limit").size();
+            }
+            for (int index=0; index<length; index++) {
+                Map<String, Double> currentMap = monitorResult.getCounterResults().get("container.mem.usage.percent").get(index);
+                for (String key : currentMap.keySet()) {
+                    if (key.equals("timeStamp")) {
+                        continue;
+                    }
+                    if (monitorResult.getCounterResults().get("container.mem.usage").get(index).containsKey(key) &&
+                            monitorResult.getCounterResults().get("container.mem.usage").get(index).get(key) != null &&
+                            monitorResult.getCounterResults().get("container.mem.limit").get(index).containsKey(key) &&
+                            monitorResult.getCounterResults().get("container.mem.limit").get(index).get(key) != null) {
+                        monitorResult.getCounterResults().get("container.mem.usage.percent").get(index).put(key,
+                                monitorResult.getCounterResults().get("container.mem.usage").get(index).get(key)
+                                        / monitorResult.getCounterResults().get("container.mem.limit").get(index).get(key) * 100
+                        );
+                    } else {
+                        monitorResult.getCounterResults().get("container.mem.usage.percent").get(index).put(key, null);
+                    }
+                }
+            }
+        }
     }
 
     // create containerId-pod mapping

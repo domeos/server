@@ -1,4 +1,4 @@
-div(ng-form name="clusterForm" role="form" ng-class="{'need-valid':needValid}")
+div(ng-form name="clusterForm" role="form" ng-class="{'need-valid':valid.needValid}")
 	ul.com-list-info
 		//- li(ng-if="!creatCluster")
 			span.info-name 集群名称
@@ -7,18 +7,18 @@ div(ng-form name="clusterForm" role="form" ng-class="{'need-valid':needValid}")
 			span.info-name 集群名称
 			.info-content
 				input.ui-input-fill.line-single(ng-model="config.name" is-cluster-exist cluster-list="clusterList" name="clusterName" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" required)
-				span.txt-error(ng-if="(needValid||clusterForm.clusterName.$dirty)&&clusterForm.clusterName.$error.required") 必填
-				span.txt-error(ng-if="(needValid||clusterForm.clusterName.$dirty)&&clusterForm.clusterName.$error.isClusterExist") 集群已存在
+				span.txt-error(ng-if="(valid.needValid||clusterForm.clusterName.$dirty)&&clusterForm.clusterName.$error.isClusterExist") 集群已存在
 		li(ng-if="config.id")
 			span.info-name 创建者
 			.info-content(ng-bind="config.ownerName||'无'")
 		li(ng-if="!config.id")
 			span.info-name 创建者
 			.info-content
-				.com-select-con.select-creator(select-con)
+				creator-selection(change-event="clusterIns.toggleUser(user)")
+				//- .com-select-con.select-creator(select-con)
 					button.ui-btn.ui-btn-white.ui-btn-select(ng-cloak)
 						i.icon-down
-						| {{config.ownerName}} 
+						| {{config.ownerName}}
 					ul.select-list
 						li.select-item(ng-repeat="user in clusterIns.userList")
 							a(ng-bind="user.name" ng-click="clusterIns.toggleUser(user)")
@@ -26,13 +26,11 @@ div(ng-form name="clusterForm" role="form" ng-class="{'need-valid':needValid}")
 			span.info-name api server
 			.info-content
 				input.ui-input-fill.line-single(ng-model="config.api" name="api" placeholder="请输入api server地址" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}"  is-api-server-exist current-cluster="{{config.name}}" cluster-list="clusterList" required)
-				span.txt-error(ng-if="(needValid||clusterForm.api.$dirty)&&clusterForm.api.$error.required") 必填
-				span.txt-error(ng-if="(needValid||clusterForm.api.$dirty)&&clusterForm.api.$error.isApiServerExist") api server已存在
+				span.txt-error(ng-if="(valid.needValid||clusterForm.api.$dirty)&&clusterForm.api.$error.isApiServerExist") api server已存在
 		li
 			span.info-name dns服务器
 			.info-content
 				input.ui-input-fill.line-single(ng-model="config.dns" name="dns" placeholder="请输入dns服务器地址，不加端口号" required)
-				span.txt-error(ng-if="(needValid||clusterForm.dns.$dirty)&&clusterForm.dns.$error.required") 必填
 		li
 			span.info-name etcd
 			.info-content(ng-form name="etcdTotalForm")
@@ -44,7 +42,6 @@ div(ng-form name="clusterForm" role="form" ng-class="{'need-valid':needValid}")
 			span.info-name domain
 			.info-content
 				input.ui-input-fill.line-single(ng-model="config.domain" name="domain" required)
-				span.txt-error(ng-if="(needValid||clusterForm.domain.$dirty)&&clusterForm.domain.$error.required") 必填
 		li
 			span.info-name 日志自动收集
 			.info-content
@@ -69,5 +66,4 @@ div(ng-form name="clusterForm" role="form" ng-class="{'need-valid':needValid}")
 			.info-content
 				.cluster-log-con
 					input.ui-input-fill.cluster-log(placeholder="请输入容器镜像名" name="imageName" ng-model="config.clusterLog.imageName" required)
-					span.txt-error(ng-if="(needValid||clusterForm.imageName.$dirty)&&clusterForm.imageName.$invalid") 必填
 					input.ui-input-fill.cluster-log(placeholder="请输入容器镜像版本" name="imageTag" ng-model="config.clusterLog.imageTag")

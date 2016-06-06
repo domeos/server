@@ -11,6 +11,7 @@ import org.domeos.client.kubernetesclient.util.PodUtils;
 import org.domeos.framework.api.biz.auth.AuthBiz;
 import org.domeos.framework.api.biz.cluster.ClusterBiz;
 import org.domeos.framework.api.biz.deployment.DeploymentBiz;
+import org.domeos.framework.api.biz.global.GlobalBiz;
 import org.domeos.framework.api.biz.resource.ResourceBiz;
 import org.domeos.framework.api.consolemodel.CreatorDraft;
 import org.domeos.framework.api.consolemodel.cluster.ClusterCreate;
@@ -25,15 +26,19 @@ import org.domeos.framework.api.model.cluster.related.NodeInfo;
 import org.domeos.framework.api.model.cluster.related.NodeLabel;
 import org.domeos.framework.api.model.deployment.Deployment;
 import org.domeos.framework.api.model.deployment.related.Instance;
+import org.domeos.framework.api.model.global.CiCluster;
 import org.domeos.framework.api.model.operation.OperationType;
 import org.domeos.framework.api.model.resource.Resource;
 import org.domeos.framework.api.model.resource.related.ResourceType;
 import org.domeos.framework.api.service.cluster.ClusterService;
 import org.domeos.framework.engine.AuthUtil;
+import org.domeos.framework.engine.ClusterRuntimeDriver;
 import org.domeos.framework.engine.exception.DaoException;
+import org.domeos.framework.engine.k8s.K8sDriver;
 import org.domeos.framework.engine.k8s.NodeWrapper;
 import org.domeos.global.ClientConfigure;
 import org.domeos.global.CurrentThreadInfo;
+import org.domeos.framework.engine.RuntimeDriverFactory;
 import org.domeos.global.GlobalConstant;
 import org.domeos.util.CommonUtil;
 import org.domeos.util.DateUtil;
@@ -64,6 +69,9 @@ public class ClusterServiceImpl implements ClusterService {
 
     @Autowired
     DeploymentBiz deploymentBiz;
+
+    @Autowired
+    GlobalBiz globalBiz;
 
     @Autowired
     AuthBiz authBiz;
@@ -101,6 +109,9 @@ public class ClusterServiceImpl implements ClusterService {
 
         resourceBiz.addResource(cluster.getId(), ResourceType.CLUSTER, creatorDraft.getCreatorId(), creatorDraft.getCreatorType(), Role.MASTER);
 
+//        ClusterRuntimeDriver.addClusterDriver(cluster.getId(), new K8sDriver().init(cluster));
+        ClusterRuntimeDriver.addClusterDriver(cluster.getId(), RuntimeDriverFactory.getRuntimeDriver(K8sDriver.class, cluster));
+
         return ResultStat.OK.wrap(clusterInfo);
     }
 
@@ -121,9 +132,15 @@ public class ClusterServiceImpl implements ClusterService {
             throw ApiException.wrapResultStat(ResultStat.CLUSTER_NOT_EXIST);
         }
 
+        int buildConfig = 0;
+        CiCluster ciCluster = globalBiz.getCiCluster();
+        if (ciCluster != null && ciCluster.getClusterId() == cluster.getId()) {
+            buildConfig = 1;
+        }
+
         ClusterInfo clusterInfo = new ClusterInfo(cluster.getId(), cluster.getName(), cluster.getApi(), cluster.getTag(),
                 cluster.getDomain(), cluster.getDns(), cluster.getEtcd(), cluster.getOwnerName(), cluster.getLogConfig(),
-                cluster.getCreateTime(), cluster.getClusterLog());
+                cluster.getCreateTime(), buildConfig, cluster.getClusterLog());
         return ResultStat.OK.wrap(clusterInfo);
     }
 
@@ -149,6 +166,9 @@ public class ClusterServiceImpl implements ClusterService {
             throw ApiException.wrapKnownException(ResultStat.CANNOT_UPDATE_CLUSTER, e);
         }
 
+//        ClusterRuntimeDriver.updateClusterDriver(clusterInfo.getId(), new K8sDriver().init(oldCluster));
+        ClusterRuntimeDriver.updateClusterDriver(clusterInfo.getId(), RuntimeDriverFactory.getRuntimeDriver(K8sDriver.class, oldCluster));
+
         return ResultStat.OK.wrap(clusterInfo);
     }
 
@@ -157,11 +177,13 @@ public class ClusterServiceImpl implements ClusterService {
 
         checkOperationPermission(id, OperationType.DELETE);
 
-        List<Deployment> deployments = deploymentBiz.listDeploymentByClutesrId(id);
+        List<Deployment> deployments = deploymentBiz.listDeploymentByClusterId(id);
         if (deployments != null && deployments.size() > 0) {
             throw ApiException.wrapMessage(ResultStat.DEPLOYMENT_EXIST, "There are deployments in this cluster, you must delete them first");
         }
         clusterBiz.removeById(GlobalConstant.CLUSTER_TABLE_NAME, id);
+
+        ClusterRuntimeDriver.removeClusterDriver(id);
 
         return ResultStat.OK.wrap(null);
     }
@@ -316,41 +338,59 @@ public class ClusterServiceImpl implements ClusterService {
     }
 
     @Override
-    public HttpResponseTemp<?> deleteLabelsByClusterId(int id, String nodeName, String label) {
+    public HttpResponseTemp<?> deleteNodeLabels(int id, List<NodeLabel> nodeLabels) {
 
         checkOperationPermission(id, OperationType.MODIFY);
 
+        if (nodeLabels == null) {
+            return ResultStat.OK.wrap(null);
+        }
         try {
             NodeWrapper nodeWrapper = new NodeWrapper().init(id, null);
-            nodeWrapper.deleteNodeLabels(nodeName, label);
-            return ResultStat.OK.wrap(null);
+            for (NodeLabel nodeLabel : nodeLabels) {
+                if (nodeLabel == null || nodeLabel.getLabels() == null) {
+                    continue;
+                }
+                for (Map.Entry<String, String> entry : nodeLabel.getLabels().entrySet()) {
+                    nodeWrapper.deleteNodeLabels(nodeLabel.getNode(), entry.getKey());
+                }
+            }
         } catch (Exception e) {
             throw ApiException.wrapUnknownException(e);
         }
+        return ResultStat.OK.wrap(null);
     }
 
     @Override
-    public HttpResponseTemp<?> setNodeLabelsByNodeName(int id, NodeLabel nodeLabel) {
+    public HttpResponseTemp<?> setNodeLabels(int id, List<NodeLabel> nodeLabels) {
 
         checkOperationPermission(id, OperationType.MODIFY);
 
-        if (nodeLabel == null) {
+        if (nodeLabels == null) {
             throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "node label info is null");
         }
-
-        if (!StringUtils.isBlank(nodeLabel.checkLegality())) {
-            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, nodeLabel.checkLegality());
-        }
-
-        try {
-            NodeWrapper nodeWrapper = new NodeWrapper().init(id, null);
-            if (nodeLabel.getLabels() != null && nodeLabel.getLabels().size() > 0) {
-                nodeWrapper.setNodeLabels(nodeLabel.getNode(), nodeLabel.getLabels());
+        for (NodeLabel nodeLabel : nodeLabels) {
+            if (nodeLabel == null) {
+                continue;
             }
-            return ResultStat.OK.wrap(null);
-        } catch (Exception e) {
-            throw ApiException.wrapUnknownException(e);
+            if (!StringUtils.isBlank(nodeLabel.checkLegality())) {
+                throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "label for node " + nodeLabel.getNode() + " is illegal: " + nodeLabel.checkLegality());
+            }
         }
+        for (NodeLabel nodeLabel : nodeLabels) {
+            if (nodeLabel == null) {
+                continue;
+            }
+            try {
+                NodeWrapper nodeWrapper = new NodeWrapper().init(id, null);
+                if (nodeLabel.getLabels() != null && nodeLabel.getLabels().size() > 0) {
+                    nodeWrapper.setNodeLabels(nodeLabel.getNode(), nodeLabel.getLabels());
+                }
+            } catch (Exception e) {
+                throw ApiException.wrapUnknownException(e);
+            }
+        }
+        return ResultStat.OK.wrap(null);
     }
 
     public void fillNodeInfo(Node node, NodeInfo nodeInfo, NodeWrapper nodeWrapper) throws ParseException {
@@ -385,6 +425,7 @@ public class ClusterServiceImpl implements ClusterService {
     public List<ClusterListInfo> getClusterListByUserId(int userId) {
         List<Resource> resources = AuthUtil.getResourceList(userId, ResourceType.CLUSTER);
         List<ClusterListInfo> clusterListInfo = new LinkedList<>();
+
         if (resources != null && resources.size() > 0) {
             List<Future<ClusterListInfo>> futures = new LinkedList<>();
             for (Resource resource : resources) {
@@ -433,8 +474,14 @@ public class ClusterServiceImpl implements ClusterService {
                 logger.warn("get cluster info error, message is " + e.getMessage());
             }
 
+            int buildConfig = 0;
+            CiCluster ciCluster = globalBiz.getCiCluster();
+            if (ciCluster != null && ciCluster.getClusterId() == cluster.getId()) {
+                buildConfig = 1;
+            }
+
             return new ClusterListInfo(cluster.getId(), cluster.getName(), cluster.getApi(), cluster.getTag(),
-                    cluster.getDomain(), cluster.getLogConfig(), cluster.getOwnerName(), cluster.getCreateTime(), nodeNum, podNum);
+                    cluster.getDomain(), cluster.getLogConfig(), cluster.getOwnerName(), cluster.getCreateTime(), nodeNum, podNum, buildConfig);
         }
     }
 

@@ -271,7 +271,14 @@ public class BaseImageCustomServiceImpl implements BaseImageCustomService {
             throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "no env info for build kube job");
         }
         Job job = jobWrapper.sendJob(jobWrapper.generateJob(buildImage.getName(), envVars));
+        if (job == null) {
+            throw ApiException.wrapMessage(ResultStat.SERVER_INTERNAL_ERROR, "send job return null");
+        }
 
+        if (job == null || job.getMetadata() == null) {
+            throw ApiException.wrapMessage(ResultStat.SEND_JOB_ERROR, "job is null");
+        }
+        
         baseImageCustom.setState(BuildState.Building.name());
         baseImageCustom.setTaskName(job.getMetadata().getName());
 

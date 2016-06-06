@@ -4,6 +4,7 @@ import org.domeos.basemodel.HttpResponseTemp;
 import org.domeos.framework.api.model.image.BaseImage;
 import org.domeos.framework.api.model.image.BuildImage;
 
+
 /**
  * Created by baokangwang on 2016/4/6.
  */
@@ -78,4 +79,11 @@ public interface ImageService {
      * @return
      */
     HttpResponseTemp<?> getDockerImageDetail(String name, String registry);
+
+    /**
+     * get Exclusive build Images according to the image name and registry url
+     * @param type supported exclusive build type
+     * @return
+     */
+    HttpResponseTemp<?> getAllExclusiveImages(String type);
 }

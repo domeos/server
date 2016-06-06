@@ -10,7 +10,7 @@
   <loading ng-if="loading"></loading>
   <div class="host-info">
     <tabset>
-      <tab heading="实例列表">
+      <tab heading="实例列表" active="tabActive[0].active" ui-sref="hostDetail.instancelist">
         <loading ng-if="isWaitingHost"></loading>
         <div class="info-options">
           <input placeholder="输入实例名称查找" ng-model="insKey" class="ui-input-fill ui-input-white ui-input-search pull-right"/><span ng-cloak="ng-cloak" class="info-count">共{{instanceListFiltered.length}}个实例</span>
@@ -19,6 +19,7 @@
           <thead>
             <tr>
               <th>实例名称</th>
+              <th>namespace</th>
               <th>部署名称</th>
               <th>部署版本</th>
               <th>启动时间</th>
@@ -28,21 +29,22 @@
           </thead>
           <tbody>
             <tr ng-if="instanceList&amp;&amp;instanceListFiltered.length===0">
-              <td colspan="6">无相关实例信息</td>
+              <td colspan="7">无相关实例信息</td>
             </tr>
             <tr ng-repeat="ins in instanceListFiltered=(instanceList|filter:{'instanceName':insKey})">
               <td ng-bind="ins.instanceName"></td>
+              <td ng-bind="ins.namespace"></td>
               <td ng-if="ins.versionId===0" colspan="2">该实例由后台创建</td>
               <td ng-bind="ins.deployName" ng-if="ins.versionId!==0"></td>
               <td ng-cloak="ng-cloak" ng-if="ins.versionId!==0">version{{ins.versionId}}</td>
-              <td ng-bind="parseDate(ins.startTime)"></td>
+              <td ng-bind="vmDome.parseDate(ins.startTime)"></td>
               <td><a ng-click="showLog(ins.instanceName,ins.containers,ins.namespace)" class="txt-safe">日志</a></td>
               <td><a ng-click="toConsole($index)" class="link-safe">进入</a></td>
             </tr>
           </tbody>
         </table>
       </tab>
-      <tab heading="主机设置">
+      <tab heading="主机设置" active="tabActive[1].active" ui-sref="hostDetail.info">
         <ul ng-form="ng-form" role="form" name="hostForm" ng-class="{'need-valid':needValidHost}" class="com-list-info">
           <li><span class="info-name">工作场景</span>
             <div class="info-content"><span class="com-check-con">
@@ -57,24 +59,16 @@
             <div class="info-content">
               <div class="line-short">
                 <input ng-model="hostSetting.labelTxt" name="labelTxt" class="ui-input-white line-element"/>
-                <button ng-click="needValidHost=true;hostForm.$valid&amp;&amp;addLabel()" class="ui-btn ui-btn-primary ui-btn-sm add-label">添加标签</button>
+                <button ng-click="needValidHost=true;hostForm.$valid&amp;&amp;addLabel()" class="ui-btn ui-btn-primary ui-btn-sm add-label">添加</button>
               </div>
               <ul class="com-label-list host-label-con">
                 <li ng-repeat="(label,value) in labelsList"><span ng-cloak="ng-cloak" class="label-item"><a ng-click="deleteLable(label)" class="icon-cancel"></a>{{label}}</span></li>
               </ul>
             </div>
           </li>
-          <li><span class="info-name">是否用于构建</span>
+          <li ng-if="clusterConfig.buildConfig===1"><span class="info-name">是否用于构建</span>
             <div class="info-content txt-prompt">
               <dome-toggle ng-class="{'on':hostSetting.isUsedToBuild}" ng-click="toggleBuildEnv()"></dome-toggle>由于构建时可能会从第三方镜像库下载基础镜像，请开启时尽量保证主机有外网权限
-            </div>
-          </li>
-          <li><span class="info-name">磁盘挂载点</span>
-            <div class="info-content">
-              <div class="line-short">
-                <input placeholder="请输入磁盘路径，用于保存有状态服务数据" ng-model="hostSetting.diskTxt" name="labelTxt" class="ui-input-white line-element"/>
-                <button ng-click="saveDisk()" class="ui-btn ui-btn-primary ui-btn-sm add-label">保存</button>
-              </div>
             </div>
           </li>
         </ul>

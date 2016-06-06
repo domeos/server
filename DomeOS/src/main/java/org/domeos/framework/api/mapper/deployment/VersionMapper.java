@@ -27,14 +27,14 @@ public interface VersionMapper {
 
     @Select("select " + RowMapper.BASIC_COLUMNS + " from " + VersionBiz.VERSION_TABLE_NAME
             + " where deployId = ${deployId} and version=${version} AND removed = 0")
-    RowMapperDao getVersion(@Param("deployId") int deployId, @Param("version") long version);
+    RowMapperDao getVersion(@Param("deployId") int deployId, @Param("version") int version);
 
     @Select("select " + RowMapper.BASIC_COLUMNS + " from " + VersionBiz.VERSION_TABLE_NAME
             + " where deployId = ${deployId} AND removed = 0")
     List<RowMapperDao> getAllVersionByDeployId(@Param("deployId") int deployId);
 
     @Select("SELECT MAX(version) FROM " + VersionBiz.VERSION_TABLE_NAME + " WHERE deployId = ${deployId} AND removed = 0")
-    Long getMaxVersion(@Param("deployId") int deployId);
+    Integer getMaxVersion(@Param("deployId") int deployId);
 //
 //    @Select("SELECT * FROM version WHERE deployId=#{deployId} AND version=#{version}")
 //    VersionDBProto getVersion(@Param("deployId") long deployId, @Param("version") long version);

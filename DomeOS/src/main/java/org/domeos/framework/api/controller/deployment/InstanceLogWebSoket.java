@@ -2,7 +2,7 @@ package org.domeos.framework.api.controller.deployment;
 
 import org.apache.commons.lang3.StringUtils;
 import org.domeos.framework.engine.websocket.WebSocketConnectPool;
-import org.domeos.api.model.deployment.InstanceConnection;
+import org.domeos.framework.api.model.deployment.InstanceConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.socket.server.standard.SpringConfigurator;

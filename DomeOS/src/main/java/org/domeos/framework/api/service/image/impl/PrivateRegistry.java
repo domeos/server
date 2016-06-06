@@ -103,11 +103,13 @@ public class PrivateRegistry {
             RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(HttpsClient.SocketTimeout)
                     .setConnectTimeout(HttpsClient.ConnectTimeout).build();
             httpGet.setConfig(requestConfig);
-            try (CloseableHttpResponse response = HttpsClient.getHttpClient().execute(httpGet)) {
+            CloseableHttpResponse response = HttpsClient.getHttpClient().execute(httpGet);
+            if (response != null) {
                 HttpEntity entity = response.getEntity();
                 if (entity != null) {
                     value = EntityUtils.toString(entity);
                 }
+                response.close();
             }
         } catch (IOException e) {
             logger.warn("get response error, url is " + url + ", message is" + e.getMessage());
@@ -126,11 +128,13 @@ public class PrivateRegistry {
             RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(HttpsClient.SocketTimeout)
                     .setConnectTimeout(HttpsClient.ConnectTimeout).build();
             httpHead.setConfig(requestConfig);
-            try (CloseableHttpResponse response = HttpsClient.getHttpClient().execute(httpHead)) {
+            CloseableHttpResponse response = HttpsClient.getHttpClient().execute(httpHead);
+            if (response != null) {
                 Header header = response.getFirstHeader(GlobalConstant.HTTP_CONTENTLENGTH);
                 if (header != null) {
                     return Long.valueOf(header.getValue());
                 }
+                response.close();
             }
         } catch (IOException e) {
             logger.warn("get response error, url is " + url + ", message is" + e.getMessage());
@@ -221,7 +225,7 @@ public class PrivateRegistry {
                         dockerImages.add(dockerImage);
                     }
                 } catch (InterruptedException | ExecutionException e) {
-                    logger.warn("get project list error, message is " + e.getMessage());
+                    logger.warn("get project list error, message is " + e);
                 }
             }
 

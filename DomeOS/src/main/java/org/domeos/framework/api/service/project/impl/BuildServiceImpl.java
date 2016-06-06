@@ -80,9 +80,11 @@ public class BuildServiceImpl implements BuildService {
         if (project == null) {
             throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "input project info is null");
         }
-        checkGetable(project.getId());
+        if (project.getId() > 0) {
+            checkGetable(project.getId());
+        }
 
-        if (project.getDockerfileConfig() != null && project.getDockerfileInfo() == null) {
+        if (project.getDockerfileConfig() != null && project.getDockerfileInfo() == null && project.getExclusiveBuild() == null) {
             if (!StringUtils.isBlank(project.getDockerfileConfig().checkLegality())) {
                 throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, project.getDockerfileConfig().checkLegality());
             }
@@ -90,14 +92,19 @@ public class BuildServiceImpl implements BuildService {
             if (dockerfile == null) {
                 throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "docker file config is null");
             }
-
-            try {
-                String dockerfileStr = generateDockerfile(dockerfile, project.getConfFiles());
-                return ResultStat.OK.wrap(dockerfileStr);
-            } catch (Exception e) {
-                throw ApiException.wrapUnknownException(e);
+            String dockerfileStr = generateDockerfile(dockerfile, project.getConfFiles());
+            return ResultStat.OK.wrap(dockerfileStr);
+        } else if (project.getDockerfileConfig() == null && project.getDockerfileInfo() == null && project.getExclusiveBuild() != null) {
+            if (!StringUtils.isBlank(project.getExclusiveBuild().checkLegality())) {
+                throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, project.getExclusiveBuild().checkLegality());
             }
-        } else if (project.getDockerfileConfig() == null && project.getDockerfileInfo() != null) {
+            ExclusiveBuild exclusiveBuild = project.getExclusiveBuild();
+            if (exclusiveBuild == null) {
+                throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "exclusive build config is null");
+            }
+            String dockerfileStr = generateDockerfile(exclusiveBuild, project.getConfFiles());
+            return ResultStat.OK.wrap(dockerfileStr);
+        } else if (project.getDockerfileConfig() == null && project.getDockerfileInfo() != null && project.getExclusiveBuild() == null) {
             UserDefinedDockerfile dockerfileInfo = project.getDockerfileInfo();
             CodeConfiguration codeInfo = project.getCodeInfo();
             if (codeInfo == null) {
@@ -112,7 +119,16 @@ public class BuildServiceImpl implements BuildService {
             if (!StringUtils.isBlank(dockerfilePath) && dockerfilePath.startsWith("/")) {
                 dockerfilePath = dockerfilePath.substring(1);
             }
-            byte[] dockerfileStr = codeApiInterface.getDockerfile(codeInfo.getCodeId(), dockerfileInfo.getBranch(), dockerfilePath);
+            CommitInformation branchOrTagInfo = null;
+            if (dockerfileInfo.getTag() != null) {
+                branchOrTagInfo = codeApiInterface.getTagCommitInfo(codeInfo.getCodeId(), dockerfileInfo.getTag());
+            } else if (dockerfileInfo.getBranch() != null) {
+                branchOrTagInfo = codeApiInterface.getBranchCommitInfo(codeInfo.getCodeId(), dockerfileInfo.getBranch());
+            }
+            byte[] dockerfileStr = null;
+            if (branchOrTagInfo != null) {
+                dockerfileStr = codeApiInterface.getDockerfile(codeInfo.getCodeId(), branchOrTagInfo.getId(), dockerfilePath);
+            }
             if (dockerfileStr == null) {
                 throw ApiException.wrapResultStat(ResultStat.DOCKERFILE_NOT_EXIST);
             }
@@ -129,15 +145,34 @@ public class BuildServiceImpl implements BuildService {
         if (buildSecret == null || !buildSecret.equals(secret)) {
             return "Forbidden";
         }
-        try {
-            Project project = projectBiz.getById(GlobalConstant.PROJECT_TABLE_NAME, projectId, Project.class);
-            if (project != null) {
+        Project project = projectBiz.getById(GlobalConstant.PROJECT_TABLE_NAME, projectId, Project.class);
+        if (project != null) {
+            if (project.getExclusiveBuild() != null) {
+                docker = generateDockerfile(project.getExclusiveBuild(), project.getConfFiles());
+            }
+            else if (project.getDockerfileConfig() != null) {
                 docker = generateDockerfile(project.getDockerfileConfig(), project.getConfFiles());
             }
-        } catch (Exception e) {
-            throw ApiException.wrapUnknownException(e);
         }
         return docker;
+    }
+
+    @Override
+    public String getCompileFile(int projectId, int buildId, String secret) {
+        String compilefile = null;
+        String buildSecret = projectBiz.getSecretById(buildId);
+        if (buildSecret == null || !buildSecret.equals(secret)) {
+            return "Forbidden";
+        }
+        String taskName = projectBiz.getBuildTaskNameById(buildId);
+        if (StringUtils.isBlank(taskName)) {
+            return "Not start build";
+        }
+        Project project = projectBiz.getById(GlobalConstant.PROJECT_TABLE_NAME, projectId, Project.class);
+        if (project != null) {
+            compilefile = generateCompilefile(project.getExclusiveBuild(), taskName);
+        }
+        return compilefile;
     }
 
     @Override
@@ -400,58 +435,134 @@ public class BuildServiceImpl implements BuildService {
         }
     }
 
-    public String generateDockerfile(DockerfileContent info, Map<String, String> configFiles) throws Exception {
-        StringBuilder dockerfile = new StringBuilder();
-        if (info != null) {
-            String dockerFrom = CommonUtil.domainUrl(info.getBaseImageRegistry());
-            if (!StringUtils.isBlank(dockerFrom)) {
-                dockerFrom += "/";
-            }
-            dockerFrom += info.getBaseImageName();
-            if (!StringUtils.isBlank(info.getBaseImageTag())) {
-                dockerFrom += ":" + info.getBaseImageTag();
-            }
-            if (dockerFrom.startsWith(GlobalConstant.HTTP_PREFIX)) {
-                dockerFrom = dockerFrom.substring(7);
-            }
-            if (dockerFrom.startsWith(GlobalConstant.HTTPS_PREFIX)) {
-                dockerFrom = dockerFrom.substring(8);
-            }
-            dockerfile.append("From ").append(dockerFrom).append("\n");
-            String env = checkEnv(info.getCompileEnv());
-            if (!StringUtils.isBlank(env)) {
-                dockerfile.append(env).append("\n");
-            }
-            if (!StringUtils.isBlank(info.getUser())) {
-                dockerfile.append("USER ").append(info.getUser()).append("\n");
-            }
-            String command1 = checkCommand(info.getInstallCmd());
-            if (!StringUtils.isBlank(command1)) {
-                dockerfile.append("RUN ").append(command1).append("\n");
-            }
-            dockerfile.append("COPY . ").append(info.getCodeStoragePath()).append("\n");
-            if (configFiles != null && configFiles.size() > 0) {
-                dockerfile.append("COPY dockerize /usr/bin/dockerize\n");
-            }
-            dockerfile.append("WORKDIR ").append(info.getCodeStoragePath()).append("\n");
-            String command2 = checkCommand(info.getCompileCmd());
-            if (!StringUtils.isBlank(command2)) {
-                dockerfile.append("RUN ").append(command2).append("\n");
-            }
-            if (!StringUtils.isBlank(info.getWorkDir())) {
-                dockerfile.append("WORKDIR ").append(info.getWorkDir()).append("\n");
-            }
-            String cmd = info.getStartCmd();
-            if (!StringUtils.isBlank(cmd)) {
-                dockerfile.append("CMD");
-                if (configFiles != null && configFiles.size() > 0) {
-                    dockerfile.append(" dockerize");
-                    for (Map.Entry<String, String> entry : configFiles.entrySet()) {
-                        dockerfile.append(" -template ").append(entry.getKey()).append(":").append(entry.getValue());
-                    }
+    public String generateCompilefile(ExclusiveBuild exclusiveBuild, String jobName) {
+        StringBuilder script = new StringBuilder();
+
+        if (exclusiveBuild != null) {
+            String compileImage = exclusiveBuild.getCompileImage().imageInfo();
+            String buildImage = globalBiz.getBuildImage().getName();
+            script.append("dockervolume=`docker ps --all | grep ").append(buildImage).append(" | grep ")
+                    .append(jobName).append(" | awk '{print $1}' `").append("\n");
+            script.append("echo ${dockervolume}").append("\n");
+            script.append("docker run --rm ");
+            String envs = exclusiveBuild.getCompileEnv();
+            if ( !StringUtils.isEmpty(envs) ) {
+                String[] pair = envs.split(",");
+                for (String env : pair) {
+                    script.append("-e ").append(env).append(" ");
                 }
-                dockerfile.append(" ").append(cmd).append("\n");
             }
+            String codepath = exclusiveBuild.getCodeStoragePath();
+
+
+            String command = exclusiveBuild.getCompileCmd();
+            if (!exclusiveBuild.getCodeStoragePath().startsWith(GlobalConstant.BUILD_CODE_PATH)) {
+                command = "cp -r " + GlobalConstant.BUILD_CODE_PATH + "/* " + exclusiveBuild.getCodeStoragePath() + " \n " + command;
+            }
+            script.append("-w ").append(codepath);
+            script.append(" --volumes-from ${dockervolume} ");
+            script.append(compileImage).append(" ");
+            command += " \n mkdir -p " + GlobalConstant.BUILD_CODE_PATH + "/domeos_created_file ";
+            for (String savepath : exclusiveBuild.getCreatedFileStoragePath()) {
+                String filename = StringUtils.substringAfterLast(savepath, "/");
+                command += "\n cp -r " + savepath + " " + GlobalConstant.BUILD_CODE_PATH + "/domeos_created_file/" + filename;
+            }
+            command = command.replaceAll("\n", "&&");
+            command = command.replaceAll("\"", "\\\"");
+            command = "sh -c \"" + command + "\"";
+            script.append(command);
+            return script.toString();
+        }
+    return null;
+}
+
+    public String generateDockerfile(DockerfileContent info, Map<String, String> configFiles) {
+        if (info == null) {
+            return null;
+        }
+        StringBuilder dockerfile = new StringBuilder();
+        String dockerFrom = CommonUtil.domainUrl(info.getBaseImageRegistry());
+        if (!StringUtils.isBlank(dockerFrom)) {
+            dockerFrom += "/";
+        }
+        dockerFrom += info.getBaseImageName();
+        if (!StringUtils.isBlank(info.getBaseImageTag())) {
+            dockerFrom += ":" + info.getBaseImageTag();
+        }
+        if (dockerFrom.startsWith(GlobalConstant.HTTP_PREFIX)) {
+            dockerFrom = dockerFrom.substring(7);
+        }
+        if (dockerFrom.startsWith(GlobalConstant.HTTPS_PREFIX)) {
+            dockerFrom = dockerFrom.substring(8);
+        }
+        dockerfile.append("From ").append(dockerFrom).append("\n");
+        String env = checkEnv(info.getCompileEnv());
+        if (!StringUtils.isBlank(env)) {
+            dockerfile.append(env);
+        }
+        String command1 = checkCommand(info.getInstallCmd());
+        if (!StringUtils.isBlank(command1)) {
+            dockerfile.append("RUN ").append(command1).append("\n");
+        }
+        dockerfile.append("COPY . ").append(info.getCodeStoragePath()).append("\n");
+        String command2 = checkCommand(info.getCompileCmd());
+        if (!StringUtils.isBlank(command2)) {
+            dockerfile.append("RUN ").append(command2).append("\n");
+        }
+        if (!StringUtils.isBlank(info.getUser())) {
+            dockerfile.append("USER ").append(info.getUser()).append("\n");
+        }
+        if (!StringUtils.isBlank(info.getWorkDir())) {
+            dockerfile.append("WORKDIR ").append(info.getWorkDir()).append("\n");
+        }
+        if (configFiles != null && configFiles.size() > 0) {
+            dockerfile.append("COPY dockerize /usr/bin/dockerize\n");
+        }
+        String cmd = info.getStartCmd();
+        if (!StringUtils.isBlank(cmd)) {
+            dockerfile.append("CMD");
+            if (configFiles != null && configFiles.size() > 0) {
+                dockerfile.append(" dockerize");
+                for (Map.Entry<String, String> entry : configFiles.entrySet()) {
+                    dockerfile.append(" -template ").append(entry.getKey()).append(":").append(entry.getValue());
+                }
+            }
+            dockerfile.append(" ").append(cmd).append("\n");
+        }
+        return dockerfile.toString();
+    }
+
+    public String generateDockerfile(ExclusiveBuild exclusiveBuild, Map<String, String> configFiles) {
+        if (exclusiveBuild == null) {
+            return null;
+        }
+        StringBuilder dockerfile = new StringBuilder();
+        String dockerFrom = exclusiveBuild.getRunImage().imageInfo();
+        dockerfile.append("From ").append(dockerFrom).append("\n");
+        for (String savepath : exclusiveBuild.getCreatedFileStoragePath()) {
+            String filename = StringUtils.substringAfterLast(savepath, "/");
+            dockerfile.append("COPY ./domeos_created_file/").append(filename).append(" ").append(exclusiveBuild.getRunFileStoragePath()).append("\n");
+
+        }
+        if (!StringUtils.isBlank(exclusiveBuild.getUser())) {
+            dockerfile.append("USER ").append(exclusiveBuild.getUser()).append("\n");
+        }
+        if (!StringUtils.isBlank(exclusiveBuild.getWorkDir())) {
+            dockerfile.append("WORKDIR ").append(exclusiveBuild.getWorkDir()).append("\n");
+        }
+        if (configFiles != null && configFiles.size() > 0) {
+            dockerfile.append("COPY dockerize /usr/bin/dockerize\n");
+        }
+        String cmd = exclusiveBuild.getStartCmd();
+        if (!StringUtils.isBlank(cmd)) {
+            dockerfile.append("CMD");
+            if (configFiles != null && configFiles.size() > 0) {
+                dockerfile.append(" dockerize");
+                for (Map.Entry<String, String> entry : configFiles.entrySet()) {
+                    dockerfile.append(" -template ").append(entry.getKey()).append(":").append(entry.getValue());
+                }
+            }
+            dockerfile.append(" ").append(cmd).append("\n");
         }
         return dockerfile.toString();
     }
@@ -567,10 +678,10 @@ public class BuildServiceImpl implements BuildService {
             }
             dockerfileContent = new String(content);
         } else {
-            try {
+            if (project.getDockerfileConfig() != null) {
                 dockerfileContent = generateDockerfile(project.getDockerfileConfig(), project.getConfFiles());
-            } catch (Exception e) {
-                throw ApiException.wrapUnknownException(e);
+            } else if (project.getExclusiveBuild() != null) {
+                dockerfileContent = generateDockerfile(project.getExclusiveBuild(), project.getConfFiles());
             }
         }
         if (StringUtils.isBlank(dockerfileContent)) {
@@ -590,12 +701,22 @@ public class BuildServiceImpl implements BuildService {
             throw ApiException.wrapUnknownException(e);
         }
 
+        String buildType = "SIMPLE";
+        if (project.getExclusiveBuild() != null ) {
+            buildType = project.getExclusiveBuild().getCustomType();
+        }
+
         EnvVar[] envVars = generateEnvs(codeType, server.serverInfo(), buildInfo, privateKey, codeUrl, hasDockerfile,
-                secret, buildPath, dockerfilePath);
+                secret, buildPath, dockerfilePath, buildType);
         if (envVars == null) {
             throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "no env info for build kube job");
         }
+
         Job job = jobWrapper.sendJob(jobWrapper.generateJob(buildImage.getName(), envVars));
+        if (job == null || job.getMetadata() == null) {
+            throw ApiException.wrapMessage(ResultStat.SEND_JOB_ERROR, "job is null");
+        }
+
         buildInfo.setTaskName(job.getMetadata().getName());
         buildInfo.setState(BuildState.Send.name());
         projectBiz.setTaskNameAndStatus(buildInfo);
@@ -625,7 +746,6 @@ public class BuildServiceImpl implements BuildService {
                 projectRsakeyMap.setCreateTime(System.currentTimeMillis());
                 projectRsakeyMap.setState("active");
                 projectBiz.addProjectRsaMap(projectRsakeyMap);
-                System.out.println(keyPair.getPrivateKey());
                 privateKey = keyPair.getPrivateKey().replaceAll("\n", "\\\\n");
             }
         } else {
@@ -635,8 +755,8 @@ public class BuildServiceImpl implements BuildService {
         return privateKey;
     }
 
-    public EnvVar[] generateEnvs(String codeType, String server, BuildHistory buildInfo, String privateKey,
-                                 String codeUrl, int hasDockerfile, String secret, String buildPath, String dockerfilePath) {
+    public EnvVar[] generateEnvs(String codeType, String server, BuildHistory buildInfo, String privateKey, String codeUrl,
+                                 int hasDockerfile, String secret, String buildPath, String dockerfilePath, String buildType) {
         String commitId = null;
         if (buildInfo.getCommitInfo() != null) {
             commitId = buildInfo.getCommitInfo().getId();
@@ -655,7 +775,8 @@ public class BuildServiceImpl implements BuildService {
                 new EnvVar().putName("SECRET").putValue(secret),
                 new EnvVar().putName("BUILD_PATH").putValue(buildPath),
                 new EnvVar().putName("DOCKERFILE_PATH").putValue(dockerfilePath),
-                new EnvVar().putName("TYPE").putValue(codeType)
+                new EnvVar().putName("TYPE").putValue(codeType),
+                new EnvVar().putName("BUILD_TYPE").putValue(buildType)
         };
     }
 }

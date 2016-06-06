@@ -1,6 +1,7 @@
 package org.domeos.framework.api.consolemodel.deployment;
 
 import org.apache.commons.lang3.StringUtils;
+import org.domeos.framework.api.model.deployment.related.HealthChecker;
 import org.domeos.util.CommonUtil;
 
 import java.util.List;
@@ -15,6 +16,7 @@ public class ContainerDraft {
     private double mem;
     private List<EnvDraft> envs;
     private List<EnvDraft> envCheckers;
+    private HealthChecker healthChecker;
 
     public String getRegistry() {
         return registry;
@@ -71,6 +73,14 @@ public class ContainerDraft {
 
     public void setEnvCheckers(List<EnvDraft> envCheckers) {
         this.envCheckers = envCheckers;
+    }
+
+    public HealthChecker getHealthChecker() {
+        return healthChecker;
+    }
+
+    public void setHealthChecker(HealthChecker healthChecker) {
+        this.healthChecker = healthChecker;
     }
 
     public String checkLegality() {

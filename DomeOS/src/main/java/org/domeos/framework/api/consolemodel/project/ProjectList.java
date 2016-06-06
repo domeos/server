@@ -19,6 +19,8 @@ public class ProjectList {
     private String nameWithNamespace;
     private CodeManager codeManager;
     private boolean userDefineDockerfile;
+    private boolean autoBuild;
+    private String projectType;
 
     public int getId() {
         return id;
@@ -98,6 +100,22 @@ public class ProjectList {
 
     public void setUserDefineDockerfile(boolean userDefineDockerfile) {
         this.userDefineDockerfile = userDefineDockerfile;
+    }
+
+    public String getProjectType() {
+        return projectType;
+    }
+
+    public void setProjectType(String projectType) {
+        this.projectType = projectType;
+    }
+
+    public boolean isAutoBuild() {
+        return autoBuild;
+    }
+
+    public void setAutoBuild(boolean autoBuild) {
+        this.autoBuild = autoBuild;
     }
 
     public static class ProjectListComparator implements Comparator<ProjectList> {

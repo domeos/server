@@ -6,12 +6,15 @@
 	loading(ng-if="isLoading")
 	ul.cluster-list
 		li.no-cluster(ng-if="!clusterList||clusterList.length===0")
-			span 暂无集群，可以新建一个 
+			span 暂无集群，可以新建一个
 		li(ng-repeat="cluster in clusterList")
 			.cluster-item.text-center
 				.cluster-header
 					a.ui-btn.ui-btn-sm.ui-btn-link.ui-btn-white.pull-right(ui-sref="clusterDetail({'id':cluster.id})") 管理
 					em.cluster-name(ng-bind="cluster.name")
+					span.build-cluster-title(ng-if="cluster.buildConfig===1")
+						| |
+						em 构建集群
 				.cluster-content
 					span.no-host(ng-if="cluster.nodeNum===0") 暂无主机，您可以：
 					span.cluster-info(ng-if="cluster.nodeNum!==0")

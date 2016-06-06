@@ -1,4 +1,4 @@
-domeApp.controller('appStoreCtr', ['$scope', '$domeAppStore', function($scope, $domeAppStore) {
+domeApp.controller('AppStoreCtr', ['$scope', '$domeAppStore', function($scope, $domeAppStore) {
 	'use strict';
 	$scope.$emit('pageTitle', {
 		title: '欢迎来到应用商店！',

@@ -11,6 +11,7 @@ public class EventDBProto {
     private String eventKind;
     private String name;
     private String host;
+    private int deployId;
     private String content;
 
     public long getId() {
@@ -67,6 +68,14 @@ public class EventDBProto {
 
     public void setHost(String host) {
         this.host = host;
+    }
+
+    public int getDeployId() {
+        return deployId;
+    }
+
+    public void setDeployId(int deployId) {
+        this.deployId = deployId;
     }
 
     public String getContent() {

@@ -16,7 +16,9 @@ import org.domeos.framework.api.model.global.CiCluster;
 import org.domeos.framework.api.model.image.BaseImageCustom;
 import org.domeos.framework.api.biz.global.GlobalBiz;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -31,6 +33,7 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * Created by anningluo on 2015/12/27.
  */
+@Component
 public class BuildStatusManager {
     /*
     private static BuildStatusManager INSTANCE;
@@ -58,6 +61,7 @@ public class BuildStatusManager {
     private String apiServer = null;
     private static Logger logger = Logger.getLogger(BuildStatusManager.class);
 
+    @PostConstruct
     public void init() {
         try {
             monitorExecutor.scheduleAtFixedRate(new BuildChecker(),
@@ -112,7 +116,7 @@ public class BuildStatusManager {
             throws KubeResponseException, IOException, KubeInternalErrorException {
         Job job = client.jobInfo(jobName);
         if (job == null) {
-            return false;
+            return true;
         }
         Map<String, String> jobSelector;
         client.deleteJob(jobName);

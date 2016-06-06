@@ -1,5 +1,6 @@
 
 <div class="mod-project project-detail">
+  <loading ng-if="isLoading"></loading>
   <div class="project-options">
     <button ng-click="openBuild(config.projectId,!!config.codeInfo)" class="ui-btn ui-btn-md ui-btn-bright">构建</button><a ng-click="deleteProject()" class="ui-btn-delete"><i class="icon-delete"></i></a>
   </div>
@@ -9,37 +10,36 @@
       <div markdown="markdown" projectid="projectId" branch="branch" class="markdown"></div>
     </tab>
     <tab heading="项目配置" active="tabActive[1].active" ui-sref="projectDetail.config">
-      <form name="proInfoForm" ng-class="{'need-valid':needValid}" novalidate="novalidate" class="proInfo-form">
-        <div class="pull-right dockerfile-options">
-          <button ng-if="!edit" ng-click="getDockerfile()" class="ui-btn ui-btn-sm ui-btn-white ui-btn-dockerfile">查看Dockerfile</button>
-          <button ng-click="checkEdit()" ng-show="!edit" class="ui-btn ui-btn-sm ui-btn-white">编辑</button>
-          <button ng-click="checkEdit()" ng-show="edit" class="ui-btn ui-btn-sm ui-btn-white">取消编辑</button>
+      <div name="projectForm" ng-form="ng-form" ng-class="{'need-valid':valid.needValid}" class="proInfo-form">
+        <div class="dockerfile-options pull-right">
+          <button ng-if="!edit" ng-click="getDockerfile()" ng-disabled="isLoading" class="ui-btn ui-btn-sm ui-btn-safe">查看Dockerfile</button>
+          <button ng-click="checkEdit()" ng-show="!edit" ng-disabled="isLoading" class="ui-btn ui-btn-sm ui-btn-bright">编辑</button>
+          <button ng-click="checkEdit()" ng-show="edit" class="ui-btn ui-btn-sm ui-btn-bright">取消编辑</button>
         </div>
-        <div ng-if="config.codeInfo" class="dockerfile-setting"><span class="s1">使用代码内Dockerfile</span><span ng-show="edit" class="s2">
-            <dome-toggle ng-class="{'on':config.userDefineDockerfile}" ng-click="config.userDefineDockerfile=!config.userDefineDockerfile"></dome-toggle></span><span ng-if="edit" class="s3">启用前清确保代码内存在Dockerfile</span><span ng-if="config.userDefineDockerfile&amp;&amp;!edit" class="s4">On</span><span ng-if="!config.userDefineDockerfile&amp;&amp;!edit" class="s4">Off</span></div>
-        <ng-include src="'index/tpl/tplProjectSetting/projectSettingInfoTpl1.html'" ng-if="!config.userDefineDockerfile&amp;&amp;!edit"></ng-include>
-        <ng-include src="'index/tpl/tplProjectSetting/projectSettingTpl1.html'" ng-if="!config.userDefineDockerfile&amp;&amp;edit"></ng-include>
-        <ng-include src="'index/tpl/tplProjectSetting/projectSettingInfoTpl2.html'" ng-if="config.userDefineDockerfile&amp;&amp;!edit"></ng-include>
-        <ng-include src="'index/tpl/tplProjectSetting/projectSettingTpl2.html'" ng-if="config.userDefineDockerfile&amp;&amp;edit"></ng-include>
-        <div ng-show="edit" class="ui-btn-options">
-          <button ng-click="checkEdit()" class="ui-btn ui-btn-md ui-btn-bright">取消</button>
-          <button ng-click="needValid=true;proInfoForm.$valid&amp;&amp;submitModify()" ng-disabled="isWaitingForModify" class="ui-btn ui-btn-md ui-btn-bright">保存修改</button>
-          <button ng-click="needValid=true;proInfoForm.$valid&amp;&amp;getDockerfile()" class="ui-btn ui-btn-md ui-btn-safe">预览Dockerfile</button>
-        </div>
-      </form>
+        <ng-include src="'index/tpl/tplProjectSetting/projectSettingInfoTpl.html'" ng-if="!edit"></ng-include>
+        <ng-include src="'index/tpl/tplProjectSetting/projectSettingTpl.html'" ng-if="edit"></ng-include>
+        <div ng-show="edit" class="com-bottom-option"><span class="com-bottom-option-con">
+            <button ng-click="checkEdit();valid.needValid = false;" class="ui-btn ui-btn-md ui-btn-bright">取消</button>
+            <button ng-click="valid.needValid=true;validCreatedFileStoragePath();projectForm.$valid&amp;&amp;valid.createdFileStoragePath&amp;&amp;submitModify()" ng-disabled="isWaitingForModify" class="ui-btn ui-btn-md ui-btn-bright">保存修改</button>
+            <button ng-click="valid.needValid=true;validCreatedFileStoragePath();projectForm.$valid&amp;&amp;valid.createdFileStoragePath&amp;&amp;getDockerfile()" class="ui-btn ui-btn-md ui-btn-safe">预览Dockerfile</button><span ng-if="valid.needValid&amp;&amp;(!valid.createdFileStoragePath||projectForm.$invalid)" class="txt-error">存在不合法数据，请修改后提交！</span></span></div>
+      </div>
     </tab>
     <tab heading="持续集成" active="tabActive[2].active" ui-sref="projectDetail.autobuild">
       <p ng-if="!config.codeInfo" class="tool-noinfo">该项目未关联代码仓库，无法持续集成</p>
-      <div ng-if="config.codeInfo" class="ci-con"><span class="ci-title">自动构建</span><span class="branch-check">
-          <input id="buildMaster" type="checkbox" name="buildBranch" ng-model="config.autoBuildInfo.master" class="ui-check"/>
-          <label for="buildMaster">master</label></span><span class="branch-check">
-          <input id="buildTag" type="checkbox" name="buildBranch" ng-true-value="1" ng-false-value="0" ng-model="config.autoBuildInfo.tag" class="ui-check"/>
-          <label for="buildTag">tag</label></span><span class="branch-check">
-          <input id="buildOther" type="checkbox" name="buildBranch" ng-model="config.autoBuildInfo.other" class="ui-check"/>
-          <label for="buildOther" ng-if="!config.autoBuildInfo.other">指定其他分支</label>
-          <label for="buildOther" ng-if="config.autoBuildInfo.other"></label>
-          <input ng-model="config.autoBuildInfo.branches" ng-show="config.autoBuildInfo.other" placeholder="请输入分支名称，用逗号分隔 e.g. dev,fix-bug" class="ui-input-white"/></span></div>
-      <div ng-show="config.codeInfo" class="ui-btn-options">
+      <div ng-if="config.codeInfo" class="ci-con"><span class="ci-title">自动构建</span>
+        <div class="ci-content">
+          <p class="txt-prompt">当所选分支更新或出现新tag时，会自动触发构建，生成新的项目镜像。请不要在频繁push的分支上开启自动构建，以免频繁触发构建，造成资源浪费。</p><span class="branch-check">
+            <input id="buildMaster" type="checkbox" name="buildBranch" ng-model="config.autoBuildInfo.master" class="ui-check"/>
+            <label for="buildMaster">master</label></span><span class="branch-check">
+            <input id="buildTag" type="checkbox" name="buildBranch" ng-true-value="1" ng-false-value="0" ng-model="config.autoBuildInfo.tag" class="ui-check"/>
+            <label for="buildTag">tag</label></span><span class="branch-check">
+            <input id="buildOther" type="checkbox" name="buildBranch" ng-model="config.autoBuildInfo.other" class="ui-check"/>
+            <label for="buildOther" ng-if="!config.autoBuildInfo.other">指定其他分支</label>
+            <label for="buildOther" ng-if="config.autoBuildInfo.other"></label>
+            <input ng-model="config.autoBuildInfo.branches" ng-show="config.autoBuildInfo.other" placeholder="请输入分支名称，用逗号分隔 e.g. dev,fix-bug" class="ui-input-white"/></span>
+        </div>
+      </div>
+      <div ng-show="config.codeInfo" class="com-bottom-option">
         <button ng-click="modifyCI()" ng-disabled="isWaitingForModify" class="ui-btn ui-btn-md ui-btn-bright">保存修改</button>
       </div>
     </tab>
@@ -57,9 +57,9 @@
                 <td ng-cloak="ng-cloak" ng-if="log.autoBuild!==1"><i tooltip="构建者" class="icon-user"></i>{{log.userInfo.userName}}</td>
                 <td ng-if="log.autoBuild==1">自动构建</td>
                 <td ng-switch="log.state"><span ng-switch-when="Success" class="txt-success">成功</span><span ng-switch-when="Fail" class="txt-warning">失败</span><span ng-switch-when="Preparing" class="txt-normal">准备中</span><span ng-switch-when="Send" class="txt-normal">准备中</span><span ng-switch-default="ng-switch-default" class="txt-normal">构建中</span></td>
-                <td ng-bind="parseDate(log.createTime)"></td>
-                <td ng-bind="getInterval($index)"></td>
-                <td><a href="{{log.logHref}}" target="_blank" ng-click="stopPropagation($event)" class="link-safe">日志</a></td>
+                <td ng-bind="log.createTime"></td>
+                <td ng-bind="log.interval"></td>
+                <td><a href="{{log.logHref}}" target="_blank" ng-click="vmDome.stopPropagation($event)" class="link-safe">日志</a></td>
                 <td><i ng-class="{'up':$index!==currentIndex}" class="icon-down up"></i></td>
               </tr>
             </tbody>
@@ -72,30 +72,3 @@
     </tab>
   </tabset>
 </div>
-<script type="text/ng-template" id="dockerfileModal.html">
-  <div class="d-modal-header">查看Dockerfile</div>
-  <div class="modal-dockerfile text-left">
-    <div ng-bind-html="dockerfileTxt" class="dockerfile-content"></div>
-  </div>
-  <div class="modal-footer">
-    <button ng-click="cancel()" class="ui-btn ui-btn-sm ui-btn-bright">确定</button>
-  </div>
-</script>
-<script type="text/ng-template" id="branchCheckModal.html">
-  <div class="d-modal-header">选择分支查看</div>
-  <ul role="form" ng-form="ng-form" class="modal-branchcheck modal-info">
-    <li><span class="info-name">选择分支:</span>
-      <div select-con="select-con" class="info-txt com-select-con">
-        <button class="ui-btn ui-btn-white ui-btn-select"><i class="icon-down"></i>{{selectedBranch}}</button>
-        <ul class="select-list">
-          <li ng-if="!branches||branches.length===0"><a>无分支信息</a></li>
-          <li ng-repeat="branch in branches" class="select-item"><a ng-bind="branch" ng-click="toggleBranch(branch)"></a></li>
-        </ul>
-      </div>
-    </li>
-  </ul>
-  <div class="modal-footer">
-    <button ng-click="cancel()" class="ui-btn ui-btn-sm ui-btn-white">取消</button>
-    <button ng-disabled="!selectedBranch" ng-click="selectedBranch&amp;&amp;submitBranch();" class="ui-btn ui-btn-sm ui-btn-bright">确定</button>
-  </div>
-</script>

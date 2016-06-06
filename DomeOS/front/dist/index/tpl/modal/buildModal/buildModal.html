@@ -1,40 +1,35 @@
 
 <div class="d-modal-header">手动构建</div>
-<loading ng-if="isModalLoading"></loading>
+<loading ng-if="vm.loadingIns.isLoading"></loading>
 <ul ng-form="ng-form" role="form" name="buildForm" class="modal-body text-center modal-buildModal modal-info">
-  <li ng-show="projectInfo.hasCodeInfo"><span class="info-name">构建方式</span>
-    <div class="info-txt text-left tool-align-input"><span ng-click="toggleSelect('branch')" class="com-check-con">
-        <input id="checkBranch" type="radio" value="branch" name="BuildWay" ng-model="BuildWay" class="ui-radio"/>
-        <label for="checkBranch">Branch</label></span><span ng-click="toggleSelect('tag')" class="com-check-con">
-        <input id="checkTag" type="radio" value="tag" name="BuildWay" ng-model="BuildWay" class="ui-radio"/>
-        <label for="checkTag">Tag</label></span></div>
-  </li>
-  <li ng-show="projectInfo.hasCodeInfo &amp;&amp; BuildWay=='branch'"><span class="info-name">选择分支 *</span>
-    <div select-con="select-con" class="com-select-con info-txt">
-      <button class="ui-btn ui-btn-white ui-btn-select"><i class="icon-down"></i>{{buildInfo.selectedBranch}}</button>
-      <ul class="select-list">
-        <li ng-if="!branches||branches.length===0"><a>无分支信息</a></li>
-        <li ng-if="branches" ng-repeat="branch in branches" class="select-item"><a ng-bind="branch" ng-click="toggleBranch(branch)"></a></li>
-      </ul>
+  <li ng-show="vm.projectInfo.hasCodeInfo"><span class="info-name">构建方式</span>
+    <div class="info-txt text-left tool-align-input">
+      <dome-radio d-id="checkBranch" d-label="Branch" d-value="'Branch'" d-name="buildWay" d-model="vm.buildWay" d-change="vm.toggleBuildWay(model)" class="com-check-con"></dome-radio>
+      <dome-radio d-id="checkTag" d-label="Tag" d-value="'Tag'" d-name="buildWay" d-model="vm.buildWay" d-change="vm.toggleBuildWay(model)" class="com-check-con"></dome-radio>
     </div>
   </li>
-  <li ng-show="projectInfo.hasCodeInfo &amp;&amp; BuildWay=='tag'"><span class="info-name">选择Tag *</span>
-    <div select-con="select-con" class="com-select-con info-txt">
-      <button class="ui-btn ui-btn-white ui-btn-select"><i class="icon-down"></i>{{buildInfo.selectedCodetag}}</button>
-      <ul class="select-list">
-        <li ng-if="!tags||tags.length===0"><a>无Tag信息</a></li>
-        <li ng-if="tags" ng-repeat="tag in tags" class="select-item"><a ng-bind="tag" ng-click="toggleTag(tag)"></a></li>
+  <li ng-show="vm.projectInfo.hasCodeInfo"><span class="info-name">选择{{vm.buildWay}} *</span>
+    <div select-con="select-con" class="info-txt com-select-con">
+      <input placeholder="{{vm.selectedBranch?'当前选择：'+vm.selectedBranch:'搜索'+vm.buildWay}}" ng-model="vm.searchKey" class="ui-input-search ui-input-fill ui-btn-select"/>
+      <input type="hidden" ng-model="vm.selectedBranch" name="selectedBranch" required="required" ng-if="vm.projectInfo.hasCodeInfo"/>
+      <ul ng-show="vm.buildWay=='Branch'" class="select-list">
+        <li ng-if="branchFiltered.length===0"><a>无相关信息</a></li>
+        <li ng-repeat="branch in branchFiltered=(vm.branches|filter:vm.searchKey)" class="select-item"><a ng-bind="branch" ng-click="vm.toggleBranch(branch)"></a></li>
+      </ul>
+      <ul ng-show="vm.buildWay=='Tag'" class="select-list">
+        <li ng-if="tagFiltered.length===0"><a>无相关信息</a></li>
+        <li ng-repeat="branch in tagFiltered=(vm.tags|filter:vm.searchKey)" class="select-item"><a ng-bind="branch" ng-click="vm.toggleBranch(branch)"></a></li>
       </ul>
     </div>
   </li>
   <li>
-    <label for="versionName" class="info-name">指定版本名 </label><span style="display:inline-block;vertical-align:top" class="info-txt">
-      <input id="versionName" placeholder="默认由系统自动生成，可不填" ng-model="buildInfo.imageTag" name="imageTag" ng-pattern="/^[a-z0-9]+([._-][a-z0-9]+)*$/" ng-if="projectInfo.hasCodeInfo" class="version-txt ui-input-white"/>
-      <input id="versionName" placeholder="该项目未关联代码仓库，需手动指定版本名" ng-model="buildInfo.imageTag" ng-pattern="/^[a-z0-9]+([._-][a-z0-9]+)*$/" name="imageTag" ng-if="!projectInfo.hasCodeInfo" required="required" class="version-txt ui-input-white"/>
+    <label for="versionName" class="info-name">指定版本名</label><span style="display:inline-block;vertical-align:top" class="info-txt">
+      <input id="versionName" placeholder="默认由系统自动生成，可不填" ng-model="vm.imageTag" name="imageTag" ng-pattern="/^[a-z0-9]+([._-][a-z0-9]+)*$/" ng-if="vm.projectInfo.hasCodeInfo" class="version-txt ui-input-white"/>
+      <input id="versionName" placeholder="该项目未关联代码仓库，需手动指定版本名" ng-model="vm.imageTag" ng-pattern="/^[a-z0-9]+([._-][a-z0-9]+)*$/" name="imageTag" ng-if="!vm.projectInfo.hasCodeInfo" required="required" class="version-txt ui-input-white"/>
       <div ng-show="buildForm.imageTag.$dirty&amp;&amp;buildForm.imageTag.$error.pattern" class="txt-error text-left">非法的版本名</div></span>
   </li>
 </ul>
 <div class="modal-footer text-right">
-  <button ng-click="close()" class="ui-btn ui-btn-sm ui-btn-white">取消</button>
-  <button ng-disabled="isModalLoading&amp;&amp;buildForm.$valid" ng-click="buildForm.$valid&amp;&amp;toBuild()" class="ui-btn ui-btn-sm ui-btn-bright">确定</button>
+  <button ng-click="vm.close()" class="ui-btn ui-btn-sm ui-btn-white">取消</button>
+  <button ng-disabled="vm.loadingIns.isLoading||buildForm.$invalid" ng-click="vm.toBuild()" class="ui-btn ui-btn-sm ui-btn-bright">确定</button>
 </div>

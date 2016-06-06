@@ -1,4 +1,4 @@
-domeApp.controller('createGroupCtr', ['$scope', '$domeUser', '$domePublic', '$state', function($scope, $domeUser, $domePublic, $state) {
+domeApp.controller('CreateGroupCtr', ['$scope', '$domeUser', '$domePublic', '$state', function ($scope, $domeUser, $domePublic, $state) {
 	'use strict';
 	$scope.$emit('pageTitle', {
 		title: '新建组',
@@ -14,14 +14,15 @@ domeApp.controller('createGroupCtr', ['$scope', '$domeUser', '$domePublic', '$st
 		key: ''
 	};
 	$scope.isWaitingCreate = false;
-	$domeUser.getCurrentUser().then(function(res) {
+	var userService = $domeUser.userService;
+	userService.getCurrentUser().then(function (res) {
 		var loginUser = res.data.result;
 		$scope.myself = {
 			userId: loginUser.id,
 			username: loginUser.username,
 			role: 'MASTER'
 		};
-		$domeUser.getUserList().then(function(res) {
+		userService.getUserList().then(function (res) {
 			$scope.userList = res.data.result || [];
 			for (var i = 0; i < $scope.userList.length; i++) {
 				if ($scope.userList[i].id === $scope.myself.userId) {
@@ -32,7 +33,7 @@ domeApp.controller('createGroupCtr', ['$scope', '$domeUser', '$domePublic', '$st
 		});
 	});
 	// 选中用户
-	$scope.selectUser = function(id, username) {
+	$scope.selectUser = function (id, username) {
 		var i = 0;
 		for (i = 0; i < $scope.selectedUsers.length; i++) {
 			if ($scope.selectedUsers[i].userId === id) {
@@ -51,11 +52,11 @@ domeApp.controller('createGroupCtr', ['$scope', '$domeUser', '$domePublic', '$st
 		$scope.userKey.key = '';
 	};
 	// 删除已选择但未添加的用户
-	$scope.cancelUser = function(index) {
+	$scope.cancelUser = function (index) {
 		$scope.selectedUsers.splice(index, 1);
 	};
 	// 添加选中的用户
-	$scope.addUser = function() {
+	$scope.addUser = function () {
 		for (var i = 0; i < $scope.selectedUsers.length; i++) {
 			$scope.selectedUsersList.push({
 				userId: $scope.selectedUsers[i].userId,
@@ -66,21 +67,21 @@ domeApp.controller('createGroupCtr', ['$scope', '$domeUser', '$domePublic', '$st
 		$scope.selectedUsers = [];
 	};
 	// 删除已添加的用户
-	$scope.deleteUser = function(index) {
+	$scope.deleteUser = function (index) {
 		$scope.selectedUsersList.splice(index, 1);
 	};
-	$scope.toggleRole = function(role) {
+	$scope.toggleRole = function (role) {
 		$scope.role = role;
 	};
-	$scope.userKeyDown = function(event, str, user) {
+	$scope.userKeyDown = function (event, str, user) {
 		if (event.keyCode == 13 && user) {
 			$scope.selectUser(user.id, user.username);
 		}
-		if ((!str || str === '') && event.keyCode == 8) {
+		if (!str && event.keyCode == 8) {
 			$scope.selectedUsers.pop();
 		}
 	};
-	$scope.createGroup = function() {
+	$scope.createGroup = function () {
 		$scope.isWaitingCreate = true;
 		var usersList = [];
 		for (var i = 0; i < $scope.selectedUsersList.length; i++) {
@@ -93,19 +94,19 @@ domeApp.controller('createGroupCtr', ['$scope', '$domeUser', '$domePublic', '$st
 			userId: $scope.myself.userId,
 			role: $scope.myself.role
 		});
-		$domeUser.createGroup($scope.group).then(function(res) {
+		userService.createGroup($scope.group).then(function (res) {
 			var groupId = res.data.result.id;
-			$domeUser.modifyGroupUsers(groupId, {
+			userService.modifyGroupUsers(groupId, {
 				members: usersList
-			}).then(function(res) {
+			}).then(function () {
 				$domePublic.openPrompt('创建成功！');
 				$state.go('groupManage');
-			}, function(res) {
+			}, function () {
 				$scope.isWaitingCreate = false;
 				$domePublic.openWarning('创建成功，添加用户失败！');
 				$state.go('groupManage');
 			});
-		}, function() {
+		}, function () {
 			$scope.isWaitingCreate = false;
 			$domePublic.openWarning('创建失败，请重试！');
 		});

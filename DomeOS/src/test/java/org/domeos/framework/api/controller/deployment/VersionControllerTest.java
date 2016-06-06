@@ -14,6 +14,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.io.FileInputStream;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -32,32 +33,47 @@ public class VersionControllerTest extends BaseTestCase {
         ThreadContext.bind(securityManager);
         this.mockMvc = webAppContextSetup(this.wac).build();
         login("admin", "admin");
+
+        FileInputStream deploymentDraftInputStream = new FileInputStream("./src/test/resources/deployment/deploymentDraft3.json");
+        byte[] deploymentDraftBuff = new byte[deploymentDraftInputStream.available()];
+        deploymentDraftInputStream.read(deploymentDraftBuff);
+        String deploymentDraftStr = new String(deploymentDraftBuff);
+        logger.info("\n----deploymentDraftStr----\n" + deploymentDraftStr);
+        mockMvc.perform(post("/api/deploy/create").contentType(MediaType.APPLICATION_JSON).content(deploymentDraftStr))
+                .andDo(print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value(ResultStat.OK.responseCode))
+                .andExpect(status().isOk());
     }
 
 
     @Test
     public void T001CreateVersion() throws Exception {
-        FileInputStream deploymentDraftInputStream = new FileInputStream("./src/test/resources/deployment/deploymentDraft3.json");
-        byte[] deploymentDraftBuff = new byte[deploymentDraftInputStream.available()];
-        deploymentDraftInputStream.read(deploymentDraftBuff);
-        String deploymentDraftStr = new String(deploymentDraftBuff);
-        logger.info("----deploymentDraftStr----" + deploymentDraftStr);
-        mockMvc.perform(post("/api/deploy/create").contentType(MediaType.APPLICATION_JSON).content(deploymentDraftStr))
+        FileInputStream versionInputStream = new FileInputStream("./src/test/resources/deployment/version1.json");
+        byte[] versionBuff = new byte[versionInputStream.available()];
+        versionInputStream.read(versionBuff);
+        String versionStr = new String(versionBuff);
+        logger.info("\n----versionStr----\n" + versionStr);
+        mockMvc.perform(post("/api/version/create").param("deployId", "1").contentType(MediaType.APPLICATION_JSON).content(versionStr))
                 .andDo(print())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value(ResultStat.OK.responseCode))
                 .andExpect(status().isOk());
-        // TODO(openxxs) add version
     }
 
 
     @Test
     public void T002GetVersion() throws Exception {
-        // TODO(openxxs)
+        mockMvc.perform(get("/api/version/id/{deployId}/{versionId}", 1, 1))
+                .andDo(print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value(ResultStat.OK.responseCode))
+                .andExpect(status().isOk());
     }
 
 
     @Test
     public void T003ListVersion() throws Exception {
-        // TODO(openxxs)
+        mockMvc.perform(get("/api/version/list").param("deployId", "1"))
+                .andDo(print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value(ResultStat.OK.responseCode))
+                .andExpect(status().isOk());
     }
 }

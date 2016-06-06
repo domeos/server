@@ -31,8 +31,8 @@ public class K8SEventBizImpl implements K8SEventBiz {
     CustomObjectMapper objectMapper;
 
     @Override
-    public void createEvent(int clusterId, Event event) throws IOException {
-        EventDBProto proto = toProto(event, clusterId);
+    public void createEvent(int clusterId, int deployId, Event event) throws IOException {
+        EventDBProto proto = toProto(event, clusterId, deployId);
         eventMapper.createEvent(proto);
     }
 
@@ -48,7 +48,7 @@ public class K8SEventBizImpl implements K8SEventBiz {
         for (EventDBProto proto : protos) {
             events.add(toEvent(proto));
         }
-        return mergeEvent(events);
+        return postProcess(events);
     }
 
     @Override
@@ -58,7 +58,7 @@ public class K8SEventBizImpl implements K8SEventBiz {
         for (EventDBProto proto : protos) {
             events.add(toEvent(proto));
         }
-        return mergeEvent(events);
+        return postProcess(events);
     }
 
     @Override
@@ -68,17 +68,17 @@ public class K8SEventBizImpl implements K8SEventBiz {
         for (EventDBProto proto : protos) {
             events.add(toEvent(proto));
         }
-        return mergeEvent(events);
+        return postProcess(events);
     }
 
     @Override
-    public List<Event> getEventsByDeployName(int clusterId, String deployName) throws IOException {
-        List<EventDBProto> protos = eventMapper.getEventsByDeployName(clusterId, deployName);
+    public List<Event> getEventsByDeployId(int clusterId, int deployId) throws IOException {
+        List<EventDBProto> protos = eventMapper.getEventsByDeployId(clusterId, deployId);
         List<Event> events = new LinkedList<>();
         for (EventDBProto proto : protos) {
             events.add(toEvent(proto));
         }
-        return mergeEvent(events);
+        return postProcess(events);
     }
 
     @Override
@@ -90,16 +90,32 @@ public class K8SEventBizImpl implements K8SEventBiz {
         return eventInfos;
     }
 
+    @Override
+    public void clearDeployEvents(int clusterId, int deployId) {
+        eventMapper.clearDeployEvents(clusterId, deployId);
+    }
+
+    @Override
+    public long deleteOldDeployEvents(int clusterId, int deployId) {
+        return eventMapper.deleteOldDeployEvents(clusterId, deployId, 100);
+    }
+
+    @Override
+    public long deleteOldDeployEvents(int clusterId, int deployId, int remaining) {
+        return eventMapper.deleteOldDeployEvents(clusterId, deployId, remaining);
+    }
+
     private Event toEvent(@NotNull EventDBProto proto) throws IOException {
         return objectMapper.readValue(proto.getContent(), Event.class);
     }
 
-    private EventDBProto toProto(@NotNull Event event, int clusterId) throws JsonProcessingException {
+    private EventDBProto toProto(@NotNull Event event, int clusterId, int deployId) throws JsonProcessingException {
         EventDBProto proto = new EventDBProto();
         proto.setClusterId(clusterId);
         proto.setVersion(event.getMetadata().getResourceVersion());
         proto.setEventKind(event.getInvolvedObject().getKind());
         proto.setHost(event.getSource().getHost());
+        proto.setDeployId(deployId);
         proto.setNamespace(event.getMetadata().getNamespace());
         proto.setName(event.getMetadata().getName());
         String content = objectMapper.writeValueAsString(event);
@@ -107,15 +123,8 @@ public class K8SEventBizImpl implements K8SEventBiz {
         return proto;
     }
 
-    private static List<Event> mergeEvent(List<Event> events) {
-        // already merged in database by "insert on duplicate update"
-//        LinkedHashMap<String, Event> eventMap = new LinkedHashMap<>();
-//        for (Event event : events) {
-//            String character = getCharacter(event);
-//            eventMap.put(character, event);
-//        }
-//        events = new ArrayList<>(eventMap.values().size());
-//        events.addAll(eventMap.values());
+    // do not need merge events now
+    private static List<Event> postProcess(List<Event> events) {
         return events;
     }
 
@@ -130,30 +139,4 @@ public class K8SEventBizImpl implements K8SEventBiz {
         return character + ":" + event.getReason() + ":" + event.getMessage();
     }
 
-//    public static void main(String[] args) {
-//        ObjectReference object = new ObjectReference();
-//        object.setKind("Pod");
-//        object.setNamespace("default");
-//        object.setName("dmo-mytest-1-v1-fjw2a");
-////        object.setUid("f9bb91db-f655-11e5-99d7-848f69dc84eb");
-//        object.setApiVersion("v1");
-//        object.setResourceVersion("6727526");
-//        object.setFieldPath("spec.containers{mytest-1-0}");
-//        List<Event> events = new ArrayList<>();
-//        events.add(buildEvent(object, 1, "Reason1"));
-//        events.add(buildEvent(object, 3, "Reason2"));
-//        events.add(buildEvent(object, 2, "Reason1"));
-//        events = mergeEvent(events);
-//        System.out.println(events);
-//
-//    }
-//
-//    private static Event buildEvent(ObjectReference object, int count, String reason) {
-//        Event event = new Event();
-//        event.setInvolvedObject(object);
-//        event.setReason(reason);
-//        event.setMessage("just a test message");
-//        event.setCount(count);
-//        return event;
-//    }
 }

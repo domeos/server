@@ -21,7 +21,7 @@ public class KubeResponseException extends Exception {
         this.status = status;
     }
 
-    public String getMesssage() {
+    public String getMessage() {
         if (status == null) {
             return "";
         }

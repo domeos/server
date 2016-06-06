@@ -86,7 +86,7 @@
 								a 无相关信息
 							li.select-item(ng-repeat="cluster in deployIns.clusterListIns.clusterList")
 								a(ng-click="deployIns.toggleCluster($index)" ng-bind="cluster.name")
-					.line-element.com-select-con(select-con)
+					.line-element.com-select-con.tool-next(select-con)
 						button.ui-btn.ui-btn-white.ui-btn-select(ng-cloak)
 							i.icon-down
 							| {{deployIns.envText}}
@@ -96,7 +96,7 @@
 				p.host-desciption(ng-if="deployConfig.stateful") 系统在每台所选主机上运行一个实例
 				.line-longer(ng-if="deployConfig.stateful")
 					ul.host-info
-						li 
+						li
 							input.ui-check(type="checkbox" id="hostAll" ng-model="deployIns.nodeListIns.isCheckAll" ng-change="deployIns.nodeListIns.checkAllNode()")
 							label(for="hostAll")
 							span 全选
@@ -113,7 +113,7 @@
 							li.select-input
 								input.line-element.ui-btn-select(placeholder="选择主机标签" ng-model="labelKey.key" ng-keydown="labelKeyDown($event,labelKey.key,labelsInfoFiltered);" ng-focus="selectFocus()")
 						ul.select-list
-							li(ng-if="objLength(labelsInfoFiltered)===0")
+							li(ng-if="vmDome.objLength(labelsInfoFiltered)===0")
 								a 无相关信息
 							li.select-item(ng-repeat="(label,value) in labelsInfoFiltered=(deployIns.nodeListIns.labelsInfo| searchKey:labelKey.key|search:'isShow':true)")
 								a(ng-bind="label" ng-click="deployIns.nodeListIns.toggleLabel(label,true);labelKey.key='';")
@@ -153,7 +153,10 @@
 		li
 			span.info-name 创建者
 			.info-content
-				.line-longer
+				creator-selection(change-event="deployIns.toggleCreator(user)")
+				input(type="hidden" name="creatorName" ng-model="deployIns.creator.id" required)
+				span.txt-error(ng-show="needValid&&deployForm.creatorName.$invalid") 请选择创建者
+				//- .line-longer
 					.line-element.com-select-con(select-con)
 						button.ui-btn.ui-btn-white.ui-btn-select
 							i.icon-down
@@ -162,7 +165,7 @@
 							li.select-item(ng-repeat="group in deployIns.userGroupListIns.userGroupList")
 								a(ng-bind="group.name" ng-click="deployIns.userGroupListIns.toggle($index)")
 					input(type="hidden" name="creatorName" ng-model="deployIns.userGroupListIns.userGroup.name" required)
-				span.txt-error(ng-show="needValid&&deployForm.creatorName.$invalid") 请选择创建者
+				//- span.txt-error(ng-show="needValid&&deployForm.creatorName.$invalid") 请选择创建者
 		li
 			span.info-name 日志
 			.info-content.log-content
@@ -180,7 +183,7 @@
 						input.ui-input-fill.line-element(placeholder="请输入日志topic" name="logTopic" ng-model="log.logTopic" required)
 					.line-full(ng-if="log.autoCollect")
 						span.log-title  预处理命令
-						span.log-detail-txt {{log.processCmd}}
+						span.log-detail-txt {{log.processCmd||'无'}}
 							a.icon-help(popover="对收集到的日志做进一步处理，比如筛选或增减字段等，可以用grep和awk命令完成，命令以管道形式执行，因此必须以“|”开始，比如一个典型的处理命令为：   | grep \"ERROR\\\\|WARN\\\\| EXCEPTION\\\\| statistic\" | awk -vnhost=\"$HOSTNAME\" '{print \"[\"nhost\"]--\"$0}'，该命令将只筛选包含四个对应关键字的行，并且会在行首添加\"[hostname]--\"的字符串，参照可完成其他复杂的处理方式")
 					div.log-check
 						input.ui-check(id="autoDelete{{$index}}" type="checkbox" name="autoDelete" ng-model="log.autoDelete")

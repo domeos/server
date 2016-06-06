@@ -64,7 +64,7 @@
 						td(ng-bind="img.imageName")
 						td
 							a.link-safe(ng-click="openTagModal(img.imageName)") 查看
-						td(ng-bind="parseDate(img.createTime)")
+						td(ng-bind="vmDome.parseDate(img.createTime)")
 		tab(heading="非项目镜像" active="tabActive[2].active" ui-sref="imageManage.otherimages")
 			.image-option
 				span.registry-address 仓库地址：{{projectRegistry}}
@@ -90,7 +90,7 @@ script(type="text/ng-template" id="imageTagModal.html")
 		table.ui-table-dome.modal-full-table
 			thead
 				tr
-					th 版本名
+					th 版本名{{vmDome}}
 					th 创建时间
 			tbody
 				tr(ng-if="tagInfo.length===0")

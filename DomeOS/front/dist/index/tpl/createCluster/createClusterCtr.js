@@ -1,4 +1,4 @@
-domeApp.controller('createClusterCtr', ['$scope', '$domeCluster', '$domePublic', '$state', function($scope, $domeCluster, $domePublic, $state) {
+domeApp.controller('CreateClusterCtr', ['$scope', '$domeCluster', '$domePublic', '$state', function ($scope, $domeCluster, $domePublic, $state) {
 	'use strict';
 	$scope.$emit('pageTitle', {
 		title: '新建集群',
@@ -7,7 +7,12 @@ domeApp.controller('createClusterCtr', ['$scope', '$domeCluster', '$domePublic',
 	});
 	$scope.clusterIns = $domeCluster.getInstance('Cluster');
 	$scope.config = $scope.clusterIns.config;
-	$scope.createCluster = function() {
+	$scope.createCluster = true;
+	$scope.valid = {
+		needValid: false
+	};
+	var clusterService = $domeCluster.getInstance('ClusterService');
+	$scope.create = function () {
 		var validEtcd = $scope.clusterIns.validItem('etcd');
 		var validKafka = $scope.clusterIns.validItem('kafka');
 		var validZookeeper = $scope.clusterIns.validItem('zookeeper');
@@ -15,19 +20,19 @@ domeApp.controller('createClusterCtr', ['$scope', '$domeCluster', '$domePublic',
 			return;
 		}
 		$scope.isWaingCreate = true;
-		$scope.clusterIns.create().then(function() {
+		$scope.clusterIns.create().then(function () {
 			$domePublic.openPrompt('创建成功！');
 			$state.go('clusterManage');
-		}, function(res) {
+		}, function (res) {
 			$domePublic.openWarning({
 				title: '创建失败！',
 				msg: 'Message:' + res.data.resultMsg
 			});
-		}).finally(function() {
+		}).finally(function () {
 			$scope.isWaingCreate = false;
 		});
 	};
-	$domeCluster.getClusterList().then(function(res) {
+	clusterService.getData().then(function (res) {
 		$scope.clusterList = res.data.result || [];
 	});
 }]);

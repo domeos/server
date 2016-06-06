@@ -96,7 +96,16 @@ public class ImageBizImpl extends BaseBizImpl implements ImageBiz {
 
     @Override
     public List<BaseImageCustom> getUnGcBaseImageCustom() {
-        return baseImageCustomMapper.getUnGcBaseImageCustom();
+        List<RowMapperDao> data = baseImageCustomMapper.getUnGcBaseImageCustom();
+        if (data == null) {
+            return null;
+        }
+        List<BaseImageCustom> baseImageCustoms = new LinkedList<>();
+        for (RowMapperDao tmp : data) {
+            BaseImageCustom project = checkResult(tmp, BaseImageCustom.class);
+            baseImageCustoms.add(project);
+        }
+        return baseImageCustoms;
     }
 
     @Override

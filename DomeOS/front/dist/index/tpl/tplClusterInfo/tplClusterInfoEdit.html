@@ -1,32 +1,27 @@
 
-<div ng-form="ng-form" name="clusterForm" role="form" ng-class="{'need-valid':needValid}">
+<div ng-form="ng-form" name="clusterForm" role="form" ng-class="{'need-valid':valid.needValid}">
   <ul class="com-list-info">
     <li><span class="info-name">集群名称</span>
       <div class="info-content">
-        <input ng-model="config.name" cluster-list="clusterList" name="clusterName" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" required="required" class="ui-input-fill line-single"/><span ng-if="(needValid||clusterForm.clusterName.$dirty)&amp;&amp;clusterForm.clusterName.$error.required" class="txt-error">必填</span><span ng-if="(needValid||clusterForm.clusterName.$dirty)&amp;&amp;clusterForm.clusterName.$error.isClusterExist" class="txt-error">集群已存在</span>
+        <input ng-model="config.name" is-cluster-exist="is-cluster-exist" cluster-list="clusterList" name="clusterName" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" required="required" class="ui-input-fill line-single"/><span ng-if="(valid.needValid||clusterForm.clusterName.$dirty)&amp;&amp;clusterForm.clusterName.$error.isClusterExist" class="txt-error">集群已存在</span>
       </div>
     </li>
-    <li ng-if="!creatCluster"><span class="info-name">创建者</span>
+    <li ng-if="config.id"><span class="info-name">创建者</span>
       <div ng-bind="config.ownerName||'无'" class="info-content"></div>
     </li>
-    <li ng-if="creatCluster"><span class="info-name">创建者</span>
+    <li ng-if="!config.id"><span class="info-name">创建者</span>
       <div class="info-content">
-        <div select-con="select-con" class="com-select-con select-creator">
-          <button ng-cloak="ng-cloak" class="ui-btn ui-btn-white ui-btn-select"><i class="icon-down"></i>{{config.ownerName}} </button>
-          <ul class="select-list">
-            <li ng-repeat="user in clusterIns.userList" class="select-item"><a ng-bind="user.name" ng-click="clusterIns.toggleUser(user)"></a></li>
-          </ul>
-        </div>
+        <creator-selection change-event="clusterIns.toggleUser(user)"></creator-selection>
       </div>
     </li>
     <li><span class="info-name">api server</span>
       <div class="info-content">
-        <input ng-model="config.api" name="api" placeholder="请输入api server地址" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" is-api-server-exist="is-api-server-exist" current-cluster="{{config.name}}" cluster-list="clusterList" required="required" class="ui-input-fill line-single"/><span ng-if="(needValid||clusterForm.api.$dirty)&amp;&amp;clusterForm.api.$error.required" class="txt-error">必填</span><span ng-if="(needValid||clusterForm.api.$dirty)&amp;&amp;clusterForm.api.$error.isApiServerExist" class="txt-error">api server已存在</span>
+        <input ng-model="config.api" name="api" placeholder="请输入api server地址" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" is-api-server-exist="is-api-server-exist" current-cluster="{{config.name}}" cluster-list="clusterList" required="required" class="ui-input-fill line-single"/><span ng-if="(valid.needValid||clusterForm.api.$dirty)&amp;&amp;clusterForm.api.$error.isApiServerExist" class="txt-error">api server已存在</span>
       </div>
     </li>
     <li><span class="info-name">dns服务器</span>
       <div class="info-content">
-        <input ng-model="config.dns" name="dns" placeholder="请输入dns服务器地址，不加端口号" required="required" class="ui-input-fill line-single"/><span ng-if="(needValid||clusterForm.dns.$dirty)&amp;&amp;clusterForm.dns.$error.required" class="txt-error">必填</span>
+        <input ng-model="config.dns" name="dns" placeholder="请输入dns服务器地址，不加端口号" required="required" class="ui-input-fill line-single"/>
       </div>
     </li>
     <li><span class="info-name">etcd</span>
@@ -38,7 +33,7 @@
     </li>
     <li><span class="info-name">domain</span>
       <div class="info-content">
-        <input ng-model="config.domain" name="domain" required="required" class="ui-input-fill line-single"/><span ng-if="(needValid||clusterForm.domain.$dirty)&amp;&amp;clusterForm.domain.$error.required" class="txt-error">必填</span>
+        <input ng-model="config.domain" name="domain" required="required" class="ui-input-fill line-single"/>
       </div>
     </li>
     <li><span class="info-name">日志自动收集</span>
@@ -63,7 +58,7 @@
     <li ng-if="config.logConfig===1"><span class="info-name">日志容器</span>
       <div class="info-content">
         <div class="cluster-log-con">
-          <input placeholder="请输入容器镜像名" name="imageName" ng-model="config.clusterLog.imageName" required="required" class="ui-input-fill cluster-log"/><span ng-if="(needValid||clusterForm.imageName.$dirty)&amp;&amp;clusterForm.imageName.$invalid" class="txt-error">必填</span>
+          <input placeholder="请输入容器镜像名" name="imageName" ng-model="config.clusterLog.imageName" required="required" class="ui-input-fill cluster-log"/>
           <input placeholder="请输入容器镜像版本" name="imageTag" ng-model="config.clusterLog.imageTag" class="ui-input-fill cluster-log"/>
         </div>
       </div>

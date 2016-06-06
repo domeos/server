@@ -7,9 +7,12 @@ public enum DeployOperation {
     ROLLBACK,
     SCALE_UP,
     SCALE_DOWN,
-    CREATE,
     START,
     STOP,
-    DELETE,
+    ABORT_UPDATE,
+    ABORT_ROLLBACK,
+    ABORT_SCALE_UP,
+    ABORT_SCALE_DOWN,
+    ABORT_START,
     KUBERNETES
 }

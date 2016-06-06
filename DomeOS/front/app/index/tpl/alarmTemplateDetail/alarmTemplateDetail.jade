@@ -1,0 +1,11 @@
+.mod-alarm.alarm-tpl-detail(ng-form name="tplForm" ng-class="{'need-valid':needValid.valid}" )
+	loading(ng-if="variables.isLoading||isEdit&&alarmTemplateIns.loadingIns.isLoading")
+	button.ui-btn.ui-btn-sm.ui-btn-primary.btn-edit(ng-click="toggleEdit()" ng-if="!isEdit&&permission.role&&permission.role!='REPORTER'") 编辑
+	button.ui-btn.ui-btn-sm.ui-btn-primary.btn-edit(ng-click="toggleEdit()" ng-if="isEdit") 取消编辑
+	ng-include(src="'index/tpl/tplAlarmTemplate/tplAlarmTemplateInfo.html'" ng-if="!isEdit")
+	ng-include(src="'index/tpl/tplAlarmTemplate/tplAlarmTemplateEdit.html'" ng-if="isEdit")
+	.com-bottom-option(ng-if="isEdit")
+		span.com-bottom-option-con
+			a.ui-btn.ui-btn-link.ui-btn-md.ui-btn-bright(ng-click="toggleEdit()") 返回
+			button.ui-btn.ui-btn-md.ui-btn-bright(ng-disabled="variables.isLoading||alarmTemplateIns.loadingIns.isLoading" ng-click="needValid.valid=true;tplForm.$valid&&saveModify()") 保存修改
+			span.txt-error(ng-if="needValid.valid&&tplForm.$invalid") 存在不合法数据，请修改后提交。

@@ -8,11 +8,13 @@ import org.domeos.framework.api.consolemodel.project.ProjectCreate;
 import org.domeos.framework.api.model.project.GitlabUser;
 import org.domeos.framework.api.model.project.Project;
 import org.domeos.framework.api.model.project.SubversionUser;
+import org.domeos.framework.api.model.project.related.CodeConfiguration;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.io.FileInputStream;
@@ -34,6 +36,9 @@ public class ProjectControllerTest extends BaseTestCase {
 
     Project project;
     String projectStr;
+
+    ProjectCreate javaProject;
+    String javaProjectStr;
 
     GitlabUser gitlab;
     String gitlabStr;
@@ -58,6 +63,8 @@ public class ProjectControllerTest extends BaseTestCase {
         project = objectMapper.readValue(buffProject, Project.class);
         projectStr = new String(buffProject);
 
+
+
         FileInputStream gitlabInputStream = new FileInputStream("./src/test/resources/project/gitlab.json");
         byte[] buffGitlab = new byte[gitlabInputStream.available()];
         gitlabInputStream.read(buffGitlab);
@@ -71,7 +78,7 @@ public class ProjectControllerTest extends BaseTestCase {
         subversionStr = new String(buffSubversion);
 
         this.mockMvc = webAppContextSetup(this.wac).build();
-        login("test","test");
+        login("admin","admin");
     }
 
     @Test
@@ -141,6 +148,45 @@ public class ProjectControllerTest extends BaseTestCase {
     @Test
     public void T080Delete() throws Exception {
         mockMvc.perform(delete("/api/project/{id}", project.getId()))
+                .andDo(print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value(ResultStat.OK.responseCode))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void T090Create() throws Exception {
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        FileInputStream javaProjectInputStream = new FileInputStream("./src/test/resources/project/javaProject.json");
+        byte[] javaProjectBuff = new byte[javaProjectInputStream.available()];
+        javaProjectInputStream.read(javaProjectBuff);
+        javaProject = objectMapper.readValue(javaProjectBuff, ProjectCreate.class);
+        javaProjectStr = new String(javaProjectBuff);
+        mockMvc.perform(post("/api/project").contentType(MediaType.APPLICATION_JSON).content(javaProjectStr))
+                .andDo(print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value(ResultStat.OK.responseCode))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void T100Dockerfile() throws Exception {
+        mockMvc.perform(post("/api/ci/build/dockerfile").contentType(MediaType.APPLICATION_JSON).content(gitlabStr))
+                .andDo(print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value(ResultStat.OK.responseCode))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void T110GetBranches() throws Exception {
+       mockMvc.perform(get("/api/project/branches/gitlab/4422/15"))
+                .andDo(print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value(ResultStat.OK.responseCode))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void T120GetTags() throws Exception {
+
+        mockMvc.perform(get("/api/project/tags/gitlab/4422/15"))
                 .andDo(print())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value(ResultStat.OK.responseCode))
                 .andExpect(status().isOk());

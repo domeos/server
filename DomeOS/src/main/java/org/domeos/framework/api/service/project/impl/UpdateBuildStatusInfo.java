@@ -10,12 +10,14 @@ import org.domeos.framework.api.model.image.BaseImageCustom;
 import org.domeos.framework.engine.k8s.JobWrapper;
 import org.domeos.framework.engine.model.JobType;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 /**
  * Created by feiliu206363 on 2015/12/4.
  */
+@Component
 public class UpdateBuildStatusInfo {
     static ProjectBiz projectBiz;
     static ImageBiz imageBiz;

@@ -12,6 +12,14 @@ public class ClusterMonitor {
     private String transfer;
     private String graph;
     private String query;
+    private String hbs;
+    private String judge;
+    private String alarm;
+    private String sender;
+    private String nodata;
+    private String redis;
+    private String apiMail;
+    private String apiSms;
     private long createTime;
     private long lastUpdate;
 
@@ -55,6 +63,70 @@ public class ClusterMonitor {
         this.query = query;
     }
 
+    public String getHbs() {
+        return hbs;
+    }
+
+    public void setHbs(String hbs) {
+        this.hbs = hbs;
+    }
+
+    public String getJudge() {
+        return judge;
+    }
+
+    public void setJudge(String judge) {
+        this.judge = judge;
+    }
+
+    public String getAlarm() {
+        return alarm;
+    }
+
+    public void setAlarm(String alarm) {
+        this.alarm = alarm;
+    }
+
+    public String getSender() {
+        return sender;
+    }
+
+    public void setSender(String sender) {
+        this.sender = sender;
+    }
+
+    public String getNodata() {
+        return nodata;
+    }
+
+    public void setNodata(String nodata) {
+        this.nodata = nodata;
+    }
+
+    public String getRedis() {
+        return redis;
+    }
+
+    public void setRedis(String redis) {
+        this.redis = redis;
+    }
+
+    public String getApiMail() {
+        return apiMail;
+    }
+
+    public void setApiMail(String apiMail) {
+        this.apiMail = apiMail;
+    }
+
+    public String getApiSms() {
+        return apiSms;
+    }
+
+    public void setApiSms(String apiSms) {
+        this.apiSms = apiSms;
+    }
+
     public long getLastUpdate() {
         return lastUpdate;
     }
@@ -88,6 +160,30 @@ public class ClusterMonitor {
             }
             graph = builder.toString().substring(0, builder.length() - 1);
         }
+        if (!StringUtils.isBlank(hbs)) {
+            graph = CommonUtil.domainUrl(hbs);
+        }
+        if (!StringUtils.isBlank(judge)) {
+            String[] judgeUrls = judge.split(",");
+            StringBuilder builder = new StringBuilder();
+            for(String url : judgeUrls) {
+                builder.append(CommonUtil.domainUrl(url)).append(",");
+            }
+            judge = builder.toString().substring(0, builder.length() - 1);
+        }
+        if (!StringUtils.isBlank(alarm)) {
+            alarm = CommonUtil.domainUrl(alarm);
+        }
+        if (!StringUtils.isBlank(sender)) {
+            sender = CommonUtil.domainUrl(sender);
+        }
+        if (!StringUtils.isBlank(nodata)) {
+            nodata = CommonUtil.domainUrl(nodata);
+        }
+        if (!StringUtils.isBlank(redis)) {
+            redis = CommonUtil.domainUrl(redis);
+        }
+
         return null;
     }
 }

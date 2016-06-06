@@ -42,6 +42,14 @@ public class VersionDetail {
         setNetworkMode(deployment.getNetworkMode());
         setVolumes(version.getVolumes());
 
+        if (deployment.getHealthChecker() != null && containerDrafts != null) {
+            for (ContainerDraft containerDraft : containerDrafts) {
+                if (containerDraft.getHealthChecker() == null) {
+                    containerDraft.setHealthChecker(deployment.getHealthChecker());
+                }
+            }
+        }
+
 //        Deployment deployment = deploymentBiz.getDeployment(deployId);
 //        if (deployment == null) {
 //            return null;

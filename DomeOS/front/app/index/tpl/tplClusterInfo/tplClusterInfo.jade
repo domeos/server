@@ -10,7 +10,7 @@ ul.com-list-info.border-info
 		.info-content(ng-bind="config.api")
 	li
 		span.info-name dns服务器
-		.info-content(ng-bind="isStrNull(config.dns)")
+		.info-content(ng-bind="vmDome.isStrNull(config.dns)")
 	li
 		span.info-name etcd
 		.info-content
@@ -19,7 +19,7 @@ ul.com-list-info.border-info
 	li
 		span.info-name domain
 		.info-content
-			span(ng-bind="isStrNull(config.domain)")
+			span(ng-bind="vmDome.isStrNull(config.domain)")
 	li
 		span.info-name 日志自动收集
 		.info-content(ng-switch="config.logConfig")
@@ -45,4 +45,4 @@ ul.com-list-info.border-info
 				span.cluster-log(ng-bind="config.clusterLog.imageName")
 			.line-singgle
 				span 镜像版本 : 
-				span.cluster-log(ng-bind="isStrNull(config.clusterLog.imageTag)")
+				span.cluster-log(ng-bind="vmDome.isStrNull(config.clusterLog.imageTag)")

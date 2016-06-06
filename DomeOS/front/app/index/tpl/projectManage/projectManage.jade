@@ -12,17 +12,25 @@
       thead
         tr
           th 项目名称
+          th 项目构建类型
+          th 自动构建
           th 构建时间
           th 构建状态
           th 代码源
           th 操作
       tbody
         tr(ng-if="filteredProjectList.length===0")
-          td.text-center(colspan="6") 暂无相关项目
+          td.text-center(colspan="7") 暂无相关项目
         tr(ng-repeat="project in filteredProjectList =  (projectList|filter:{name:proKeywards})")
           td
-            a(ng-bind="project.name" ui-sref="projectDetail({'project':project.id})")
-          td(ng-bind="parseDate(project.buildTime)")
+            a.ui-table-link(ng-bind="project.name" ui-sref="projectDetail({'project':project.id})")
+          td(ng-if="project.userDefineDockerfile") 代码内Dockerfile
+          td(ng-if="!project.userDefineDockerfile" ng-switch="project.projectType")
+            span(ng-switch-when="java") Java专属配置
+            span(ng-switch-default) 通用配置
+          td
+            span {{project.autoBuild===true ? '开启' : '未启用' }}
+          td(ng-bind="vmDome.parseDate(project.buildTime)")
           td(ng-switch="project.buildStatus")
             span.txt-success(ng-switch-when="Success") 成功
             span.txt-warning(ng-switch-when="Fail") 失败

@@ -39,6 +39,15 @@ public interface BuildService {
     HttpResponseTemp<?> dockerfileUsed(int projectId, int buildId);
 
     /**
+     * get the compile file for exclusive build
+     *
+     * @param projectId is the id of a project in database
+     * @param buildId   is the id of a build in database
+     * @return
+     */
+    String getCompileFile(int projectId, int buildId, String secret);
+
+    /**
      * build a docker image automatic started by git webhook
      *
      * @param webhookStr is the post request body of the git webhook

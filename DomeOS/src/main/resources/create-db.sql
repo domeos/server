@@ -262,6 +262,7 @@ CREATE TABLE IF NOT EXISTS `monitor_targets` (
    `id` INT(20) NOT NULL AUTO_INCREMENT PRIMARY KEY,
    `version` VARCHAR(255) NOT NULL,
    `clusterId` INT(11) NOT NULL,
+   `deployId` INT(11) NOT NULL DEFAULT -1,
    `namespace` VARCHAR(255) NOT NULL,
    `eventKind` VARCHAR(255) NOT NULL,
    `name` VARCHAR(255) NOT NULL,
@@ -269,8 +270,9 @@ CREATE TABLE IF NOT EXISTS `monitor_targets` (
    `content` TEXT
  ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 CREATE INDEX `k8s_events_kind_index` ON k8s_events(`clusterId`, `namespace`, `eventKind`);
-CREATE UNIQUE INDEX `k8s_events_name_index` ON k8s_events(`clusterId`, `namespace`, `name`);
+CREATE INDEX `k8s_events_name_index` ON k8s_events(`clusterId`, `namespace`, `name`);
 CREATE INDEX `k8s_events_host_index` ON k8s_events(`host`);
+CREATE INDEX `k8s_events_deploy_index` ON k8s_events(`clusterId`, `namespace`, `deployId`);
 
  CREATE TABLE IF NOT EXISTS `deploy_event` (
   `eid` INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -280,3 +282,117 @@ CREATE INDEX `k8s_events_host_index` ON k8s_events(`host`);
   `statusExpire` BIGINT(20) DEFAULT NULL,
   `content` MEDIUMTEXT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- alarm related tables: 11 in total
+-- 2016.04.14
+
+-- alarm event info
+CREATE TABLE IF NOT EXISTS `alarm_event_info_draft` (
+  `id` VARCHAR(64) NOT NULL PRIMARY KEY,
+  `endpoint` VARCHAR(128) NULL DEFAULT NULL,
+  `metric` VARCHAR(128) NULL DEFAULT NULL,
+  `counter` VARCHAR(128) NULL DEFAULT NULL,
+  `func` VARCHAR(128) NULL DEFAULT NULL,
+  `left_value` VARCHAR(128) NULL DEFAULT NULL,
+  `operator` VARCHAR(128) NULL DEFAULT NULL,
+  `right_value` VARCHAR(128) NULL DEFAULT NULL,
+  `note` VARCHAR(4096) NULL DEFAULT NULL,
+  `max_step` INT(20) NULL DEFAULT NULL,
+  `current_step` INT(20) NULL DEFAULT NULL,
+  `priority` INT(20) NULL DEFAULT NULL,
+  `status` VARCHAR(128) NULL DEFAULT NULL,
+  `timestamp` INT(20) NULL DEFAULT NULL,
+  `expression_id` INT(20) NULL DEFAULT NULL,
+  `strategy_id` INT(20) NULL DEFAULT NULL,
+  `template_id` INT(20) NULL DEFAULT NULL
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- alarm callback
+CREATE TABLE IF NOT EXISTS `alarm_callback_info` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `url` VARCHAR(256) NULL DEFAULT NULL,
+  `beforeCallbackSms` TINYINT(1) NULL DEFAULT NULL,
+  `beforeCallbackMail` TINYINT(1) NULL DEFAULT NULL,
+  `afterCallbackSms` TINYINT(1) NULL DEFAULT NULL,
+  `afterCallbackMail` TINYINT(1) NULL DEFAULT NULL
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- alarm host info
+CREATE TABLE IF NOT EXISTS `alarm_host_info` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `hostname` VARCHAR(128) NULL DEFAULT NULL,
+  `ip` VARCHAR(128) NULL DEFAULT NULL,
+  `cluster` VARCHAR(128) NULL DEFAULT NULL,
+  `createTime` BIGINT(20) NULL DEFAULT NULL
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- alarm host group info
+CREATE TABLE IF NOT EXISTS `alarm_host_group_info` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `hostGroupName` VARCHAR(128) NULL DEFAULT NULL,
+  `creatorId` INT(11) NULL DEFAULT NULL,
+  `creatorName` VARCHAR(128) NULL DEFAULT NULL,
+  `createTime` BIGINT(20) NULL DEFAULT NULL,
+  `updateTime` BIGINT(20) NULL DEFAULT NULL
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- alarm strategy info
+CREATE TABLE IF NOT EXISTS `alarm_strategy_info` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `metric` VARCHAR(64) NULL DEFAULT NULL,
+  `tag` VARCHAR(128) NULL DEFAULT NULL,
+  `pointNum` INT(11) NULL DEFAULT NULL,
+  `aggregateType` VARCHAR(64) NULL DEFAULT NULL,
+  `operator` VARCHAR(64) NULL DEFAULT NULL,
+  `rightValue` DOUBLE NULL DEFAULT NULL,
+  `note` VARCHAR(1024) NULL DEFAULT NULL,
+  `maxStep` INT(11) NULL DEFAULT NULL
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- alarm template info
+CREATE TABLE IF NOT EXISTS `alarm_template_info` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `templateName` VARCHAR(64) NULL DEFAULT NULL,
+  `templateType` VARCHAR(64) NULL DEFAULT NULL,
+  `creatorId` INT(11) NULL DEFAULT NULL,
+  `creatorName` VARCHAR(128) NULL DEFAULT NULL,
+  `createTime` BIGINT(20) NULL DEFAULT NULL,
+  `updateTime` BIGINT(20) NULL DEFAULT NULL,
+  `callbackId` INT(11) NULL DEFAULT NULL,
+  `deployId` INT(11) NULL DEFAULT NULL,
+  `isRemoved` TINYINT(4) NOT NULL DEFAULT '0'
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- alarm host group & host bind
+CREATE TABLE IF NOT EXISTS `alarm_host_group_host_bind` (
+  `hostGroupId` INT(11) NOT NULL,
+  `hostId` INT(11) NOT NULL,
+  `bindTime` BIGINT(20) NOT NULL
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- alarm template & host group bind
+CREATE TABLE IF NOT EXISTS `alarm_template_host_group_bind` (
+  `templateId` INT(11) NOT NULL,
+  `hostGroupId` INT(11) NOT NULL,
+  `bindTime` BIGINT(20) NOT NULL
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- alarm template & user group bind
+CREATE TABLE IF NOT EXISTS `alarm_template_user_group_bind` (
+  `templateId` INT(11) NOT NULL,
+  `userGroupId` INT(11) NOT NULL,
+  `bindTime` BIGINT(20) NOT NULL
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- alarm template & strategy bind
+CREATE TABLE IF NOT EXISTS `alarm_template_strategy_bind` (
+  `templateId` INT(11) NOT NULL,
+  `strategyId` INT(11) NOT NULL,
+  `bindTime` BIGINT(20) NOT NULL
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- alarm link info
+CREATE TABLE IF NOT EXISTS `alarm_link_info` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `content` MEDIUMTEXT NULL DEFAULT NULL
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;

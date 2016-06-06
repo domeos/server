@@ -9,12 +9,10 @@ import org.domeos.framework.api.biz.image.ImageBiz;
 import org.domeos.framework.api.biz.project.ProjectBiz;
 import org.domeos.framework.api.controller.exception.ApiException;
 import org.domeos.framework.api.model.global.Registry;
-import org.domeos.framework.api.model.image.AllDockerImages;
-import org.domeos.framework.api.model.image.BaseImage;
-import org.domeos.framework.api.model.image.BuildImage;
-import org.domeos.framework.api.model.image.DockerImage;
+import org.domeos.framework.api.model.image.*;
 import org.domeos.framework.api.model.operation.OperationType;
 import org.domeos.framework.api.model.project.Project;
+import org.domeos.framework.api.model.project.related.ExclusiveBuildType;
 import org.domeos.framework.api.model.resource.related.ResourceType;
 import org.domeos.framework.api.service.image.ImageService;
 import org.domeos.framework.engine.AuthUtil;
@@ -171,6 +169,8 @@ public class ImageServiceImpl implements ImageService {
         }
         return ResultStat.OK.wrap(authImages);
     }
+
+
 
     public class GetProjectImageTask implements Callable<DockerImage> {
 
@@ -375,5 +375,107 @@ public class ImageServiceImpl implements ImageService {
             Collections.sort(dockerImages, new DockerImage.DockerImageComparator());
         }
         return ResultStat.OK.wrap(dockerImages);
+    }
+
+    @Override
+    public HttpResponseTemp<?> getAllExclusiveImages(String type) {
+        Registry publicRegistry = globalBiz.getPublicRegistry();
+        Registry privateRegistry = globalBiz.getRegistry();
+        if (publicRegistry == null || StringUtils.isBlank(publicRegistry.fullRegistry())) {
+            throw ApiException.wrapMessage(ResultStat.REGISTRY_NOT_EXIST, "public registry must be set.");
+        }
+        if (privateRegistry == null || StringUtils.isBlank(privateRegistry.fullRegistry())) {
+            throw ApiException.wrapMessage(ResultStat.REGISTRY_NOT_EXIST, "private registry must be set.");
+        }
+        String privateRegistryUrl = privateRegistry.fullRegistry();
+        String publicRegistryUrl = publicRegistry.fullRegistry();
+
+        AllExclusiveImages imageList = new AllExclusiveImages();
+        List<ExclusiveImage> publicCompileImages = null, privateCompileImages = null, publicRunImages = null, privateRunImages = null;
+        if (StringUtils.equalsIgnoreCase(ExclusiveBuildType.JAVA.name(), type)) {
+            publicCompileImages = getExclusiveImages("domeos/"+ExclusiveImage.ImageType.JAVACOMPILE.getType(), CommonUtil.fullUrl(publicRegistryUrl), true);
+            privateCompileImages = getExclusiveImages(ExclusiveImage.ImageType.JAVACOMPILE.getType(), CommonUtil.fullUrl(privateRegistryUrl), false);
+            publicRunImages = getExclusiveImages("domeos/"+ExclusiveImage.ImageType.JAVARUN.getType(), CommonUtil.fullUrl(publicRegistryUrl), true);
+            privateRunImages = getExclusiveImages(ExclusiveImage.ImageType.JAVARUN.getType(), CommonUtil.fullUrl(privateRegistryUrl), false);
+        }
+        imageList.setCompilePublicImageList(publicCompileImages);
+        imageList.setCompilePrivateImageList(privateCompileImages);
+        imageList.setRunPublicImageList(publicRunImages);
+        imageList.setRunPrivateImageList(privateRunImages);
+        imageList.sortAllImageList();
+        return ResultStat.OK.wrap(imageList);
+    }
+
+    public class PublicExclusiveImageTask implements Callable<ExclusiveImage> {
+        private DockerImage image;
+        private boolean isPublic;
+
+        public PublicExclusiveImageTask(DockerImage image, boolean isPublic) {
+            this.image = image;
+            this.isPublic = isPublic;
+        }
+
+        @Override
+        public ExclusiveImage call() throws Exception {
+            ExclusiveImage imageInfo = new ExclusiveImage(image.getImageName(), image.getTag(), image.getRegistry(), isPublic, image.getCreateTime());
+            if (isPublic) {
+                for (ExclusiveImage.RunFileStoragePath path : ExclusiveImage.RunFileStoragePath.values()) {
+                    if (StringUtils.containsIgnoreCase(image.getTag(), path.name())) {
+                        imageInfo.setRunFileStoragePath(path.getPath());
+                    }
+                }
+                for (ExclusiveImage.StartCommand command : ExclusiveImage.StartCommand.values()) {
+                    if (StringUtils.containsIgnoreCase(image.getTag(), command.name())) {
+                        imageInfo.setStartCommand(command.getCommand());
+                    }
+                }
+            }
+            return imageInfo;
+        }
+    }
+
+    public List<ExclusiveImage> getExclusiveImages(String name, String registryUrl, boolean isPublic) {
+        List<DockerImage> dockerImages = PrivateRegistry.getDockerImageInfo(name, CommonUtil.fullUrl(registryUrl));
+        if (dockerImages != null) {
+            Collections.sort(dockerImages, new DockerImage.DockerImageComparator());
+            List<ExclusiveImage> imageList = new ArrayList<>();
+            List<Future<ExclusiveImage>> futureExclusiveImages = new LinkedList<>();
+            for (DockerImage image : dockerImages) {
+                Future<ExclusiveImage> future = ClientConfigure.executorService.submit(new PublicExclusiveImageTask(image, isPublic));
+                futureExclusiveImages.add(future);
+            }
+            for (Future<ExclusiveImage> futureImage : futureExclusiveImages) {
+                try {
+                    ExclusiveImage imageInfo = futureImage.get();
+                    imageList.add(imageInfo);
+                } catch (InterruptedException |  ExecutionException e) {
+                    logger.warn("get exclusive image list error, message is " + e.getMessage());
+                }
+            }
+            //private registry contain base images
+            if (!isPublic) {
+                List<BaseImage> baseImages = imageBiz.getBaseImagesByName(name);
+                List<Future<BaseImage>> futureImages = new LinkedList<>();
+                for (BaseImage baseImage : baseImages) {
+                    if (baseImage.getRegistry().equals(CommonUtil.fullUrl(registryUrl))) {
+                        continue;
+                    }
+                    Future<BaseImage> future = ClientConfigure.executorService.submit(new BaseImageTask(baseImage));
+                    futureImages.add(future);
+                }
+                for (Future<BaseImage> future : futureImages) {
+                    try {
+                        BaseImage baseImage = future.get();
+                        ExclusiveImage image = new ExclusiveImage(baseImage.getImageName(), baseImage.getImageTag(),
+                                baseImage.getRegistry(), isPublic,  baseImage.getCreateTime());
+                        imageList.add(image);
+                    } catch (InterruptedException | ExecutionException e) {
+                        logger.warn("get base image list error, message is " + e.getMessage());
+                    }
+                }
+            }
+            return imageList;
+        }
+        return  null;
     }
 }

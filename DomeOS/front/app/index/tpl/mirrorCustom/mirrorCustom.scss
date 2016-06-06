@@ -23,7 +23,7 @@
 
 				}
 			}
-		}	
+		}
 	}
 	.com-list-info{
 		.edit-form tr td{
@@ -40,7 +40,7 @@
 			height: 20px;
 			text-align: center;
 			margin: auto 0;
-		} 
+		}
 		.mirror-error{
 			margin-left: 130px;
 		}
@@ -53,15 +53,7 @@
 			overflow: hidden;
 			text-overflow: ellipsis;
 		}
-		.inline-txt{
-			margin-left: 10px;
-			&:first-child{
-				margin-left: 0;
-			}
-			input{
-				width: 100%;
-			}
-		}
+
 		ul{
 			word-break: break-word;
 		}
@@ -127,7 +119,7 @@
 					&.active{
 						color: dome-color(dome,bright);
 					}
-				} 
+				}
 			}
 		}
 	}
@@ -177,7 +169,7 @@
 					z-index: 99;
 				}
 			}
-			
-		}				
+
+		}
 	}
 }

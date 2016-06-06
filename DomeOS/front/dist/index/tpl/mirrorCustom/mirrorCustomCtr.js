@@ -1,9 +1,11 @@
-domeApp.controller('mirrorCustomCtr', ['$scope', '$domeImage', '$domePublic', '$modal', '$q', '$location', function($scope, $domeImage, $domePublic, $modal, $q, $location) {
+domeApp.controller('MirrorCustomCtr', ['$scope', '$domeImage', '$domePublic', '$modal', '$q', '$location', '$state', '$util', '$timeout', function ($scope, $domeImage, $domePublic, $modal, $q, $location, $state, $util, $timeout) {
+	'use strict';
 	$scope.$emit('pageTitle', {
 		title: '镜像定制',
 		descrition: '在这里您可以定制满足个性化需求的镜像。',
 		mod: 'image'
 	});
+	var timeout;
 	$scope.specificImg = {
 		language: 'java',
 		imgType: 'compileimage',
@@ -12,9 +14,9 @@ domeApp.controller('mirrorCustomCtr', ['$scope', '$domeImage', '$domePublic', '$
 	$scope.customtype = 'dockerfile';
 	$scope.mirror = $domeImage.getMirrorInstance();
 	$scope.config = $scope.mirror.config;
-	$scope.toggleCustomType = function(type) {
+	$scope.toggleCustomType = function (type) {
 		$scope.customtype = type;
-		$scope.config.autoCustom = (type == 'dockerfile') ? 0 : 1;
+		$scope.config.autoCustom = type == 'dockerfile' ? 0 : 1;
 		$scope.config.envSettings = [{
 			key: '',
 			value: '',
@@ -37,44 +39,41 @@ domeApp.controller('mirrorCustomCtr', ['$scope', '$domeImage', '$domePublic', '$
 		}];
 
 	};
-	var startBuildRequest = function(imageId) {
-		$domeImage.startBuild(imageId).then(function(res) {
-			if (res.data.resultCode === 200) {
-				$domePublic.openPrompt('成功，正在构建！');
-			} else {
-				$domePublic.openWarning('启动构建失败，请重试！');
-				$domeImage.deleteBuild(imageId);
-			}
-		}, function(res) {
+	$scope.tabActive = [{
+		active: false
+	}, {
+		active: false
+	}];
+	var imageService = $domeImage.imageService;
+	var startBuildRequest = function (imageId) {
+		imageService.buildCustomImage(imageId).then(function (res) {
+			$domePublic.openPrompt('成功，正在构建！');
+		}, function (res) {
 			$domePublic.openWarning({
 				title: '启动构建失败',
-				msg: 'Message:' + res.msg
+				msg: 'Message:' + res.data.resultMsg
 			});
-			$domeImage.deleteBuild(imageId);
-		}).finally(function() {
+			imageService.deleteCustomImage(imageId);
+		}).finally(function () {
 			$scope.isLoading = false;
 		});
 	};
-	var createNewBuild = function() {
-		$domeImage.createCustomize($scope.config).then(function(res) {
+	var createNewBuild = function () {
+		imageService.createCustomImage($scope.config).then(function (res) {
 			var data = res.data.result || {};
-			if (res.data.resultCode === 200) {
-				startBuildRequest(data.id);
-			} else {
-				$domePublic.openWarning('创建定制失败，请重试！');
-			}
-		}, function(res) {
+			startBuildRequest(data.id);
+		}, function (res) {
 			$domePublic.openWarning({
 				title: '创建失败',
-				msg: 'Message:' + res.msg
+				msg: 'Message:' + res.data.resultMsg
 			});
-		}).finally(function() {
+		}).finally(function () {
 			$scope.isLoading = false;
 		});
 	};
-	$scope.nameTest = function() {
+	$scope.nameTest = function () {
 		$scope.isLoading = true;
-		$domeImage.monitorName($scope.config.imageName, $scope.config.imageTag).then(function(res) {
+		imageService.validImageName($scope.config.imageName, $scope.config.imageTag).then(function (res) {
 			var data = res.data.result;
 			if (data == 'PROJECT') {
 				$domePublic.openWarning('存在与该镜像同名的项目！');
@@ -85,36 +84,35 @@ domeApp.controller('mirrorCustomCtr', ['$scope', '$domeImage', '$domePublic', '$
 			} else if (data == 'IMAGE_IN_REGISTRY') {
 				$domePublic.openWarning('镜像仓库中存在同名镜像，如继续会覆盖原镜像!');
 			}
-		}, function(res) {
+		}, function (res) {
 			$domePublic.openWarning({
 				title: '检测失败',
 				msg: 'Message:' + res.data.resultMsg
 			});
-		}).finally(function() {
+		}).finally(function () {
 			$scope.isLoading = false;
 		});
 	};
-	$scope.creatBuild = function() {
+	$scope.creatBuild = function () {
 		$scope.isLoading = true;
-		$domeImage.monitorName($scope.config.imageName, $scope.config.imageTag).then(function(res) {
-			var data = res.data.result;
+		imageService.validImageName($scope.config.imageName, $scope.config.imageTag).then(function (res) {
 			if (res.data.result == 'NEITHER') {
 				createNewBuild();
 			} else {
-				$domePublic.openConfirm('该镜像名已存在，如继续构建会覆盖原镜像！').then(function() {
+				$domePublic.openConfirm('该镜像名已存在，如继续构建会覆盖原镜像！').then(function () {
 					createNewBuild();
 				});
 			}
-		}, function(res) {
+		}, function (res) {
 			$domePublic.openWarning({
 				title: '重名检测失败',
 				msg: 'Message:' + res.data.resultMsg
 			});
-		}).finally(function() {
+		}).finally(function () {
 			$scope.isLoading = false;
 		});
 	};
-	$scope.assigImgName = function(isSelected) {
+	$scope.assigImgName = function (isSelected) {
 		if (!isSelected) {
 			$scope.config.imageName = '';
 		} else {
@@ -123,7 +121,7 @@ domeApp.controller('mirrorCustomCtr', ['$scope', '$domeImage', '$domePublic', '$
 
 	};
 	//configfile
-	$scope.selectMirror = function(mirror) {
+	$scope.selectMirror = function (mirror) {
 		$scope.img.mirrorNameList = [];
 		$scope.img.type = mirror; //用于后面获取tag(mirror:baseImages,projectImages,otherImages)
 		var listInfo = $scope.img[mirror];
@@ -160,7 +158,7 @@ domeApp.controller('mirrorCustomCtr', ['$scope', '$domeImage', '$domePublic', '$
 			$scope.config.sourceImage.imageName = $scope.img.mirrorNameList[0].imageName;
 		}
 	};
-	$scope.selectMirrorName = function(mirrorname, registry) {
+	$scope.selectMirrorName = function (mirrorname, registry) {
 		$scope.config.sourceImage.imageName = mirrorname;
 		$scope.config.sourceImage.registryUrl = registry;
 
@@ -179,21 +177,19 @@ domeApp.controller('mirrorCustomCtr', ['$scope', '$domeImage', '$domePublic', '$
 
 		} else if ($scope.img.type == 'projectImages') {
 			$scope.isLoading = true;
-			$domeImage.getDockerImageTags(mirrorname, registry).then(function(res) {
+			imageService.getImageTags(mirrorname, registry).then(function (res) {
 				var data = res.data.result || [];
 				var length = data.length;
 				for (var i = 0; i < length; i++) {
 					$scope.img.mirrorTagList.push(data[i].tag);
 				}
 				$scope.config.sourceImage.imageTag = $scope.img.mirrorTagList[0] || '';
-			}, function(res) {
-
 			});
 			$scope.isLoading = false;
 		} else if ($scope.img.type == 'otherImages') {
 
 			$scope.isLoading = true;
-			$domeImage.getGlobalImageInfo(mirrorname).then(function(res) {
+			imageService.getImageInfo(mirrorname).then(function (res) {
 				var data = res.data.result || [];
 				var length = data.length;
 				for (var i = 0; i < length; i++) {
@@ -201,17 +197,15 @@ domeApp.controller('mirrorCustomCtr', ['$scope', '$domeImage', '$domePublic', '$
 				}
 				$scope.config.sourceImage.imageTag = $scope.img.mirrorTagList[0] || '';
 				$scope.config.sourceImage.registryUrl = data[0].registry; //非项目镜像获取详情后才能得到registytUrl
-			}, function(res) {
-
 			});
 			$scope.isLoading = false;
 		}
 	};
 
 
-	var initImg = function() {
+	var initImg = function () {
 		$scope.isLoading = true;
-		$domeImage.getAllImages().then(function(res) {
+		imageService.getAllImages().then(function (res) {
 
 			var imageInfo = res.data.result || {};
 
@@ -238,7 +232,7 @@ domeApp.controller('mirrorCustomCtr', ['$scope', '$domeImage', '$domePublic', '$
 				$scope.selectMirrorName($scope.img.otherImages[0], '');
 			}
 
-		}).finally(function() {
+		}).finally(function () {
 			$scope.isLoading = false;
 		});
 	};
@@ -246,7 +240,7 @@ domeApp.controller('mirrorCustomCtr', ['$scope', '$domeImage', '$domePublic', '$
 	initImg();
 
 
-	$scope.toggleMirrorHub = function(num) {
+	$scope.toggleMirrorHub = function (num) {
 		$scope.config.sourceImage.thirdParty = num;
 		if (num === 0) {
 			initImg();
@@ -260,36 +254,73 @@ domeApp.controller('mirrorCustomCtr', ['$scope', '$domeImage', '$domePublic', '$
 	};
 
 	//定制记录
-	$scope.customList = [];
-	var init = function() {
-		var requestUrl = $location.host(),
-			logUrl;
-		if ($location.port()) {
-			requestUrl += ':' + $location.port();
+	$scope.customImgList = [];
+	var _formartCustomImg = function (customImg, requestUrl) {
+		var logUrl = '';
+		customImg.interval = $util.getPageInterval(customImg.createTime, customImg.finishTime);
+		customImg.createTime = $util.getPageDate(customImg.createTime);
+		if (customImg.autoCustom === 0) {
+			customImg.type = 'Dockerfile';
+		} else {
+			customImg.type = '配置文件';
 		}
-		$domeImage.getCustomInfo().then(function(res) {
-			$scope.customList = res.data.result || [];
-			for (var i = 0; i < $scope.customList.length; i++) {
-				logUrl = '';
-				var thisCustom = $scope.customList[i];
-				if (thisCustom.autoCustom === 0) {
-					thisCustom.type = 'Dockerfile';
-				} else {
-					thisCustom.type = '配置文件';
-				}
-				if (thisCustom.state == 'Building') {
-					logUrl = 'ws://' + requestUrl + '/api/ci/build/log/realtime?buildId=' + thisCustom.id + '&type=baseimage';
-				} else if (thisCustom.state === 'Success' || thisCustom.state === 'Fail') {
-					logUrl = $location.protocol() + '://' + requestUrl + '/api/image/custom/download/' + thisCustom.id;
-				}
-				thisCustom.logHref = '/log/log.html?url=' + encodeURIComponent(logUrl);
+		if (customImg.state == 'Building') {
+			logUrl = 'ws://' + requestUrl + '/api/ci/build/log/realtime?buildId=' + customImg.id + '&type=baseimage';
+		} else if (customImg.state === 'Success' || customImg.state === 'Fail') {
+			logUrl = $location.protocol() + '://' + requestUrl + '/api/image/custom/download/' + customImg.id;
+		}
+		customImg.logHref = '/log/log.html?url=' + encodeURIComponent(logUrl);
+	};
+	$scope.getImgList = function () {
+		if (timeout) {
+			$timeout.cancel(timeout);
+		}
+		imageService.getCustomImages().then(function (res) {
+			var i, j, customImgList = res.data.result || [],
+				requestUrl = $location.host(),
+				isFind, thisCustomImg, newCount = 0;
+			if ($location.port()) {
+				requestUrl += ':' + $location.port();
 			}
-		}).finally(function() {
+
+			if ($scope.customImgList.length === 0) {
+				for (i = 0; i < customImgList.length; i++) {
+					_formartCustomImg(customImgList[i], requestUrl);
+				}
+				$scope.customImgList = customImgList;
+			} else {
+				for (i = 0; i < customImgList.length; i++) {
+					isFind = false;
+					thisCustomImg = customImgList[i];
+					_formartCustomImg(thisCustomImg, requestUrl);
+					for (j = newCount; j < $scope.customImgList.length; j++) {
+						if (thisCustomImg.id === $scope.customImgList[j].id) {
+							$scope.customImgList[j].imageSize = thisCustomImg.imageSize;
+							$scope.customImgList[j].type = thisCustomImg.type;
+							if ($scope.customImgList[j].state !== thisCustomImg.state) {
+								$scope.customImgList[j].state = thisCustomImg.state;
+								$scope.customImgList[j].logHref = thisCustomImg.logHref;
+							}
+							$scope.customImgList[j].interval = thisCustomImg.interval;
+							$scope.customImgList[j].createTime = thisCustomImg.createTime;
+							isFind = true;
+							break;
+						}
+					}
+					if (!isFind) {
+						$scope.customImgList.splice(newCount, 0, thisCustomImg);
+						newCount++;
+					}
+				}
+			}
+			if ($state.$current.name == 'mirrorCustom.log') {
+				timeout = $timeout(function () {
+					$scope.getImgList();
+				}, 4000);
+			}
+		}).finally(function () {
 			$scope.isLoading = false;
 		});
-	};
-	$scope.selectImgList = function() {
-		init();
 	};
 	$scope.selectOption = {
 		state: {
@@ -310,18 +341,18 @@ domeApp.controller('mirrorCustomCtr', ['$scope', '$domeImage', '$domePublic', '$
 		}
 	};
 
-	$scope.toggleAll = function(type) {
-		angular.forEach($scope.selectOption[type], function(value, key) {
+	$scope.toggleAll = function (type) {
+		angular.forEach($scope.selectOption[type], function (value, key) {
 			$scope.selectOption[type][key] = false;
 		});
 		$scope.selectOption[type].All = true;
 	};
 
-	$scope.toggleSelect = function(type, item) {
+	$scope.toggleSelect = function (type, item) {
 		var hasNone = true;
 		$scope.selectOption[type][item] = !$scope.selectOption[type][item];
 		if (!$scope.selectOption[type][item]) {
-			angular.forEach($scope.selectOption[type], function(value, key) {
+			angular.forEach($scope.selectOption[type], function (value, key) {
 				if (key !== 'All' && $scope.selectOption[type][key] && hasNone) {
 					hasNone = false;
 				}
@@ -333,24 +364,20 @@ domeApp.controller('mirrorCustomCtr', ['$scope', '$domeImage', '$domePublic', '$
 			$scope.selectOption[type].All = false;
 		}
 	};
-	$scope.toggleShowDetail = function() {
+	$scope.toggleShowDetail = function () {
 		$scope.selectOption.isshowmore = !$scope.selectOption.isshowmore;
 	};
+	$scope.$on('$destroy', function (argument) {
+		if (timeout) {
+			$timeout.cancel(timeout);
+		}
+	});
 
-	$scope.getBuildLog = function(imgId, state) {
-		var modalInstance = $modal.open({
-			animation: true,
-			templateUrl: 'mirrorDairyModal.html',
-			controller: 'mirrorDairyModalCtr',
-			size: 'lg',
-			resolve: {
-				params: function() {
-					return {
-						imageId: imgId,
-						state: state
-					};
-				}
-			}
-		});
-	};
+	var stateInfo = $state.$current.name;
+	if (stateInfo.indexOf('log') !== -1) {
+		$scope.tabActive[1].active = true;
+		$scope.getImgList();
+	} else {
+		$scope.tabActive[0].active = true;
+	}
 }]);

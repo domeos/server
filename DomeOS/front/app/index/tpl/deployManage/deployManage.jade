@@ -41,6 +41,9 @@
 				em(ng-class="{'active':selectOption.status.BACKROLLING}" ng-click="toggleSelect('status','BACKROLLING')") 回滚中
 				em(ng-class="{'active':selectOption.status.UPSCALING}" ng-click="toggleSelect('status','UPSCALING')") 扩容中
 				em(ng-class="{'active':selectOption.status.DOWNSCALING}" ng-click="toggleSelect('status','DOWNSCALING')") 缩容中
+				em(ng-class="{'active':selectOption.status.ABORTING}" ng-click="toggleSelect('status','ABORTING')") 中断中
+				em(ng-class="{'active':selectOption.status.BACKROLL_ABORTED}" ng-click="toggleSelect('status','BACKROLL_ABORTED')") 回滚已中断
+				em(ng-class="{'active':selectOption.status.UPDATE_ABORTED}" ng-click="toggleSelect('status','UPDATE_ABORTED')") 升级已中断
 	.mod-list
 		loading(ng-if="isLoading")
 		table.ui-table-dome
@@ -50,6 +53,7 @@
 					th 上次升级
 					th 状态
 					th 所在集群
+					th namespace
 					th 实例个数
 					th 资源占用比
 					th 内网域名
@@ -59,7 +63,7 @@
 				tr(ng-repeat="deploy in deployListFilter=(deloyList|filter:{'deployName':depKeyword}|deployOptions:selectOption.env:selectOption.namespace:selectOption.cluster:selectOption.status)")
 					td
 						a.ui-table-link(ng-bind="deploy.deployName" ui-sref="deployDetail({'id':deploy.deployId})")
-					td(ng-bind="parseDate(deploy.lastUpdateTime)")
+					td(ng-bind="vmDome.parseDate(deploy.lastUpdateTime)")
 					td(ng-switch="deploy.deploymentStatus")
 						span.txt-success(ng-switch-when="RUNNING") 运行中
 						span.txt-normal(ng-switch-when="DEPLOYING") 部署中
@@ -71,7 +75,11 @@
 						span.txt-normal(ng-switch-when="UPDATING") 升级中
 						span.txt-normal(ng-switch-when="UPSCALING") 扩容中
 						span.txt-normal(ng-switch-when="DOWNSCALING") 缩容中
+						span.txt-normal(ng-switch-when="ABORTING") 中断中
+						span.txt-warning(ng-switch-when="BACKROLL_ABORTED") 回滚已中断
+						span.txt-warning(ng-switch-when="UPDATE_ABORTED") 升级已中断
 					td(ng-bind="deploy.clusterName")
+					td(ng-bind="deploy.namespace")
 					td(ng-bind="deploy.replicas")
 					td(ng-cloak ng-class="{'txt-normal':deploy.comparePercent<30,'txt-success':deploy.comparePercent>=30&&deploy.comparePercent<70,'txt-warning':deploy.comparePercent>=70}")
 						i.icon-cpu(ng-if="deploy.compare=='cpu'" tooltip="CPU：{{deploy.cpuUsed}} / {{deploy.cpuTotal}}（个）" )

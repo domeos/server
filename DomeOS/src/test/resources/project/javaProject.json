@@ -1,0 +1,54 @@
+{
+"project" :  {
+    "id": 16,
+    "name": "admin/simple-maven-test",
+    "description": "this is for maven test",
+    "authority": 0,
+    "exclusiveBuild": {
+      "customType": "java",
+      "compileImage" : {
+        "imageName" : "compileimage-java",
+        "imageTag" : "maven-3_jdk-1.7",
+        "registryUrl" : "http://10.11.150.76:5000",
+        "imageType" : 0
+      },
+      "runImage" : {
+        "imageName" : "domeos/runimage-java",
+        "imageTag" : "tomcat-8.0.32_jre-7",
+        "registryUrl" : "http://pub.domeos.org",
+        "imageType" : 1
+      },
+      "codeStoragePath": "/code",
+      "compileEnv": "TEST1=a,TEST2=b",
+      "compileCmd": "mvn install",
+      "workDir": "/code/simple",
+      "startCmd": "java -cp simple-1.0-SNAPSHOT.jar org.sonatype.mavenbook.App",
+      "createdFileStoragePath": "/code/target/simple-1.0-SNAPSHOT.jar",
+      "runFileStoragePath": "/root/"
+    },
+    "codeInfo": {
+      "codeManager": "gitlab",
+      "nameWithNamespace": "任凯(实习) / simple",
+      "codeSshUrl": "git@code.sohuno.com:kairen/simple.git",
+      "codeHttpUrl": "http://code.sohuno.com/kairen/simple",
+      "codeId": 4621,
+      "codeManagerUserId": 15
+    },
+    "envConfDefault": [
+      {
+        "key": "TEST1",
+        "value": "test",
+        "description": "first test env"
+      },
+      {
+        "key": "TEST2",
+        "value": "test2",
+        "description": "second test env"
+      }
+    ]
+  },
+  "creatorDraft": {
+    "creatorType": "USER",
+    "creatorId": 1
+  }
+}

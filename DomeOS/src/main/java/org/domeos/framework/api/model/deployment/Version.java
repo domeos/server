@@ -12,7 +12,7 @@ import java.util.List;
  */
 public class Version extends RowModelBase{
     private int deployId = 0;  // separate column
-    private long version = 0; //version id for the deploy, separate column
+    private int version = 0; //version id for the deploy, separate column
     private List<ContainerDraft> containerDrafts; // describe container configs for each container in this pod
     private LogDraft logDraft;
     private List<String> volumes; // for stateful service, mount to host path.
@@ -59,11 +59,11 @@ public class Version extends RowModelBase{
         this.logDraft = logDraft;
     }
 
-    public long getVersion() {
+    public int getVersion() {
         return version;
     }
 
-    public void setVersion(long version) {
+    public void setVersion(int version) {
         this.version = version;
     }
 
@@ -84,5 +84,4 @@ public class Version extends RowModelBase{
         }
         return "";
     }
-
 }

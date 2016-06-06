@@ -71,13 +71,13 @@ public class ClusterController extends ApiController {
     }
 
     @ResponseBody
-    @RequestMapping(value = "/{id}/node/{name}", method = RequestMethod.GET)
+    @RequestMapping(value = "/{id}/node/{name:.+}", method = RequestMethod.GET)
     public HttpResponseTemp<?> getNodeByClusterIdAndName(@PathVariable int id, @PathVariable String name) {
         return clusterService.getNodeByClusterIdAndName(id, name);
     }
 
     @ResponseBody
-    @RequestMapping(value = "/{id}/nodelist/{name}", method = RequestMethod.GET)
+    @RequestMapping(value = "/{id}/nodelist/{name:.+}", method = RequestMethod.GET)
     public HttpResponseTemp<?> getInstanceListByNodeName(@PathVariable int id, @PathVariable String name) {
         return clusterService.getInstanceListByNodeName(id, name);
     }
@@ -95,15 +95,15 @@ public class ClusterController extends ApiController {
     }
 
     @ResponseBody
-    @RequestMapping(value = "/{id}/{nodeName}/{label}", method = RequestMethod.DELETE)
-    public HttpResponseTemp<?> deleteLabelsByClusterId(@PathVariable int id, @PathVariable String nodeName, @PathVariable String label) {
-        return clusterService.deleteLabelsByClusterId(id, nodeName, label);
+    @RequestMapping(value = "/{id}/nodelabels/delete", method = RequestMethod.POST)
+    public HttpResponseTemp<?> deleteNodeLabels(@PathVariable int id, @RequestBody List<NodeLabel> nodeLabels) {
+        return clusterService.deleteNodeLabels(id, nodeLabels);
     }
 
     @ResponseBody
-    @RequestMapping(value = "/{id}/nodelabels", method = RequestMethod.POST)
-    public HttpResponseTemp<?> setNodeLablesByNodeName(@PathVariable int id, @RequestBody NodeLabel nodeLabel) {
-        return clusterService.setNodeLabelsByNodeName(id, nodeLabel);
+    @RequestMapping(value = "/{id}/nodelabels/add", method = RequestMethod.POST)
+    public HttpResponseTemp<?> setNodeLables(@PathVariable int id, @RequestBody List<NodeLabel> nodeLabels) {
+        return clusterService.setNodeLabels(id, nodeLabels);
     }
 
     @ResponseBody

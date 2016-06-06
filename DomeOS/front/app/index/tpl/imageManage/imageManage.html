@@ -73,7 +73,7 @@
           <tr ng-repeat="img in projectImagesFiltered=(projectImages|filter:{'imageName':projectImageKey})">
             <td ng-bind="img.imageName"></td>
             <td><a ng-click="openTagModal(img.imageName)" class="link-safe">查看</a></td>
-            <td ng-bind="parseDate(img.createTime)"></td>
+            <td ng-bind="vmDome.parseDate(img.createTime)"></td>
           </tr>
         </tbody>
       </table>
@@ -111,7 +111,7 @@
     <table class="ui-table-dome modal-full-table">
       <thead>
         <tr>
-          <th>版本名</th>
+          <th>版本名{{vmDome}}</th>
           <th>创建时间</th>
         </tr>
       </thead>

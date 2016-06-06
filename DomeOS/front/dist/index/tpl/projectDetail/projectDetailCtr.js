@@ -1,8 +1,15 @@
-domeApp.controller('projectDetailCtr', ['$scope', '$state', '$stateParams', '$domeProject', '$domePublic', '$domeImage', '$modal', '$interval', '$location', function($scope, $state, $stateParams, $domeProject, $domePublic, $domeImage, $modal, $interval, $location) {
+domeApp.controller('ProjectDetailCtr', ['$scope', '$state', '$stateParams', '$domeProject', '$domePublic', '$domeImage', '$timeout', '$location', '$util', function ($scope, $state, $stateParams, $domeProject, $domePublic, $domeImage, $timeout, $location, $util) {
 	'use strict';
-	$scope.projectId = $stateParams.project;
+	$scope.projectId = $state.params.project;
+	if (!$scope.projectId) {
+		$state.go('projectManage');
+		return;
+	}
 	$scope.branch = 'master';
-	$scope.needValid = false;
+	$scope.valid = {
+		needValid: false,
+		createdFileStoragePath: false
+	};
 	$scope.edit = false;
 	$scope.isWaitingForModify = false;
 	$scope.statusKey = '';
@@ -10,11 +17,16 @@ domeApp.controller('projectDetailCtr', ['$scope', '$state', '$stateParams', '$do
 	// 项目成员的资源类型
 	$scope.resourceType = 'PROJECT';
 	$scope.resourceId = $scope.projectId;
-	$scope.$on('memberPermisson', function(event, hasPermisson) {
+	$scope.$on('memberPermisson', function (event, hasPermisson) {
 		$scope.hasMemberPermisson = hasPermisson;
+		if (!hasPermisson && stateInfo.indexOf('user') !== -1) {
+			$state.go('projectDetail.info');
+			$scope.tabActive[0].active = true;
+		}
 	});
+	$scope.isLoading = true;
 	$scope.tabActive = [{
-		active: true
+		active: false
 	}, {
 		active: false
 	}, {
@@ -24,183 +36,273 @@ domeApp.controller('projectDetailCtr', ['$scope', '$state', '$stateParams', '$do
 	}, {
 		active: false
 	}];
-	var editProject, project, fileMap = {};
-	var initProjectInfo = function() {
-		$domeProject.getProjectInfo($scope.projectId).then(function(res) {
-			project = $scope.project = $domeProject.getProjectInstance(res.data.result);
-			editProject = angular.copy(project);
-			$scope.config = $scope.project.config;
+
+	var project, timeout;
+	var initConig = function () {
+		var buildPath = $scope.project.config.dockerfileInfo.buildPath,
+			dockerfilePath = $scope.project.config.dockerfileInfo.dockerfilePath;
+		if (!buildPath) {
+			$scope.project.config.dockerfileInfo.buildPath = '/';
+		}
+		if (!dockerfilePath) {
+			$scope.project.config.dockerfileInfo.dockerfilePath = '/Dockerfile';
+		}
+
+		$scope.config = $scope.project.config;
+	};
+	var initProjectImages = function (type) {
+		$scope.project.projectImagesIns.toggleSpecifiedImage('compile', $scope.project.customConfig.compileImage);
+		$scope.project.projectImagesIns.toggleSpecifiedImage('run', $scope.project.customConfig.runImage);
+		$domeImage.imageService.getExclusiveImages(type).then(function (res) {
+			$scope.project.projectImagesIns.init(res.data.result);
+			$scope.project.projectImagesIns.toggleSpecifiedImage('compile', $scope.project.customConfig.compileImage);
+			$scope.project.projectImagesIns.toggleSpecifiedImage('run', $scope.project.customConfig.runImage);
+		});
+	};
+
+	$scope.$on('memberPermisson', function (event, hasPermisson) {
+		$scope.hasMemberPermisson = hasPermisson;
+		if (!hasPermisson && stateInfo.indexOf('user') !== -1) {
+			$state.go('projectDetail.info');
+			$scope.tabActive[0].active = true;
+		}
+	});
+	var initProjectInfo = function () {
+		$domeProject.projectService.getData($scope.projectId).then(function (res) {
+			project = $domeProject.getInstance('Project', res.data.result);
+			$scope.project = angular.copy(project);
+			initConig();
 			$scope.$emit('pageTitle', {
 				title: $scope.config.name,
-				descrition: '更新于' + $scope.parseDate($scope.config.lastModify),
+				descrition: '更新于' + $util.getPageDate($scope.config.lastModify),
 				mod: 'projectManage'
 			});
+		}).finally(function () {
+			$scope.isLoading = false;
 		});
 	};
 	initProjectInfo();
-	var modify = function() {
+	var _formartBuildLog = function (sigBuild, requestUrl) {
+		var logUrl = '';
+		sigBuild.interval = $util.getPageInterval(sigBuild.createTime, sigBuild.finishTime);
+		sigBuild.createTime = $util.getPageDate(sigBuild.createTime);
+		if (sigBuild.state === 'Success' || sigBuild.state === 'Fail') {
+			logUrl = $location.protocol() + '://' + requestUrl + '/api/ci/build/download/' + sigBuild.projectId + '/' + sigBuild.id;
+		} else if (sigBuild.state === 'Building') {
+			logUrl = 'ws://' + requestUrl + '/api/ci/build/log/realtime?buildId=' + sigBuild.id;
+		} else {
+			logUrl = '';
+		}
+		sigBuild.logHref = '/log/log.html?url=' + encodeURIComponent(logUrl);
+	};
+	var freshBuildList = function () {
+		return $domeProject.projectService.getBuildList($scope.projectId).then(function (res) {
+			var buildList = res.data.result || [],
+				requestUrl = $location.host(),
+				isFind, i, j, newCount = 0,
+				thisBuild;
+			if ($location.port()) {
+				requestUrl += ':' + $location.port();
+			}
+			if (!$scope.buildList || $scope.buildList.length === 0) {
+				for (i = 0; i < buildList.length; i++) {
+					_formartBuildLog(buildList[i], requestUrl);
+				}
+				$scope.buildList = buildList;
+			} else {
+				for (i = 0; i < buildList.length; i++) {
+					thisBuild = buildList[i];
+					isFind = false;
+					_formartBuildLog(thisBuild, requestUrl);
+					for (j = newCount; j < $scope.buildList.length; j++) {
+						if (thisBuild.id === $scope.buildList[j].id) {
+							$scope.buildList[j].state = thisBuild.state;
+							$scope.buildList[j].interval = thisBuild.interval;
+							$scope.buildList[j].createTime = thisBuild.createTime;
+							$scope.buildList[j].interval = thisBuild.interval;
+							$scope.buildList[j].imageInfo.imageSize = thisBuild.imageInfo.imageSize;
+							$scope.buildList[j].logHref = thisBuild.logHref;
+							isFind = true;
+							break;
+						}
+					}
+					if (!isFind) {
+						$scope.buildList.splice(newCount, 0, thisBuild);
+						newCount++;
+					}
+				}
+				buildList = null;
+			}
+			return true;
+		}, function () {
+			return true;
+		});
+	};
+	var modify = function () {
 		$scope.isWaitingForModify = true;
-		$scope.project.modify().then(function() {
+		$scope.project.modify().then(function () {
 			$domePublic.openPrompt('修改成功！');
 			$scope.checkEdit();
 			initProjectInfo();
-			$scope.needValid = false;
-		}, function(res) {
+			$scope.valid.needValid = false;
+		}, function (res) {
 			$domePublic.openWarning({
 				title: '修改失败！',
 				msg: 'Message:' + res.data.resultMsg
 			});
-		}).finally(function() {
+		}).finally(function () {
 			$scope.isWaitingForModify = false;
 		});
 	};
-	var openDockerfile = function() {
-		$modal.open({
-			animation: true,
-			templateUrl: 'dockerfileModal.html',
-			controller: 'dockerfileModalCtr',
-			size: 'md',
-			resolve: {
-				project: function() {
-					return $scope.project;
-				}
-			}
-		});
-	};
-	$domeImage.getBaseImageList().then(function(res) {
+	$domeImage.imageService.getBaseImages().then(function (res) {
 		$scope.imageList = res.data.result;
 	});
-	$scope.checkEdit = function() {
+	$scope.checkEdit = function () {
 		$scope.edit = !$scope.edit;
 		if ($scope.edit) {
-			$scope.project = editProject;
-			var buildPath = $scope.project.config.dockerfileInfo.buildPath,
-				dockerfilePath = $scope.project.config.dockerfileInfo.dockerfilePath;
-			if (!buildPath || buildPath === '') {
-				$scope.project.config.dockerfileInfo.buildPath = '/';
+			if ($scope.project.customConfig.customType) {
+				// 初始化项目镜像选择
+				initProjectImages($scope.project.customConfig.customType);
 			}
-			if (!dockerfilePath || dockerfilePath === '') {
-				$scope.project.config.dockerfileInfo.dockerfilePath = '/Dockerfile';
-			}
+			initConig();
 		} else {
-			editProject = angular.copy(project);
-			$scope.project = project;
+			$scope.project = angular.copy(project);
+			initConig();
 		}
 		$scope.config = $scope.project.config;
 	};
-	$scope.getBuildList = function() {
-		$domeProject.getBuildList($scope.projectId).then(function(res) {
-			var buildList = res.data.result || [],
-				requestUrl = $location.host(),
-				logUrl;
-			if ($location.port()) {
-				requestUrl += ':' + $location.port();
-			}
-			for (var i = 0; i < buildList.length; i++) {
-				if (buildList[i].state === 'Success' || buildList[i].state === 'Fail') {
-					logUrl = $location.protocol() + '://' + requestUrl + '/api/ci/build/download/' + buildList[i].projectId + '/' + buildList[i].id;
-				} else if (buildList[i].state === 'Building') {
-					logUrl = 'ws://' + requestUrl + '/api/ci/build/log/realtime?buildId=' + buildList[i].id;
-				} else {
-					logUrl = '';
+	// 切换项目类型
+	// @param type: 'allType'(通用配置)/'java'
+	$scope.toggleProjectType = function (type) {
+		// 如果没有改变
+		if (!$scope.config.userDefineDockerfile && (type == 'allType' && !$scope.project.isUseCustom || type === $scope.project.isUseCustom && $scope.project.customConfig.customType)) return;
+		$scope.config.userDefineDockerfile = false;
+		// 如果是切换到项目原来的配置(通用或者专属)，初始化配置
+		if (!project.config.userDefineDockerfile && (type == 'allType' && !project.isUseCustom || project.isUseCustom && type === project.customConfig.customType)) {
+			// editProject = angular.copy(project);
+			$scope.project = angular.copy(project);
+			initConig();
+		} else {
+			// 初始化新选择的类型的配置
+			$scope.project.resetConfig();
+			initConig();
+		}
+		if (type == 'allType') {
+			$scope.project.isUseCustom = false;
+		} else {
+			$scope.project.isUseCustom = true;
+			$scope.project.customConfig.customType = type;
+			initProjectImages(type);
+		}
+	};
+	$scope.toggleUseDockerfile = function () {
+		if ($scope.config.userDefineDockerfile) {
+			return;
+		}
+		$scope.config.userDefineDockerfile = true;
+		if (project.config.userDefineDockerfile) {
+			// editProject = angular.copy(project);
+			$scope.project = angular.copy(project);
+		} else {
+			$scope.project.resetConfig();
+		}
+		initConig();
+	};
+	$scope.getBuildList = function () {
+		if (timeout) {
+			$timeout.cancel(timeout);
+		}
+		if (!$scope.buildList) {
+			freshBuildList();
+		}
+		timeout = $timeout(function () {
+			freshBuildList().finally(function () {
+				if ($state.current.name == 'projectDetail.buildlog') {
+					$scope.getBuildList();
 				}
-				buildList[i].logHref = '/log/log.html?url=' + encodeURIComponent(logUrl);
+			});
+		}, 4000);
+	};
+	$scope.changeDockerfilePath = function (txt) {
+		if (txt == '/') {
+			$scope.config.dockerfileInfo.dockerfilePath = '/Dockerfile';
+		} else {
+			$scope.config.dockerfileInfo.dockerfilePath = txt + '/Dockerfile';
+		}
+	};
+	$scope.validCreatedFileStoragePath = function () {
+		if (!$scope.project.isUseCustom) {
+			$scope.valid.createdFileStoragePath = true;
+			return;
+		}
+		var createdFileStoragePath = $scope.project.customConfig.createdFileStoragePath;
+		for (var i = 0; i < createdFileStoragePath.length; i++) {
+			if (createdFileStoragePath[i].name) {
+				$scope.valid.createdFileStoragePath = true;
+				return;
 			}
-			$scope.buildList = res.data.result;
-		});
+		}
+		$scope.valid.createdFileStoragePath = false;
 	};
-	$scope.changeDockerfilePath = function(txt) {
-		$scope.config.dockerfileInfo.dockerfilePath = txt + '/Dockerfile';
-	};
-	$scope.startEdit = function() {
+	$scope.startEdit = function () {
 		$scope.edit = !$scope.edit;
 	};
-	$scope.isNoSet = function(str) {
+	$scope.isNoSet = function (str) {
 		if (!str) {
 			str = '未设置';
 		}
 		return str;
 	};
-	$scope.submitModify = function() {
+	$scope.submitModify = function () {
 		modify();
 	};
-	$scope.deleteProject = function() {
-		$scope.project.delete().then(function() {
+	$scope.deleteProject = function () {
+		$scope.project.delete().then(function () {
 			$state.go('projectManage');
 		});
 	};
-	$scope.toggleStatus = function(status) {
+	$scope.toggleStatus = function (status) {
 		if (status === $scope.statusKey) {
 			$scope.statusKey = '';
 		} else {
 			$scope.statusKey = status;
 		}
 	};
-	$scope.toggleAutoBuild = function(autoBuild) {
+	$scope.toggleAutoBuild = function (autoBuild) {
 		if (autoBuild === $scope.autoBuildKey) {
 			$scope.autoBuildKey = '';
 		} else {
 			$scope.autoBuildKey = autoBuild;
 		}
 	};
-	$scope.modifyCI = function() {
+	$scope.modifyCI = function () {
 		$scope.isWaitingForModify = true;
 		modify();
 	};
-	$scope.openBuild = function() {
-		$domeProject.buildProject($scope.config.id, !!$scope.config.codeInfo).then(function() {
-			$scope.getBuildList();
+	$scope.openBuild = function () {
+		$domeProject.buildProject($scope.config.id, !!$scope.config.codeInfo).then(function () {
+			freshBuildList();
 		});
 	};
-	$scope.getDockerfile = function() {
-		if ($scope.config.userDefineDockerfile) {
-			var useDockerfileModalIns = $modal.open({
-				templateUrl: 'branchCheckModal.html',
-				controller: 'branchCheckModalCtr',
-				size: 'md',
-				resolve: {
-					projectId: function() {
-						return $scope.config.id;
-					}
-				}
-			});
-			useDockerfileModalIns.result.then(function(branch) {
-				$scope.config.dockerfileInfo.branch = branch;
-				openDockerfile();
-			});
-		} else {
-			openDockerfile();
+	$scope.getDockerfile = function () {
+		$scope.project.getDockerfile();
+	};
+	$scope.$on('$destroy', function (argument) {
+		if (timeout) {
+			$timeout.cancel(timeout);
 		}
-	};
-}]).controller('dockerfileModalCtr', ['$scope', '$modalInstance', 'project', '$domeProject', '$sce', function($scope, $modalInstance, project, $domeProject, $sce) {
-	project.getDockerfile().then(function(res) {
-		if (res.data.resultCode == 200) {
-			if (res.data.result) {
-				$scope.dockerfileTxt = $sce.trustAsHtml(res.data.result.replace(/[\n\r]/g, '<br/>'));
-			} else {
-				$scope.dockerfileTxt = $sce.trustAsHtml('无数据！');
-			}
-		} else {
-			$scope.dockerfileTxt = $sce.trustAsHtml('<h4 class="txt-error">请求失败！</h4><p class="txt-error">错误信息：' + res.data.resultMsg + '</p>');
-		}
-	}, function() {
-		$scope.dockerfileTxt = $sce.trustAsHtml('<p class="txt-error">请求失败！</p>');
 	});
-	$scope.cancel = function() {
-		$modalInstance.dismiss('cancel');
-	};
-}]).controller('branchCheckModalCtr', ['$scope', '$modalInstance', '$domeProject', 'projectId', function($scope, $modalInstance, $domeProject, projectId) {
-	$domeProject.getBranchList(projectId).then(function(res) {
-		$scope.branches = res.data.result;
-		$scope.selectedBranch = $scope.branches[0];
-	});
-	$scope.cancel = function() {
-		$modalInstance.dismiss('cancel');
-	};
-	$scope.submitBranch = function() {
-		$modalInstance.close($scope.selectedBranch);
-	};
-	$scope.toggleBranch = function(branch) {
-		$scope.selectedBranch = branch;
-	};
+	var stateInfo = $state.$current.name;
+	if (stateInfo.indexOf('config') !== -1) {
+		$scope.tabActive[1].active = true;
+	} else if (stateInfo.indexOf('autobuild') !== -1) {
+		$scope.tabActive[2].active = true;
+	} else if (stateInfo.indexOf('buildlog') !== -1) {
+		$scope.tabActive[3].active = true;
+		$scope.getBuildList();
+	} else if (stateInfo.indexOf('user') !== -1) {
+		$scope.tabActive[4].active = true;
+	} else {
+		$scope.tabActive[0].active = true;
+	}
 }]);

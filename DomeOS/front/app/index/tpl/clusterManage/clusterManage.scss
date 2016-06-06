@@ -19,13 +19,21 @@
 					border-bottom: $light-border;
 					overflow: hidden;
 					.cluster-name {
-						display: block;
+						display: inline-block;
 						margin-top: 7px;
 						color: dome-color(font,embed);
 						font-size: 16px;
 					}
 					.ui-btn-white{
 						color: dome-color(dome,bright);
+					}
+				}
+				.build-cluster-title{
+					display: inline-block;
+					padding-left: 10px;
+					color: dome-color(font,default);
+					em{
+						margin-left: 10px;
 					}
 				}
 				.cluster-content{

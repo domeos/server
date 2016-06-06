@@ -5,7 +5,7 @@
     <button ui-sref="mirrorCustom" class="ui-btn ui-btn-lg ui-btn-imgtool"> <i class="icon-tool"></i>镜像定制工具</button>
   </div>
   <tabset class="mod-tab">
-    <tab heading="基础镜像">
+    <tab heading="基础镜像" active="tabActive[0].active" ui-sref="imageManage.baseimages">
       <div class="image-option">
         <button ng-if="!isShowAdd" ng-click="toggleShowAdd(true)" class="ui-btn ui-btn-bright ui-btn-sm">添加</button>
         <button ng-if="isShowAdd" ng-click="toggleShowAdd(false)" class="ui-btn ui-btn-bright ui-btn-sm">取消</button>
@@ -52,7 +52,7 @@
         </tbody>
       </table>
     </tab>
-    <tab heading="项目镜像">
+    <tab heading="项目镜像" active="tabActive[1].active" ui-sref="imageManage.projectimages">
       <div class="image-option"><span class="registry-address">仓库地址：{{projectRegistry}}</span>
         <div class="pull-right">共{{projectImagesFiltered.length}}个镜像
           <input placeholder="输入镜像名称查找" ng-model="projectImageKey" class="ui-input-fill ui-input-search"/>
@@ -73,12 +73,12 @@
           <tr ng-repeat="img in projectImagesFiltered=(projectImages|filter:{'imageName':projectImageKey})">
             <td ng-bind="img.imageName"></td>
             <td><a ng-click="openTagModal(img.imageName)" class="link-safe">查看</a></td>
-            <td ng-bind="parseDate(img.createTime)"></td>
+            <td ng-bind="vmDome.parseDate(img.createTime)"></td>
           </tr>
         </tbody>
       </table>
     </tab>
-    <tab heading="非项目镜像">
+    <tab heading="非项目镜像" active="tabActive[2].active" ui-sref="imageManage.otherimages">
       <div class="image-option"><span class="registry-address">仓库地址：{{projectRegistry}}</span>
         <div class="pull-right">共{{otherImageFilterd.length}}个镜像
           <input placeholder="输入镜像名称查找" ng-model="otherImageKey" class="ui-input-fill ui-input-search"/>
@@ -111,7 +111,7 @@
     <table class="ui-table-dome modal-full-table">
       <thead>
         <tr>
-          <th>版本名</th>
+          <th>版本名{{vmDome}}</th>
           <th>创建时间</th>
         </tr>
       </thead>

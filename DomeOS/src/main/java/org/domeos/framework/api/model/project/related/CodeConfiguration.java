@@ -14,6 +14,15 @@ public class CodeConfiguration {
     private int codeId;
     private int codeManagerUserId;
 
+    public CodeConfiguration() {
+    }
+
+    public CodeConfiguration(String codeManager, int codeId, int codeManagerUserId) {
+        this.codeManager = CodeManager.valueOf(codeManager);
+        this.codeId = codeId;
+        this.codeManagerUserId = codeManagerUserId;
+    }
+
     public String getCode() {
         return code;
     }

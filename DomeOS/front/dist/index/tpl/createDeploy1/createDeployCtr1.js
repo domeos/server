@@ -1,4 +1,4 @@
-domeApp.controller('createDeployCtr1', ['$scope', '$state', '$domeData', '$domeDeploy', '$domePublic', function($scope, $state, $domeData, $domeDeploy, $domePublic) {
+domeApp.controller('CreateDeployCtr1', ['$scope', '$state', '$domeData', '$domeDeploy', '$domePublic', function($scope, $state, $domeData, $domeDeploy, $domePublic) {
 	'use strict';
 	$scope.$emit('pageTitle', {
 		title: '新建部署',
@@ -7,9 +7,10 @@ domeApp.controller('createDeployCtr1', ['$scope', '$state', '$domeData', '$domeD
 	});
 	if ($domeData.getData('createDeployInfo1')) {
 		$scope.deployEditIns = $domeData.getData('createDeployInfo1');
+		$scope.deployEditIns.formartHealthChecker();
 		$domeData.delData('createDeployInfo1');
 	} else {
-		$scope.deployEditIns = $domeDeploy.getInstance('EditDeploy');
+		$scope.deployEditIns = $domeDeploy.getInstance('Deploy');
 	}
 	$scope.editConfig = $scope.deployEditIns.config;
 	$scope.currentContainerDraft = {

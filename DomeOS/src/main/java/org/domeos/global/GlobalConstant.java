@@ -1,6 +1,8 @@
 package org.domeos.global;
 
 
+import org.domeos.util.DatabaseType;
+
 /**
  * Created by Administrator on 2015/7/21.
  */
@@ -15,6 +17,7 @@ public class GlobalConstant {
     public static final String BUILDHISTORY_TABLE_NAME = "build_history";
     public static final String UNIQPORTINDEX_TABLE_NAME = "uniq_port_index";
 
+    public static DatabaseType DATABASETYPE = DatabaseType.H2;
     public static String HTTP_PREFIX = "http://";
     public static String HTTPS_PREFIX = "https://";
     public static String REGISTRY_VERSION = "/v2/";
@@ -28,12 +31,20 @@ public class GlobalConstant {
     public static String REGISTRY_HISTORY_V1COMPATIBILITY_CREATED = "created";
     public static String APPLICATION_JSON = "application/json";
     public static String CONTENT_TYPE_TEXT_JSON = "text/json";
-    public static String DEPLOY_ID_STR = "deployId";
-    public static String VERSION_STR = "version";
-    public static String RC_NAME_PREFIX = "dmo-";
     public static String DISK_STR = "disk";
     public static String NODE_PORT_STR = "NodePort";
     public static String CLUSTER_IP_STR = "ClusterIP";
     public static String UTC_TIME = "UTC";
     public static String HTTP_CONTENTLENGTH = "Content-Length";
+
+    public static String DEPLOY_ID_STR = "deployId";
+    public static String VERSION_STR = "version";
+    public static String RC_NAME_PREFIX = "dmo-";
+    public static String LOAD_BALANCER_ID_STR = "loadBalancerId";
+    public static String WITH_LB_PREFIX = "withLB_";
+    public static String WITH_LB_VALUE = "TRUE";
+
+    public static String BUILD_CODE_PATH = "/code";
+    public static String NODATA_CONFIG_NAME = "domeos.agent.alive";
+    public static int alarmGroupId = 1000;
 }

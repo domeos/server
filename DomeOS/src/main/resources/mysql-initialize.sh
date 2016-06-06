@@ -7,6 +7,7 @@ fi
 echo "
 create database if not exists domeos;
 create database if not exists graph;
+create database if not exists portal;
 " > ./create.sql;
 
 mysql -h ${MYSQL_HOST} -P ${MYSQL_PORT} -u ${MYSQL_USERNAME} -p${MYSQL_PASSWORD} < ./create.sql;
@@ -22,3 +23,8 @@ mysql -h ${MYSQL_HOST} -P ${MYSQL_PORT} -u ${MYSQL_USERNAME} -p${MYSQL_PASSWORD}
 sleep 5
 
 mysql -h ${MYSQL_HOST} -P ${MYSQL_PORT} -u ${MYSQL_USERNAME} -p${MYSQL_PASSWORD} < ./graph-db-schema.sql
+
+sleep 5
+
+mysql -h ${MYSQL_HOST} -P ${MYSQL_PORT} -u ${MYSQL_USERNAME} -p${MYSQL_PASSWORD} < ./portal-db-schema.sql
+

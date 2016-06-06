@@ -39,15 +39,13 @@ public class UserController extends ApiController {
         User user = new User(addUserInfo.getUsername(), addUserInfo.getPassword());
         user.setEmail(addUserInfo.getEmail());
         user.setPhone(addUserInfo.getPhone());
-        int userId = AuthUtil.getUserId();
-        return userService.createUser(userId, user);
+        return userService.createUser(user);
     }
 
     @ResponseBody
-    @RequestMapping(value = "/delete/{username}", method = RequestMethod.DELETE)
-    public HttpResponseTemp<?> deleteUser(@PathVariable String username) {
-        int userId = AuthUtil.getUserId();
-        return userService.deleteUser(userId, username);
+    @RequestMapping(value = "/delete/{id}", method = RequestMethod.DELETE)
+    public HttpResponseTemp<?> deleteUser(@PathVariable int id) {
+        return userService.deleteUser(id);
     }
 
     @ResponseBody
@@ -59,17 +57,13 @@ public class UserController extends ApiController {
     @ResponseBody
     @RequestMapping(value = "/adminChangePassword", method = RequestMethod.POST)
     public HttpResponseTemp<?> modifyPassword(@RequestBody UserPassword userPassword) {
-        int userId = AuthUtil.getUserId();
-        return userService.changePasswordByAdmin(userId, userPassword);
+        return userService.changePasswordByAdmin(userPassword);
     }
 
     @ResponseBody
     @RequestMapping(value = "/modify", method = RequestMethod.POST)
-    public HttpResponseTemp<?> modifyUser(
-            @RequestParam(value = "username", required = true) String username,
-            @RequestParam(value = "email", required = true) String email) {
-        int userId = AuthUtil.getUserId();
-        return userService.modifyUser(userId, username, email);
+    public HttpResponseTemp<?> modifyUser(@RequestBody User user) {
+        return userService.modifyUser(user);
     }
 
     @ResponseBody

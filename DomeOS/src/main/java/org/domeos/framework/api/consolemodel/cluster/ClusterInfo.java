@@ -19,13 +19,15 @@ public class ClusterInfo {
     private String ownerName;
     private int logConfig;
     private long createTime;
+    private int buildConfig;
     private ClusterLog clusterLog;
 
     public ClusterInfo() {
     }
 
-    public ClusterInfo(int id, String name, String api, String tag, String domain, String dns, String etcd,
-                       String ownerName, int logConfig, long createTime, ClusterLog clusterLog) {
+    public ClusterInfo(int id, String name, String api, String tag, String domain,
+                       String dns, String etcd, String ownerName, int logConfig,
+                       long createTime, int buildConfig, ClusterLog clusterLog) {
         this.id = id;
         this.name = name;
         this.api = api;
@@ -36,6 +38,7 @@ public class ClusterInfo {
         this.ownerName = ownerName;
         this.logConfig = logConfig;
         this.createTime = createTime;
+        this.buildConfig = buildConfig;
         this.clusterLog = clusterLog;
     }
 
@@ -117,6 +120,14 @@ public class ClusterInfo {
 
     public void setCreateTime(long createTime) {
         this.createTime = createTime;
+    }
+
+    public int getBuildConfig() {
+        return buildConfig;
+    }
+
+    public void setBuildConfig(int buildConfig) {
+        this.buildConfig = buildConfig;
     }
 
     public ClusterLog getClusterLog() {

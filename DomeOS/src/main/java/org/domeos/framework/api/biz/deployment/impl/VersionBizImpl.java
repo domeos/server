@@ -27,10 +27,10 @@ public class VersionBizImpl extends BaseBizImpl implements VersionBiz {
     VersionMapper versionMapper;
 
     @Override
-    public long insertRow(Version version) {
-        Long verNow = versionMapper.getMaxVersion(version.getDeployId());
+    public int insertRow(Version version) {
+        Integer verNow = versionMapper.getMaxVersion(version.getDeployId());
         if (verNow == null) {
-            verNow = 0L;
+            verNow = 0;
         }
         verNow++;
         version.setVersion(verNow);
@@ -41,7 +41,7 @@ public class VersionBizImpl extends BaseBizImpl implements VersionBiz {
     }
 
     @Override
-    public long insertVersionWithLogCollect(Version version, Cluster cluster) {
+    public int insertVersionWithLogCollect(Version version, Cluster cluster) {
         LogDraft logDraft = version.getLogDraft();
         ClusterLog clusterLog = cluster.getClusterLog();
         if (logDraft != null && logDraft.getLogItemDrafts() != null && logDraft.getLogItemDrafts().size() > 0) {
@@ -68,7 +68,7 @@ public class VersionBizImpl extends BaseBizImpl implements VersionBiz {
     }
 
     @Override
-    public Version getVersion(int deployId, long versionId) {
+    public Version getVersion(int deployId, int versionId) {
         RowMapperDao dao =  versionMapper.getVersion(deployId, versionId);
         return checkResult(dao, Version.class);
     }

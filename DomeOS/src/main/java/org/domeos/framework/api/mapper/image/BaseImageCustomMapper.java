@@ -14,8 +14,8 @@ import java.util.List;
 @Repository
 public interface BaseImageCustomMapper {
 
-    @Select("SELECT * FROM base_image_custom WHERE isGC=0 AND removed=0")
-    List<BaseImageCustom> getUnGcBaseImageCustom();
+    @Select("SELECT " + RowMapper.BASIC_COLUMNS + " FROM base_image_custom WHERE isGC=0 AND removed=0")
+    List<RowMapperDao> getUnGcBaseImageCustom();
 
     @Update("UPDATE base_image_custom SET isGC=#{isGC} WHERE id=#{id}")
     void updateBaseImageCustomGC(@Param("id") int id, @Param("isGC") int isGC);

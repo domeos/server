@@ -14,6 +14,7 @@ import org.domeos.framework.api.model.resource.Resource;
 import org.domeos.framework.api.model.resource.related.ResourceOwnerType;
 import org.domeos.framework.api.model.resource.related.ResourceType;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +22,7 @@ import java.util.List;
 /**
  * Created by zhenfengchen on 15-11-20.
  */
-
+@Component
 public class AuthUtil {
 
     static AuthBiz authBiz;
@@ -255,6 +256,12 @@ public class AuthUtil {
                 break;
             case LISTGROUPMEMBER:
                 result = userRoleType.getAccessLevel() < Role.NOTEXIST.getAccessLevel();
+                break;
+            case GET:
+                result = userRoleType.getAccessLevel() <= Role.REPORTER.getAccessLevel();
+                break;
+            case MODIFY:
+                result = userRoleType.getAccessLevel() <= Role.DEVELOPER.getAccessLevel();
                 break;
         }
 

@@ -27,13 +27,11 @@ public interface UserService {
      * @param flag true means need to be authorized
      * @return
      */
-    HttpResponseTemp<?> createUser(int userId, User user, boolean flag);
+    HttpResponseTemp<?> createUser(User user, boolean flag);
 
-    HttpResponseTemp<?> createUser(int userId, User user);
+    HttpResponseTemp<?> createUser(User user);
 
-    HttpResponseTemp<?> deleteUser(int userId, String username);
-
-    HttpResponseTemp<?> modifyUser(int userId, String username, String email);
+    HttpResponseTemp<?> deleteUser(int id);
 
     HttpResponseTemp<?> modifyUser(User user);
 
@@ -51,7 +49,7 @@ public interface UserService {
      * @param userPassword contains username, newpassword
      * @return
      */
-    HttpResponseTemp<?> changePasswordByAdmin(int userId, UserPassword userPassword);
+    HttpResponseTemp<?> changePasswordByAdmin(UserPassword userPassword);
 
     HttpResponseTemp<List<User>> listAllUserInfo();
 

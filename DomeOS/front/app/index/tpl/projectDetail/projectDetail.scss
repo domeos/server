@@ -2,6 +2,7 @@
 @import "common/css/common.scss";
 .project-detail{
 	$tab-padding:48px;
+	padding-bottom: 100px;
 	.tab-pane{
 		padding-left: $tab-padding;
 		overflow: hidden;
@@ -37,29 +38,33 @@
 			color:dome-color(dome,primary);
 		}
 	}
-	.dockerfile-setting{
-		overflow: hidden;
-		padding: 28px 0 29px 28px;
-		.s1{
-			margin-right: 20px;
-			font-weight: bold;
-		}
-		.s2{
-			display: inline-block;
-			vertical-align: middle;
-		}
-		.s3{
-			margin-left: 12px;
-			color:dome-color(dome,primary);
-		}
+	.custom-type{
+		font-weight: bold;
+		font-size: 14px;
 	}
+	// .dockerfile-setting{
+	// 	overflow: hidden;
+	// 	padding: 28px 0 29px 28px;
+	// 	.s1{
+	// 		margin-right: 20px;
+	// 		font-weight: bold;
+	// 	}
+	// 	.s2{
+	// 		display: inline-block;
+	// 		vertical-align: middle;
+	// 	}
+	// 	.s3{
+	// 		margin-left: 12px;
+	// 		color:dome-color(dome,primary);
+	// 	}
+	// }
 	.dockerfile-options{
 		padding: 23px 0;
 		.ui-btn-dockerfile{
 			color: dome-color(dome,bright);
 		}
 	}
-	.ui-btn-options{
+	.btn-options{
 		text-align: center;
 		padding-top: 32px;
 	}
@@ -69,6 +74,15 @@
 		.ci-title{
 			font-weight: bold;
 			margin-right: 40px;
+		}
+		.ci-content{
+			display: inline-block;
+			vertical-align: top;
+		}
+		@media (max-width: 1200px){
+			.ci-content {
+				max-width: 700px;
+			}
 		}
 		.branch-check{
 			display: inline-block;
@@ -146,6 +160,9 @@
 				}
 			}
 		}
+	}
+	.btn-options{
+		padding-bottom: 60px;
 	}
 }
 .modal-log{

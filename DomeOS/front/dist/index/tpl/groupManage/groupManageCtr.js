@@ -1,4 +1,4 @@
-domeApp.controller('groupManageCtr', ['$scope', '$domeUser', function($scope, $domeUser) {
+domeApp.controller('GroupManageCtr', ['$scope', '$domeUser', function($scope, $domeUser) {
 	'use strict';
 	$scope.$emit('pageTitle', {
 		title: '组管理',
@@ -6,7 +6,7 @@ domeApp.controller('groupManageCtr', ['$scope', '$domeUser', function($scope, $d
 		mod: 'user'
 	});
 	$scope.isLoading = true;
-	$domeUser.getGroup().then(function(res) {
+	$domeUser.userService.getGroup().then(function(res) {
 		$scope.groupList = res.data.result || [];
 	}).finally(function() {
 		$scope.isLoading = false;

@@ -12,7 +12,7 @@ import java.util.List;
  */
 public interface K8SEventBiz {
 
-    void createEvent(int clusterName, Event event) throws IOException;
+    void createEvent(int clusterId, int deployId, Event event) throws IOException;
 
     String getLatestResourceVersion(int clusterId);
 
@@ -22,7 +22,13 @@ public interface K8SEventBiz {
 
     List<Event> getEventsByKindAndNamespace(int clusterId, String ns, EventKind kind) throws IOException;
 
-    List<Event> getEventsByDeployName(int clusterId, String deployName) throws IOException;
+    List<Event> getEventsByDeployId(int clusterId, int deployId) throws IOException;
 
     List<EventInfo> translateEvent(List<Event> events);
+
+    void clearDeployEvents(int clusterId, int deployId);
+
+    long deleteOldDeployEvents(int clusterId, int deployId);
+
+    long deleteOldDeployEvents(int clusterId, int deployId, int remaining);
 }

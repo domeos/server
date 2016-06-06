@@ -80,4 +80,10 @@ public class ImageController extends ApiController {
     public HttpResponseTemp<?> getDockerImageDetail(@RequestParam String name,  @RequestParam(value = "registry", required = false) String registry){
         return imageService.getDockerImageDetail(name, registry);
     }
+
+    @ResponseBody
+    @RequestMapping(value = "/image/exclusive/{type}", method = RequestMethod.GET)
+    public HttpResponseTemp<?> getAllExclusiveImages(@PathVariable String type) {
+        return imageService.getAllExclusiveImages(type);
+    }
 }

@@ -1,10 +1,13 @@
 package org.domeos.framework.engine.k8s.updater;
 
 import org.apache.log4j.Logger;
-import org.domeos.api.model.deployment.UpdatePhase;
-import org.domeos.api.model.deployment.UpdatePolicy;
-import org.domeos.api.model.deployment.UpdateReplicationCount;
-import org.domeos.api.model.deployment.UpdateStatus;
+import org.domeos.client.kubernetesclient.definitions.v1.Pod;
+import org.domeos.exception.DeploymentEventException;
+import org.domeos.framework.api.model.deployment.Policy;
+import org.domeos.framework.engine.k8s.model.UpdatePhase;
+import org.domeos.framework.engine.k8s.model.UpdatePolicy;
+import org.domeos.framework.engine.k8s.model.UpdateReplicationCount;
+import org.domeos.framework.engine.k8s.model.UpdateStatus;
 import org.domeos.client.kubernetesclient.KubeClient;
 import org.domeos.client.kubernetesclient.definitions.v1.PodList;
 import org.domeos.client.kubernetesclient.definitions.v1.ReplicationController;
@@ -29,7 +32,7 @@ public class ReplicationControllerUpdater {
     private ReplicationController oldRC;
     private ReplicationController newRC;
     private UpdateStrategy strategy;
-    private final UpdateStatus status = new UpdateStatus(UpdatePhase.Unknow, 0, 0);
+    private final UpdateStatus status = new UpdateStatus(UpdatePhase.Unknown, 0, 0);
     private Future updateFuture = null;
     private StatusChangeHandler<UpdateStatus> statusHandler;  // call every time status change
     private static final ReplicationControllerUpdater EMPTY_UPDATER = new ReplicationControllerUpdater();
@@ -43,16 +46,29 @@ public class ReplicationControllerUpdater {
             KubeClient client,
             ReplicationController oldRC,
             ReplicationController newRC,
-            StatusChangeHandler<UpdateStatus> handler) {
+            StatusChangeHandler<UpdateStatus> handler,
+            Policy policy) {
         ReplicationControllerUpdater updater = new ReplicationControllerUpdater();
         updater.oldRC = oldRC;
         updater.oldRC.getMetadata().setResourceVersion(null);
         updater.newRC = newRC;
         updater.newRC.getMetadata().setResourceVersion(null);
         updater.oldRC.getSpec().setReplicas(0);
-        updater.strategy = new RollingUpdateStrategy();
+        if (policy == null) {
+            updater.strategy = new RollingUpdateStrategy();
+        } else {
+            switch (policy.getPolicyType()) {
+                case UserDesign:
+                    updater.strategy = new UserDesignUpdateStrategy(policy);
+                    break;
+                default:
+                    updater.strategy = new RollingUpdateStrategy();
+            }
+        }
+
         updater.client = client;
         updater.statusHandler = handler;
+        updater.updateStatus(oldRC.getSpec().getReplicas(), newRC.getSpec().getReplicas());
         return updater;
     }
 
@@ -60,7 +76,15 @@ public class ReplicationControllerUpdater {
             KubeClient client,
             ReplicationController oldRC,
             ReplicationController newRC) {
-        return RollingUpdater(client, oldRC, newRC, null);
+        return RollingUpdater(client, oldRC, newRC, null, null);
+    }
+
+    public static ReplicationControllerUpdater RollingUpdater(
+            KubeClient client,
+            ReplicationController oldRC,
+            ReplicationController newRC,
+            Policy policy) {
+        return RollingUpdater(client, oldRC, newRC, null, policy);
     }
 
     public ReplicationControllerUpdater(
@@ -75,6 +99,7 @@ public class ReplicationControllerUpdater {
         updater.newRC.getMetadata().setResourceVersion(null);
         updater.strategy = strategy;
         updater.client = client;
+        updater.updateStatus(oldRC.getSpec().getReplicas(), newRC.getSpec().getReplicas());
     }
 
     private ReplicationControllerUpdater() {
@@ -85,7 +110,6 @@ public class ReplicationControllerUpdater {
     }
 
     public void startIn(ExecutorService otherExecutor) {
-        updateStart(oldRC.getSpec().getReplicas(), newRC.getSpec().getReplicas());
         try {
             updateFuture = otherExecutor.submit(new UpdateReplicationController());
         } catch (RejectedExecutionException | NullPointerException e) {
@@ -93,17 +117,12 @@ public class ReplicationControllerUpdater {
         }
     }
 
-    public void startSynchronized() {
-        updateStart(oldRC.getSpec().getReplicas(), newRC.getSpec().getReplicas());
-        updateRC();
-    }
-
     public UpdateStatus getStatus() {
         UpdateStatus statusNow;
         synchronized (status) {
             if (updateFuture != null && updateFuture.isDone()
                     && status.getPhase() != UpdatePhase.Failed
-                    && status.getPhase() != UpdatePhase.Successed) {
+                    && status.getPhase() != UpdatePhase.Succeed) {
                 status.setPhase(UpdatePhase.Failed);
                 status.setReason("unknown reason for update thread terminated");
             }
@@ -127,7 +146,7 @@ public class ReplicationControllerUpdater {
     }
 
     public void close() {
-        if (updateFuture.isDone() || updateFuture.isCancelled()) {
+        if (updateFuture == null || updateFuture.isDone() || updateFuture.isCancelled()) {
             return;
         }
         stop();
@@ -140,7 +159,9 @@ public class ReplicationControllerUpdater {
     }
 
     // **************************** implement ***************************
-    public boolean updateRC() {
+
+    // this function is used for rc update from old version to new version step by step
+    public boolean update() throws DeploymentEventException {
         if (oldRC == null || RCUtils.getName(oldRC) == null || RCUtils.getSelector(oldRC) == null
                 || newRC == null || RCUtils.getName(newRC) == null || RCUtils.getSelector(newRC) == null) {
             return false;
@@ -183,10 +204,10 @@ public class ReplicationControllerUpdater {
             do {
                 if (todo != null) {
                     // update one
-                    isSuccess = updateOne(todo, oldRC, newRC);
+                    isSuccess = updateOneStep(todo, oldRC, newRC);
                     if (!isSuccess) {
                         // update failed
-                        // status will change in updateOne internal, should here
+                        // status will change in updateOneStep internal, should here
                         return false;
                     }
                 }
@@ -211,23 +232,27 @@ public class ReplicationControllerUpdater {
                     updateFailed("old replication controller delete failed");
                     return false;
                 }
+                PodList oldPodList = client.listPod(RCUtils.getSelector(oldRC));
+                if (oldPodList != null && oldPodList.getItems() != null) {
+                    for (Pod pod : oldPodList.getItems()) {
+                        client.deletePod(PodUtils.getName(pod));
+                    }
+                }
             }
         } catch (KubeResponseException | IOException | KubeInternalErrorException e) {
             updateFailed("Kubernetes failed with message=" + e.getMessage());
             // isSuccess = false;
             return false;
         }
-        if (isSuccess) {
-            synchronized (status) {
-                status.setPhase(UpdatePhase.Successed);
-                handleStatusChange();
-            }
+        synchronized (status) {
+            status.setPhase(UpdatePhase.Succeed);
+            handleStatusChange();
         }
-        return isSuccess;
+        return true;
     }
 
-    public boolean updateOne(UpdatePolicy policy, ReplicationController oldRC, ReplicationController newRC)
-            throws KubeResponseException, IOException, KubeInternalErrorException {
+    public boolean updateOneStep(UpdatePolicy policy, ReplicationController oldRC, ReplicationController newRC)
+            throws KubeResponseException, IOException, KubeInternalErrorException, DeploymentEventException {
         if (!checkUpdateStatus(policy, oldRC, newRC)) {
             return false;
         }
@@ -283,7 +308,7 @@ public class ReplicationControllerUpdater {
     }
 
     public boolean waitForReady(UpdatePolicy policy, ReplicationController rc, boolean isFirstAction)
-            throws KubeResponseException, IOException, KubeInternalErrorException {
+            throws KubeResponseException, IOException, KubeInternalErrorException, DeploymentEventException {
         int desireInt = 0;
         if (isFirstAction ^ policy.isRemoveOldFirst()) {
             // for old
@@ -386,7 +411,11 @@ public class ReplicationControllerUpdater {
     public class UpdateReplicationController implements Runnable {
         @Override
         public void run() {
-            updateRC();
+            try {
+                update();
+            } catch (DeploymentEventException e) {
+                // do nothing
+            }
         }
     }
 
@@ -399,7 +428,7 @@ public class ReplicationControllerUpdater {
         }
     }
 
-    public void updateStart(int oldReplicas, int newReplicas) {
+    public void updateStatus(int oldReplicas, int newReplicas) {
         synchronized (status) {
             status.setPhase(UpdatePhase.Starting);
             status.setOldReplicaCount(oldReplicas);

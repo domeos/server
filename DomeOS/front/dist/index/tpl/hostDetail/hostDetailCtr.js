@@ -1,15 +1,19 @@
-domeApp.controller('hostDetailCtr', ['$scope', '$stateParams', '$domeCluster', '$domePublic', '$modal', '$state', function($scope, $stateParams, $domeCluster, $domePublic, $modal, $state) {
+domeApp.controller('HostDetailCtr', ['$scope', '$stateParams', '$domeCluster', '$domePublic', '$modal', '$state', '$q', function ($scope, $stateParams, $domeCluster, $domePublic, $modal, $state, $q) {
 	'use strict';
 	$scope.loading = true;
 	var loadingItems = {
 		host: true,
 		instance: true
 	};
-	if (!$stateParams.name || !$stateParams.clusterId) {
-		$state.go('clusterManage');
-	}
+	var nodeService = $domeCluster.getInstance('NodeService');
 	var hostname = $stateParams.name;
 	var clusterId = $stateParams.clusterId;
+	if (!$stateParams.name || !$stateParams.clusterId) {
+		$state.go('clusterDetail.hostlist', {
+			id: clusterId
+		});
+		return;
+	}
 	var envData = {
 		testEnv: false,
 		prodEnv: false
@@ -24,9 +28,27 @@ domeApp.controller('hostDetailCtr', ['$scope', '$stateParams', '$domeCluster', '
 		descrition: '',
 		mod: 'cluster'
 	});
+	$scope.clusterConfig = {};
 	// 面包屑 父级url
 	$scope.parentState = 'clusterDetail({id:"' + clusterId + '"})';
-	$domeCluster.getNodeInfo(clusterId, hostname).then(function(res) {
+
+	$scope.tabActive = [{
+		active: false
+	}, {
+		active: false
+	}];
+
+	var stateInfo = $state.$current.name;
+	if (stateInfo.indexOf('info') !== -1) {
+		$scope.tabActive[1].active = true;
+	} else {
+		$scope.tabActive[0].active = true;
+	}
+	nodeService.getData(clusterId).then(function (res) {
+		$scope.clusterConfig = res.data.result || {};
+	});
+
+	nodeService.getNodeInfo(clusterId, hostname).then(function (res) {
 		var node = res.data.result;
 		$scope.hostSetting.diskTxt = node.diskInfo;
 		node.capacity.memory = (node.capacity.memory / 1024 / 1024).toFixed(2);
@@ -50,30 +72,32 @@ domeApp.controller('hostDetailCtr', ['$scope', '$stateParams', '$domeCluster', '
 			$scope.labelsList = node.labels;
 		}
 		$scope.node = node;
-	}, function() {
+	}, function () {
 		$domePublic.openWarning('请求失败！');
-		$state.go('clusterManage');
+		$state.go('clusterDetail.hostlist', {
+			id: clusterId
+		});
 	}).finally(function() {
 		loadingItems.host = false;
 		if (!loadingItems.instance && $scope.loading) {
 			$scope.loading = false;
 		}
 	});
-	$domeCluster.getHostInstance(clusterId, hostname).then(function(res) {
+	nodeService.getHostInstances(clusterId, hostname).then(function (res) {
 		$scope.instanceList = res.data.result || [];
-	}).finally(function() {
+	}).finally(function () {
 		loadingItems.instance = false;
 		if (!loadingItems.host && $scope.loading) {
 			$scope.loading = false;
 		}
 	});
-	$scope.showLog = function(instanceName, containers, namespace) {
+	$scope.showLog = function (instanceName, containers, namespace) {
 		$modal.open({
 			templateUrl: 'index/tpl/modal/instanceLogModal/instanceLogModal.html',
-			controller: 'instanceLogModalCtr',
+			controller: 'InstanceLogModalCtr',
 			size: 'md',
 			resolve: {
-				instanceInfo: function() {
+				instanceInfo: function () {
 					return {
 						clusterId: clusterId,
 						namespace: namespace,
@@ -84,133 +108,177 @@ domeApp.controller('hostDetailCtr', ['$scope', '$stateParams', '$domeCluster', '
 			}
 		});
 	};
-	$scope.toggleBuildEnv = function() {
+	$scope.toggleBuildEnv = function () {
+		var requestData = [{
+			node: hostname,
+			labels: {
+				BUILDENV: 'HOSTENVTYPE'
+			}
+		}];
 		if (!$scope.hostSetting.isUsedToBuild) {
-			var requestData = {
-				node: hostname,
-				labels: {
-					BUILDENV: 'HOSTENVTYPE'
-				}
-			};
-			$domeCluster.addLabel(clusterId, requestData).then(function() {
+			nodeService.addLabel(clusterId, requestData).then(function () {
 				$scope.hostSetting.isUsedToBuild = true;
-			}, function() {
+			}, function () {
 				$domePublic.openWarning('添加失败！');
 			});
 
 		} else {
-			$domeCluster.deleteLabel(clusterId, hostname, 'BUILDENV').then(function(res) {
-				$scope.hostSetting.isUsedToBuild = false;
-			}, function() {
-				$domePublic.openWarning('修改失败！');
+			nodeService.getNodeList(clusterId).then(function (res) {
+				var nodeList = res.data.result || [];
+				for (var i = 0; i < nodeList.length; i++) {
+					if (nodeList[i].name !== hostname && nodeList[i].labels && nodeList[i].labels.BUILDENV) {
+						return true;
+					}
+				}
+				$domePublic.openWarning('构建集群至少需要一台用于构建的主机！');
+				return $q.reject();
+			}).then(function () {
+				nodeService.deleteLabel(clusterId, requestData).then(function () {
+					$scope.hostSetting.isUsedToBuild = false;
+				}, function () {
+					$domePublic.openWarning('修改失败！');
+				});
 			});
 		}
-		$scope.hostSetting.isUsedToBuild = !$scope.hostSetting.isUsedToBuild;
 	};
-	$scope.modifyEnv = function() {
+	$scope.modifyEnv = function () {
+		var addLabels = [],
+			deleteLabels = [];
 		if (!$scope.envData.testEnv && !$scope.envData.prodEnv) {
 			$domePublic.openWarning('请至少选中一个工作场景！');
 			return;
 		}
-		var labels = {};
-		var hasAddLabel = false;
 
-		function deleteLable(label) {
-			$domeCluster.deleteLabel(clusterId, hostname, label).then(function(res) {
-				if (label === 'TESTENV') {
-					envData.testEnv = false;
-				} else if (label === 'PRODENV') {
-					envData.prodEnv = false;
+		if ($scope.envData.testEnv) {
+			addLabels.push({
+				node: hostname,
+				labels: {
+					TESTENV: 'HOSTENVTYPE'
 				}
-			}, function() {
-				$domePublic.openWarning('修改失败！');
-			});
-		}
-
-		function isDeleteLabel() {
-			if (!$scope.envData.testEnv && envData.testEnv) {
-				deleteLable('TESTENV');
-			}
-			if (!$scope.envData.prodEnv && envData.prodEnv) {
-				deleteLable('PRODENV');
-			}
-
-		}
-
-		if ($scope.envData.testEnv && !envData.testEnv) {
-			labels.TESTENV = 'HOSTENVTYPE';
-			hasAddLabel = true;
-		}
-
-		if ($scope.envData.prodEnv && !envData.prodEnv) {
-			labels.PRODENV = 'HOSTENVTYPE';
-			hasAddLabel = true;
-		}
-		var addRequestData = {
-			node: hostname,
-			labels: labels
-		};
-		if (hasAddLabel) {
-			$domeCluster.addLabel(clusterId, addRequestData).then(function() {
-				if (addRequestData.labels.TESTENV) {
-					envData.testEnv = true;
-				}
-				if (addRequestData.labels.PRODENV) {
-					envData.prodEnv = true;
-				}
-			}, function() {
-				$domePublic.openWarning('修改失败！');
-			}).finally(function() { //添加完之后才能进行删除操作
-				isDeleteLabel();
 			});
 		} else {
-			isDeleteLabel();
+			deleteLabels.push({
+				node: hostname,
+				labels: {
+					TESTENV: 'HOSTENVTYPE'
+				}
+			});
+		}
+
+		if ($scope.envData.prodEnv) {
+			if (!addLabels[0]) {
+				addLabels.push({
+					node: hostname,
+					labels: {
+						PRODENV: 'HOSTENVTYPE'
+					}
+				});
+			} else {
+				addLabels[0].labels.PRODENV = 'HOSTENVTYPE';
+			}
+		} else {
+			if (!deleteLabels[0]) {
+				deleteLabels.push({
+					node: hostname,
+					labels: {
+						PRODENV: 'HOSTENVTYPE'
+					}
+				});
+			} else {
+				deleteLabels[0].labels.PRODENV = 'HOSTENVTYPE';
+			}
+		}
+
+		if (addLabels.length !== 0 && deleteLabels.length !== 0) {
+			// 不能同时操作删除和添加
+			nodeService.addLabel(clusterId, addLabels).then(function () {
+				return true;
+			}, function (res) {
+				$domePublic.openWarning({
+					title: '修改失败！',
+					msg: 'Message:' + res.data.resultMsg
+				});
+			}).then(function () {
+				nodeService.deleteLabel(clusterId, deleteLabels).then(function () {
+					$domePublic.openPrompt('修改成功！');
+				}, function (res) {
+					$domePublic.openWarning({
+						title: '修改失败！',
+						msg: 'Message:' + res.data.resultMsg
+					});
+				});
+			});
+		} else if (addLabels.length !== 0) {
+			nodeService.addLabel(clusterId, addLabels).then(function () {
+				$domePublic.openPrompt('修改成功');
+			}, function (res) {
+				$domePublic.openWarning({
+					title: '修改失败！',
+					msg: 'Message:' + res.data.resultMsg
+				});
+			});
+		} else {
+			nodeService.deleteLabel(clusterId, deleteLabels).then(function () {
+				$domePublic.openPrompt('修改成功');
+			}, function (res) {
+				$domePublic.openWarning({
+					title: '修改失败！',
+					msg: 'Message:' + res.data.resultMsg
+				});
+			});
 		}
 	};
-	$scope.addLabel = function() {
+	$scope.addLabel = function () {
 		if (!$scope.hostSetting.labelTxt || $scope.hostSetting.labelTxt === '') {
 			return;
 		}
-		var requestData = {
+		var requestData = [{
 			node: hostname,
 			labels: {}
-		};
-		requestData.labels[$scope.hostSetting.labelTxt] = 'USER_LABEL_VALUE';
+		}];
+		requestData[0].labels[$scope.hostSetting.labelTxt] = 'USER_LABEL_VALUE';
 
-		$domeCluster.addLabel(clusterId, requestData).then(function() {
+		nodeService.addLabel(clusterId, requestData).then(function () {
 			$scope.labelsList[$scope.hostSetting.labelTxt] = 'USER_LABEL_VALUE';
 			$scope.hostSetting.labelTxt = '';
-		}, function() {
+		}, function () {
 			$domePublic.openWarning('添加失败！');
 		});
 	};
-	$scope.deleteLable = function(label) {
-		$domePublic.openConfirm('删除主机标签可能会影响部署，是否继续？').then(function() {
-			$domeCluster.deleteLabel(clusterId, hostname, label).then(function(res) {
+	$scope.deleteLable = function (label) {
+		var deleteLabelInfo = [{
+			node: hostname,
+			labels: {}
+		}];
+		deleteLabelInfo[0].labels[label] = null;
+		$domePublic.openConfirm('删除主机标签可能会影响部署，是否继续？').then(function () {
+			nodeService.deleteLabel(clusterId, deleteLabelInfo).then(function () {
 				delete $scope.labelsList[label];
-			}, function() {
+			}, function () {
 				$domePublic.openWarning('删除失败！');
 			});
 		});
 	};
-	$scope.saveDisk = function() {
-		$domeCluster.modifyDisk(clusterId, hostname, $scope.hostSetting.diskTxt).then(function() {
-			$domePublic.openPrompt('修改成功！');
-		}, function() {
-			$domePublic.openWarning('修改失败！');
-		});
-	};
-	$scope.toConsole = function(index) {
+	// $scope.saveDisk = function () {
+	// 	nodeService.modifyNodeDisk(clusterId, hostname, $scope.hostSetting.diskTxt).then(function () {
+	// 		$domePublic.openPrompt('修改成功！');
+	// 	}, function () {
+	// 		$domePublic.openWarning('修改失败！');
+	// 	});
+	// };
+	$scope.toConsole = function (index) {
 		$modal.open({
 			templateUrl: 'index/tpl/modal/selectContainerModal/selectContainerModal.html',
-			controller: 'selectContainerModalCtr',
+			controller: 'SelectContainerModalCtr',
 			size: 'md',
 			resolve: {
-				containerList: function() {
-					return $scope.instanceList[index].containers;
-				},
-				hostIp: function() {
-					return $scope.instanceList[index].hostIp;
+				info: function () {
+					return {
+						containerList: $scope.instanceList[index].containers,
+						hostIp: $scope.instanceList[index].hostIp,
+						resourceId: clusterId,
+						type: 'CLUSTER'
+					};
 				}
 			}
 		});

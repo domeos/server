@@ -1,10 +1,11 @@
 
 <div class="mod-monitor monitor-manage">
   <loading ng-if="loadingsIns.isLoading"></loading>
+  <div ng-if="alarmPermission.name" class="detail-header"><a ui-sref="alarm.templates" class="ui-btn ui-btn-link ui-btn-safe ui-btn-lg"><i class="icon-alarm"></i>报警管理</a></div>
   <div class="monitor-options">
     <div class="monitor-option"><span class="option-title">集群</span>
       <div select-con="select-con" class="com-select-con">
-        <button ng-cloak="ng-cloak" class="ui-btn ui-btn-white ui-btn-select">{{clusterListIns.cluster.name}}<i class="icon-down"></i></button>
+        <button ng-cloak="ng-cloak" class="ui-btn ui-btn-white ui-btn-select">{{clusterListIns.cluster.name||'选择集群'}}<i class="icon-down"></i></button>
         <ul class="select-list">
           <li ng-repeat="cluster in clusterListIns.clusterList" class="select-item"><a ng-bind="cluster.name" ng-click="toggleCluster($index)"></a></li>
         </ul>
@@ -23,17 +24,17 @@
       <div select-con="select-con" class="com-select-con">
         <button ng-cloak="ng-cloak" ng-disabled="loadingsIns.loadingItems.deploy" class="ui-btn ui-btn-white ui-btn-select">{{currentEnv.text}}<i class="icon-down"></i></button>
         <ul class="select-list">
-          <li class="select-item"><a ng-click="toggleEnv('生产')">生产 </a></li>
+          <li class="select-item"><a ng-click="toggleEnv('生产')">生产</a></li>
           <li class="select-item"><a ng-click="toggleEnv('测试')">测试</a></li>
         </ul>
       </div>
     </div>
-    <div ng-if="monitorType=='实例'" class="monitor-option"><span class="option-title">部署</span>
-      <div select-con="select-con" class="com-select-con">
-        <button ng-cloak="ng-cloak" class="ui-btn ui-btn-white ui-btn-select">{{deployListIns.deploy.name||'选择部署'}}<i class="icon-down"></i></button>
+    <div ng-if="monitorType=='实例'" class="monitor-line"><span class="option-title">部署</span>
+      <div select-con="select-con" class="com-select-con host-label">
+        <input placeholder="{{deployListIns.deploy.name?'当前选择：'+deployListIns.deploy.name:'搜索部署'}}" ng-model="keywords.deployName" class="ui-input-search ui-input-fill ui-btn-select"/>
         <ul class="select-list">
           <li ng-if="!deployListIns.deployList||deployFiltered.length===0" class="select-item"><a>无相关部署</a></li>
-          <li ng-repeat="deploy in deployFiltered=(deployListIns.deployList|filter:{'clusterFilter':true,'hostEnv':currentEnv.value})" class="select-item"><a ng-bind="deploy.deployName" ng-click="toggleDeploy(deploy.deployId,deploy.deployName)"></a></li>
+          <li ng-repeat="deploy in deployFiltered=(deployListIns.deployList|filter:{'clusterFilter':true,'hostEnv':currentEnv.value,'deployName':keywords.deployName})" class="select-item"><a ng-click="toggleDeploy(deploy.deployId,deploy.deployName,deploy.namespace);"><span ng-cloark="ng-cloark">{{deploy.deployName}}</span><span ng-cloak="ng-cloak" class="item-right txt-prompt">namespace:{{deploy.namespace}}</span></a></li>
         </ul>
       </div>
     </div>
@@ -46,7 +47,7 @@
           </li>
         </ul>
         <ul class="select-list">
-          <li ng-if="objLength(labelsInfoFiltered)===0"><a>无相关信息</a></li>
+          <li ng-if="vmDome.objLength(labelsInfoFiltered)===0"><a>无相关信息</a></li>
           <li ng-repeat="(label,value) in labelsInfoFiltered=(nodeListIns.labelsInfo| searchKey:labelKey.key|search:'isShow':true)" class="select-item"><a ng-bind="label" ng-click="nodeListIns.toggleLabel(label,true);labelKey.key=''"></a></li>
         </ul>
       </div>
@@ -86,7 +87,7 @@
         <tr ng-repeat="node in filteredNodes=(nodeListIns.nodeList|filter:{'labelFilter':true,'keyFilter':true}|orderBy:orderBy.node:orderBy.isReverse)">
           <td ng-cloak="ng-cloak"><span>
               <input id="{{'node'+$index}}" type="checkbox" ng-model="node.isSelected" ng-change="nodeListIns.toggleNodeCheck(node)" class="ui-check"/>
-              <label for="{{'node'+$index}}"></label></span><a target="_blank" ng-click="toMonitorDetail('node',node)">{{node.name}}</a></td>
+              <label for="{{'node'+$index}}"></label></span><a target="_blank" ng-click="toMonitorDetail('node',node)" class="ui-table-link">{{node.name}}</a></td>
           <td ng-if="node.status=='Ready'" class="txt-safe">在线</td>
           <td ng-if="node.status=='NotReady'" class="txt-prompt">离线</td>
           <td ng-cloak="ng-cloak">{{isNaN(node.cpuBusyCount)?node.cpuBusyCount:(node.cpuBusyCount+'%')}}</td>
@@ -119,7 +120,7 @@
         <tr ng-repeat="instance in instanceListFiltered = (deployListIns.deployInstanceListIns.instanceList|filter:{keyFilter:true}|orderBy:orderBy.pod:orderBy.isReverse)">
           <td ng-cloak="ng-cloak"><span>
               <input id="{{'instance'+$index}}" type="checkbox" ng-model="instance.isSelected" ng-change="deployListIns.deployInstanceListIns.toggleCheck(instance)" class="ui-check"/>
-              <label for="{{'instance'+$index}}"></label></span><a ng-click="toMonitorDetail('pod',instance)">{{instance.instanceName}}</a></td>
+              <label for="{{'instance'+$index}}"></label></span><a ng-click="toMonitorDetail('pod',instance)" class="ui-table-link">{{instance.instanceName}}</a></td>
           <td ng-cloak="ng-cloak">{{isNaN(instance.cpuBusyCount)?instance.cpuBusyCount:(instance.cpuBusyCount+'%')}}</td>
           <td ng-cloak="ng-cloak">{{isNaN(instance.memPercentCount)?instance.memPercentCount:(instance.memPercentCount+'%')}}</td>
           <td ng-bind="instance.netInCount"></td>

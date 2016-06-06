@@ -27,8 +27,14 @@ public interface DeploymentMapper {
     int updateDeploy(@Param("item") RowMapperDao item);
 
     @Select("SELECT * FROM " + GlobalConstant.DEPLOY_TABLE_NAME + " WHERE clusterId=#{clusterId} AND removed=0")
-    List<Deployment> listDeploymentByClusterId(@Param("clusterId")int clusterId);
+    List<RowMapperDao> listDeploymentByClusterId(@Param("clusterId")int clusterId);
 
+    @Select("SELECT * FROM " + GlobalConstant.DEPLOY_TABLE_NAME + " WHERE clusterId=#{clusterId} AND name=#{name} AND removed=0")
+    List<RowMapperDao> getDeployment(@Param("clusterId") int clusterId, @Param("name") String name);
+
+    @Select("SELECT * FROM " + GlobalConstant.DEPLOY_TABLE_NAME + " WHERE state in " +
+            "('DEPLOYING', 'ABORTING', 'STOPPING', 'UPSCALING', 'DOWNSCALING', 'UPDATING', 'BACKROLLING')")
+    List<Deployment> listUnfinishedStatusDeployment();
 //
 //    @Select("SELECT * FROM version WHERE deployId=#{deployId} AND version=#{version}")
 //    VersionDBProto getVersion(@Param("deployId") long deployId, @Param("version") long version);

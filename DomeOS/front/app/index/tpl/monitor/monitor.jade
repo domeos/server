@@ -1,10 +1,19 @@
 .mod-monitor.monitor-manage
 	loading(ng-if="loadingsIns.isLoading")
+	.detail-header(ng-if="alarmPermission.name")
+		a.ui-btn.ui-btn-link.ui-btn-safe.ui-btn-lg(ui-sref="alarm.templates")
+			i.icon-alarm
+			| 报警管理
+	//- .link-alarm
+		a.ui-btn.ui-btn-link.ui-btn-safe.ui-btn-md(ui-sref="alarm.templates")
+			i.icon-alarm
+			| 报警
+	//- .monitor-top
 	.monitor-options
 		.monitor-option
 			span.option-title 集群
 			.com-select-con(select-con)
-				button.ui-btn.ui-btn-white.ui-btn-select(ng-cloak) {{clusterListIns.cluster.name}}
+				button.ui-btn.ui-btn-white.ui-btn-select(ng-cloak) {{clusterListIns.cluster.name||'选择集群'}}
 					i.icon-down
 				ul.select-list
 					li.select-item(ng-repeat="cluster in clusterListIns.clusterList")
@@ -22,23 +31,28 @@
 		.monitor-option
 			span.option-title 环境
 			.com-select-con(select-con)
-				button.ui-btn.ui-btn-white.ui-btn-select(ng-cloak ng-disabled="loadingsIns.loadingItems.deploy") {{currentEnv.text}}
+				button.ui-btn.ui-btn-white.ui-btn-select(ng-cloak  ng-disabled="loadingsIns.loadingItems.deploy") {{currentEnv.text}}
 					i.icon-down
 				ul.select-list
 					li.select-item
-						a(ng-click="toggleEnv('生产')") 生产 
+						a(ng-click="toggleEnv('生产')") 生产
 					li.select-item
 						a(ng-click="toggleEnv('测试')") 测试
-		.monitor-option(ng-if="monitorType=='实例'")
+		.monitor-line(ng-if="monitorType=='实例'")
 			span.option-title 部署
-			.com-select-con(select-con)
-				button.ui-btn.ui-btn-white.ui-btn-select(ng-cloak) {{deployListIns.deploy.name||'选择部署'}}
+			.com-select-con.host-label(select-con)
+				input.ui-input-search.ui-input-fill.ui-btn-select(placeholder="{{deployListIns.deploy.name?'当前选择：'+deployListIns.deploy.name:'搜索部署'}}" ng-model="keywords.deployName")
+				//- button.ui-btn.ui-btn-white.ui-btn-select(ng-cloak)
+					span {{deployListIns.deploy.name||'选择部署'}}
+					span.tool-item-next.txt-prompt(ng-show="deployListIns.deploy.namespace") (namespace:{{deployListIns.deploy.namespace}})
 					i.icon-down
 				ul.select-list
 					li.select-item(ng-if="!deployListIns.deployList||deployFiltered.length===0")
 						a 无相关部署
-					li.select-item(ng-repeat="deploy in deployFiltered=(deployListIns.deployList|filter:{'clusterFilter':true,'hostEnv':currentEnv.value})")
-						a(ng-bind="deploy.deployName" ng-click="toggleDeploy(deploy.deployId,deploy.deployName)")
+					li.select-item(ng-repeat="deploy in deployFiltered=(deployListIns.deployList|filter:{'clusterFilter':true,'hostEnv':currentEnv.value,'deployName':keywords.deployName})")
+						a(ng-click="toggleDeploy(deploy.deployId,deploy.deployName,deploy.namespace);")
+							span(ng-cloark) {{deploy.deployName}}
+							span.item-right.txt-prompt(ng-cloak) namespace:{{deploy.namespace}}
 		.monitor-line(ng-if="monitorType=='主机'")
 			span.option-title 主机标签
 			.ui-input-white.com-select-con.host-label(label="true" select-con)
@@ -49,10 +63,14 @@
 					li.select-input
 						input.line-element.ui-btn-select(placeholder="选择主机标签" ng-model="labelKey.key" ng-keydown="labelKeyDown($event,labelKey.key,labelsInfoFiltered)")
 				ul.select-list
-					li(ng-if="objLength(labelsInfoFiltered)===0")
+					li(ng-if="vmDome.objLength(labelsInfoFiltered)===0")
 						a 无相关信息
 					li.select-item(ng-repeat="(label,value) in labelsInfoFiltered=(nodeListIns.labelsInfo| searchKey:labelKey.key|search:'isShow':true)")
 						a(ng-bind="label" ng-click="nodeListIns.toggleLabel(label,true);labelKey.key=''")
+		//- .link-alarm(ng-if="alarmPermission.name")
+			a.ui-btn.ui-btn-link.ui-btn-safe.ui-btn-md(ui-sref="alarm.templates")
+				i.icon-alarm
+				| 报警
 	.monitor-info(ng-if="monitorType=='主机'")
 		span.selected-count 已选中{{nodeListIns.selectedCount}}个
 		a.ui-btn.ui-btn-primary.ui-btn-link.ui-btn-sm(target="_blank" ng-click="toMonitorDetail('node')") 查看监控详情
@@ -104,7 +122,7 @@
 						span
 							input.ui-check(id="{{'node'+$index}}" type="checkbox" ng-model="node.isSelected" ng-change="nodeListIns.toggleNodeCheck(node)")
 							label(for="{{'node'+$index}}")
-						a(target="_blank" ng-click="toMonitorDetail('node',node)") {{node.name}}
+						a.ui-table-link(target="_blank" ng-click="toMonitorDetail('node',node)") {{node.name}}
 					td(ng-if="node.status=='Ready'").txt-safe 在线
 					td(ng-if="node.status=='NotReady'").txt-prompt 离线
 					td(ng-cloak) {{isNaN(node.cpuBusyCount)?node.cpuBusyCount:(node.cpuBusyCount+'%')}}
@@ -148,7 +166,7 @@
 						span
 							input.ui-check(id="{{'instance'+$index}}" type="checkbox" ng-model="instance.isSelected" ng-change="deployListIns.deployInstanceListIns.toggleCheck(instance)")
 							label(for="{{'instance'+$index}}")
-						a(ng-click="toMonitorDetail('pod',instance)") {{instance.instanceName}}
+						a.ui-table-link(ng-click="toMonitorDetail('pod',instance)") {{instance.instanceName}}
 					td(ng-cloak) {{isNaN(instance.cpuBusyCount)?instance.cpuBusyCount:(instance.cpuBusyCount+'%')}}
 					td(ng-cloak) {{isNaN(instance.memPercentCount)?instance.memPercentCount:(instance.memPercentCount+'%')}}
 					td(ng-bind="instance.netInCount")

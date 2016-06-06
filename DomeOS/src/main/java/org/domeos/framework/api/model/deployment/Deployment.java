@@ -11,7 +11,7 @@ import org.domeos.framework.engine.model.RowModelBase;
 public class Deployment extends RowModelBase {
 
     private String clusterName;
-    private String namespace = "default"; // namespace for k8s cluster
+    private String namespace; // namespace for k8s cluster
     private HostEnv hostEnv; // PROD or TEST
     private int defaultReplicas;
     private NetworkMode networkMode = NetworkMode.DEFAULT;

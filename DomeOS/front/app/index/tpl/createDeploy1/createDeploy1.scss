@@ -77,6 +77,9 @@
 		padding-left: $page-padding;
 		background-color: #fff;
 		font-size: 0;
+		.txt-error a{
+			color:dome-color(dome,error);
+		}
 	}
 	.tabset{
 		background-color: #fff;
@@ -89,31 +92,32 @@
 	}
 	.mirror-info-con{
 		padding:34px $wider-padding 0  $wider-padding;
-		.mirror-info{
-			padding-bottom: 14px;
+		.com-list-info{
+			// padding-bottom: 14px;
 			background-color: #fff;
 			border-radius: $default-radius;
-			&>li{
-				display: table;
-				width: 100%;
-				&:not(:first-child){
-					border-top: $light-border;
-				}
-			}
+			// &>li{
+			// 	display: table ;
+			// 	width: 100%;
+			// 	&:not(:first-child){
+			// 		border-top: $light-border;
+			// 	}
+			// }
 			.info-name{
-				display: table-cell;
-				width: 150px;
-				padding-top: 42px;
-				padding-left: 20px;
-				font-weight: bold;
+			// 	display: table-cell;
+				padding-top: 25px;
+				width: 162px;
+			// 	font-weight: bold;
 			}
 			.info-content{
-				display: table-cell;
-				padding-left: $page-padding;
+				// display: table-cell;
+				// padding-left: $page-padding;
+				// padding-bottom: 20px;
+				padding-top: 20px;
 				padding-bottom: 20px;
-				.ui-table-mirror,.env-line,.add-env{
-					width: 70%;
-				}
+				// .ui-table-mirror,.env-line,.add-env{
+				// 	width: 70%;
+				// }
 				.com-select-con{
 					width: 50%;
 					.txt-prompt{
@@ -123,8 +127,10 @@
 				}
 				.ui-table-mirror{
 					table-layout: fixed;
+					width: 70%;
+					margin-bottom: 16px;
 					.tb-value{
-						padding-left: 4px;
+						padding-left: 8px;
 						.ui-input-fill{
 							width: 100%;
 						}
@@ -133,31 +139,40 @@
 						word-break:break-all;
 					}
 				}
-				.env-line{
-					position: relative;
-					display: flex;
-					margin-top: 12px;
-					input{
-						margin-left: 10px;
-						flex:1;
-						&:first-child{
-							margin-left: 0;
-						}
-					}
-					.icon-delete{
-						position: absolute;
-						top: 8px;
-						left: 100%;
-						margin-left: 14px;
-					}
+				.line-long{
+					width:70%;
+				}
+				.next-item{
+					margin-left: 16px;
+				}
+				// .env-line{
+				// 	position: relative;
+				// 	display: flex;
+				// 	margin-top: 12px;
+				// 	input{
+				// 		margin-left: 10px;
+				// 		flex:1;
+				// 		&:first-child{
+				// 			margin-left: 0;
+				// 		}
+				// 	}
+				// 	.icon-delete{
+				// 		position: absolute;
+				// 		top: 8px;
+				// 		left: 100%;
+				// 		margin-left: 14px;
+				// 	}
+				// }
+				.env-list li:last-child{
+					margin-bottom: 12px;
 				}
 				.ui-input-sm{
-					margin-right:50px; 
+					margin-right:50px;
 				}
 				.add-env{
 					display: block;
 					height: 34px;
-					margin-top: 12px;
+					margin-top: 0;
 					border:$light-border;
 					text-align: center;
 					line-height: 30px;

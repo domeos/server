@@ -1,21 +1,26 @@
 
-<form role="form" name="proInfoForm" ng-class="{'need-valid':needValid}" novalidate="novalidate" class="mod-project project-create2">
+<div role="form" ng-form="ng-form" name="projectForm" ng-class="{'need-valid':valid.needValid}" class="mod-project project-create2">
   <button ng-click="toCopy()" class="ui-btn ui-btn-bright ui-btn-lg ui-btn-copy">复制已有项目</button>
   <div class="project-new">
-    <ng-include src="'index/tpl/tplProjectSetting/projectSettingTpl1.html'" ng-if="!config.userDefineDockerfile"></ng-include>
-    <ng-include src="'index/tpl/tplProjectSetting/projectSettingTpl2.html'" ng-if="config.userDefineDockerfile"></ng-include>
+    <ng-include src="'index/tpl/tplProjectSetting/projectSettingTpl.html'" ng-if="!config.userDefineDockerfile"></ng-include>
+    <ng-include src="'index/tpl/tplProjectSetting/projectSettingTpl.html'" ng-if="config.userDefineDockerfile"></ng-include>
   </div>
-  <div class="com-bottom-option">
-    <button ng-click="toLastPage();" class="ui-btn ui-btn-bright ui-btn-md ui-btn-last">上一步</button>
-    <button ng-click="needValid=true;proInfoForm.$valid&amp;&amp;createProject()" class="ui-btn ui-btn-bright ui-btn-md">完成创建</button>
-  </div>
+  <div class="com-bottom-option"><span class="com-bottom-option-con">
+      <button ng-click="toLastPage();" class="ui-btn ui-btn-bright ui-btn-md ui-btn-last">上一步</button>
+      <button ng-click="valid.needValid=true;validCreatedFileStoragePath();projectForm.$valid&amp;&amp;valid.createdFileStoragePath&amp;&amp;createProject()" class="ui-btn ui-btn-bright ui-btn-md">完成创建</button>
+      <button ng-click="valid.needValid=true;validCreatedFileStoragePath();projectForm.$valid&amp;&amp;valid.createdFileStoragePath&amp;&amp;getDockerfile()" class="ui-btn ui-btn-safe ui-btn-md">预览Dockerfile</button><span ng-if="valid.needValid&amp;&amp;(!valid.createdFileStoragePath||projectForm.$invalid)" class="txt-error">存在不合法数据，请修改后提交！</span></span></div>
   <script type="text/ng-template" id="projectListModal.html">
     <div class="d-modal-header">选择复制的项目</div>
-    <div class="projectlist-con">
+    <div class="modal-projects">
+      <loading ng-if="loading"></loading>
+      <div class="filter-con"><span ng-cloak="ng-cloak" class="tool-align-input">共{{projectListFiltered.length}}个项目</span>
+        <input ng-model="key.searchKey" placeholder="输入项目名称搜索" class="ui-input ui-input-fill ui-input-search"/>
+      </div>
       <table class="ui-table-dome">
         <thead>
           <tr>
             <th>项目名称</th>
+            <th>项目构建类型</th>
             <th>构建时间</th>
             <th>构建状态</th>
             <th>代码源</th>
@@ -24,11 +29,13 @@
         </thead>
         <tbody>
           <tr>
-            <td colspan="6" ng-if="!filteredProjectList||filteredProjectList.length===0" class="text-center">暂无相关项目</td>
+            <td colspan="6" ng-if="!projectList||projectListFiltered.length===0" class="text-center">暂无相关项目</td>
           </tr>
-          <tr ng-repeat="project in filteredProjectList =  (projectList|filter:{name:proKeywards,userDefineDockerfile:isUseDefineDockerfile})">
+          <tr ng-repeat="project in projectListFiltered=(projectList|filter:{name:key.searchKey})">
             <td><a ng-bind="project.name"></a></td>
-            <td ng-bind="parseDate(project.buildTime)"></td>
+            <td ng-if="project.userDefineDockerfile">代码内Dockerfile</td>
+            <td ng-if="!project.userDefineDockerfile" ng-switch="project.projectType"><span ng-switch-when="java">Java专属配置</span><span ng-switch-default="ng-switch-default">通用配置</span></td>
+            <td ng-bind="vmDome.parseDate(project.buildTime)||'无'"></td>
             <td ng-switch="project.buildStatus"><span ng-switch-when="Success" class="txt-success">成功</span><span ng-switch-when="Fail" class="txt-warning">失败</span><span ng-switch-when="Building" class="txt-normal">构建中</span><span ng-switch-when="Preparing" class="txt-normal">准备中</span><span ng-switch-when="Send" class="txt-normal">准备中</span><span ng-switch-default="ng-switch-default">未启动</span></td>
             <td ng-cloak="ng-cloak" ng-switch="project.codeManager"><span ng-if="!project.nameWithNamespace">无</span><a href="{{project.codeHttpUrl}}" target="_blank" ng-show="project.nameWithNamespace"><i ng-switch-when="gitlab" class="icon-gitlab"></i><i ng-switch-when="github" class="icon-github"></i>{{project.nameWithNamespace}}</a></td>
             <td>
@@ -39,4 +46,4 @@
       </table>
     </div>
   </script>
-</form>
+</div>

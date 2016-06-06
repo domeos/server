@@ -31,6 +31,7 @@
 					thead
 						tr
 							th 实例名称
+							th namespace
 							th 部署名称
 							th 部署版本
 							th 启动时间
@@ -38,13 +39,14 @@
 							th 容器控制台
 					tbody
 						tr(ng-if="instanceList&&instanceListFiltered.length===0")
-							td(colspan="6") 无相关实例信息
+							td(colspan="7") 无相关实例信息
 						tr(ng-repeat="ins in instanceListFiltered=(instanceList|filter:{'instanceName':insKey})")
 							td(ng-bind="ins.instanceName")
+							td(ng-bind="ins.namespace")
 							td(ng-if="ins.versionId===0" colspan="2") 该实例由后台创建
 							td(ng-bind="ins.deployName" ng-if="ins.versionId!==0")
 							td(ng-cloak ng-if="ins.versionId!==0") version{{ins.versionId}}
-							td(ng-bind="parseDate(ins.startTime)")
+							td(ng-bind="vmDome.parseDate(ins.startTime)")
 							td
 								a.txt-safe(ng-click="showLog(ins.instanceName,ins.containers,ins.namespace)") 日志
 							td
@@ -66,18 +68,18 @@
 						.info-content
 							.line-short
 								input.ui-input-white.line-element(ng-model="hostSetting.labelTxt" name="labelTxt")
-								button.ui-btn.ui-btn-primary.ui-btn-sm.add-label(ng-click="needValidHost=true;hostForm.$valid&&addLabel()") 添加标签
+								button.ui-btn.ui-btn-primary.ui-btn-sm.add-label(ng-click="needValidHost=true;hostForm.$valid&&addLabel()") 添加
 							ul.com-label-list.host-label-con
 								li(ng-repeat="(label,value) in labelsList")
 									span.label-item(ng-cloak)
 										a.icon-cancel(ng-click="deleteLable(label)")
 										| {{label}}
-					li
+					li(ng-if="clusterConfig.buildConfig===1")
 						span.info-name 是否用于构建
 						.info-content.txt-prompt
 							dome-toggle(ng-class="{'on':hostSetting.isUsedToBuild}" ng-click="toggleBuildEnv()")
 							| 由于构建时可能会从第三方镜像库下载基础镜像，请开启时尽量保证主机有外网权限
-					li
+					//- li
 						span.info-name 磁盘挂载点
 						.info-content
 							.line-short

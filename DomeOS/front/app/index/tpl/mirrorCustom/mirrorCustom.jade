@@ -44,7 +44,7 @@
 										a(ng-click="selectMirror('projectImages')" ng-show="img.projectImages.length!==0") 项目镜像
 									li.select-item
 										a(ng-click="selectMirror('otherImages')" ng-show="img.otherImages.length!==0") 非项目镜像
-							.line-element.com-select-con(select-con)
+							.line-element.com-select-con.tool-next(select-con)
 								button.ui-btn.ui-btn-white.ui-btn-select.img-select
 									i.icon-down
 									| {{config.sourceImage.imageName||'选择镜像名称'}}
@@ -53,7 +53,7 @@
 										a 无相关镜像名称
 									li.select-item(ng-repeat="imagenamelist in img.mirrorNameList  track by $index")
 										a(ng-click="selectMirrorName(imagenamelist.imageName,imagenamelist.registry)" ng-bind="imagenamelist.imageName")
-							.line-element.com-select-con(select-con)
+							.line-element.com-select-con.tool-next(select-con)
 								button.ui-btn.ui-btn-white.ui-btn-select.img-select
 									i.icon-down
 									| {{config.sourceImage.imageTag||'选择镜像版本'}}
@@ -64,12 +64,12 @@
 										a(ng-click="config.sourceImage.imageTag=imgtag" ng-bind="imgtag")
 						.line-long(ng-if="config.sourceImage.thirdParty===1")
 							span.child-name 选择镜像
-							.line-element.inline-txt
-								input.ui-input-white(placeholder="镜像仓库地址" ng-model="config.sourceImage.registryUrl" required)
-							.line-element.inline-txt
-								input.ui-input-white(placeholder="镜像名称" ng-model="config.sourceImage.imageName" required)
-							.line-element.inline-txt
-								input.ui-input-white(placeholder="镜像版本" ng-model="config.sourceImage.imageTag" required)
+							.line-element
+								input.ui-input-white.full(placeholder="镜像仓库地址" ng-model="config.sourceImage.registryUrl" required)
+							.line-element.tool-next
+								input.ui-input-white.full(placeholder="镜像名称" ng-model="config.sourceImage.imageName" required)
+							.line-element.tool-next
+								input.ui-input-white.full(placeholder="镜像版本" ng-model="config.sourceImage.imageTag" required)
 				li.has-border(ng-if="customtype=='configfile'")
 					span.info-name 添加配置文件
 					.info-content
@@ -84,17 +84,17 @@
 								td
 									input.ui-input-white(placeholder="文件存放路径" ng-model="fileInfo.filePath" ng-click="toggleFile()" ng-class="{'ui-input-fill':showFile}" is-required param1="{{fileInfo.fileName}}")
 								td.td-small
-									a.icon-cancel(ng-click="mirror.deleteFileDefault('fileInfo',$index)")
+									a.icon-cancel(ng-click="mirror.deleteArrItem('files',$index)")
 							tr
-								td.td-edit(colspan="5" ng-if="!showContent") 
+								td.td-edit(colspan="5" ng-if="!showContent")
 									a(ng-click="toggleContent()") 编辑
 								td(ng-if="showContent")
-								td.td-edit(colspan="2" ng-if="showContent") 
+								td.td-edit(colspan="2" ng-if="showContent")
 									textarea.ui-input-fill(ng-model="fileInfo.content")
 								td(ng-if="showContent")
 							tr(ng-if="showContent")
 								td.td-edit(colspan="4")
-									button.ui-btn.ui-btn-sm.ui-btn-cancel(ng-click="toggleContent();mirror.clearFileWrite('fileInfo',$index)") 取消
+									button.ui-btn.ui-btn-sm.ui-btn-cancel(ng-click="toggleContent();mirror.clearFileWrite($index)") 取消
 									button.ui-btn.ui-btn-sm.ui-btn-active(ng-click="toggleContent()") 保存
 				li.has-border(ng-if="customtype=='dockerfile'")
 					span.info-name 编辑Dockerfile
@@ -103,18 +103,18 @@
 						.line-long
 							textarea.ui-input-fill(placeholder="请输入Dockerfile" type="text" required ng-model="config.dockerfileContent" )
 						.line-long
-							button.ui-btn.ui-btn-sm.ui-btn-bright(ng-click="config.dockerfileContent=''") 清空			
+							button.ui-btn.ui-btn-sm.ui-btn-bright(ng-click="config.dockerfileContent=''") 清空
 				li.has-border(ng-if="customtype=='configfile'")
 					span.info-name 输入环境变量
 					.info-content
 						.line-long(ng-repeat="envConfDefault in config.envSettings")
-							.line-element.inline-txt
-								input.ui-input-fill(placeholder="环境变量名" ng-model="envConfDefault.key" ng-focus="$last&&mirror.addEnvConfDefault()" is-required param1="{{envConfDefault.value}}")
-							.line-element.inline-txt
-								input.ui-input-fill(placeholder="环境变量值" ng-model="envConfDefault.value" is-required param1="{{envConfDefault.key}}")
-							.line-element.inline-txt
-								input.ui-input-fill(placeholder="环境变量描述" ng-model="envConfDefault.description")
-							a.txt-wrap.icon-delete(ng-if="config.envSettings.length>1" ng-click="mirror.deleteArrItem('envConfDefault',$index)")
+							.line-element
+								input.ui-input-fill.full(placeholder="环境变量名" ng-model="envConfDefault.key" ng-focus="$last&&mirror.addEnvConfDefault()" is-required param1="{{envConfDefault.value}}")
+							.line-element.tool-next
+								input.ui-input-fill.full(placeholder="环境变量值" ng-model="envConfDefault.value" is-required param1="{{envConfDefault.key}}")
+							.line-element.tool-next
+								input.ui-input-fill.full(placeholder="环境变量描述" ng-model="envConfDefault.description")
+							a.txt-wrap.icon-delete(ng-if="config.envSettings.length>1" ng-click="mirror.deleteArrItem('envSettings',$index)")
 				li.has-border
 					span.info-name 发布镜像
 					.info-content
@@ -129,7 +129,7 @@
 						p.line-word.txt-prompt 给指定的镜像添加描述
 						.line-long
 							input.ui-input-fill.line-element(placeholder="镜像描述" ng-model="config.description")
-						
+
 						p.line-word.txt-prompt 可以把定制镜像指定为特定编程语言的编译镜像或运行镜像
 						.line-word
 							input.ui-check(id="SpecificImg" ng-model="specificImg.isSelected" type="checkbox" name="SpecificImg" ng-click="assigImgName(specificImg.isSelected);")
@@ -142,7 +142,7 @@
 								ul.select-list
 									li.select-item
 										a(ng-click="specificImg.language='java';assigImgName(true)") java
-							.line-element.com-select-con(select-con)
+							.line-element.com-select-con.tool-next(select-con)
 								button.ui-btn.ui-btn-white.ui-btn-select(ng-disabled="!specificImg.isSelected" )
 									i.icon-down
 									| {{specificImg.imgType=='compileimage'?'编译镜像':'运行镜像'}}
@@ -155,7 +155,7 @@
 						.line-long
 							.line-element.com-select-con(select-con)
 								input.ui-input-fill.ui-btn-select(placeholder="镜像名称" type="text" required ng-model="config.imageName" ng-disabled="specificImg.isSelected" ng-class="{'txt-disable':specificImg.isSelected}")
-							.line-element.com-select-con(select-con)
+							.line-element.com-select-con.tool-next(select-con)
 								input.ui-input-fill.ui-btn-select(placeholder="镜像版本" type="text" required ng-model="config.imageTag")
 							span.txt-wrap
 								a.link-safe(ng-click="nameTest()") 重名检测
@@ -163,7 +163,7 @@
 				span.com-bottom-option-con
 					button.ui-btn.ui-btn-md.ui-btn-bright(ng-click="needValid=true;mirrorInfoForm.$valid&&creatBuild()") 开始构建
 					span.txt-error(ng-if="needValid&&mirrorInfoForm.$invalid") 存在不合法数据，请修改后提交！
-		tab(heading="定制记录" ng-click="selectImgList()" active="tabActive[1].active" ui-sref="mirrorCustom.log")
+		tab(heading="定制记录" ng-click="getImgList()" active="tabActive[1].active" ui-sref="mirrorCustom.log")
 			.chose-row
 				.chose-item
 					span.chose-title 状态筛选
@@ -196,15 +196,15 @@
 						tbody
 							tr(ng-if="buildListFilter&&buildListFilter.length===0")
 								td(colspan="9") 无相关信息
-							tr(ng-repeat="custom in buildListFilter=(customList|filter:{'imageName':mirKeyword}|mirrorOptions:selectOption.state:selectOption.builduser:selectOption.type:loginUser.username)" ng-click="showDetail($index,custom.id)")
+							tr(ng-repeat="custom in buildListFilter=(customImgList|filter:{'imageName':mirKeyword}|mirrorOptions:selectOption.state:selectOption.builduser:selectOption.type:loginUser.username)" ng-click="showDetail($index,custom.id)")
 								td(ng-bind="custom.imageName")
-								td 
+								td
 									i.icon-label(tooltip="镜像版本")
 									| {{custom.imageTag}}
-								td 
+								td
 									i.icon-config(tooltip="定制类型")
 									| {{custom.type}}
-								td 
+								td
 									i.icon-user(tooltip="构建者")
 									| {{custom.username}}
 								td(ng-switch="custom.state")
@@ -212,9 +212,9 @@
 									span.txt-normal(ng-switch-when="Preparing") 等待中
 									span.txt-success(ng-switch-when="Success") 成功
 									span.txt-warning(ng-switch-when="Fail") 失败
-								td(ng-bind="parseDate(custom.createTime)")
-								td(ng-bind="getInterval($index)")
+								td(ng-bind="custom.createTime")
+								td(ng-bind="custom.interval")
 								td
-									a.link-safe(href="{{custom.logHref}}" target="_blank"  ng-click="stopPropagation($event)") 日志
+									a.link-safe(href="{{custom.logHref}}" target="_blank"  ng-click="vmDome.stopPropagation($event)") 日志
 								td
 									a.icon-down.up(ng-class="{'up':$index!==currentIndex}")

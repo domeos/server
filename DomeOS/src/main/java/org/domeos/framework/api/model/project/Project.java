@@ -20,7 +20,7 @@ public class Project extends RowModelBase {
     private UserDefinedDockerfile dockerfileInfo;
     private Map<String, String> confFiles;
     private List<EnvSetting> envConfDefault;
-    private PrivilegeBuild privilegeBuild;
+    private ExclusiveBuild exclusiveBuild;
     private int authority;
 
     public CodeConfiguration getCodeInfo() {
@@ -87,12 +87,17 @@ public class Project extends RowModelBase {
         this.authority = authority;
     }
 
-    public PrivilegeBuild getPrivilegeBuild() {
-        return privilegeBuild;
+    public ExclusiveBuild getExclusiveBuild() {
+        return exclusiveBuild;
     }
 
-    public void setPrivilegeBuild(PrivilegeBuild privilegeBuild) {
-        this.privilegeBuild = privilegeBuild;
+    public void setExclusiveBuild(ExclusiveBuild exclusiveBuild) {
+        this.exclusiveBuild = exclusiveBuild;
+    }
+
+    //for old mysql info to use privilegeBuild
+    public void setPrivilegeBuild(ExclusiveBuild privilegeBuild) {
+        this.exclusiveBuild = privilegeBuild;
     }
 
     public String checkLegality() {
@@ -109,6 +114,8 @@ public class Project extends RowModelBase {
             }
         } else if (dockerfileConfig != null && !StringUtils.isBlank(dockerfileConfig.checkLegality())) {
             return dockerfileConfig.checkLegality();
+        } else if (exclusiveBuild != null && !StringUtils.isBlank(exclusiveBuild.checkLegality())) {
+            return exclusiveBuild.checkLegality();
         }
         return null;
     }

@@ -1,8 +1,8 @@
 package org.domeos.service.development.impl;
 
 import org.apache.log4j.Logger;
-import org.domeos.api.model.deployment.UpdatePhase;
-import org.domeos.api.model.deployment.UpdateStatus;
+import org.domeos.framework.engine.k8s.model.UpdatePhase;
+import org.domeos.framework.engine.k8s.model.UpdateStatus;
 import org.domeos.global.GlobalConstant;
 import org.domeos.framework.engine.k8s.updater.ReplicationControllerUpdater;
 import org.domeos.client.kubernetesclient.KubeClient;
@@ -89,7 +89,7 @@ public class ReplicationControllerUpdaterTest {
                         + ", newPodNumber=" + status.getNewReplicaCount();
                 fail(message);
                 break;
-            } else if (status.getPhase() == UpdatePhase.Successed) {
+            } else if (status.getPhase() == UpdatePhase.Succeed) {
                 logger.info("update success");
                 break;
             }

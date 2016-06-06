@@ -79,7 +79,7 @@
               <li ng-repeat="cluster in deployIns.clusterListIns.clusterList" class="select-item"><a ng-click="deployIns.toggleCluster($index)" ng-bind="cluster.name"></a></li>
             </ul>
           </div>
-          <div select-con="select-con" class="line-element com-select-con">
+          <div select-con="select-con" class="line-element com-select-con tool-next">
             <button ng-cloak="ng-cloak" class="ui-btn ui-btn-white ui-btn-select"><i class="icon-down"></i>{{deployIns.envText}}</button>
             <ul class="select-list">
               <li ng-repeat="env in deployIns.envList" class="select-item"><a ng-bind="env.text" ng-click="deployIns.toggleEnv(env)"></a></li>
@@ -89,7 +89,7 @@
         <p ng-if="deployConfig.stateful" class="host-desciption">系统在每台所选主机上运行一个实例</p>
         <div ng-if="deployConfig.stateful" class="line-longer">
           <ul class="host-info">
-            <li> 
+            <li>
               <input type="checkbox" id="hostAll" ng-model="deployIns.nodeListIns.isCheckAll" ng-change="deployIns.nodeListIns.checkAllNode()" class="ui-check"/>
               <label for="hostAll"></label><span>全选</span>
             </li>
@@ -108,7 +108,7 @@
               </li>
             </ul>
             <ul class="select-list">
-              <li ng-if="objLength(labelsInfoFiltered)===0"><a>无相关信息</a></li>
+              <li ng-if="vmDome.objLength(labelsInfoFiltered)===0"><a>无相关信息</a></li>
               <li ng-repeat="(label,value) in labelsInfoFiltered=(deployIns.nodeListIns.labelsInfo| searchKey:labelKey.key|search:'isShow':true)" class="select-item"><a ng-bind="label" ng-click="deployIns.nodeListIns.toggleLabel(label,true);labelKey.key='';"></a></li>
             </ul>
           </div><span class="txt-wrap"><a ng-click="deployIns.nodeListIns.showHost()" class="link-safe">查看选中主机</a></span>
@@ -137,15 +137,8 @@
     </li>
     <li><span class="info-name">创建者</span>
       <div class="info-content">
-        <div class="line-longer">
-          <div select-con="select-con" class="line-element com-select-con">
-            <button class="ui-btn ui-btn-white ui-btn-select"><i class="icon-down"></i>{{deployIns.userGroupListIns.userGroup.name}}</button>
-            <ul class="select-list">
-              <li ng-repeat="group in deployIns.userGroupListIns.userGroupList" class="select-item"><a ng-bind="group.name" ng-click="deployIns.userGroupListIns.toggle($index)"></a></li>
-            </ul>
-          </div>
-          <input type="hidden" name="creatorName" ng-model="deployIns.userGroupListIns.userGroup.name" required="required"/>
-        </div><span ng-show="needValid&amp;&amp;deployForm.creatorName.$invalid" class="txt-error">请选择创建者</span>
+        <creator-selection change-event="deployIns.toggleCreator(user)"></creator-selection>
+        <input type="hidden" name="creatorName" ng-model="deployIns.creator.id" required="required"/><span ng-show="needValid&amp;&amp;deployForm.creatorName.$invalid" class="txt-error">请选择创建者</span>
       </div>
     </li>
     <li><span class="info-name">日志</span>
@@ -159,7 +152,7 @@
           <div ng-if="log.autoCollect" class="line-full"><span class="log-title"> 日志topic</span>
             <input placeholder="请输入日志topic" name="logTopic" ng-model="log.logTopic" required="required" class="ui-input-fill line-element"/>
           </div>
-          <div ng-if="log.autoCollect" class="line-full"><span class="log-title"> 预处理命令</span><span class="log-detail-txt">{{log.processCmd}}<a popover="对收集到的日志做进一步处理，比如筛选或增减字段等，可以用grep和awk命令完成，命令以管道形式执行，因此必须以“|”开始，比如一个典型的处理命令为：   | grep &quot;ERROR\\|WARN\\| EXCEPTION\\| statistic&quot; | awk -vnhost=&quot;$HOSTNAME&quot; '{print &quot;[&quot;nhost&quot;]--&quot;$0}'，该命令将只筛选包含四个对应关键字的行，并且会在行首添加&quot;[hostname]--&quot;的字符串，参照可完成其他复杂的处理方式" class="icon-help"></a></span></div>
+          <div ng-if="log.autoCollect" class="line-full"><span class="log-title"> 预处理命令</span><span class="log-detail-txt">{{log.processCmd||'无'}}<a popover="对收集到的日志做进一步处理，比如筛选或增减字段等，可以用grep和awk命令完成，命令以管道形式执行，因此必须以“|”开始，比如一个典型的处理命令为：   | grep &quot;ERROR\\|WARN\\| EXCEPTION\\| statistic&quot; | awk -vnhost=&quot;$HOSTNAME&quot; '{print &quot;[&quot;nhost&quot;]--&quot;$0}'，该命令将只筛选包含四个对应关键字的行，并且会在行首添加&quot;[hostname]--&quot;的字符串，参照可完成其他复杂的处理方式" class="icon-help"></a></span></div>
           <div class="log-check">
             <input id="autoDelete{{$index}}" type="checkbox" name="autoDelete" ng-model="log.autoDelete" class="ui-check"/>
             <label for="autoDelete{{$index}}">自动删除日志</label>

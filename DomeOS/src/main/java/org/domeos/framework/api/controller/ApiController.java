@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 /**
  */
-public abstract class ApiController {
+public abstract class    ApiController {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 

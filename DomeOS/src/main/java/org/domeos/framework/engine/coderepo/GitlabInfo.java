@@ -6,12 +6,14 @@ import org.domeos.framework.api.model.global.GlobalInfo;
 import org.domeos.framework.api.model.global.GlobalType;
 import org.domeos.framework.api.model.project.GitlabUser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 /**
  * Created by feiliu206363 on 2015/12/10.
  */
+@Component
 public class GitlabInfo {
     static ProjectBiz projectBiz;
     static GlobalBiz globalBiz;

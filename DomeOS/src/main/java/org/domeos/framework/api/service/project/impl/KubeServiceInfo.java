@@ -9,11 +9,12 @@ import org.domeos.framework.api.biz.global.GlobalBiz;
 import org.domeos.framework.engine.model.JobType;
 import org.domeos.global.GlobalConstant;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * Created by feiliu206363 on 2015/12/6.
  */
-
+@Component("kubeServiceInfo")
 public class KubeServiceInfo {
 
     static GlobalBiz globalBiz;

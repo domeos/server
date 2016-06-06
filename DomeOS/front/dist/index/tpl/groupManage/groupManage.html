@@ -24,12 +24,12 @@
           <td colspan="6">无相关组信息</td>
         </tr>
         <tr ng-repeat="group in groupListFiltered=(groupList|filter:{'name':groupKey})">
-          <td><a ui-sref="groupDetail({'id':group.id})" ng-bind="group.name"></a></td>
+          <td><a ui-sref="groupDetail({'id':group.id})" ng-bind="group.name" class="ui-table-link"></a></td>
           <td ng-bind="group.countMap.memberCount"></td>
           <td ng-bind="group.countMap.projectCount"></td>
           <td ng-bind="group.countMap.deployCount"></td>
           <td ng-bind="group.countMap.clusterCount"></td>
-          <td ng-bind="group.createTime.split(' ')[0]"></td>
+          <td ng-bind="vmDome.parseDate(group.createTime)"></td>
         </tr>
       </tbody>
     </table>

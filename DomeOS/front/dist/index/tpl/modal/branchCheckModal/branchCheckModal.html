@@ -1,0 +1,27 @@
+
+<div class="d-modal-header">选择分支查看</div>
+<ul role="form" ng-form="ng-form" class="modal-branchcheck modal-info">
+  <li><span class="info-name tool-not-align-input">Branch或Tag</span>
+    <div class="info-txt text-left">
+      <dome-radio d-name="branch" d-id="branch" d-label="Branch" d-change="vm.toggle(model)" d-value="'Branch'" d-model="vm.check"></dome-radio>
+      <dome-radio d-name="branch" d-id="tag" d-label="Tag" d-change="vm.toggle(model)" d-value="'Tag'" d-model="vm.check"></dome-radio>
+    </div>
+  </li>
+  <li><span ng-cloak="ng-cloak" class="info-name">选择{{vm.check}}</span>
+    <div select-con="select-con" class="info-txt com-select-con">
+      <input placeholder="{{vm.selectedBranch?'当前选择：'+vm.selectedBranch:'搜索'+vm.check}}" ng-model="vm.branchKey" class="ui-input-search ui-input-fill ui-btn-select"/>
+      <ul ng-show="vm.check=='Branch'" class="select-list">
+        <li ng-if="branchFiltered.length===0"><a>无相关信息</a></li>
+        <li ng-repeat="branch in branchFiltered=(vm.branches|filter:vm.branchKey)" class="select-item"><a ng-bind="branch" ng-click="vm.toggleBranch(branch)"></a></li>
+      </ul>
+      <ul ng-show="vm.check=='Tag'" class="select-list">
+        <li ng-if="tagFiltered.length===0"><a>无相关信息</a></li>
+        <li ng-repeat="branch in tagFiltered=(vm.tags|filter:vm.branchKey)" class="select-item"><a ng-bind="branch" ng-click="vm.toggleBranch(branch)"></a></li>
+      </ul>
+    </div>
+  </li>
+</ul>
+<div class="modal-footer">
+  <button ng-click="vm.cancel()" class="ui-btn ui-btn-sm ui-btn-white">取消</button>
+  <button ng-disabled="!vm.selectedBranch" ng-click="vm.selectedBranch&amp;&amp;vm.submitBranch();" class="ui-btn ui-btn-sm ui-btn-bright">确定</button>
+</div>

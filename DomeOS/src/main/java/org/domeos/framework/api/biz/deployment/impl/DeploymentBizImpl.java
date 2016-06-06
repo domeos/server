@@ -10,6 +10,7 @@ import org.domeos.global.GlobalConstant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -37,10 +38,27 @@ public class DeploymentBizImpl extends BaseBizImpl implements DeploymentBiz {
     }
 
     @Override
-    public List<Deployment> listDeploymentByClutesrId(int id) {
-        return mapper.listDeploymentByClusterId(id);
+    public List<Deployment> listDeploymentByClusterId(int id) {
+        List<Deployment> deployments = new LinkedList<>();
+        for (RowMapperDao dao : mapper.listDeploymentByClusterId(id)) {
+            deployments.add(super.checkResult(dao, Deployment.class));
+        }
+        return deployments;
     }
 
+    @Override
+    public List<Deployment> getDeployment(int clusterId, String deployName) {
+        List<Deployment> deployments = new LinkedList<>();
+        for (RowMapperDao dao : mapper.getDeployment(clusterId, deployName)) {
+            deployments.add(super.checkResult(dao, Deployment.class));
+        }
+        return deployments;
+    }
+
+    @Override
+    public List<Deployment> listUnfinishedStatusDeployment() {
+        return mapper.listUnfinishedStatusDeployment();
+    }
 //    @Autowired
 //    DeploymentMapper deploymentMapper;
 //

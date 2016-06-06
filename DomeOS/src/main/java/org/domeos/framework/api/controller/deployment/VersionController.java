@@ -33,7 +33,7 @@ public class VersionController extends ApiController {
     @ResponseBody
     @RequestMapping(value = "/id/{deployId}/{versionId}", method = RequestMethod.GET)
     public HttpResponseTemp<VersionDetail> getVersion(@PathVariable int deployId,
-                                                      @PathVariable long versionId) throws Exception {
+                                                      @PathVariable int versionId) throws Exception {
         return ResultStat.OK.wrap(versionService.getVersion(deployId, versionId));
     }
 

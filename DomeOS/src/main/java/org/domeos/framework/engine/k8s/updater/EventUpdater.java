@@ -6,12 +6,20 @@ import org.domeos.client.kubernetesclient.exception.KubeInternalErrorException;
 import org.domeos.client.kubernetesclient.exception.KubeResponseException;
 import org.domeos.client.kubernetesclient.util.TimeoutResponseHandler;
 import org.domeos.framework.api.biz.cluster.ClusterBiz;
+import org.domeos.framework.api.biz.deployment.DeploymentBiz;
 import org.domeos.framework.api.biz.event.K8SEventBiz;
 import org.domeos.framework.api.model.cluster.Cluster;
+import org.domeos.framework.api.model.deployment.Deployment;
+import org.domeos.framework.api.service.event.EventService;
+import org.domeos.framework.engine.event.DMEventSender;
+import org.domeos.framework.engine.event.k8sEvent.K8SEventReceivedEvent;
+import org.domeos.framework.engine.event.k8sEvent.K8sEventDetail;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
@@ -23,10 +31,17 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * Created by xupeng on 16-3-30.
  */
+@Component
 public class EventUpdater {
 
     @Autowired
+    EventService eventService;
+
+    @Autowired
     K8SEventBiz k8SEventBiz;
+
+    @Autowired
+    DeploymentBiz deploymentBiz;
 
     @Autowired
     ClusterBiz clusterBiz;
@@ -41,10 +56,12 @@ public class EventUpdater {
 
     private static Logger logger = LoggerFactory.getLogger(EventUpdater.class);
 
+    @PostConstruct
     public void init() {
         if (started.compareAndSet(false, true)) {
             logger.info("init {}, start scheduled task checker.", EventUpdater.class.toString());
-            scheduledExecutor.scheduleWithFixedDelay(new UpdateTask(), 1, 30, TimeUnit.SECONDS);
+            scheduledExecutor.scheduleWithFixedDelay(new UpdateTask(), 10, 30, TimeUnit.SECONDS);
+            scheduledExecutor.scheduleAtFixedRate(new clearLogTask(), 1, 10, TimeUnit.MINUTES);
         }
     }
 
@@ -112,6 +129,7 @@ public class EventUpdater {
             try {
                 String version = k8SEventBiz.getLatestResourceVersion(cluster.getId());
                 long count = updateCluster(cluster, version);
+                // in case of too old version caused no event watched
                 if (count == 0) {
                     updateCluster(cluster, null);
                 }
@@ -131,25 +149,30 @@ public class EventUpdater {
         int clusterId = cluster.getId();
 
         logger.info("start to watch event for cluster:{} from resourceVersion:{}", clusterId, version);
-        client.watchEvent(version, new EventHandler(k8SEventBiz, clusterId, count));
+        client.watchEvent(version, new EventHandler(clusterId, count));
         return count.get();
     }
 
-    private static class EventHandler extends TimeoutResponseHandler<Event> {
+    private class EventHandler extends TimeoutResponseHandler<Event> {
 
-        K8SEventBiz k8SEventBiz;
         int clusterId;
         AtomicLong counter;
 
-        public EventHandler(K8SEventBiz k8SEventBiz, int clusterId, AtomicLong counter) {
-            this.k8SEventBiz = k8SEventBiz;
+        public EventHandler(int clusterId, AtomicLong counter) {
             this.clusterId = clusterId;
             this.counter = counter;
         }
 
         @Override
         public boolean handleResponse(Event event) throws IOException {
-            k8SEventBiz.createEvent(clusterId, event);
+            try {
+                int deployId = eventService.getDeployIdByEvent(clusterId, event);
+                K8sEventDetail details = new K8sEventDetail(event, deployId, clusterId);
+                DMEventSender.publishEvent(new K8SEventReceivedEvent(details));
+            } catch (Exception e) {
+                logger.warn("exception happened when processing event, detail:" + e.getMessage(), e);
+            }
+            eventService.createEvent(clusterId, event);
             counter.incrementAndGet();
             if (logger.isDebugEnabled()) {
                 logger.debug("insert event name:{}, kind:{}, reason:{}, version:{}",
@@ -157,6 +180,36 @@ public class EventUpdater {
                         event.getReason(), event.getMetadata().getResourceVersion());
             }
             return true;
+        }
+    }
+
+    private class clearLogTask implements Runnable {
+
+        @Override
+        public void run() {
+            List<Cluster> clusters = clusterBiz.listClusters();
+            for (Cluster cluster : clusters) {
+                List<Deployment> deployments = deploymentBiz.listDeploymentByClusterId(cluster.getId());
+                for (Deployment deployment : deployments) {
+                    try {
+                        long deleted = k8SEventBiz.deleteOldDeployEvents(cluster.getId(), deployment.getId());
+                        if (deleted > 0) {
+                            logger.info("deleted {} events for cluster {}, deploy {}", deleted, cluster.getName(),
+                                    deployment.getName());
+                        }
+                    } catch (RuntimeException e) {
+                        logger.warn("error happened when delete event for deploy " + deployment.getName() +
+                                " in cluster " + cluster.getName() + ", Message:" + e.getMessage(), e);
+                    }
+                }
+                try {
+                    long deleted = k8SEventBiz.deleteOldDeployEvents(cluster.getId(), -1, 2000);
+                    logger.info("deleted {} events for cluster {}, deploy none", deleted, cluster.getName());
+                } catch (RuntimeException e) {
+                    logger.warn("error happened when delete event for deploy none in cluster " + cluster.getName() +
+                            ", Message:" + e.getMessage(), e);
+                }
+            }
         }
     }
 }

@@ -11,9 +11,7 @@
   },
   "networkMode":"DEFAULT",
   "accessType":"DIY",
-  "logDraft":{
-    "logItemDrafts":[]
-  },
+  "logDraft":null,
   "containerDrafts":[{
     "image":"admin/openxxs-pure-test",
     "registry":"http://10.11.150.76:5000",

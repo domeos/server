@@ -1,4 +1,4 @@
-domeApp.controller('otherImageModalCtr', ['$scope', '$modalInstance', function($scope, $modalInstance) {
+domeApp.controller('OtherImageModalCtr', ['$scope', '$modalInstance', function($scope, $modalInstance) {
 	'use strict';
 	$scope.imageInfo = {
 		name: '',

@@ -6,7 +6,8 @@ public class HealthChecker {
 
     HealthCheckerType type;
     int port;
-    int timeout;
+    int delay = 30; // in second
+    int timeout; // in second
     String url;
 
     public HealthCheckerType getType() {
@@ -23,6 +24,14 @@ public class HealthChecker {
 
     public void setPort(int port) {
         this.port = port;
+    }
+
+    public int getDelay() {
+        return delay;
+    }
+
+    public void setDelay(int delay) {
+        this.delay = delay;
     }
 
     public int getTimeout() {

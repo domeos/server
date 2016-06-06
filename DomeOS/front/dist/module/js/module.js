@@ -14,7 +14,7 @@ moduleApp.controller('appCtr', ['$scope', '$modal', '$publicApi', function($scop
 			$modal.open({
 				animation: true,
 				templateUrl: 'modifyPwModal.html',
-				controller: 'modifyPwModalCtr',
+				controller: 'ModifyPwModalCtr',
 				size: 'md',
 				resolve: {
 					loginUser: function() {
@@ -23,11 +23,26 @@ moduleApp.controller('appCtr', ['$scope', '$modal', '$publicApi', function($scop
 				}
 			});
 		};
+		$scope.modifySelfInfo = function() {
+			var modalInstance = $modal.open({
+				templateUrl: 'modifyUserInfoModal.html',
+				controller: 'ModifyUserInfoCtr',
+				size: 'md',
+				resolve: {
+					user: function() {
+						return angular.copy($scope.loginUser);
+					}
+				}
+			});
+			modalInstance.result.then(function(userInfo) {
+				angular.extend($scope.loginUser, userInfo);
+			});
+		};
 		$scope.logout = function() {
 			$publicApi.logout();
 		};
 	}])
-	.controller('modifyPwModalCtr', ['$scope', 'loginUser', '$modalInstance', '$http', '$modal', '$domePublic', function($scope, loginUser, $modalInstance, $http, $modal, $domePublic) {
+	.controller('ModifyPwModalCtr', ['$scope', 'loginUser', '$modalInstance', '$http', '$modal', '$domePublic', function($scope, loginUser, $modalInstance, $http, $modal, $domePublic) {
 		'use strict';
 		$scope.pwObj = {
 			username: loginUser.username,

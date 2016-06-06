@@ -215,7 +215,19 @@ public class ProjectServiceImpl implements ProjectService {
             projectList.setCodeHttpUrl(project.getCodeInfo().getCodeHttpUrl());
             projectList.setNameWithNamespace(project.getCodeInfo().getNameWithNamespace());
         }
+        if (project.getExclusiveBuild() != null) {
+            projectList.setProjectType(project.getExclusiveBuild().getCustomType());
+        } else {
+            projectList.setProjectType("simple");
+        }
+        AutoBuild info = project.getAutoBuildInfo();
+        if (info != null && (info.getTag() > 0 || info.getBranches().size() > 0)) {
+            projectList.setAutoBuild(true);
+        } else {
+            projectList.setAutoBuild(false);
+        }
         projectList.setUserDefineDockerfile(project.isUserDefineDockerfile());
+        projectList.setCreateTime(project.getCreateTime());
         return projectList;
     }
 
@@ -361,6 +373,23 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    public HttpResponseTemp<?> getBranches(CodeConfiguration codeConfig) {
+
+        if (codeConfig == null) {
+            throw ApiException.wrapResultStat(ResultStat.PROJECT_CODE_INFO_NOT_EXIST);
+        }
+
+        CodeApiInterface codeApiInterface = ReflectFactory.createCodeApiInterface(CodeType.getTypeByName(codeConfig.getCodeManager()),
+                codeConfig.getCodeManagerUserId());
+        if (codeApiInterface == null) {
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "get code api error");
+        }
+
+        List<String> branches = codeApiInterface.getBranches(codeConfig.getCodeId());
+        return ResultStat.OK.wrap(branches);
+    }
+
+    @Override
     public HttpResponseTemp<?> getReadme(int projectId, String branch) {
         checkGetable(projectId);
 
@@ -396,6 +425,23 @@ public class ProjectServiceImpl implements ProjectService {
             throw ApiException.wrapResultStat(ResultStat.PROJECT_NOT_EXIST);
         }
         CodeConfiguration codeConfig = project.getCodeInfo();
+        if (codeConfig == null) {
+            throw ApiException.wrapResultStat(ResultStat.PROJECT_CODE_INFO_NOT_EXIST);
+        }
+
+        CodeApiInterface codeApiInterface = ReflectFactory.createCodeApiInterface(CodeType.getTypeByName(codeConfig.getCodeManager()),
+                codeConfig.getCodeManagerUserId());
+        if (codeApiInterface == null) {
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "get code api error");
+        }
+
+        List<String> branches = codeApiInterface.getTags(codeConfig.getCodeId());
+        return ResultStat.OK.wrap(branches);
+    }
+
+    @Override
+    public HttpResponseTemp<?> getTags(CodeConfiguration codeConfig) {
+
         if (codeConfig == null) {
             throw ApiException.wrapResultStat(ResultStat.PROJECT_CODE_INFO_NOT_EXIST);
         }

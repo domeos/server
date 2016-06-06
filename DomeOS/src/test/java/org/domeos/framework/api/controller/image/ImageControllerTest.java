@@ -134,4 +134,12 @@ public class ImageControllerTest extends BaseTestCase {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value(ResultStat.OK.responseCode))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    public void T110GetAllExclusiveImages() throws Exception {
+        mockMvc.perform(get("/api/image/exclusive/java"))
+                .andDo(print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value(ResultStat.OK.responseCode))
+                .andExpect(status().isOk());
+    }
 }

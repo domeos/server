@@ -1,7 +1,7 @@
 package org.domeos.framework.api.controller.deployment;
 
 import org.apache.shiro.util.ThreadContext;
-import org.domeos.api.model.deployment.LoadBalanceDraft;
+import org.domeos.framework.api.model.deployment.related.LoadBalanceDraft;
 import org.domeos.base.BaseTestCase;
 import org.domeos.basemodel.ResultStat;
 import org.domeos.framework.api.consolemodel.CreatorDraft;

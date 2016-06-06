@@ -37,7 +37,8 @@ ng\:form {
           <button ng-cloak class="ui-btn ui-btn-none username ui-btn-select"><i class="icon-down up drop"></i>{{loginUser.username}}</button>
           <ul class="com-user-option select-list">
             <li class="arrow"></li>
-            <li select-item ng-if="loginUser.login_type=='USER'"><a ng-click="modifyPw()">修改密码</a></li>
+            <li select-item> <a ng-click="modifySelfInfo()">修改资料 </a></li>
+            <li select-item ng-if="loginUser.loginType=='USER'"><a ng-click="modifyPw()">修改密码</a></li>
             <li select-item><a ng-click="logout()">退出登录</a></li>
           </ul>
         </div>
@@ -50,7 +51,7 @@ ng\:form {
             <h4><i class="icon-deploy"></i>部署</h4></a><a href="/#/groupManage" class="module">
             <h4><i class="icon-user"></i>组管理</h4></a></li>
         <li><a href="/#/monitor" class="module">
-            <h4><i class="icon-monitor"></i>监控</h4></a><a href="/#/appStore" class="module">
+            <h4><i class="icon-monitor"></i>监控报警</h4></a><a href="/#/appStore" class="module">
             <h4><i class="icon-app"></i>应用商店</h4></a></li>
         <li><a href="/#/image" class="module">
             <h4><i class="icon-image"></i>镜像</h4></a><a href="/#/globalSetting" ng-hide="loginUser.username!='admin'" class="module">
@@ -103,6 +104,30 @@ ng\:form {
       <div class="modal-footer">
         <button ng-click="cancel()" class="ui-btn ui-btn-white ui-btn-sm">取消</button>
         <button ng-click="needValid=true;pwForm.$valid&amp;&amp;modiftPw()" class="ui-btn ui-btn-sm ui-btn-primary">确定</button>
+      </div>
+    </script>
+    <script type="text/ng-template" id="modifyUserInfoModal.html">
+      <div ng-cloak class="d-modal-header">修改资料</div>
+      <div ng-form role="form" name="userInfoForm" class="modal-body text-center modal-newpw">
+        <ul class="modal-info">
+          <li><span class="info-name">用户名</span>
+            <div class="info-content text-left"><span ng-bind="user.username" class="align-input"></span></div>
+          </li>
+          <li><span class="info-name">邮箱</span>
+            <div class="info-content text-left">
+              <input ng-model="user.email" name="email" class="ui-input-white full">
+            </div>
+          </li>
+          <li><span class="info-name">电话</span>
+            <div class="info-content text-left">
+              <input ng-model="user.phone" name="phone" class="ui-input-white full">
+            </div>
+          </li>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button ng-click="cancel()" class="ui-btn ui-btn-sm ui-btn-white">取消</button>
+        <button ng-click="submit()" class="ui-btn ui-btn-sm ui-btn-safe">保存</button>
       </div>
     </script>
     <div></div><!-- build:js /module/js/lib.min.js -->

@@ -26,7 +26,7 @@ public interface VersionService {
      * @return
      * @throws Exception
      */
-    VersionDetail getVersion(int deployId, long versionId) throws Exception;
+    VersionDetail getVersion(int deployId, int versionId) throws Exception;
 
     /**
      * list all versions for specific deployment

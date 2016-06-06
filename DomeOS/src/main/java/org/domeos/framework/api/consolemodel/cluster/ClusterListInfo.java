@@ -20,9 +20,10 @@ public class ClusterListInfo {
     private ClusterMonitor clusterMonitor;
     private int nodeNum;
     private int podNum;
+    private int buildConfig;
 
     public ClusterListInfo(int id, String name, String api, String tag, String domain, int logConfig, String ownerName,
-                           long createTime, int nodeNum, int podNum) {
+                           long createTime, int nodeNum, int podNum, int buildConfig) {
         this.id = id;
         this.name = name;
         this.api = api;
@@ -33,6 +34,7 @@ public class ClusterListInfo {
         this.createTime = createTime;
         this.nodeNum = nodeNum;
         this.podNum = podNum;
+        this.buildConfig = buildConfig;
     }
 
     public int getId() {
@@ -121,6 +123,14 @@ public class ClusterListInfo {
 
     public void setPodNum(int podNum) {
         this.podNum = podNum;
+    }
+
+    public int getBuildConfig() {
+        return buildConfig;
+    }
+
+    public void setBuildConfig(int buildConfig) {
+        this.buildConfig = buildConfig;
     }
 
     public static class ClusterListInfoComparator implements Comparator<ClusterListInfo> {

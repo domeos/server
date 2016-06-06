@@ -8,6 +8,7 @@ import org.domeos.framework.api.model.ci.related.BuildResult;
 import org.domeos.framework.api.model.project.GitlabUser;
 import org.domeos.framework.api.model.project.Project;
 import org.domeos.framework.api.model.project.SubversionUser;
+import org.domeos.framework.api.model.project.related.CodeConfiguration;
 import org.domeos.framework.api.service.project.BuildService;
 import org.domeos.framework.api.service.project.ProjectService;
 import org.domeos.framework.engine.exception.DaoException;
@@ -100,9 +101,23 @@ public class ProjectController extends ApiController {
     }
 
     @ResponseBody
+    @RequestMapping(value = "/project/branches/{codemanager}/{codeid}/{codeuserid}", method = RequestMethod.GET)
+    public HttpResponseTemp<?> getCodeBranches(@PathVariable String codemanager, @PathVariable int codeid, @PathVariable int codeuserid) {
+        CodeConfiguration codeInfo = new CodeConfiguration(codemanager, codeid, codeuserid);
+        return projectService.getBranches(codeInfo);
+    }
+
+    @ResponseBody
     @RequestMapping(value = "/project/tags/{id}", method = RequestMethod.GET)
     public HttpResponseTemp<?> getCodeTags(@PathVariable int id) {
         return projectService.getTags(id);
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "/project/tags/{codemanager}/{codeid}/{codeuserid}", method = RequestMethod.GET)
+    public HttpResponseTemp<?> getCodeTags(@PathVariable String codemanager, @PathVariable int codeid, @PathVariable int codeuserid) {
+        CodeConfiguration codeInfo = new CodeConfiguration(codemanager, codeid, codeuserid);
+        return projectService.getTags(codeInfo);
     }
 
     @ResponseBody
@@ -128,6 +143,12 @@ public class ProjectController extends ApiController {
     @RequestMapping(value = "/ci/build/builddockerfile/{projectId}/{buildId}", method = RequestMethod.GET)
     public String dockerfile(@PathVariable int projectId, @PathVariable int buildId, @RequestParam String secret) {
         return buildService.dockerFile(projectId, buildId, secret);
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "/ci/build/compilefile/{projectId}/{buildId}", method = RequestMethod.GET)
+    public String compileFile(@PathVariable int projectId, @PathVariable int buildId, @RequestParam String secret) {
+        return buildService.getCompileFile(projectId, buildId, secret);
     }
 
     @ResponseBody
