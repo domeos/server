@@ -16,11 +16,7 @@ CREATE TABLE `portal`.`action` (
 	`after_callback_sms` TINYINT(4) NOT NULL DEFAULT '0',
 	`after_callback_mail` TINYINT(4) NOT NULL DEFAULT '0',
 	PRIMARY KEY (`id`)
-)
-COLLATE='utf8_unicode_ci'
-ENGINE=InnoDB
-AUTO_INCREMENT=3
-;
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 DROP TABLE if exists `portal`.`expression`;
 CREATE TABLE `portal`.`expression` (
@@ -36,10 +32,7 @@ CREATE TABLE `portal`.`expression` (
 	`create_user` VARCHAR(64) NOT NULL DEFAULT '' COLLATE 'utf8_unicode_ci',
 	`pause` TINYINT(1) NOT NULL DEFAULT '0',
 	PRIMARY KEY (`id`)
-)
-COLLATE='utf8_unicode_ci'
-ENGINE=InnoDB
-;
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 DROP TABLE if exists `portal`.`grp`;
 CREATE TABLE `portal`.`grp` (
@@ -50,11 +43,7 @@ CREATE TABLE `portal`.`grp` (
 	`come_from` TINYINT(4) NOT NULL DEFAULT '0',
 	PRIMARY KEY (`id`),
 	UNIQUE INDEX `idx_host_grp_grp_name` (`grp_name`)
-)
-COLLATE='utf8_unicode_ci'
-ENGINE=InnoDB
-AUTO_INCREMENT=1000
-;
+)ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1000;
 
 DROP TABLE if exists `portal`.`grp_host`;
 CREATE TABLE `portal`.`grp_host` (
@@ -62,10 +51,7 @@ CREATE TABLE `portal`.`grp_host` (
 	`host_id` INT(10) UNSIGNED NOT NULL,
 	INDEX `idx_grp_host_grp_id` (`grp_id`),
 	INDEX `idx_grp_host_host_id` (`host_id`)
-)
-COLLATE='utf8_unicode_ci'
-ENGINE=InnoDB
-;
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 DROP TABLE if exists `portal`.`grp_tpl`;
 CREATE TABLE `portal`.`grp_tpl` (
@@ -74,10 +60,7 @@ CREATE TABLE `portal`.`grp_tpl` (
 	`bind_user` VARCHAR(64) NOT NULL DEFAULT '' COLLATE 'utf8_unicode_ci',
 	INDEX `idx_grp_tpl_grp_id` (`grp_id`),
 	INDEX `idx_grp_tpl_tpl_id` (`tpl_id`)
-)
-COLLATE='utf8_unicode_ci'
-ENGINE=InnoDB
-;
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 DROP TABLE if exists `portal`.`host`;
 CREATE TABLE `portal`.`host` (
@@ -91,11 +74,7 @@ CREATE TABLE `portal`.`host` (
 	`update_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	PRIMARY KEY (`id`),
 	UNIQUE INDEX `idx_host_hostname` (`hostname`)
-)
-COLLATE='utf8_unicode_ci'
-ENGINE=InnoDB
-AUTO_INCREMENT=48095996
-;
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 DROP TABLE if exists `portal`.`mockcfg`;
 CREATE TABLE `portal`.`mockcfg` (
@@ -113,11 +92,7 @@ CREATE TABLE `portal`.`mockcfg` (
 	`t_modify` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'last modify time',
 	PRIMARY KEY (`id`),
 	UNIQUE INDEX `uniq_name` (`name`)
-)
-COLLATE='utf8_unicode_ci'
-ENGINE=InnoDB
-AUTO_INCREMENT=2
-;
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 DROP TABLE if exists `portal`.`plugin_dir`;
 CREATE TABLE `portal`.`plugin_dir` (
@@ -128,11 +103,7 @@ CREATE TABLE `portal`.`plugin_dir` (
 	`create_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY (`id`),
 	INDEX `idx_plugin_dir_grp_id` (`grp_id`)
-)
-COLLATE='utf8_unicode_ci'
-ENGINE=InnoDB
-AUTO_INCREMENT=4
-;
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 DROP TABLE if exists `portal`.`strategy`;
 CREATE TABLE `portal`.`strategy` (
@@ -150,11 +121,7 @@ CREATE TABLE `portal`.`strategy` (
 	`tpl_id` INT(10) UNSIGNED NOT NULL DEFAULT '0',
 	PRIMARY KEY (`id`),
 	INDEX `idx_strategy_tpl_id` (`tpl_id`)
-)
-COLLATE='utf8_unicode_ci'
-ENGINE=InnoDB
-AUTO_INCREMENT=8
-;
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 DROP TABLE if exists `portal`.`tpl`;
 CREATE TABLE `portal`.`tpl` (
@@ -167,8 +134,4 @@ CREATE TABLE `portal`.`tpl` (
 	PRIMARY KEY (`id`),
 	UNIQUE INDEX `idx_tpl_name` (`tpl_name`),
 	INDEX `idx_tpl_create_user` (`create_user`)
-)
-COLLATE='utf8_unicode_ci'
-ENGINE=InnoDB
-AUTO_INCREMENT=5
-;
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
