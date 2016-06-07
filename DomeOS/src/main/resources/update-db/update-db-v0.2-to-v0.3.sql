@@ -1,4 +1,6 @@
-UPDATE global SET `value`=`pub.domeos.org/domeos/build:0.3` WHERE `type`=`BUILD_IMAGE`;
+USE domeos;
+
+UPDATE global SET value="pub.domeos.org/domeos/build:0.3" WHERE type="BUILD_IMAGE";
 
 INSERT INTO global(type, value) VALUES ('PUBLIC_REGISTRY_URL', 'http://pub.domeos.org');
 DROP TABLE k8s_events;
@@ -142,11 +144,7 @@ CREATE TABLE `portal`.`action` (
 	`after_callback_sms` TINYINT(4) NOT NULL DEFAULT '0',
 	`after_callback_mail` TINYINT(4) NOT NULL DEFAULT '0',
 	PRIMARY KEY (`id`)
-)
-COLLATE='utf8_unicode_ci'
-ENGINE=InnoDB
-AUTO_INCREMENT=3
-;
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 DROP TABLE if exists `portal`.`expression`;
 CREATE TABLE `portal`.`expression` (
@@ -162,10 +160,7 @@ CREATE TABLE `portal`.`expression` (
 	`create_user` VARCHAR(64) NOT NULL DEFAULT '' COLLATE 'utf8_unicode_ci',
 	`pause` TINYINT(1) NOT NULL DEFAULT '0',
 	PRIMARY KEY (`id`)
-)
-COLLATE='utf8_unicode_ci'
-ENGINE=InnoDB
-;
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 DROP TABLE if exists `portal`.`grp`;
 CREATE TABLE `portal`.`grp` (
@@ -176,11 +171,7 @@ CREATE TABLE `portal`.`grp` (
 	`come_from` TINYINT(4) NOT NULL DEFAULT '0',
 	PRIMARY KEY (`id`),
 	UNIQUE INDEX `idx_host_grp_grp_name` (`grp_name`)
-)
-COLLATE='utf8_unicode_ci'
-ENGINE=InnoDB
-AUTO_INCREMENT=1000
-;
+)ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1000;
 
 DROP TABLE if exists `portal`.`grp_host`;
 CREATE TABLE `portal`.`grp_host` (
@@ -188,10 +179,7 @@ CREATE TABLE `portal`.`grp_host` (
 	`host_id` INT(10) UNSIGNED NOT NULL,
 	INDEX `idx_grp_host_grp_id` (`grp_id`),
 	INDEX `idx_grp_host_host_id` (`host_id`)
-)
-COLLATE='utf8_unicode_ci'
-ENGINE=InnoDB
-;
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 DROP TABLE if exists `portal`.`grp_tpl`;
 CREATE TABLE `portal`.`grp_tpl` (
@@ -200,10 +188,7 @@ CREATE TABLE `portal`.`grp_tpl` (
 	`bind_user` VARCHAR(64) NOT NULL DEFAULT '' COLLATE 'utf8_unicode_ci',
 	INDEX `idx_grp_tpl_grp_id` (`grp_id`),
 	INDEX `idx_grp_tpl_tpl_id` (`tpl_id`)
-)
-COLLATE='utf8_unicode_ci'
-ENGINE=InnoDB
-;
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 DROP TABLE if exists `portal`.`host`;
 CREATE TABLE `portal`.`host` (
@@ -217,11 +202,7 @@ CREATE TABLE `portal`.`host` (
 	`update_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	PRIMARY KEY (`id`),
 	UNIQUE INDEX `idx_host_hostname` (`hostname`)
-)
-COLLATE='utf8_unicode_ci'
-ENGINE=InnoDB
-AUTO_INCREMENT=48095996
-;
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 DROP TABLE if exists `portal`.`mockcfg`;
 CREATE TABLE `portal`.`mockcfg` (
@@ -239,11 +220,7 @@ CREATE TABLE `portal`.`mockcfg` (
 	`t_modify` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'last modify time',
 	PRIMARY KEY (`id`),
 	UNIQUE INDEX `uniq_name` (`name`)
-)
-COLLATE='utf8_unicode_ci'
-ENGINE=InnoDB
-AUTO_INCREMENT=2
-;
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 DROP TABLE if exists `portal`.`plugin_dir`;
 CREATE TABLE `portal`.`plugin_dir` (
@@ -254,11 +231,7 @@ CREATE TABLE `portal`.`plugin_dir` (
 	`create_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY (`id`),
 	INDEX `idx_plugin_dir_grp_id` (`grp_id`)
-)
-COLLATE='utf8_unicode_ci'
-ENGINE=InnoDB
-AUTO_INCREMENT=4
-;
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 DROP TABLE if exists `portal`.`strategy`;
 CREATE TABLE `portal`.`strategy` (
@@ -276,11 +249,7 @@ CREATE TABLE `portal`.`strategy` (
 	`tpl_id` INT(10) UNSIGNED NOT NULL DEFAULT '0',
 	PRIMARY KEY (`id`),
 	INDEX `idx_strategy_tpl_id` (`tpl_id`)
-)
-COLLATE='utf8_unicode_ci'
-ENGINE=InnoDB
-AUTO_INCREMENT=8
-;
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 DROP TABLE if exists `portal`.`tpl`;
 CREATE TABLE `portal`.`tpl` (
@@ -293,8 +262,52 @@ CREATE TABLE `portal`.`tpl` (
 	PRIMARY KEY (`id`),
 	UNIQUE INDEX `idx_tpl_name` (`tpl_name`),
 	INDEX `idx_tpl_create_user` (`create_user`)
-)
-COLLATE='utf8_unicode_ci'
-ENGINE=InnoDB
-AUTO_INCREMENT=5
-;
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+DELIMITER //
+
+DROP PROCEDURE IF EXISTS update_domeos;
+
+CREATE PROCEDURE update_domeos()
+domeos:BEGIN
+  DECLARE done BOOLEAN DEFAULT FALSE;
+  DECLARE lb_id INT;
+  DECLARE deploy_id INT;
+  DECLARE lb_data_len INT;
+  DECLARE deploy_data MEDIUMTEXT;
+  DECLARE lb_old_data MEDIUMTEXT;
+  DECLARE lb_new_data MEDIUMTEXT;
+  DECLARE deploy_data_front INT;
+  DECLARE deploy_data_forward INT;
+  DECLARE lb_namespace VARCHAR(255);
+  DECLARE string_tmp MEDIUMTEXT;
+  DECLARE old_lb CURSOR FOR
+    SELECT id FROM load_balancer WHERE data NOT LIKE '%namespace%';
+  DECLARE CONTINUE HANDLER FOR NOT FOUND SET done := TRUE;
+
+  OPEN old_lb;
+
+  process: LOOP
+    FETCH old_lb INTO lb_id;
+    IF done THEN
+      LEAVE process;
+    END IF;
+    SELECT deployId INTO deploy_id FROM load_balancer_deploy_map WHERE loadBalancerId=lb_id;
+    SELECT data INTO deploy_data FROM deployment WHERE id=deploy_id;
+    SELECT SUBSTRING_INDEX(deploy_data, 'namespace', 1) INTO string_tmp;
+    SELECT CHAR_LENGTH(string_tmp) INTO deploy_data_front;
+    SELECT SUBSTRING_INDEX(deploy_data, 'hostEnv', 1) INTO string_tmp;
+    SELECT CHAR_LENGTH(string_tmp) INTO deploy_data_forward;
+    SELECT SUBSTRING(deploy_data, deploy_data_front+13, deploy_data_forward-deploy_data_front-15) INTO lb_namespace;
+    SELECT data INTO lb_old_data FROM load_balancer WHERE id=lb_id;
+    SELECT CHAR_LENGTH(lb_old_data) INTO lb_data_len;
+    SELECT SUBSTRING(lb_old_data, 1, lb_data_len-1) INTO string_tmp;
+    SELECT CONCAT(string_tmp, ',"namespace":"', lb_namespace, '"}') INTO lb_new_data;
+    UPDATE load_balancer SET data=lb_new_data WHERE id=lb_id;
+  END LOOP process;
+
+  CLOSE old_lb;
+END;
+//
+DELIMITER ;
+CALL update_domeos;
