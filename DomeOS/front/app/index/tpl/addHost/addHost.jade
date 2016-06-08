@@ -18,10 +18,10 @@
 			span.info-con
 				p.info-descrip 请选择主机的工作场景
 				span.env-check
-					input#prodEnv.ui-check(type="checkbox" name="env" ng-model="hostInfo.env.prod" ng-change="changeEnv('prod',hostInfo.env.prod)")
+					input#prodEnv.ui-check(type="checkbox" name="env" ng-model="hostInfo.env.prod" ng-change="getCmdLabels()")
 					label(for="prodEnv") 生产环境
 				span.env-check
-					input#testEnv.ui-check(type="checkbox" name="env" ng-model="hostInfo.env.test" ng-change="changeEnv('test',hostInfo.env.test)")
+					input#testEnv.ui-check(type="checkbox" name="env" ng-model="hostInfo.env.test" ng-change="getCmdLabels()")
 					label(for="testEnv") 测试环境
 		li
 			span.num-con

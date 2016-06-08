@@ -1,38 +1,38 @@
-(() => {
+((window, undefined) => {
     'use strict';
     let deployModule = angular.module('deployModule', []);
 
-    function DeployService($http, $domeCluster, $domeUser, $domeProject, $domeImage, $domePublic, $domeModel, $modal, $q) {
+    function DeployService($http, $domeCluster, $domeImage, $domePublic, $domeModel, $modal, $q, $util) {
         const nodeService = $domeCluster.getInstance('NodeService');
         const DeployService = function () {
             const _url = '/api/deploy';
             const _versionUrl = '/api/version';
-            this.getList = () => $http.get(_url + '/list');
-            this.getSingle = (deployId) => $http.get(_url + '/id/' + deployId);
-            this.getEvents = (deployId) => $http.get(_url + '/event/list?deployId=' + deployId);
-            this.getInstances = (deployId) => $http.get(_url + '/' + deployId + '/instance');
-            this.getVersions = (deployId) => $http.get(_versionUrl + '/list?deployId=' + deployId);
-            this.getSingleVersion = (deployId, versionId) => $http.get(_versionUrl + '/id/' + deployId + '/' + versionId);
-            this.createVersion = (version) => $http.post(_versionUrl + '/create?deployId=' + version.deployId, angular.toJson(version));
+            this.getList = () => $http.get(`${_url}/list`);
+            this.getSingle = (deployId) => $http.get(`${_url}/id/${deployId}`);
+            this.getEvents = (deployId) => $http.get(`${_url}/event/list?deployId=${deployId}`);
+            this.getInstances = (deployId) => $http.get(`${_url}/${deployId}/instance`);
+            this.getVersions = (deployId) => $http.get(`${_versionUrl}/list?deployId=${deployId}`);
+            this.getSingleVersion = (deployId, versionId) => $http.get(`${_versionUrl}/id/${deployId}/${versionId}`);
+            this.createVersion = (version) => $http.post(`${_versionUrl}/create?deployId=${version.deployId}`, angular.toJson(version));
             this.rollbackDeploy = (deployId, versionId, replicas) => {
                 if (replicas) {
-                    return $http.post('/api/deploy/action/rollback?deployId=' + deployId + '&version=' + versionId + '&replicas=' + replicas);
+                    return $http.post(`/api/deploy/action/rollback?deployId=${deployId}&version=${versionId}&replicas=${replicas}`);
                 } else {
-                    return $http.post('/api/deploy/action/rollback?deployId=' + deployId + '&version=' + versionId);
+                    return $http.post(`/api/deploy/action/rollback?deployId=${deployId}&version=${versionId}`);
                 }
             };
             this.updateDeploy = (deployId, versionId, replicas) => {
                 if (replicas) {
-                    return $http.post('/api/deploy/action/update?deployId=' + deployId + '&version=' + versionId + '&replicas=' + replicas);
+                    return $http.post(`/api/deploy/action/update?deployId=${deployId}&version=${versionId}&replicas=${replicas}`);
                 } else {
-                    return $http.post('/api/deploy/action/update?deployId=' + deployId + '&version=' + versionId);
+                    return $http.post(`/api/deploy/action/update?deployId=${deployId}&version=${versionId}`);
                 }
             };
             this.startDeploy = (deployId, versionId, replicas) => {
                 if (replicas) {
-                    return $http.post('/api/deploy/action/start?deployId=' + deployId + '&version=' + versionId + '&replicas=' + replicas);
+                    return $http.post(`/api/deploy/action/start?deployId=${deployId}&version=${versionId}&replicas=${replicas}`);
                 } else {
-                    return $http.post('/api/deploy/action/start?deployId=' + deployId + '&version=' + versionId);
+                    return $http.post(`/api/deploy/action/start?deployId=${deployId}&version=${versionId}`);
                 }
             };
         };
@@ -44,7 +44,7 @@
                 this.namespaceList = [];
                 // 是否是新建namespace
                 this.isNewNamespace = false;
-                this.imageList = undefined;
+                this.imageList = null;
                 this.envList = [{
                     value: 'TEST',
                     text: '测试环境'
@@ -58,9 +58,9 @@
                     ips: false
                 };
                 // 是否开启日志收集
-                this.logConfig = undefined;
+                this.logConfig = null;
                 this.envText = '请选择部署环境';
-                this.versionList = undefined;
+                this.versionList = null;
                 this.nodeListIns = $domeCluster.getInstance('NodeList');
                 this.nodeListForIps = [];
                 this.clusterListIns = $domeCluster.getInstance('ClusterList');
@@ -75,43 +75,41 @@
                 this.init(deployConfig);
             }
             init(deployConfig) {
-                    let currentVersions, i, j, id,
+                    let currentVersions, id,
                         createTime = -1;
 
-                    if (!deployConfig) {
+                    if (!$util.isObject(deployConfig)) {
                         deployConfig = {};
                     }
-                    if (deployConfig.replicas === undefined) {
+                    if (typeof deployConfig.replicas !== 'number') {
                         deployConfig.replicas = 3;
                     }
-                    if (deployConfig.exposePortNum === undefined) {
-                        deployConfig.exposePortNum = '';
-                    }
                     // 是否使用负载均衡
-                    if (!deployConfig.loadBalanceDrafts) {
+                    if (!$util.isArray(deployConfig.loadBalanceDrafts)) {
                         deployConfig.loadBalanceDrafts = [];
                     }
                     //对内服务
-                    if (!deployConfig.innerServiceDrafts) {
+                    if (!$util.isArray(deployConfig.innerServiceDrafts)) {
                         deployConfig.innerServiceDrafts = [];
                     }
-
+                    if (!$util.isArray(deployConfig.currentVersions)) {
+                        deployConfig.currentVersions = [];
+                    }
                     // loadBalanceDraft.externalIPs: ['externalIP1','externalIP2'] --> [{ip:'externalIP1'},{ip:'externalIP1'},{ip:''}]
-                    for (i = 0; i < deployConfig.loadBalanceDrafts.length; i++) {
-                        if (!deployConfig.loadBalanceDrafts[i].externalIPs) {
-                            deployConfig.loadBalanceDrafts[i].externalIPs = [];
+                    for (let loadBalanceDraft of deployConfig.loadBalanceDrafts) {
+                        if (!loadBalanceDraft.externalIPs) {
+                            loadBalanceDraft.externalIPs = [];
                         }
-                        let ipsArr = deployConfig.loadBalanceDrafts[i].externalIPs;
                         let externalIPs = [];
-                        for (j = 0; j < ipsArr.length; j++) {
+                        for (let ip of loadBalanceDraft.externalIPs) {
                             externalIPs.push({
-                                ip: ipsArr[j]
+                                ip: ip
                             });
                         }
                         externalIPs.push({
                             ip: ''
                         });
-                        deployConfig.loadBalanceDrafts[i].externalIPs = externalIPs;
+                        loadBalanceDraft.externalIPs = externalIPs;
                     }
 
                     this.config = deployConfig;
@@ -132,30 +130,28 @@
                         if (!this.versionList) {
                             deployService.getVersions(this.config.deployId).then((res) => {
                                 this.versionList = res.data.result || [];
-                                if (!currentVersions || currentVersions.length === 0) {
+                                if (currentVersions.length === 0 && $util.isObject(this.versionList[0])) {
                                     this.toggleVersion(this.versionList[0].version);
                                 }
                             });
                         }
-                        if (currentVersions && currentVersions.length !== 0) {
-                            for (i = 0; i < currentVersions.length; i++) {
-                                if (currentVersions[i].createTime > createTime) {
-                                    createTime = currentVersions[i].createTime;
-                                    id = currentVersions[i].version;
-                                }
+                        for (let i = 0, l = currentVersions.length; i < l; i++) {
+                            if (currentVersions[i].createTime > createTime) {
+                                createTime = currentVersions[i].createTime;
+                                id = currentVersions[i].version;
                             }
-                            this.toggleVersion(id);
                         }
+                        this.toggleVersion(id);
                     } else {
                         this.initData();
                     }
                 }
                 // deployinfo和versioninfo重合的信息在这里处理，切换version之后重新调用进行初始化
             initData() {
-                if (!this.config.logDraft) {
+                if (!$util.isObject(this.config.logDraft)) {
                     this.config.logDraft = {};
                 }
-                if (!this.config.logDraft.logItemDrafts) {
+                if (!$util.isArray(this.config.logDraft.logItemDrafts)) {
                     this.config.logDraft.logItemDrafts = [];
                 }
                 this.config.logDraft.logItemDrafts.push({
@@ -163,10 +159,10 @@
                     autoCollect: false,
                     autoDelete: false
                 });
-                if (!this.config.containerDrafts) {
+                if (!$util.isArray(this.config.containerDrafts)) {
                     this.config.containerDrafts = [];
                 }
-                if (!this.config.labelSelectors) {
+                if (!$util.isArray(this.config.labelSelectors)) {
                     this.config.labelSelectors = [];
                 }
                 this.initSelectedLabels();
@@ -174,32 +170,32 @@
                 if (!this.config.hostEnv) {
                     this.toggleEnv(this.envList[0]);
                 } else {
-                    for (let i = 0; i < this.envList.length; i++) {
-                        if (this.config.hostEnv === this.envList[i].value) {
-                            this.toggleEnv(this.envList[i]);
+                    for (let env of this.envList) {
+                        if (this.config.hostEnv === env.value) {
+                            this.toggleEnv(env);
                             break;
                         }
                     }
                 }
 
-                if (!this.config.stateful) {
-                    if (!this.imageList) {
+                if (this.config.stateful !== true) {
+                    if (!$util.isArray(this.imageList)) {
                         this.loadingIns.startLoading('dockerImage');
                         $domeImage.imageService.getProjectImages().then((res) => {
                             let imageList = res.data.result || [];
                             // 格式化image的envSettings为containerDrafts格式
-                            for (let i = 0; i < imageList.length; i++) {
+                            for (let image of imageList) {
                                 let envs = [];
-                                if (imageList[i].envSettings) {
-                                    for (let j = 0; j < imageList[i].envSettings.length; j++) {
+                                if (image.envSettings) {
+                                    for (let env of image.envSettings) {
                                         envs.push({
-                                            key: imageList[i].envSettings[j].key,
-                                            value: imageList[i].envSettings[j].value,
-                                            description: imageList[i].envSettings[j].description
+                                            key: env.key,
+                                            value: env.value,
+                                            description: env.description
                                         });
                                     }
                                 }
-                                imageList[i].envSettings = envs;
+                                image.envSettings = envs;
                             }
                             this.imageList = imageList;
                             // 处理部署已有的镜像
@@ -223,7 +219,7 @@
                 }
                 // 刷新当前Deploy状态
             freshDeploy(newConfig) {
-                if (newConfig) {
+                if ($util.isObject(newConfig)) {
                     this.config.lastUpdateTime = newConfig.lastUpdateTime;
                     this.config.deploymentStatus = newConfig.deploymentStatus;
                     this.config.currentVersions = newConfig.currentVersions;
@@ -239,31 +235,29 @@
                 });
             }
             toggleCluster(index) {
-                    let clusterId;
+                    let clusterId,
+                        clusterList = this.clusterListIns.clusterList;
+                    if (clusterList.length === 0) {
+                        return;
+                    }
                     // 选择当前deploy/version的cluster
-                    if (index === undefined) {
-                        let isHasCluster = false,
-                            clusterList = this.clusterListIns.clusterList;
-                        for (let i = 0; i < clusterList.length; i++) {
+                    if (typeof index === 'undefined') {
+                        for (let i = 0, l = clusterList.length; i < l; i++) {
                             if (clusterList[i].id === this.config.clusterId) {
-                                isHasCluster = true;
                                 index = i;
                                 break;
                             }
                         }
                         // 如果当前deploy/version没有cluster，则选择第一个
-                        if (!isHasCluster) {
-                            if (this.clusterListIns.clusterList.length === 0) {
-                                return;
-                            }
+                        if (typeof index === 'undefined') {
                             index = 0;
                         }
                     }
 
                     this.clusterListIns.toggleCluster(index);
-                    this.logConfig = this.clusterListIns.clusterList[index].logConfig;
+                    this.logConfig = clusterList[index].logConfig;
                     clusterId = this.clusterListIns.cluster.id;
-
+                    // 重置日志信息
                     if (this.logConfig !== 1) {
                         this.config.logDraft = {
                             logItemDrafts: [{
@@ -289,7 +283,7 @@
                                         break;
                                     }
                                 }
-                                if (node.isSelected === undefined) {
+                                if (node.isSelected === void 0) {
                                     node.isSelected = false;
                                 }
                             } else {
@@ -303,7 +297,7 @@
                         this.nodeListIns.toggleEnv(this.config.hostEnv);
                         // 如果是有状态服务，默认选择和replics相等的主机个数
                         if (this.config.stateful && this.config.replicas && this.nodeListIns.nodeList) {
-                            for (let i = 0; i < this.nodeListIns.nodeList.length && i < this.config.replicas; i++) {
+                            for (let i = 0, l = this.nodeListIns.nodeList.length; i < l && i < this.config.replicas; i++) {
                                 this.nodeListIns.nodeList[i].isSelected = true;
                                 this.nodeListIns.toggleNodeCheck(this.nodeListIns.nodeList[i]);
                             }
@@ -314,13 +308,13 @@
                         this.loadingIns.finishLoading('nodelist');
                     });
 
-                    if (this.config.deployId === undefined) {
+                    if (this.config.deployId === void 0) {
                         this.loadingIns.startLoading('namespace');
                         nodeService.getNamespace(clusterId).then((res) => {
                             this.namespaceList = res.data.result || [];
                             this.isNewNamespace = false;
-                            this.config.namespace = this.namespaceList[0].name || undefined;
-                            for (let i = 0; i < this.namespaceList.length; i++) {
+                            this.config.namespace = this.namespaceList[0].name || null;
+                            for (let i = 0, l = this.namespaceList.length; i < l; i++) {
                                 if (this.namespaceList[i].name == 'default') {
                                     this.config.namespace = this.namespaceList[i].name;
                                     break;
@@ -329,7 +323,7 @@
                         }, () => {
                             this.isNewNamespace = false;
                             this.namespaceList = [];
-                            this.config.namespace = undefined;
+                            this.config.namespace = null;
                         }).finally(() => {
                             this.loadingIns.finishLoading('namespace');
                         });
@@ -365,7 +359,7 @@
                 // 切换当前展示的version
             toggleVersion(versionId) {
                     deployService.getSingleVersion(this.config.deployId, versionId).then((res) => {
-                        if (res.data.result) {
+                        if ($util.isObject(res.data.result)) {
                             $.extend(this.config, res.data.result);
                             this.initData();
                         }
@@ -383,14 +377,14 @@
                         this.loadingIns.finishLoading('tag');
                     });
                 };
-                for (let i = 0; i < containerDrafts.length; i++) {
+                for (let i = 0, l = containerDrafts.length; i < l; i++) {
                     containerDrafts[i].oldEnv = [];
                     containerDrafts[i].newEnv = [];
                     // 获得该镜像版本
                     getTag(containerDrafts[i]);
                     let oldEnv = [];
                     // 获得镜像原本的envSettings
-                    for (let j = 0; j < this.imageList.length; j++) {
+                    for (let j = 0, l1 = this.imageList.length; j < l1; j++) {
                         if (this.imageList[j].imageName === containerDrafts[i].image) {
                             oldEnv = this.imageList[j].envSettings;
                             break;
@@ -398,9 +392,9 @@
                     }
                     // 分离镜像本身的image和新添加的image的env
                     if (containerDrafts[i].envs) {
-                        for (let w = 0; w < containerDrafts[i].envs.length; w++) {
+                        for (let w = 0, l2 = containerDrafts[i].envs.length; w < l2; w++) {
                             let isOldEnv = false;
-                            for (let k = 0; k < oldEnv.length; k++) {
+                            for (let k = 0, l3 = oldEnv.length; k < l3; k++) {
                                 if (oldEnv[k].key === containerDrafts[i].envs[w].key) {
                                     isOldEnv = true;
                                     break;
@@ -422,7 +416,7 @@
             }
             toggleIsNewNamespace() {
                 this.isNewNamespace = !this.isNewNamespace;
-                this.config.namespace = undefined;
+                this.config.namespace = null;
             }
             toggleEnv(env) {
                 this.config.hostEnv = env.value;
@@ -445,9 +439,9 @@
                             registry: image.registry,
                             cpu: 0.5,
                             mem: 1024,
-                            tag: tags && tags[0] ? tags[0].tag : undefined,
-                            tagList: tags ? tags : [],
-                            oldEnv: image.envSettings ? image.envSettings : [],
+                            tag: tags && tags[0] ? tags[0].tag : void 0,
+                            tagList: tags || [],
+                            oldEnv: image.envSettings || [],
                             newEnv: [],
                             healthChecker: {
                                 type: 'NONE'
@@ -540,8 +534,8 @@
             }
             changeNetworkmode() {
                 if (this.config.networkMode == 'HOST') {
-                    for (let i = 0; i < this.config.loadBalanceDrafts.length; i++) {
-                        this.config.loadBalanceDrafts[i].port = this.config.loadBalanceDrafts[i].targetPort;
+                    for (let loadBalanceDraft of this.config.loadBalanceDrafts) {
+                        loadBalanceDraft.port = loadBalanceDraft.targetPort;
                     }
                 }
             }
@@ -550,9 +544,7 @@
                 }
                 // 将数据结构转换为与后台交互的数据格式
             _formartDeploy() {
-                let deployConfig = angular.copy(this.config),
-                    i = 0,
-                    j = 0;
+                let deployConfig = angular.copy(this.config);
 
                 if (deployConfig.networkMode == 'HOST') {
                     deployConfig.loadBalanceDrafts = [];
@@ -646,7 +638,7 @@
                     }
 
                     if (!deployConfig.containerDrafts) {
-                        return undefined;
+                        return void 0;
                     }
 
                     let envConf, containerDrafts = [],
@@ -757,14 +749,13 @@
                     });
                     modalInstance.result.then((replicas) => {
                         replicas = parseInt(replicas);
-                        let url = '';
-                        let currentVersionId = this.config.currentVersions[0].version;
-                        if (replicas > this.config.currentReplicas) {
-                            url = 'api/deploy/action/scaleup';
-                        } else if (replicas < this.config.currentReplicas) {
-                            url = 'api/deploy/action/scaledown';
+                        if (replicas === this.config.currentReplicas) {
+                            $domePublic.openWarning('实例个数无变化！');
+                            deferred.reject();
+                            return;
                         }
-                        $http.post(url + '?deployId=' + this.config.deployId + '&replicas=' + replicas + '&version=' + currentVersionId).then((res) => {
+                        let url = replicas > this.config.currentReplicas ? 'api/deploy/action/scaleup' : 'api/deploy/action/scaledown';
+                        $http.post(url + '?deployId=' + this.config.deployId + '&replicas=' + replicas + '&version=' + this.config.currentVersions[0].version).then((res) => {
                             $domePublic.openPrompt('操作成功！');
                             deferred.resolve(res.data.result);
                         }, function () {
@@ -905,6 +896,7 @@
             constructor(instances) {
                 this.isCheckAll = false;
                 this.isCheckAllContainer = false;
+                this.instanceList = [];
                 this.containerList = [];
                 // 已选中instance数
                 this.selectedCount = 0;
@@ -915,35 +907,35 @@
             init(instances) {
                     this.isCheckAll = false;
                     this.isCheckAllContainer = false;
-                    this.instanceList = (function (instances) {
+                    this.instanceList = (() => {
                         instances = instances || [];
-                        for (let i = 0; i < instances.length; i++) {
-                            instances[i].isSelected = false;
-                            instances[i].keyFilter = true;
-                            if (instances[i].containers) {
-                                for (let j = 0; j < instances[i].containers.length; j++) {
-                                    instances[i].containers[j].shortContainerId = instances[i].containers[j].containerId.substring(0, 12);
+                        for (let instance of instances) {
+                            instance.isSelected = false;
+                            instance.keyFilter = true;
+                            if (instance.containers) {
+                                for (let container of instance.containers) {
+                                    container.shortContainerId = container.containerId.substring(0, 12);
                                 }
                             }
                         }
                         return instances;
-                    })(instances);
+                    })();
                 }
                 // 选择实例-->切换containerList
             toggleContainerList(instance) {
                 this.isCheckAllContainer = false;
                 this.selectedContainerCount = 0;
                 this.containerList = instance.containers || [];
-                for (let i = 0; i < this.containerList.length; i++) {
-                    this.containerList[i].isSelected = false;
+                for (let container of this.containerList) {
+                    container.isSelected = false;
                 }
             }
             filterWithKey(keywords) {
                 this.isCheckAll = false;
                 this.selectedCount = 0;
-                for (let i = 0; i < this.instanceList.length; i++) {
-                    this.instanceList[i].isSelected = false;
-                    this.instanceList[i].keyFilter = this.instanceList[i].instanceName.indexOf(keywords) !== -1;
+                for (let instance of this.instanceList) {
+                    instance.isSelected = false;
+                    instance.keyFilter = instance.instanceName.indexOf(keywords) !== -1;
                 }
             }
             toggleContainerCheck(container) {
@@ -951,8 +943,8 @@
                     if (container.isSelected) {
                         this.selectedContainerCount++;
                         // 是否为全选
-                        for (let i = 0; i < this.containerList.length; i++) {
-                            if (!this.containerList[i].isSelected) {
+                        for (let container of this.containerList) {
+                            if (!container.isSelected) {
                                 isAllHasChange = false;
                                 break;
                             }
@@ -967,14 +959,10 @@
                 }
                 // 全选/全不选
             checkAllContainer(isCheckAllContainer) {
-                    this.isCheckAllContainer = isCheckAllContainer === undefined ? !this.isCheckAllContainer : isCheckAllContainer;
-                    if (this.isCheckAllContainer) {
-                        this.selectedContainerCount = this.containerList.length;
-                    } else {
-                        this.selectedContainerCount = 0;
-                    }
-                    for (let i = 0; i < this.containerList.length; i++) {
-                        this.containerList[i].isSelected = this.isCheckAllContainer;
+                    this.isCheckAllContainer = typeof isCheckAllContainer === 'undefined' ? !this.isCheckAllContainer : isCheckAllContainer;
+                    this.selectedContainerCount = this.isCheckAllContainer ? this.containerList.length : 0;
+                    for (let container of this.containerList) {
+                        container.isSelected = this.isCheckAllContainer;
                     }
                 }
                 // 切换单个实例的选中状态
@@ -983,8 +971,8 @@
                     if (instance.isSelected) {
                         this.selectedCount++;
                         // 是否为全选
-                        for (let i = 0; i < this.instanceList.length; i++) {
-                            if (this.instanceList[i].keyFilter && !this.instanceList[i].isSelected) {
+                        for (let instance of this.instanceList) {
+                            if (instance.keyFilter && !instance.isSelected) {
                                 isAllHasChange = false;
                                 break;
                             }
@@ -999,14 +987,14 @@
                 }
                 // 全选/全不选
             checkAllInstance(isCheckAll) {
-                this.isCheckAll = isCheckAll === undefined ? this.isCheckAll : isCheckAll;
+                this.isCheckAll = typeof isCheckAll === 'undefined' ? this.isCheckAll : isCheckAll;
                 this.selectedCount = 0;
-                for (let i = 0; i < this.instanceList.length; i++) {
-                    if (this.instanceList[i].keyFilter && this.isCheckAll) {
-                        this.instanceList[i].isSelected = true;
+                for (let instance of this.instanceList) {
+                    if (instance.keyFilter && this.isCheckAll) {
+                        instance.isSelected = true;
                         this.selectedCount++;
                     } else {
-                        this.instanceList[i].isSelected = false;
+                        instance.isSelected = false;
                     }
                 }
             }
@@ -1016,6 +1004,7 @@
             constructor(deployList) {
                 this.deploy = {};
                 this.isLoading = false;
+                this.deployList = [];
                 this.deployInstanceListIns = new DeployInstanceList();
                 this.init(deployList);
             }
@@ -1025,9 +1014,9 @@
             toggleDeploy(deployId, deployName, namespace, notNeedInstances) {
                     let deferred = $q.defer();
                     if (!deployId) {
-                        this.deploy.id = undefined;
-                        this.deploy.name = undefined;
-                        this.deploy.namespace = undefined;
+                        this.deploy.id = null;
+                        this.deploy.name = null;
+                        this.deploy.namespace = null;
                         this.deployInstanceListIns.init();
                         deferred.reject();
                     } else {
@@ -1049,33 +1038,19 @@
                 }
                 // @param hostEnv: 'TEST' or 'PROD'
             filterDeploy(clusterName, hostEnv) {
-                let firstIndex = -1,
-                    deployId, deployName, namespace;
-                for (let i = 0; i < this.deployList.length; i++) {
-                    if (clusterName) {
-                        this.deployList[i].clusterFilter = this.deployList[i].clusterName === clusterName;
-                    } else {
-                        this.deployList[i].clusterFilter = true;
-                    }
-                    if (hostEnv) {
-                        this.deployList[i].hostFilter = this.deployList[i].hostEnv === hostEnv;
-                    } else {
-                        this.deployList[i].hostFilter = true;
-                    }
+                let deployId, deployName, namespace;
+                for (let deploy of this.deployList) {
+                    deploy.clusterFilter = clusterName ? deploy.clusterName === clusterName : true;
+                    deploy.hostFilter = hostEnv ? deploy.hostEnv === hostEnv : true;
                     // 选中第一个符合条件的部署并切换到该部署
-                    if (firstIndex === -1 && this.deployList[i].clusterFilter && this.deployList[i].hostFilter) {
-                        firstIndex = i;
-                        deployId = this.deployList[i].deployId;
-                        deployName = this.deployList[i].deployName;
-                        namespace = this.deployList[i].namespace;
+                    if (typeof deployId === 'undefined' && deploy.clusterFilter && deploy.hostFilter) {
+                        deployId = deploy.deployId;
+                        deployName = deploy.deployName;
+                        namespace = deploy.namespace;
                     }
 
                 }
-                if (firstIndex === -1) {
-                    return this.toggleDeploy();
-                } else {
-                    return this.toggleDeploy(deployId, deployName, namespace);
-                }
+                return typeof deployId === 'undefined' ? this.toggleDeploy() : this.toggleDeploy(deployId, deployName, namespace);
             }
         }
 
@@ -1089,7 +1064,7 @@
             getInstance: getInstance
         };
     }
-    DeployService.$inject = ['$http', '$domeCluster', '$domeUser', '$domeProject', '$domeImage', '$domePublic', '$domeModel', '$modal', '$q'];
+    DeployService.$inject = ['$http', '$domeCluster', '$domeImage', '$domePublic', '$domeModel', '$modal', '$q', '$util'];
     deployModule.factory('$domeDeploy', DeployService);
     window.deployModule = deployModule;
-})();
+})(window);

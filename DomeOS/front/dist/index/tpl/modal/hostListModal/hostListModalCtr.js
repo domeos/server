@@ -1,6 +1,9 @@
-domeApp.controller('HostListModalCtr', ['$scope', 'hostList', '$modalInstance', 'filterFilter', function($scope, hostList, $modalInstance, filterFilter) {
+(function (domeApp, undefined) {
 	'use strict';
-	$scope.hostList = filterFilter(hostList, {
-		'labelFilter': true
-	});
-}]);
+	if (typeof domeApp === 'undefined') return;
+	domeApp.controller('HostListModalCtr', ['$scope', 'hostList', '$modalInstance', 'filterFilter', function ($scope, hostList, $modalInstance, filterFilter) {
+		$scope.hostList = filterFilter(hostList, {
+			'labelFilter': true
+		});
+	}]);
+})(window.domeApp);

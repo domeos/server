@@ -1,4 +1,4 @@
-(function () {
+(function (window, undefined) {
     'use strict';
     var amchartsApp = angular.module('amchartsModule', []);
     amchartsApp.directive('amchart', function () {
@@ -53,7 +53,7 @@
 
                     chart.dataProvider = option.data;
 
-                    for (var i = 0; i < chartKeys.length; i++) {
+                    for (var i = 0, l = chartKeys.length; i < l; i++) {
                         if (typeof option[chartKeys[i]] !== 'object' && typeof option[chartKeys[i]] !== 'function') {
                             chart[chartKeys[i]] = option[chartKeys[i]];
                         } else {
@@ -72,4 +72,4 @@
         };
     });
     window.amchartsApp = amchartsApp;
-})();
+})(window);

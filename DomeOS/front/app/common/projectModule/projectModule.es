@@ -1,4 +1,4 @@
-(() => {
+((window, undefined) => {
     // 项目管理service
     'use strict';
     let projectModule = angular.module('projectModule', []);
@@ -7,14 +7,14 @@
         const ProjectService = function () {
             this.url = 'api/project';
             $domeModel.ServiceModel.call(this, this.url);
-            this.getReadMe = (proId, branch) => $http.get(this.url + '/readme/' + proId + '/' + branch);
-            this.getBuildList = (proId) => $http.get('/api/ci/build/' + proId);
-            this.getBranches = (proId) => $http.get(this.url + '/branches/' + proId);
-            this.getBranchesWithoutId = (codeId, codeManagerUserId, codeManager) => $http.get(this.url + '/branches/' + codeManager + '/' + codeId + '/' + codeManagerUserId);
-            this.getTags = (proId) => $http.get(this.url + '/tags/' + proId);
-            this.getTagsWithoutId = (codeId, codeManagerUserId, codeManager) => $http.get(this.url + '/tags/' + codeManager + '/' + codeId + '/' + codeManagerUserId);
-            this.getGitLabInfo = () => $http.get(this.url + '/git/gitlabinfo');
-            this.getBuildDockerfile = (proId, buildId) => $http.get('/api/ci/build/dockerfile/' + proId + '/' + buildId);
+            this.getReadMe = (proId, branch) => $http.get(`${this.url}/readme/${proId}/${branch}`);
+            this.getBuildList = proId => $http.get(`/api/ci/build/${proId}`);
+            this.getBranches = proId => $http.get(`${this.url}/branches/${proId}`);
+            this.getBranchesWithoutId = (codeId, codeManagerUserId, codeManager) => $http.get(`${this.url}/branches/${codeManager}/${codeId}/${codeManagerUserId}`);
+            this.getTags = proId => $http.get(`${this.url}/tags/${proId}`);
+            this.getTagsWithoutId = (codeId, codeManagerUserId, codeManager) => $http.get(`${this.url}/tags/${codeManager}/${codeId}/${codeManagerUserId}`);
+            this.getGitLabInfo = () => $http.get(`${this.url}/git/gitlabinfo`);
+            this.getBuildDockerfile = (proId, buildId) => $http.get(`/api/ci/build/dockerfile/${proId}/${buildId}`);
             this.previewDockerfile = (projectConfig) => $http.post('/api/ci/build/dockerfile', angular.toJson(projectConfig), {
                 notIntercept: true
             });
@@ -60,25 +60,25 @@
             init(imagesInfo) {
                 if (!imagesInfo)
                     imagesInfo = {};
-                if (!imagesInfo.compilePublicImageList) {
+                if (!$util.isArray(imagesInfo.compilePublicImageList)) {
                     imagesInfo.compilePublicImageList = [];
                 }
-                if (!imagesInfo.compilePrivateImageList) {
+                if (!$util.isArray(imagesInfo.compilePrivateImageList)) {
                     imagesInfo.compilePrivateImageList = [];
                 }
-                if (!imagesInfo.runPublicImageList) {
+                if (!$util.isArray(imagesInfo.runPublicImageList)) {
                     imagesInfo.runPublicImageList = [];
                 }
-                if (!imagesInfo.runPrivateImageList) {
+                if (!$util.isArray(imagesInfo.runPrivateImageList)) {
                     imagesInfo.runPrivateImageList = [];
                 }
 
                 angular.forEach(imagesInfo, (imageList, imageListName) => {
-                    for (let i = 0; i < imageList.length; i++) {
-                        imageList[i].createDate = $util.getPageDate(imageList[i].createTime);
-                        imageList[i].imageTxt = imageList[i].imageName;
-                        if (imageList[i].imageTag) {
-                            imageList[i].imageTxt += ':' + imageList[i].imageTag;
+                    for (let image of imageList) {
+                        image.createDate = $util.getPageDate(image.createTime);
+                        image.imageTxt = image.imageName;
+                        if (image.imageTag) {
+                            image.imageTxt += ':' + image.imageTag;
                         }
                     }
                 });
@@ -89,7 +89,7 @@
                 }
             }
             toggleIsPublicImage(imageType, isPublic) {
-                    if (isPublic === undefined) {
+                    if (typeof isPublic === 'undefined') {
                         isPublic = imageType == 'compile' ? this.imageInfo.compileIsPublic : this.imageInfo.runIsPublic;
                     }
                     if (imageType == 'compile') {
@@ -112,7 +112,7 @@
                 // 设置默认选择的镜像
             toggleSpecifiedImage(type, imgObj) {
                 let imageTxt = '';
-                if (imgObj) {
+                if ($util.isObject(imgObj)) {
                     imageTxt = imgObj.imageName;
                     if (imgObj.imageTag) {
                         imageTxt += ':' + imgObj.imageTag;
@@ -123,21 +123,13 @@
                 if (type == 'compile') {
                     this.selectedCompileImage = imgObj;
                     this.selectedCompileImage.imageTxt = imageTxt;
-                    if (imgObj.registryType !== undefined) {
-                        this.imageInfo.compileIsPublic = imgObj.registryType;
-                    } else {
-                        this.imageInfo.compileIsPublic = 1;
-                    }
+                    this.imageInfo.compileIsPublic = imgObj.registryType !== void 0 ? imgObj.registryType : 1;
                     this.currentCompileList = imgObj.registryType === 1 ? this.projectImagesInfo.compilePublicImageList : this.projectImagesInfo.compilePrivateImageList;
 
                 } else {
                     this.selectedRunImage = imgObj;
                     this.selectedRunImage.imageTxt = imageTxt;
-                    if (imgObj.registryType !== undefined) {
-                        this.imageInfo.runIsPublic = imgObj.registryType;
-                    } else {
-                        this.imageInfo.runIsPublic = 1;
-                    }
+                    this.imageInfo.runIsPublic = imgObj.registryType !== void 0 ? imgObj.registryType : 1;
                     this.currentRunList = imgObj.registryType === 1 ? this.projectImagesInfo.runPublicImageList : this.projectImagesInfo.runPrivateImageList;
                 }
             }
@@ -156,17 +148,17 @@
             init(project) {
                 let i = 0,
                     autoBuildInfo;
-                if (!project) {
+                if (!$util.isObject(project)) {
                     project = {};
                 }
                 this.customConfig = {};
-                if (!project.dockerfileInfo) {
+                if (!$util.isObject(project.dockerfileInfo)) {
                     project.dockerfileInfo = {};
                 }
-                if (!project.dockerfileConfig) {
+                if (!$util.isObject(project.dockerfileConfig)) {
                     project.dockerfileConfig = {};
                 }
-                if (!project.userDefineDockerfile) {
+                if (project.userDefineDockerfile !== true) {
                     this.customConfig = !project.exclusiveBuild ? project.dockerfileConfig : project.exclusiveBuild;
                 }
                 // 初始化 autoBuildInfo
@@ -174,7 +166,7 @@
                 project.autoBuildInfo = (() => {
                     let autoBuildInfo = project.autoBuildInfo,
                         newAutoBuildInfo, branches;
-                    if (!autoBuildInfo) {
+                    if (!$util.isObject(autoBuildInfo)) {
                         return {
                             tag: 0,
                             master: false,
@@ -210,7 +202,7 @@
                 project.confFiles = (() => {
                     let confFiles = project.confFiles,
                         newArr = [];
-                    if (!confFiles || confFiles.length === 0) {
+                    if (!$util.isObject(confFiles)) {
                         return [{
                             tplDir: '',
                             originDir: ''
@@ -230,7 +222,7 @@
                 })();
                 this.isUseCustom = !!this.customConfig.customType;
 
-                if (!project.envConfDefault) {
+                if (!$util.isArray(project.envConfDefault)) {
                     project.envConfDefault = [];
                 }
                 project.envConfDefault.push({
@@ -264,7 +256,7 @@
 
                 this.customConfig.createdFileStoragePath = function () {
                     let createdFileStoragePath = this.customConfig.createdFileStoragePath;
-                    if (!createdFileStoragePath || createdFileStoragePath.length === 0) {
+                    if (!$util.isArray(createdFileStoragePath) || createdFileStoragePath.length === 0) {
                         return [{
                             name: ''
                         }];
@@ -282,7 +274,6 @@
 
                 this.config = project;
                 this.creatorDraft = {};
-                project = null;
             }
             resetConfig() {
                 this.config.dockerfileConfig = null;
@@ -333,9 +324,7 @@
                 });
             }
             modify() {
-                let createProject = this._formartProject();
-                console.log(createProject);
-                return $http.put('/api/project', angular.toJson(createProject));
+                return $http.put('/api/project', angular.toJson(this._formartProject()));
             }
             delete() {
                 let defered = $q.defer();
@@ -548,4 +537,4 @@
     DomeProject.$inject = ['$http', '$util', '$state', '$domePublic', '$domeModel', '$q', '$modal'];
     projectModule.factory('$domeProject', DomeProject);
     window.projectModule = projectModule;
-})();
+})(window);

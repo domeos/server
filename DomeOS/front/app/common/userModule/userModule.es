@@ -1,4 +1,4 @@
-(() => {
+((window, undefined) => {
     'use strict';
     let userModule = angular.module('userModule', []);
     userModule.controller('ModifyPwModalCtr', ['$scope', 'loginUser', '$modalInstance', '$domePublic', '$domeUser', function ($scope, loginUser, $modalInstance, $domePublic, $domeUser) {
@@ -89,72 +89,32 @@
             return new AlarmGroup();
         }();
         const userService = {
-            getCurrentUser() {
-                return $http.get('/api/user/get');
-            },
-            getUserList() {
-                return $http.get('/api/user/list');
-            },
-            modifyUserInfo(user) {
-                return $http.post('/api/user/modify', angular.toJson(user));
-            },
+            getCurrentUser: () => $http.get('/api/user/get'),
+            getUserList: () => $http.get('/api/user/list'),
+            modifyUserInfo: user => $http.post('/api/user/modify', angular.toJson(user)),
             // 管理员修改：@param userInfo:{username:'username', password:'password'}
-            modifyPw(userInfo) {
-                return $http.post('/api/user/adminChangePassword', angular.toJson(userInfo));
-            },
+            modifyPw: userInfo => $http.post('/api/user/adminChangePassword', angular.toJson(userInfo)),
             // 用户修改： @param userInfo: {username:'username', oldpassword:'oldpassword', newpassword:'newpassword'}
-            userModifyPw(userInfo) {
-                return $http.post('/api/user/changePassword', angular.toJson(userInfo));
-            },
-            deleteUser(userId) {
-                return $http.delete('/api/user/delete/' + userId);
-            },
-            createUser(userInfo) {
-                return $http.post('/api/user/create', angular.toJson(userInfo));
-            },
+            userModifyPw: userInfo => $http.post('/api/user/changePassword', angular.toJson(userInfo)),
+            deleteUser: userId => $http.delete(`/api/user/delete/${userId}`),
+            createUser: userInfo => $http.post('/api/user/create', angular.toJson(userInfo)),
             // 获取单个资源用户信息
-            getSigResourceUser(resourceType, id) {
-                return $http.get('/api/resource/' + resourceType + '/' + id);
-            },
+            getSigResourceUser: (resourceType, id) => $http.get(`/api/resource/${resourceType}/${id}`),
             // 获取某类资源用户信息
-            getResourceUser(resourceType) {
-                return $http.get('/api/resource/' + resourceType + '/useronly');
-            },
-            modifyResourceUser(resourceInfo) {
-                return $http.put('/api/resource', angular.toJson(resourceInfo));
-            },
-            deleteResourceUser(resourceType, resourceId, ownerType, ownerId) {
-                return $http.delete('/api/resource/' + resourceType + '/' + resourceId + '/' + ownerType + '/' + ownerId);
-            },
+            getResourceUser: resourceType => $http.get(`/api/resource/${resourceType}/useronly`),
+            modifyResourceUser: resourceInfo => $http.put('/api/resource', angular.toJson(resourceInfo)),
+            deleteResourceUser: (resourceType, resourceId, ownerType, ownerId) => $http.delete(`/api/resource/${resourceType}/${resourceId}/${ownerType}/${ownerId}`),
             // 获取资源组信息
-            getGroupList() {
-                return $http.get(' /api/namespace/list');
-            },
+            getGroupList: () => $http.get(' /api/namespace/list'),
             // 获取组列表
-            getGroup() {
-                return $http.get('/api/group/list');
-            },
-            getGroupInfo(groupId) {
-                return $http.get('/api/group/get/' + groupId);
-            },
-            deleteGroup(groupId) {
-                return $http.delete('/api/group/delete/' + groupId);
-            },
-            createGroup(groupData) {
-                return $http.post('/api/group/create', angular.toJson(groupData));
-            },
-            modifyGroupUsers(groupId, users) {
-                return $http.post('/api/group_members/' + groupId, angular.toJson(users));
-            },
-            deleteGroupUser(groupId, userId) {
-                return $http.delete('/api/group_members/' + groupId + '/' + userId);
-            },
-            getGroupUser(groupId) {
-                return $http.get('/api/group_members/' + groupId);
-            },
-            logout() {
-                return $http.get('/api/user/logout');
-            }
+            getGroup: () => $http.get('/api/group/list'),
+            getGroupInfo: groupId => $http.get(`/api/group/get/${groupId}`),
+            deleteGroup: groupId => $http.delete(`/api/group/delete/${groupId}`),
+            createGroup: groupData => $http.post('/api/group/create', angular.toJson(groupData)),
+            modifyGroupUsers: (groupId, users) => $http.post(`/api/group_members/${groupId}`, angular.toJson(users)),
+            deleteGroupUser: (groupId, userId) => $http.delete(`/api/group_members/${groupId}/${userId}`),
+            getGroupUser: groupId => $http.get(`/api/group_members/${groupId}`),
+            logout: () => $http.get('/api/user/logout')
         };
         const getLoginUser = () => {
             let deferred = $q.defer();
@@ -323,4 +283,4 @@
         };
     }]);
     window.userModule = userModule;
-})();
+})(window);

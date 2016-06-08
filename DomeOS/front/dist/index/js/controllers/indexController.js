@@ -1,5 +1,7 @@
-(function () {
+(function (domeApp, undefined) {
     'use strict';
+    if (typeof domeApp === 'undefined') return;
+
     domeApp.controller('DomeCtr', DomeCtr);
 
     function DomeCtr($scope, $modal, $util, $domeUser, $publicApi, $q) {
@@ -15,7 +17,7 @@
             vm.currentMod.mod = msg.mod;
         });
         $publicApi.getDbConfig().then(function (res) {
-            vm.showPrompt = res.data.result == 'H2' ? true : false;
+            vm.showPrompt = res.data.result == 'H2';
         });
         vm.getLoginUser = function () {
             var deferred = $q.defer();
@@ -116,4 +118,4 @@
             $modalInstance.dismiss('cancel');
         };
     }]);
-})();
+})(window.domeApp);

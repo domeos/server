@@ -148,13 +148,6 @@ public class LoadBalancer extends RowModelBase {
         LoadBalancer loadBalancer = new LoadBalancer();
         loadBalancer.setVer(VERSION_NOW());
         loadBalancer.setFqcn("org.domeos.framework.api.model.LoadBalancerService.LoadBalancerService");
-        loadBalancer.setId(loadBalancerV1.getId());
-        loadBalancer.setName(loadBalancerV1.getName());
-        loadBalancer.setDescription(loadBalancerV1.getDescription());
-        loadBalancer.setState(loadBalancerV1.getState());
-        loadBalancer.setCreateTime(loadBalancerV1.getCreateTime());
-        loadBalancer.setRemoveTime(loadBalancerV1.getRemoveTime());
-        loadBalancer.setRemoved(loadBalancerV1.isRemoved());
         loadBalancer.setType(loadBalancerV1.getType());
         loadBalancer.setExternalIPs(loadBalancerV1.getExternalIPs());
         loadBalancer.setClusterId(loadBalancerV1.getClusterId());
@@ -165,7 +158,6 @@ public class LoadBalancer extends RowModelBase {
         List<LoadBalancerPort> loadBalancerPorts = new ArrayList<>();
         loadBalancerPorts.add(loadBalancerPort);
         loadBalancer.setLoadBalancerPorts(loadBalancerPorts);
-        // TODO(openxxs) update database data to assign dnsName and namespace
         loadBalancer.setDnsName(loadBalancerV1.getDnsName());
         loadBalancer.setNamespace(loadBalancerV1.getNamespace());
         return loadBalancer;

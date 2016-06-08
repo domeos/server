@@ -1,11 +1,14 @@
-domeApp.controller('OtherImageModalCtr', ['$scope', '$modalInstance', function($scope, $modalInstance) {
+(function (domeApp, undefined) {
 	'use strict';
-	$scope.imageInfo = {
-		name: '',
-		tag: '',
-		registry: ''
-	};
-	$scope.submitImage = function() {
-		$modalInstance.close($scope.imageInfo);
-	};
-}]);
+	if (typeof domeApp === 'undefined') return;
+	domeApp.controller('OtherImageModalCtr', ['$scope', '$modalInstance', function ($scope, $modalInstance) {
+		$scope.imageInfo = {
+			name: '',
+			tag: '',
+			registry: ''
+		};
+		$scope.submitImage = function () {
+			$modalInstance.close($scope.imageInfo);
+		};
+	}]);
+})(window.domeApp);

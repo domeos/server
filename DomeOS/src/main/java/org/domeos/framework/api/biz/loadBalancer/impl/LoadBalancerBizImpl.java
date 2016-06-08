@@ -35,7 +35,11 @@ public class LoadBalancerBizImpl extends BaseBizImpl implements LoadBalancerBiz{
         List<LoadBalancer> result = new ArrayList<>();
         List<RowMapperDao> daoList = loadBalancerMapper.getLBListByDeploy(deployId);
         for (RowMapperDao dao: daoList) {
-            result.add(checkResult(dao, LoadBalancer.class));
+            LoadBalancer loadBalancer = checkResult(dao, LoadBalancer.class);
+            if (loadBalancer.getDnsName() == null && loadBalancer.getName() != null) {
+                loadBalancer.setDnsName(loadBalancer.getName().substring(4));
+            }
+            result.add(loadBalancer);
         }
         return result;
     }

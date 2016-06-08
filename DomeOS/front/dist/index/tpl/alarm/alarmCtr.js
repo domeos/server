@@ -1,5 +1,7 @@
-(function() {
+(function (domeApp, undefined) {
     'use strict';
+    if (typeof domeApp === 'undefined') return;
+
     domeApp.controller('AlarmCtr', AlarmCtr)
         .controller('TabAlarmTemplatesCtr', TabAlarmTemplatesCtr)
         .controller('TabAlarmCurrentAlarmsCtr', TabAlarmCurrentAlarmsCtr)
@@ -8,7 +10,6 @@
         .controller('RenameHostGroupModalCtr', RenameHostGroupModalCtr);
 
     function AlarmCtr($scope, $domeUser, $state) {
-        'use strict';
         $scope.$emit('pageTitle', {
             title: '报警',
             descrition: '在这里您可以管理主机组和监控模板，并查看未恢复报警',
@@ -16,7 +17,7 @@
         });
         var vm = this;
         vm.tabName = 'templates';
-        $scope.$on('tabName', function(event, msg) {
+        $scope.$on('tabName', function (event, msg) {
             vm.tabName = msg;
         });
         vm.permission = {
@@ -26,16 +27,16 @@
         };
         // 获取当前用户的报警权限
         function getPermission() {
-            $domeUser.getLoginUser().then(function(user) {
+            $domeUser.getLoginUser().then(function (user) {
                 if (user.username == 'admin') {
                     vm.permission.id = user.id;
                     // 自定义角色标识admin
                     vm.permission.role = 'ADMIN';
                 } else {
-                    $domeUser.alarmGroupService.getData().then(function(res) {
+                    $domeUser.alarmGroupService.getData().then(function (res) {
                         var alarmUsers = res.data.result;
                         if (alarmUsers && alarmUsers.length !== 0) {
-                            for (var i = 0; i < alarmUsers.length; i++) {
+                            for (var i = 0, l = alarmUsers.length; i < l; i++) {
                                 if (alarmUsers[i].userId == user.id) {
                                     vm.permission.id = alarmUsers[i].userId;
                                     vm.permission.role = alarmUsers[i].role;
@@ -53,7 +54,7 @@
             });
         }
         getPermission();
-        $scope.$on('memberPermisson', function(event, hasPermisson) {
+        $scope.$on('memberPermisson', function (event, hasPermisson) {
             if (!hasPermisson) {
                 getPermission();
             }
@@ -65,9 +66,9 @@
         var alarmService = $domeAlarm.getInstance('AlarmService'),
             vmTemplate = this;
         vmTemplate.keywords = '';
-        alarmService.getData().then(function(res) {
+        alarmService.getData().then(function (res) {
             var templatesList = res.data.result || [];
-            for (var i = 0; i < templatesList.length; i++) {
+            for (var i = 0, l = templatesList.length; i < l; i++) {
                 var thisTpl = templatesList[i];
                 if (thisTpl.templateType == 'host') {
                     thisTpl.templateTypeName = '主机';
@@ -76,19 +77,19 @@
                 }
             }
             vmTemplate.templatesList = templatesList;
-        }, function() {
+        }, function () {
             $domePublic.openWarning('请求失败！');
         });
-        vmTemplate.deleteTpl = function(id) {
-            $domePublic.openDelete().then(function() {
-                alarmService.deleteData(id).then(function() {
+        vmTemplate.deleteTpl = function (id) {
+            $domePublic.openDelete().then(function () {
+                alarmService.deleteData(id).then(function () {
                     for (var i = 0; i < vmTemplate.templatesList.length; i++) {
                         if (vmTemplate.templatesList[i].id === id) {
                             vmTemplate.templatesList.splice(i, 1);
                             return;
                         }
                     }
-                }, function(res) {
+                }, function (res) {
                     $domePublic.openWarning({
                         title: '删除失败！',
                         msg: 'Message:' + res.data.resultMsg
@@ -103,10 +104,10 @@
         var vmAlarm = this;
         vmAlarm.keywords = '';
         vmAlarm.loading = true;
-        $domeAlarm.alarmEventService.getData().then(function(res) {
+        $domeAlarm.alarmEventService.getData().then(function (res) {
             var alarmsList = res.data.result || [];
             var metricKeyMaps = $domeAlarm.keyMaps.metric;
-            var getAlarmCounterInfo = function(metric, tag) {
+            var getAlarmCounterInfo = function (metric, tag) {
                 var mapInfo = metricKeyMaps[metric];
                 var metricName = mapInfo.text;
                 if (tag) {
@@ -123,13 +124,13 @@
                     unit: mapInfo.unit
                 };
             };
-            var isNotEmptyStrOrNum = function(data) {
+            var isNotEmptyStrOrNum = function (data) {
                 if (data !== null && data !== undefined && data !== '') {
                     return true;
                 }
                 return false;
             };
-            for (var i = 0; i < alarmsList.length; i++) {
+            for (var i = 0, l = alarmsList.length; i < l; i++) {
                 var thisAlarm = alarmsList[i];
                 if (thisAlarm.templateType == 'host') {
                     thisAlarm.templateTypeName = '主机';
@@ -151,21 +152,21 @@
                 thisAlarm.metricName = counterInfo.metricName;
             }
             vmAlarm.alarmsList = alarmsList;
-        }, function() {
+        }, function () {
             $domePublic.openWarning('请求失败！');
-        }).finally(function() {
+        }).finally(function () {
             vmAlarm.loading = false;
         });
-        vmAlarm.ignoreAlarm = function(id) {
-            $domePublic.openDelete().then(function() {
-                $domeAlarm.alarmEventService.ignore(id + '').then(function() {
+        vmAlarm.ignoreAlarm = function (id) {
+            $domePublic.openDelete().then(function () {
+                $domeAlarm.alarmEventService.ignore(id + '').then(function () {
                     for (var i = 0; i < vmAlarm.alarmsList.length; i++) {
                         if (vmAlarm.alarmsList[i].id === id) {
                             vmAlarm.alarmsList.splice(i, 1);
                             return;
                         }
                     }
-                }, function(res) {
+                }, function (res) {
                     $domePublic.openWarning({
                         title: '删除失败！',
                         msg: 'Message:' + res.data.resultMsg
@@ -173,7 +174,7 @@
                 });
             });
         };
-        vmAlarm.changePopover = function(tpl) {
+        vmAlarm.changePopover = function (tpl) {
             var popoverHtmlArr = [],
                 hostEnv, obj;
             if (tpl.templateType == 'host' && tpl.hostInfo) {
@@ -212,23 +213,23 @@
         };
 
         function init() {
-            hostGroupService.getData().then(function(res) {
+            hostGroupService.getData().then(function (res) {
                 vmHostGroup.hostGroupList = res.data.result || [];
-            }, function() {
+            }, function () {
                 $domePublic.openWarning('请求失败！');
             });
         }
         init();
-        vmHostGroup.deleteHostGroup = function(id) {
-            $domePublic.openDelete().then(function() {
-                hostGroupService.deleteData(id).then(function() {
+        vmHostGroup.deleteHostGroup = function (id) {
+            $domePublic.openDelete().then(function () {
+                hostGroupService.deleteData(id).then(function () {
                     for (var i = 0; i < vmHostGroup.hostGroupList.length; i++) {
                         if (vmHostGroup.hostGroupList[i].id === id) {
                             vmHostGroup.hostGroupList.splice(i, 1);
                             return;
                         }
                     }
-                }, function(res) {
+                }, function (res) {
                     $domePublic.openWarning({
                         title: '删除失败！',
                         msg: 'Message:' + res.data.resultMsg
@@ -236,11 +237,11 @@
                 });
             });
         };
-        vmHostGroup.deleteNode = function(hostGroup, nodeIndex) {
-            $domePublic.openDelete().then(function() {
-                hostGroupService.deleteHost(hostGroup.id, hostGroup.hostList[nodeIndex].id).then(function() {
+        vmHostGroup.deleteNode = function (hostGroup, nodeIndex) {
+            $domePublic.openDelete().then(function () {
+                hostGroupService.deleteHost(hostGroup.id, hostGroup.hostList[nodeIndex].id).then(function () {
                     hostGroup.hostList.splice(nodeIndex, 1);
-                }, function(res) {
+                }, function (res) {
                     $domePublic.openWarning({
                         title: '删除失败！',
                         msg: 'Message:' + res.data.resultMsg
@@ -248,8 +249,8 @@
                 });
             });
         };
-        vmHostGroup.addHostGroup = function() {
-            for (var i = 0; i < vmHostGroup.hostGroupList.length; i++) {
+        vmHostGroup.addHostGroup = function () {
+            for (var i = 0, l = vmHostGroup.hostGroupList.length; i < l; i++) {
                 if (vmHostGroup.hostGroupList[i].hostGroupName === vmHostGroup.newHostGroup) {
                     $domePublic.openWarning('主机组已存在！');
                     return;
@@ -257,36 +258,36 @@
             }
             hostGroupService.setData({
                 hostGroupName: vmHostGroup.newHostGroup
-            }).then(function(res) {
+            }).then(function (res) {
                 if (res.data.result) {
                     vmHostGroup.hostGroupList.unshift(res.data.result);
                 }
                 vmHostGroup.newHostGroup = '';
-            }, function(res) {
+            }, function (res) {
                 $domePublic.openWarning({
                     title: '添加失败！',
                     msg: 'Message:' + res.data.resultMsg
                 });
             });
         };
-        vmHostGroup.rename = function(hostGroup) {
+        vmHostGroup.rename = function (hostGroup) {
             var modalInstance = $modal.open({
                 templateUrl: 'renameHostGroupModal.html',
                 controller: 'RenameHostGroupModalCtr as vmRename',
                 size: 'md',
                 resolve: {
-                    hostGroupList: function() {
+                    hostGroupList: function () {
                         return vmHostGroup.hostGroupList;
                     },
-                    hostGroup: function() {
+                    hostGroup: function () {
                         return hostGroup;
                     },
-                    renameFuc: function() {
+                    renameFuc: function () {
                         return hostGroupService.updateData;
                     }
                 }
             });
-            modalInstance.result.then(function(res) {
+            modalInstance.result.then(function (res) {
                 if (res === 'success') {
                     init();
                 }
@@ -298,7 +299,7 @@
         var vmGroup = this;
         $scope.$emit('tabName', 'group');
         $scope.resourceType = 'ALARM';
-        $scope.$on('permission', function(event, permission) {
+        $scope.$on('permission', function (event, permission) {
             if (permission.role !== 'MASTER') {
                 $state.go('alarm.templates');
             }
@@ -310,17 +311,17 @@
         vmRename.hostGroupList = hostGroupList;
         vmRename.hostGroup = hostGroup;
         vmRename.hostGroupName = '';
-        vmRename.cancel = function() {
+        vmRename.cancel = function () {
             $modalInstance.dismiss();
         };
-        vmRename.submitName = function() {
+        vmRename.submitName = function () {
             renameFuc({
                 id: hostGroup.id,
                 hostGroupName: vmRename.hostGroupName
-            }).then(function() {
+            }).then(function () {
                 $domePublic.openPrompt('修改成功！');
                 $modalInstance.close('success');
-            }, function(res) {
+            }, function (res) {
                 $domePublic.openWarning({
                     title: '修改失败！',
                     msg: 'Message:' + res.data.resultMsg
@@ -334,4 +335,4 @@
     TabHostGroupsCtr.$inject = ['$scope', '$domeAlarm', '$domePublic', '$modal'];
     TabGroupCtr.$inject = ['$scope', '$state'];
     RenameHostGroupModalCtr.$inject = ['hostGroupList', 'hostGroup', 'renameFuc', '$domePublic', '$modalInstance'];
-})();
+})(window.domeApp);

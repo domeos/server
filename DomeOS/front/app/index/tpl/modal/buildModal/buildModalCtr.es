@@ -1,4 +1,4 @@
-((domeApp) => {
+((domeApp, undefined) => {
 	function BuildModalCtr(projectInfo, $domeProject, $domePublic, $modalInstance) {
 		'use strict';
 		let vm = this;
@@ -70,4 +70,4 @@
 	BuildModalCtr.$inject = ['projectInfo', '$domeProject', '$domePublic', '$modalInstance'];
 	domeApp.controller('BuildModalCtr', BuildModalCtr);
 
-})(window.domeApp || {});
+})(window.domeApp);

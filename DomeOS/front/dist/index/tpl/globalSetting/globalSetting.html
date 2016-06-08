@@ -3,7 +3,7 @@
   <tabset class="mod-tab">
     <tab heading="用户管理" active="vm.tabActive[0].active" ui-sref="globalSetting.userinfo">
       <div class="user-list-title">
-        <input placeholder="输入用户名称查找" ng-model="vm.userKey.key" class="ui-input-fill ui-input-search pull-right"/>
+        <input placeholder="输入用户名称查找" ng-model="vm.key.userKey" class="ui-input-fill ui-input-search pull-right"/>
         <h3>用户列表</h3>
         <div select-con="select-con" class="com-select-con">
           <button ng-cloak="ng-cloak" class="ui-btn ui-btn-select ui-btn-white"><i class="icon-down"></i>{{vm.currentUserType.type=='USER'?'普通用户':vm.currentUserType.type}}</button>
@@ -66,7 +66,7 @@
             <td><span ng-bind="user.phone||'未设置'" class="useremail tool-nowrap"></span>
             </td>
             <td>
-              <button ng-click="vm.modifyPw(user)" ng-if="vm.currentUserType.type=='USER'" class="ui-btn ui-btn-primary ui-btn-sm">修改密码</button><a ng-click="vm.modifyUserInfo(user)" class="icon-edit"></a><a ng-click="vm.deleteUser(user)" ng-if="vm.user.username!='admin'" class="icon-delete"></a>
+              <button ng-click="vm.modifyPw(user)" ng-if="vm.currentUserType.type=='USER'" class="ui-btn ui-btn-primary ui-btn-sm">修改密码</button><a ng-click="vm.modifyUserInfo(user)" class="icon-edit"></a><a ng-click="vm.deleteUser(user)" ng-if="user.username!='admin'" class="icon-delete"></a>
             </td>
           </tr>
         </tbody>

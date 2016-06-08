@@ -2,7 +2,7 @@
     tabset.mod-tab
         tab(heading="用户管理" active="vm.tabActive[0].active" ui-sref="globalSetting.userinfo")
             .user-list-title
-                input.ui-input-fill.ui-input-search.pull-right(placeholder="输入用户名称查找" ng-model="vm.userKey.key")
+                input.ui-input-fill.ui-input-search.pull-right(placeholder="输入用户名称查找" ng-model="vm.key.userKey")
                 h3 用户列表
                 .com-select-con(select-con)
                     button.ui-btn.ui-btn-select.ui-btn-white(ng-cloak)
@@ -81,7 +81,7 @@
                         td
                             button.ui-btn.ui-btn-primary.ui-btn-sm(ng-click="vm.modifyPw(user)" ng-if="vm.currentUserType.type=='USER'") 修改密码
                             a.icon-edit(ng-click="vm.modifyUserInfo(user)")
-                            a.icon-delete(ng-click="vm.deleteUser(user)" ng-if="vm.user.username!='admin'")
+                            a.icon-delete(ng-click="vm.deleteUser(user)" ng-if="user.username!='admin'")
         tab(heading="LDAP" ng-click="vm.getLdap()" active="vm.tabActive[1].active" ui-sref="globalSetting.ldapinfo")
             ul.com-list-info.ldap-info(ng-form name="ladpForm" ng-class="{'need-valid':vm.needValidLdap}")
                 li

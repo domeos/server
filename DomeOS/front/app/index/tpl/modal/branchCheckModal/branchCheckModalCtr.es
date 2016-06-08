@@ -1,4 +1,6 @@
-(function () {
+(function (domeApp, undefined) {
+	'use strict';
+	if (typeof domeApp === 'undefined') return;
 	domeApp.controller('BranchCheckModalCtr', BranchCheckModalCtr);
 
 	function BranchCheckModalCtr($modalInstance, $domeProject, codeInfo, projectId) {
@@ -40,4 +42,4 @@
 		};
 	}
 	BranchCheckModalCtr.$inject = ['$modalInstance', '$domeProject', 'codeInfo', 'projectId'];
-})();
+})(window.domeApp);

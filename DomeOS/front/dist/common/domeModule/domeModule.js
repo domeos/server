@@ -1,4 +1,4 @@
-(function () {
+(function (window) {
     var domeModule = angular.module('domeModule', []);
     domeModule.config(['$httpProvider', function ($httpProvider) {
         'use strict';
@@ -196,4 +196,4 @@
         return apiService;
     }]);
     window.domeModule = domeModule;
-})();
+})(window);

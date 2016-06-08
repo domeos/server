@@ -1,5 +1,7 @@
-(function() {
+(function (domeApp, undefined) {
 	'use strict';
+	if (typeof domeApp === 'undefined') return;
+
 	domeApp.controller('AlarmAddHostsCtr', AlarmAddHostCtr);
 
 	function AlarmAddHostCtr($scope, $domeCluster, $domeAlarm, $state, $domePublic) {
@@ -24,19 +26,19 @@
 			nodeKey: '',
 			selectedNodeKey: ''
 		};
-		vm.toggleCluster = function(clusterId, clusterName) {
+		vm.toggleCluster = function (clusterId, clusterName) {
 			vm.cluster.id = clusterId;
 			vm.cluster.name = clusterName;
-			nodeService.getNodeList(clusterId).then(function(res) {
+			nodeService.getNodeList(clusterId).then(function (res) {
 				vm.nodeListIns.init(res.data.result, clusterName);
-			}, function() {
+			}, function () {
 				vm.nodeListIns.init([], clusterName);
 			});
 		};
-		vm.cancelModify = function() {
+		vm.cancelModify = function () {
 			vm.nodeListIns.initSelectedList(hostGroupHostList);
 		};
-		vm.saveModify = function() {
+		vm.saveModify = function () {
 			let selectedList = [];
 			for (let selectedNode of vm.nodeListIns.selectedList) {
 				selectedList.push({
@@ -46,17 +48,17 @@
 					cluster: selectedNode.cluster
 				});
 			}
-			hostGroupService.addHost(id, selectedList).then(function() {
+			hostGroupService.addHost(id, selectedList).then(function () {
 				$domePublic.openPrompt('添加成功！');
 				$state.go('alarm.hostgroups');
-			}, function(res) {
+			}, function (res) {
 				$domePublic.openWarning({
 					title: '添加失败！',
 					msg: 'Message:' + res.data.resultMsg
 				});
 			});
 		};
-		nodeService.getData().then(function(res) {
+		nodeService.getData().then(function (res) {
 			vm.clusterList = res.data.result || [];
 			vm.nodeListIns = $domeAlarm.getInstance('NodeList');
 			if (vm.clusterList[0]) {
@@ -65,4 +67,4 @@
 		});
 	}
 	AlarmAddHostCtr.$inject = ['$scope', '$domeCluster', '$domeAlarm', '$state', '$domePublic'];
-})();
+})(window.domeApp);

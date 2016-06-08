@@ -1,4 +1,4 @@
-(function () {
+((domeApp, undefined) => {
 	domeApp.controller('DockerfileModalCtr', DockerfileModalCtr);
 
 	function DockerfileModalCtr($modalInstance, project, $domeProject, $sce) {
@@ -17,4 +17,4 @@
 		};
 	}
 	DockerfileModalCtr.$inject = ['$modalInstance', 'project', '$domeProject', '$sce'];
-})();
+})(window.domeApp);
