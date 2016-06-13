@@ -1,0 +1,114 @@
+
+<ul role="form" ng-form="ng-form" name="alarmForm" ng-init="oldName=config.templateName;" class="com-list-info alarmtpl-info">
+  <li><span class="info-name">选择报警类型</span>
+    <div class="info-content">
+      <p class="txt-prompt setting-description">报警模板一经创建，无法修改报警类型。</p>
+      <div select-con="select-con" class="com-select-con first-input">
+        <button ng-disabled="config.id!==undefined" class="ui-btn ui-btn-white ui-btn-select">{{config.templateType=='deploy'?'容器':'主机'}}<i class="icon-down"></i></button>
+        <ul class="select-list">
+          <li class="select-item"><a ng-click="alarmTemplateIns.toggleTemplateType('host')">主机</a></li>
+          <li class="select-item"><a ng-click="alarmTemplateIns.toggleTemplateType('deploy')">容器</a></li>
+        </ul>
+      </div>
+    </div>
+  </li>
+  <li ng-if="config.templateType=='deploy'"><span class="info-name">选择报警容器</span>
+    <div class="info-content deploy-option">
+      <p class="txt-prompt setting-description">请选择集群、工作环境和部署。系统会对所选部署的所有容器进行报警监控。</p>
+      <div select-con="select-con" class="com-select-con select-env select-cluster">
+        <button class="ui-btn ui-btn-white ui-btn-select">{{config.deploymentInfo.clusterName||'选择集群'}}<i class="icon-down"></i></button>
+        <ul class="select-list">
+          <li ng-if="alarmTemplateIns.clusterList.length===0" class="select-item"><a>无集群信息</a></li>
+          <li ng-repeat="cluster in alarmTemplateIns.clusterList" class="select-item"><a ng-bind="cluster.name" ng-click="alarmTemplateIns.toggleCluster(cluster.name)"></a></li>
+        </ul>
+      </div>
+      <div select-con="select-con" class="com-select-con select-env">
+        <button class="ui-btn ui-btn-white ui-btn-select">{{config.deploymentInfo.hostEnv=='PROD'?'生产':'测试'}}<i class="icon-down"></i></button>
+        <ul class="select-list">
+          <li class="select-item"><a ng-click="alarmTemplateIns.toggleHostEnv('PROD')">生产</a></li>
+          <li class="select-item"><a ng-click="alarmTemplateIns.toggleHostEnv('TEST')">测试</a></li>
+        </ul>
+      </div>
+      <div select-con="select-con" class="com-select-con deploy-label">
+        <button ng-cloak="ng-cloak" class="ui-btn ui-btn-white ui-btn-select"><span>{{alarmTemplateIns.deployListIns.deploy.name||'选择部署'}}</span><span ng-show="alarmTemplateIns.deployListIns.deploy.namespace" class="tool-item-next txt-prompt">(namespace:{{alarmTemplateIns.deployListIns.deploy.namespace}})</span><i class="icon-down"></i></button>
+        <ul class="select-list">
+          <li ng-if="deployFiltered.length===0" class="select-item"><a>无相关部署</a></li>
+          <li ng-repeat="deploy in deployFiltered=(alarmTemplateIns.deployListIns.deployList|filter:{hostEnv:config.deploymentInfo.hostEnv,clusterFilter:true})" class="select-item"><a ng-click="alarmTemplateIns.deployListIns.toggleDeploy(deploy.deployId,deploy.deployName,deploy.namespace,true)"><span ng-cloark="ng-cloark">{{deploy.deployName}}</span><span ng-cloak="ng-cloak" class="item-right txt-prompt">namespace:{{deploy.namespace}}</span></a></li>
+        </ul>
+      </div>
+      <input type="hidden" name="deployName" ng-model="alarmTemplateIns.deployListIns.deploy.name" required="required"/>
+      <div ng-if="(needValid.valid||alarmForm.deployName.$dirty)&amp;&amp;alarmForm.deployName.$invalid" class="txt-error">请选择部署</div>
+    </div>
+  </li>
+  <li ng-if="config.templateType=='host'"><span class="info-name">选择报警主机组</span>
+    <div class="info-content">
+      <select-input d-placeholder="搜索主机组" option-list="alarmTemplateIns.hostGroupList" show-key="hostGroupName" class="line-single line-single select-input-wrap">{{item.hostGroupName}}</select-input>
+    </div>
+  </li>
+  <li><span class="info-name">添加报警逻辑</span>
+    <div class="info-content">
+      <button ng-click="alarmTemplateIns.addStrategy()" class="ui-btn ui-btn-primary ui-btn-sm">添加</button>
+      <div ng-repeat="strategy in config.strategyList" class="line-single alarm-rule">
+        <ul>
+          <li class="rule-cancel"><a ng-click="alarmTemplateIns.deleteStrategy($index)" class="icon-cancel"></a></li>
+          <li><span>选择报警指标</span>
+            <div select-con="select-con" class="com-select-con c2">
+              <button ng-cloak="ng-cloak" class="ui-btn ui-btn-white ui-btn-select"><i class="icon-down"></i>{{alarmTemplateIns.keyMaps.metric[strategy.metric].text}}</button>
+              <ul class="select-list">
+                <li ng-repeat="(metric,value) in alarmTemplateIns.keyMaps.metric" ng-show="value.belong===config.templateType||value.belong=='all'" class="select-item"><a ng-bind="value.text" ng-click="alarmTemplateIns.toggleStrategyMetric($parent.$index,metric)"></a></li>
+              </ul>
+            </div><span ng-bind="tagName=alarmTemplateIns.keyMaps.metric[strategy.metric].tagName" ng-show="config.templateType!='deploy'" class="c3"></span>
+            <input ng-model="strategy.tag" ng-if="tagName&amp;&amp;config.templateType!='deploy'" name="tagName" placeholder="默认选择全部" class="ui-input-fill"/>
+          </li>
+          <li>
+            <div ng-if="strategy.metric=='agent_alive'" class="l3">当agent最近
+              <input ng-model="strategy.pointNum" class="ui-input-fill ui-input-sm agent-point"/>次检测
+              <div select-con="select-con" class="com-select-con c9">
+                <button ng-cloak="ng-cloak" class="ui-btn ui-btn-white ui-btn-select"><i class="icon-down"></i>{{alarmTemplateIns.keyMaps.aggregateTypeAgent[strategy.aggregateType]}}</button>
+                <ul class="select-list">
+                  <li ng-repeat="(aggregateType,value) in alarmTemplateIns.keyMaps.aggregateTypeAgent" class="select-item"><a ng-bind="value" ng-click="strategy.aggregateType=aggregateType"></a></li>
+                </ul>
+              </div>表现为“未存活”时，发送报警
+            </div>
+            <div ng-if="strategy.metric!='agent_alive'" ng-cloak="ng-cloak" class="l3">该指标最新的
+              <input ng-model="strategy.pointNum" name="pointNum" required="required" ng-pattern="/^[1-9]\d*$/" class="ui-input-fill ui-input-sm"/>个监控值，
+              <div select-con="select-con" class="com-select-con c4">
+                <button ng-cloak="ng-cloak" class="ui-btn ui-btn-white ui-btn-select"><i class="icon-down"></i>{{alarmTemplateIns.keyMaps.aggregateType[strategy.aggregateType]}}</button>
+                <ul class="select-list">
+                  <li ng-repeat="(aggregateType,value) in alarmTemplateIns.keyMaps.aggregateType" class="select-item"><a ng-bind="value" ng-click="strategy.aggregateType=aggregateType"></a></li>
+                </ul>
+              </div>
+              <div select-con="select-con" class="com-select-con c3">
+                <button ng-cloak="ng-cloak" class="ui-btn ui-btn-white ui-btn-select"><i class="icon-down"></i>{{strategy.operator}}</button>
+                <ul class="select-list">
+                  <li class="select-item"><a ng-click="strategy.operator='=='">==</a></li>
+                  <li class="select-item"><a ng-click="strategy.operator='!='">!=</a></li>
+                  <li class="select-item"><a ng-click="strategy.operator='&lt;='"><=</a></li>
+                  <li class="select-item"><a ng-click="strategy.operator='&gt;='">>=</a></li>
+                  <li class="select-item"><a ng-click="strategy.operator='&lt;'"><</a></li>
+                  <li class="select-item"><a ng-click="strategy.operator='&gt;'">></a></li>
+                </ul>
+              </div>
+              <input placeholder="阈值" ng-model="strategy.rightValue" name="rightValue" ng-pattern="/^(\d*\.)?\d+$/" required="required" class="ui-input-fill ui-input-sm near-input c10"/>{{alarmTemplateIns.keyMaps.metric[strategy.metric].unit}}时，发送报警。
+            </div>
+          </li>
+          <li>邮件/短信的报警文字为：
+            <input placeholder="如：CPU占用率报警" ng-model="strategy.note" class="ui-input-fill c5"/>最大报警次数
+            <input ng-model="strategy.maxStep" name="maxStep" required="required" ng-pattern="/^[1-9]\d*$/" class="ui-input-fill ui-input-sm"/>次<a tooltip="当连续报警次数达到最大报警次数时，即使没有恢复，也不会再发送报警" class="icon-help"></a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </li>
+  <li><span class="info-name">报警模板名称</span>
+    <div class="info-content">
+      <input ng-model="config.templateName" name="templateName" is-alarm-template-exist="is-alarm-template-exist" required="required" self-name="{{oldName}}" class="line-single ui-input-fill"/><span ng-if="alarmForm.templateName.$dirty&amp;&amp;alarmForm.templateName.$error.isAlarmTemplateExist" class="txt-error">名称已存在</span>
+    </div>
+  </li>
+  <li><span class="info-name">指定报警用户组</span>
+    <div class="info-content">
+      <p class="txt-prompt setting-description">可以选择您在“组管理”中所在的用户组</p>
+      <select-input d-placeholder="搜索组" option-list="alarmTemplateIns.groupList" show-key="name" class="line-single select-input-wrap">{{item.name}}</select-input>
+    </div>
+  </li>
+</ul>

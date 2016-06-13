@@ -1,0 +1,79 @@
+@import "compass/css3";
+@import "common/css/common.scss";
+
+.cluster-detail{
+	.mod-option .icon-delete{
+		margin-left: 20px;
+	}
+	.cluster-info{
+		.info-options{
+			padding :16px $page-padding 16px $wider-padding;
+			overflow: hidden;
+			.info-right{
+				float: right;
+				.info-count{
+					padding-top: 8px;
+				}
+			}
+			.namespace-title{
+				display: block;
+				float: left;
+				margin-top: 20px;
+				font-weight: bold;
+				width: 150px;
+			}
+			.namespace-con{
+				float: left;
+				width: 50%;
+				margin-top: 20px;
+				.new-namespace{
+					@include display-flex;
+					.namespace-txt{
+						@include flex(1);
+						margin-right: 12px;
+					}
+				}
+				.namespace-description {
+					margin-bottom: 16px;
+				}
+				.namespace-list{
+					margin-top: 28px;
+				}
+			}
+		}
+	}
+	.edit-cluster{
+		margin: 16px 0 10px 58px;
+	}
+	.tab-cluster{
+		padding:6px $page-padding 40px $page-padding;
+	}
+}
+.modal-addlabel{
+	padding-left: 40px;
+	.labels-wrap{
+		display: inline-block;
+		width: 430px;
+		margin-left: 34px;
+		vertical-align: top;
+	}
+	.label-name{
+		display: inline-block;
+		padding-top: 8px;
+	}
+	.ui-input{
+		width: 338px;
+	}
+	.ui-btn{
+		float: right;
+		&+.ui-btn{
+			margin-right: 16px;
+		}
+	}
+	p{
+		margin-top: 10px;
+	}
+	.label{
+		color: dome-color(font,default);
+	}
+}

@@ -1,0 +1,123 @@
+@import "compass/css3";
+@import "common/css/common.scss";
+.global-setting{
+    .com-list-info{
+        padding-top: 20px;
+    }
+    .ldap-info .info-name{
+        width: 202px !important;
+    }
+    .txt-prompt{
+        margin-top: 16px;
+    }
+    .certification-txt{
+        min-height: 300px;
+    }
+    .webssh-txt{
+        width: 168px !important;
+    }
+    .add-user{
+        .info-name{
+            padding-top: 14px;
+        }
+        .info-content{
+            position: relative;
+            padding-top: 10px;
+            padding-bottom: 10px;
+            .line-single{
+                width: 50%;
+            }
+            .txt-wrap{
+                left: 52%;
+                top: 10px;
+            }
+        }
+    }
+    .btn-cluster-save{
+        float: right;
+        margin: 20px $wider-padding 0 0;
+    }
+    .cluster-detail{
+        display: inline-block;
+        margin: 28px 0 0 42px;
+    }
+    @media (max-width:1200px){
+        .cluster-detail{
+            width: 732px;
+            margin-top: 20px;
+        }
+    }
+    .user-list-title{
+        padding: 0 $page-padding 12px 40px;
+        border-bottom: $light-border;
+        height: 69px;
+        .ui-input-search{
+            margin-top: 14px;
+        }
+        h3{
+            display: inline-block;
+            font-size: 20px;
+            margin-right: 16px;
+            line-height: 70px;
+        }
+        .com-select-con{
+            display: inline-block;
+            font-size: 14px;
+        }
+        .to-add{
+            display: inline-block;
+            padding: 20px 0 0 40px;
+            .icon-down-white{
+                margin-left: 4px;
+            }
+        }
+    }
+    .node-option{
+        margin-top: 20px;
+        padding:14px 42px 14px 42px;
+        border-top: $light-border;
+        overflow: hidden;
+        .host-right{
+            float: right;
+        }
+        .host-detail {
+            display: inline-block;
+            margin-top: 6px;
+        }
+        @media (max-width: 1270px){
+            .host-detail {
+                width: 674px;
+            }
+        }
+         @media (max-width: 1190px){
+            .host-detail {
+                width: 530px;
+            }
+        }
+    }
+    .table-hostlist{
+        td,th{
+            &:first-child{
+                padding-left: $wider-padding;
+            }
+        }
+    }
+    .table-userlist{
+        table-layout: fixed;
+        .useremail{
+            display: inline-block;
+            width: 210px;
+            margin-right: 12px;
+            vertical-align: middle;
+        }
+        .icon-delete,.icon-edit{
+            margin-left: 22px;
+            &:first-child{
+                margin-left:0;
+            }
+        }
+        th:last-child,td:last-child{
+            min-width: 250px;
+        }
+    }
+}

@@ -1,0 +1,20 @@
+@import "compass/css3";
+@import "common/css/common.scss";
+.create-deploy2{
+	margin: 0 0 30px 0;
+	padding-bottom: 200px;
+	.select-input-wrap .com-select-con{
+		width: 100%;
+	}
+	.select-item .item-right{
+		float: right;
+		margin-right: 10px;
+	}
+	.next-item{
+		margin-left: 10px;
+	}
+	.no-log{
+		margin-top: 4px;
+		margin-bottom: 0;
+	}
+}

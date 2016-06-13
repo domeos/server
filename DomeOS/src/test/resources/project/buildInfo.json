@@ -1,0 +1,10 @@
+{
+  "id":1,
+  "projectId":1,
+  "codeInfo": {
+    "codeTag": "1.0"
+  },
+  "imageInfo": {
+    "registry": "0.0.0.0:5000"
+  }
+}

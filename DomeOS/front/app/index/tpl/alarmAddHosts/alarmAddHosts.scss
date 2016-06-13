@@ -1,0 +1,64 @@
+@import "compass/css3";
+@import "common/css/common.scss";
+
+.alarm-add-host{
+	.line-wrap{
+		margin-bottom: 16px;
+		.info-name{
+			display: inline-block;
+			width: 80px;
+			font-weight: bold;
+		}
+		.info-content{
+			display: inline-block;
+		}
+	}
+	.list-host{
+		li{
+			display: table;
+			table-layout: fixed;
+			width: 100%;
+			border-bottom: $light-border;
+			.col{
+				display: table-cell;
+				padding: 12px 0 12px 0;
+				overflow-wrap:break-word;
+				padding-left: $page-padding;
+			}
+		}
+		.list-header{
+			background-color: dome-color(background,light);
+		}
+	}
+	&.left-wrap{
+		float: left;
+		width: 38%;
+		min-height: 900px;
+		padding: 12px 0 20px $page-padding;
+		border-right: 8px solid dome-color(border,light);
+		.ui-input-search-white{
+			width: 168px;
+		}
+		.host-count{
+			margin-right: $page-padding; 
+		}
+		.list-host{
+			margin-left: -$page-padding;
+		}
+	}
+	&.right-wrap{
+		float: left;
+		width: 62%;
+		margin-left: -8px;
+		padding: 20px 12px 20px $page-padding;
+		border-left: 8px solid dome-color(border,light);
+		.list-host{
+			min-height: 330px;
+			margin-left: -18px;	
+			margin-right: -12px;
+		}
+		.selected-title{
+			margin-top: 7px;
+		}
+	}
+}

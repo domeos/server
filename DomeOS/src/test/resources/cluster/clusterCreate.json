@@ -1,0 +1,23 @@
+{
+  "clusterInfo": {
+    "name": "mycluster",
+    "api": "0.0.0.0:8080",
+    "tag": null,
+    "domain": "domain.com",
+    "dns": "dns.com",
+    "etcd": "http://0.0.0.0:4012",
+    "logConfig": 1,
+    "clusterLog": {
+      "kafka": "0.0.0.0:9292",
+      "zookeeper": "0.0.0.0:1234",
+      "imageName": "test/flume",
+      "imageTag": "1.0"
+    },
+    "ownerName" : "test"
+  },
+  "creatorDraft":
+  {
+    "creatorType": "USER",
+    "creatorId":2
+  }
+}

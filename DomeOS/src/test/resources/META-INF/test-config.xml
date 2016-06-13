@@ -1,0 +1,192 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+       xmlns:cache="http://www.springframework.org/schema/cache" xmlns:aop="http://www.springframework.org/schema/aop"
+
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+        http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd
+        http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache-3.1.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <context:annotation-config/>
+    <context:component-scan base-package="org.domeos">
+        <context:include-filter type="annotation" expression="org.springframework.stereotype.Service"/>
+        <context:include-filter type="annotation" expression="org.springframework.stereotype.Repository"/>
+        <context:include-filter type="annotation" expression="org.springframework.stereotype.Component"/>
+    </context:component-scan>
+    <aop:aspectj-autoproxy/>
+    <mvc:annotation-driven>
+        <mvc:message-converters>
+            <bean class="org.springframework.http.converter.StringHttpMessageConverter"/>
+            <bean class="org.springframework.http.converter.ResourceHttpMessageConverter"/>
+            <bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter" p:objectMapper-ref="modelObjectMapper"/>
+        </mvc:message-converters>
+    </mvc:annotation-driven>
+    <bean id="modelObjectMapper" class="org.domeos.framework.engine.model.ModelObjectMapper" />
+
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/pages/"/>
+        <property name="suffix" value=".jsp"/>
+    </bean>
+    <jdbc:embedded-database id="dataSource" type="H2">
+        <jdbc:script location="classpath:/META-INF/database.h2/data.sql"/>
+    </jdbc:embedded-database>
+    <bean id="transactionManager"
+          class="org.springframework.jdbc.datasource.DataSourceTransactionManager"
+          p:dataSource-ref="dataSource"/>
+    <bean id="jdbcTemplate"
+          class="org.springframework.jdbc.core.JdbcTemplate"
+          p:dataSource-ref="dataSource"/>
+    <bean id="credentialsMatcher" class="org.domeos.framework.shiro.credentials.RetryLimitHashedCredentialsMatcher">
+        <property name="hashAlgorithmName" value="md5"/>
+        <property name="hashIterations" value="2"/>
+        <property name="storedCredentialsHexEncoded" value="true"/>
+    </bean>
+
+    <bean id="jdbcRealm" class="org.domeos.framework.shiro.realm.JdbcRealm">
+        <property name="userService" ref="userService"/>
+        <property name="credentialsMatcher" ref="credentialsMatcher"/>
+        <property name="cachingEnabled" value="true"/>
+        <property name="authenticationCachingEnabled" value="true"/>
+        <property name="authenticationCacheName" value="authenticationCache"/>
+        <property name="authorizationCachingEnabled" value="true"/>
+        <property name="authorizationCacheName" value="authorizationCache"/>
+        <property name="name" value="USER"/>
+    </bean>
+
+    <!--<bean id="ldapContextFactory" class="org.apache.shiro.realm.ldap.JndiLdapContextFactory">-->
+        <!--<property name="url" value="ldap://${ldap.server}:389"/>-->
+    <!--</bean>-->
+    <bean id="ldapRealm" class="org.domeos.framework.shiro.realm.LdapRealm">
+        <property name="contextFactory" ref="ldapContextFactory"/>
+        <property name="name" value="LDAP"/>
+    </bean>
+
+    <bean id="sessionIdGenerator" class="org.apache.shiro.session.mgt.eis.JavaUuidSessionIdGenerator"/>
+
+    <bean id="sessionIdCookie" class="org.apache.shiro.web.servlet.SimpleCookie">
+        <constructor-arg value="sid"/>
+        <property name="httpOnly" value="true"/>
+        <property name="maxAge" value="180000"/>
+    </bean>
+
+    <bean id="sessionDAO" class="org.apache.shiro.session.mgt.eis.EnterpriseCacheSessionDAO">
+        <property name="activeSessionsCacheName" value="shiro-activeSessionCache"/>
+        <property name="sessionIdGenerator" ref="sessionIdGenerator"/>
+    </bean>
+
+    <bean id="sessionValidationScheduler" class="org.apache.shiro.session.mgt.quartz.QuartzSessionValidationScheduler">
+        <property name="sessionValidationInterval" value="1800000"/>
+        <property name="sessionManager" ref="sessionManager"/>
+    </bean>
+
+    <bean id="sessionManager" class="org.apache.shiro.web.session.mgt.DefaultWebSessionManager">
+        <property name="globalSessionTimeout" value="1800000"/>
+        <property name="deleteInvalidSessions" value="true"/>
+        <property name="sessionValidationSchedulerEnabled" value="true"/>
+        <property name="sessionValidationScheduler" ref="sessionValidationScheduler"/>
+        <property name="sessionDAO" ref="sessionDAO"/>
+        <property name="sessionIdCookieEnabled" value="true"/>
+        <property name="sessionIdCookie" ref="sessionIdCookie"/>
+    </bean>
+
+    <bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+        <property name="authenticator">
+            <bean class="org.domeos.framework.shiro.authenticator.MultiLoginAuthenticator"/>
+        </property>
+        <property name="realms">
+            <list>
+                <ref bean="jdbcRealm"/>
+                <ref bean="ldapRealm"/>
+            </list>
+        </property>
+        <property name="sessionManager" ref="sessionManager"/>
+        <!--<property name="cacheManager" ref="cacheManager"/>-->
+    </bean>
+
+    <mvc:default-servlet-handler/>
+
+    <bean id="formAuthenticationFilter" class="org.apache.shiro.web.filter.authc.FormAuthenticationFilter">
+        <property name="usernameParam" value="username"/>
+        <property name="passwordParam" value="password"/>
+        <property name="loginUrl" value="/login/login.html"/>
+    </bean>
+
+
+    <bean id="logoutFilter" class="org.apache.shiro.web.filter.authc.LogoutFilter">
+        <property name="redirectUrl" value="/login/login.html"/>
+    </bean>
+
+    <bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+        <property name="securityManager" ref="securityManager"/>
+        <property name="loginUrl" value="/login/login.html"/>
+        <property name="unauthorizedUrl" value="/login/login.html"/>
+        <property name="filters">
+            <map>
+                <entry key="authc" value-ref="formAuthenticationFilter"/>
+                <entry key="logout" value-ref="logoutFilter"/>
+            </map>
+        </property>
+        <property name="filterChainDefinitions">
+            <value>
+                /api/ci/build/autobuild = anon
+                /api/ci/build/builddockerfile/** = anon
+                /api/ci/build/status = anon
+                /api/ci/build/upload/** = anon
+                /api/ci/build/log/** = anon
+                /api/image/custom/download/** = anon
+                /api/image/custom/status = anon
+                /api/image/custom/upload/** = anon
+                /api/image/custom/log/** = anon
+                /api/image/custom/getfilejson/** = anon
+                /api/agent/** = anon
+                /api/user/login = anon
+                /api/global/registry/private/certification = anon
+                /anon/* = anon
+                /anon/js/* = anon
+
+                /common/** = anon
+                /lib/** = anon
+                /index/** = anon
+                /login/js/* = anon
+                /login/images/* = anon
+                /login/css/* = anon
+                /login/login.html = anon
+                /pages/login.htm = anon
+                /pages/index.jsp = anon
+                /pages/unauthorized.jsp = anon
+                /pages/login.jsp = authc
+                /api/user/logout = logout
+                /** = user
+            </value>
+        </property>
+    </bean>
+    <bean id="lifecycleBeanPostProcessor" class="org.apache.shiro.spring.LifecycleBeanPostProcessor"/>
+    <!--<bean id="connectionManager" class="org.domeos.tools.ConnectionManager">-->
+        <!--<constructor-arg index="0" value="6000"/>-->
+    <!--</bean>-->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="configLocation" value="/WEB-INF/conf/mybatis-config.xml"/>
+    </bean>
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="org.domeos.api.mapper"/>
+    </bean>
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="org.domeos.framework.engine.mapper"/>
+    </bean>
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="org.domeos.framework.api.mapper"/>
+    </bean>
+    <bean id="multipartResolver"
+          class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <property name="defaultEncoding" value="utf-8"/>
+        <property name="maxUploadSize" value="10760000"/>
+        <property name="maxInMemorySize" value="40960"/>
+    </bean>
+</beans>

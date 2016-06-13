@@ -1,0 +1,24 @@
+@import "compass/css3";
+@import "common/css/common.scss";
+.host-detail{
+	.host-info{
+		.info-options{
+			padding :16px $page-padding 16px $wider-padding;
+			overflow: hidden;
+		}
+	}
+	.add-label{
+		margin-left: 16px;
+	}
+	.com-check-con{
+		margin-right: 40px;
+	}
+	.host-label-con{
+		width: 40%;
+	}
+	// cover index.scss
+	.com-label-list li{
+		margin-bottom: 0;
+		margin-top: 18px;
+	}
+}

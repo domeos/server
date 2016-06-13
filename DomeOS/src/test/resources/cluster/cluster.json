@@ -1,0 +1,18 @@
+{
+  "id": 2,
+  "name": "mycluster",
+  "api": "0.0.0.0:8080",
+  "tag": null,
+  "ownerName": "test",
+  "ownerType": "USER",
+  "domain": null,
+  "dns": null,
+  "etcd": "http://0.0.0.0:4012",
+  "logConfig": 1,
+  "clusterLog": {
+    "kafka": "0.0.0.0:9292",
+    "zookeeper": "0.0.0.0:1234",
+    "imageName": "test/flume",
+    "imageTag": "1.0"
+  }
+}

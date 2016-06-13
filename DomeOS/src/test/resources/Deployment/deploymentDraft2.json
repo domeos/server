@@ -1,0 +1,32 @@
+{
+  "replicas":"1",
+  "exposePortNum":0,
+  "loadBalanceDrafts":[],
+  "innerServiceDrafts":[],
+  "healthCheckerDraft":{
+    "type":"NONE"
+  },
+  "networkMode":"DEFAULT",
+  "accessType":"DIY",
+  "logDraft":null,
+  "containerDrafts":[{
+    "image":"admin/openxxs-pure-test",
+    "registry":"http://0.0.0.0:5000",
+    "tag":"latest",
+    "cpu":"0.5",
+    "mem":"1024",
+    "envs":[]
+  }],
+  "labelSelectors":[{
+    "name":"TESTENV",
+    "content":"HOSTENVTYPE"
+  }],
+  "hostEnv":"TEST",
+  "namespace":"default",
+  "deployName":"openxxs-first-blood",
+  "clusterId":1,
+  "creator":{
+    "creatorId":1,
+    "creatorType":"USER"
+  }
+}
