@@ -1,0 +1,106 @@
+table.table-info.projectinfo
+	tr
+		td 基础镜像
+		td
+			.image-drop.com-select-con(select-con)
+				input.ui-input-search.ui-input-fill.ui-btn-select(placeholder="{{config.dockerfileConfig.baseImageName?'当前选择：'+config.dockerfileConfig.baseImageName:'搜索基础镜像'}}" name="baseImageKey" ng-model="baseImageKey")
+				input(type="hidden" ng-model="config.dockerfileConfig.baseImageName" name="baseImage" required)
+				ul.select-list
+					li(ng-if="imageListFilter.length ===0")
+						a 无相关信息
+					li.select-item(ng-repeat="image in imageListFilter =(imageList|filter:{'imageName':baseImageKey})")
+						a(ng-click="project.toggleBaseImage(image.imageName,image.imageTag,image.registry);$parent.baseImageKey=''")
+							span(ng-bind="image.imageName")
+							span(ng-bind="image.imageTag")
+							span(ng-bind="image.description")
+				span.tool-inline-error(ng-show="(needValid||proInfoForm.baseImageKey.$dirty)&&proInfoForm.baseImage.$error.required") 必须选择一个镜像
+	tr
+		td 安装依赖命令
+		td
+			textarea.info-txt.ui-input-fill(name="installCmd" ng-model="config.dockerfileConfig.installCmd" )
+	tr
+		td 代码存放路径 *
+		td
+			input.info-txt.ui-input-fill(name="codeStoragePath" ng-model="config.dockerfileConfig.codeStoragePath" ng-pattern="/^\/.+/" required placeholder="镜像内存放代码的路径，要求绝对路径，例如：/code" is-enable)
+			span.tool-inline-error(ng-show="(needValid||proInfoForm.codeStoragePath.$dirty)&&proInfoForm.codeStoragePath.$error.required") 必填
+			span.tool-inline-error(ng-show="(needValid||proInfoForm.codeStoragePath.$dirty)&&!proInfoForm.codeStoragePath.$error.required&&proInfoForm.codeStoragePath.$invalid") 非法的路径
+	tr
+		td 编译命令
+		td
+			textarea.info-txt.ui-input-fill(name="compileCmd" ng-model="config.dockerfileConfig.compileCmd")
+	tr
+		td 工作目录
+		td
+			input.info-txt.ui-input-fill(name="workDir" ng-model="config.dockerfileConfig.workDir" ng-pattern="/^\//" placeholder="要求绝对路径，默认为根目录")
+			span.tool-inline-error(ng-show="(needValid||proInfoForm.workDir.$dirty)&&!proInfoForm.workDir.$error.required&&proInfoForm.workDir.$invalid") 非法的路径
+	tr
+		td 启动命令 *
+		td
+			textarea.info-txt.ui-input-fill(name="startCmd" ng-model="config.dockerfileConfig.startCmd" required )
+			span.tool-inline-error(ng-show="(needValid||proInfoForm.startCmd.$dirty)&&proInfoForm.startCmd.$error.required") 必填
+	tr
+		td user in docker
+		td 
+			input.info-txt.ui-input-fill(ng-model="config.dockerfileConfig.user")
+	tr
+		td 编译过程环境变量
+		td
+			.txt-prompt.setting-title build过程的环境变量，会被写入Dockerfile，在运行期间也会生效。
+			ul.settting-list
+				li(ng-repeat="compileEnv in config.dockerfileConfig.compileEnv")
+					.setting-group
+						input.info-txt.ui-input-fill.env-name(placeholder="环境变量名" is-required param1="{{compileEnv.envValue}}" ng-model="compileEnv.envName" ng-focus="$last&&project.addCompileEnv()")
+						input.info-txt.ui-input-fill.env-value(placeholder="环境变量值" param1="{{compileEnv.envName}}" ng-model="compileEnv.envValue")
+					span.delete-con
+						a.icon-delete(ng-if="config.dockerfileConfig.compileEnv.length>1" ng-click="project.deleteCompileEnv($index)")
+.to-moreinfo(ng-class="{'show-more':showMoreInfo}")
+	a(ng-click="showMoreInfo=!showMoreInfo") 高级配置
+		i.icon-down
+table.table-info.projectinfo(ng-if="showMoreInfo")
+	tr
+		td 项目可见性
+		td
+			span.txt-visible
+				input#toPublic.ui-check(type="checkbox" ng-true-value="1" ng-false-value="0" ng-model="config.authority")
+				label(for="toPublic") 对所有人可见
+	tr
+		td 配置文件模板
+		td
+			.txt-prompt.setting-title(ng-non-bindable) 配置文件模版中，用"{{.Env.PATH}}"来表示名称为"PATH"的变量。
+			ul.settting-list
+				li(ng-repeat="confFile in config.confFiles")
+					.setting-group
+						input.info-txt.ui-input-fill.env-name(placeholder="模板路径" is-required param1="{{confFile.originDir}}" ng-model="confFile.tplDir" ng-focus="$last&&project.addConfFiles()" ng-pattern="/^\//")
+						input.info-txt.ui-input-fill.env-value(placeholder="目标路径" is-required  param1="{{confFile.tplDir}}" ng-pattern="/^\//" ng-model="confFile.originDir")
+					span.delete-con
+						a.icon-delete(ng-if="config.confFiles.length>1" ng-click="project.deleteArrItem('confFiles',$index)")
+	tr
+		td 运行过程环境变量
+		td
+			.txt-prompt.setting-title 请列出项目需要配置的环境变量，给予默认值并加以描述，用于部署时提示运维人员配置。
+			ul.settting-list
+				li(ng-repeat="envConfDefault in config.envConfDefault")
+					.setting-group
+						input.info-txt.ui-input-fill.env-name(placeholder="环境变量名" ng-model="envConfDefault.key" ng-focus="$last&&project.addEnvConfDefault()" is-required param1="{{envConfDefault.value}}")
+						input.info-txt.ui-input-fill.env-value(placeholder="环境变量值" ng-model="envConfDefault.value" is-required param1="{{envConfDefault.key}}")
+						input.info-txt.ui-input-fill.env-description(placeholder="环境变量描述" ng-model="envConfDefault.description" )
+					span.delete-con
+						a.icon-delete(ng-if="config.envConfDefault.length>1" ng-click="project.deleteArrItem('envConfDefault',$index)")
+	//- tr
+		td 上传本地文件
+		td
+			.fileupload-con
+				button.ui-btn.ui-btn-safe 上传本地文件
+				input.upfile(type="file" nv-file-select uploader="uploader" multiple)
+			ul.settting-list.list-input.list-file
+				li(ng-repeat="file in config.uploadFile")
+					a.link(href="/api/project/download/file?md5={{file.md5}}&file={{file.location.split('/').pop()}}" target="_blank" ng-bind="file.location")
+					span.delete-con
+						a.icon-delete(ng-click="project.deleteArrItem('uploadFile',$index)")
+			ul.settting-list.list-input.list-file
+				li(ng-repeat="item in uploader.queue")
+					.setting-group
+						span.filename(ng-bind="item.file.name")
+						input.info-txt.ui-input-fill(placeholder="请输入文件存放路径，以“/”开头" name="fileDir" ng-model="item.file.location" required  ng-pattern="/^\//")
+					span.delete-con
+						a.icon-delete(ng-click="item.remove()")

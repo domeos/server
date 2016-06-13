@@ -1,0 +1,40 @@
+@import "compass/css3";
+@import "common/css/common.scss";
+.deploy-manage{
+	.chose-lists{
+		padding: 0 0 16px 0;
+		border-top: $light-border;
+		.chose-item{
+			display: table;
+			width: 100%;
+			border-bottom: $light-border;
+			.chose-title{
+				display: table-cell;
+				width: 160px;
+				padding-left: $wider-padding;
+				font-weight: bold;
+			}
+			.chose-options{
+				display: table-cell;
+				border-left: $light-border;
+				padding: 10px $wider-padding 6px 24px;
+				em{
+					display: inline-block;
+					margin:0 24px 4px 0;
+					font-style: normal;
+					&:hover{
+						color: #666;
+						cursor: pointer;
+					}
+					&.active{
+						color: dome-color(dome,bright);
+					}
+				}
+				padding-bottom: 8px;
+			}
+		}
+	}
+	.dns-name{
+		width: 200px;
+	}
+}

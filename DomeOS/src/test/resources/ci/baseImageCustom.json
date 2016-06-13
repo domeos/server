@@ -1,0 +1,37 @@
+{
+  "id": 1,
+  "sourceImage" : {
+      "imageName": "centos",
+      "imageTag": "7.0",
+      "registryUrl": "http://127.0.0.1/rkasdf",
+      "thirdParty": 1
+    },
+  "autoCustom" : 1,
+  "imageName":"test",
+  "imageTag":"1.0",
+  "publish": 1,
+  "description":"this one only for test, cannot use",
+  "files" : [
+    {
+      "fileName": "test1",
+      "filePath": "/root/",
+      "content": "just for base image modify test"
+    } ,
+    {
+      "fileName": "test2",
+      "filePath": "/root/",
+      "content": "just for base image modify test"
+    }],
+  "envSettings" : [
+    {
+      "key" : "test1",
+      "value" : "test1value",
+      "description" : "11111"
+    } ,
+    {
+      "key" : "test2",
+      "value" : "test2value",
+      "description" : "2222222222"
+    }
+  ]
+}

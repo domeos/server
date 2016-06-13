@@ -1,0 +1,83 @@
+.mod-project.project-create1
+	loading(ng-if="isLoading")
+	.com-chose-repository
+		span.opt-title 选择代码仓库
+		span.repository(ng-click="toggleCodeManager('gitlab')" ng-class="{active:codeManager=='gitlab'}")
+			i.icon-gitlab
+			| GitLab
+		//- span.repository(ng-click="codeRepository='github'" ng-class="{active:codeRepository=='github'}")
+			i.icon-github
+			| GitHub
+		span.repository.nohub(ng-click="toggleCodeManager(null)" ng-class="{active:!codeManager}") 不使用代码仓库
+	.chose-account(ng-show="codeManager")
+		input.pull-right.ui-input-search.ui-input-fill(placeholder="请输入项目名称查询" ng-model="pronameKey")
+		ul(list-scroll width-offset="680")
+			li.nav-option(disabled="true")
+				span
+					a.icon-last.to-last
+					a.icon-next.to-next
+			li(ng-repeat="user in gitLabInfo" ng-bind="user.userName" ng-click="setProjectList(user)"  ng-class="{'active':currentUserId===user.id}")
+		span.related
+			a(ng-click="toRelated()")
+				i.icon-add-green
+				| 关联新账户
+	ul.list-project(ng-show="codeManager")
+		li(ng-if="!projectListFilter||projectListFilter.length===0")
+			span.no-result 无项目信息
+		li(ng-repeat="pro in projectListFilter=(projectList|filter:{'nameWithNamespace':pronameKey}|listPage:pageSize:pageNo)" ng-click="setCurrentProject(pro)" ng-class="{'active':currentProject.projectId===pro.projectId}")
+			span.project-name(ng-cloak)
+				i.icon-check(ng-if="currentProject.projectId===pro.projectId")
+				| {{pro.nameWithNamespace}}
+			span.project-description(ng-bind="isDescriptionNull(pro.description)")
+	div.com-page-list(list-no length="projectList.length" pageno="pageNo" size="{{pageSize}}" ng-show="codeManager")
+	.branch-setting(ng-show="codeManager")
+		span.opt-title 自动构建
+		span.branch
+			input#master.ui-check(type="checkbox" name="branches" ng-model="autoBuildInfo.master")
+			label(for="master") master
+		span.branch
+			input#tag.ui-check(type="checkbox" name="branches" ng-true-value="1"  ng-false-value="0" ng-model="autoBuildInfo.tag")
+			label(for="tag") tag
+		span.branch
+			input#other.ui-check(type="checkbox" name="branches" ng-model="autoBuildInfo.other")
+			label(for="other" ng-if="!autoBuildInfo.other") 指定其他分支
+			label(for="other" ng-if="autoBuildInfo.other")
+			input.ui-input-white.txt-branch(placeholder="请输入分支名称，用逗号分隔 e.g. dev,fix-bug"  ng-show="autoBuildInfo.other" ng-model="autoBuildInfo.branches")
+	.dockerfile-setting(ng-show="codeManager")
+		span.opt-title 使用代码项目内dockerfile
+		span.toggle-dockerfile
+			dome-toggle(ng-click="userDefineDockerfile=!userDefineDockerfile" ng-class="{'on':userDefineDockerfile}")
+		span.txt-prompt 使用前请确保项目内代码存在dockerfile
+	.project-info(ng-form role="form" name="projectNameForm" novalidate ng-class="{'need-valid':needValid}")
+		span.opt-title 项目名称 *
+		.group-select.com-select-con(select-con)
+			button.ui-btn.ui-btn-white.ui-btn-select(ng-cloak)
+				i.icon-down
+				| {{currentGroup.projectBelong}}
+			ul.select-list
+				li.select-item(ng-repeat="group in groupList")
+					a(ng-bind="group.name" ng-click="toggleGroup(group)")
+		| /
+		input.ui-input-white(placeholder="输入项目名称" is-project-exist group-name="{{currentGroup.projectBelong}}" name="proname" ng-pattern="/^[a-z0-9]+([._-][a-z0-9]+)*$/" ng-model="projectName" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" required)
+		span.tool-inline-error(ng-if="(needValid||projectNameForm.proname.$dirty)&&projectNameForm.proname.$error.required") 必填
+		span.tool-inline-error(ng-if="(needValid||projectNameForm.proname.$dirty)&&!projectNameForm.proname.$error.required&&projectNameForm.proname.$error.isProjectExist") 项目已存在
+		span.tool-inline-error(ng-if="(needValid||projectNameForm.proname.$dirty)&&!projectNameForm.proname.$error.required&&projectNameForm.proname.$error.pattern") 非法的名称
+	.com-bottom-option
+		button.ui-btn.ui-btn-bright.ui-btn-md(ng-click="needValid=true;projectNameForm.$valid&&toNext()") 下一步
+script(type="text/ng-template" id="loginModal.html")
+	.d-modal-header 登录Gitlab
+	ul.modal-body.modal-info.modal-gitlab(ng-form role="form" name="loginForm")
+		li
+			label.info-name(for="username") 用户名
+			.info-txt.text-left
+				input#username.full.ui-input-white(placeholder="用户名" name="username" ng-model="username" required)
+				span.txt-error(ng-show="loginForm.username.$dirty&&loginForm.username.$invalid") 必填
+		li
+			label.info-name(for="password") 密码
+			.info-txt.text-left
+				input#password.full.ui-input-white(placeholder="密码" name="password" type="password" ng-model="password" required)
+				span.txt-error(ng-show="loginForm.password.$dirty&&loginForm.password.$invalid") 必填
+		.txt-error.txt-failed(ng-bind="errorTxt")
+	.modal-footer.text-right
+		button.ui-btn.ui-btn-sm.ui-btn-white(ng-click="close()") 取消
+		button.ui-btn.ui-btn-sm.ui-btn-bright(ng-disabled="loginForm.$invalid||isWaiting" ng-click="toLogin()") 确定

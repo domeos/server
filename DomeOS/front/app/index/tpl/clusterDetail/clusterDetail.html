@@ -1,0 +1,69 @@
+
+<div class="mod-cluster cluster-detail">
+  <div class="mod-option"><a ui-sref="addHost({id:clusterId})" class="ui-btn ui-btn-lg ui-btn-link ui-btn-bright"><i class="icon-add-white"></i>添加主机</a><a ng-click="deleteCluster()" class="icon-delete"></a></div>
+  <div class="cluster-info">
+    <tabset>
+      <tab heading="主机列表" active="tabActive[0].active" ui-sref="clusterDetail.hostlist">
+        <loading ng-if="isWaitingHost"></loading>
+        <div class="info-options">
+          <input placeholder="输入主机名查找" ng-model="hostKey" class="ui-input-fill ui-input-white ui-input-search pull-right"/><span ng-cloak="ng-cloak" class="info-count">共{{nodelistFiltered.length}}台主机</span>
+        </div>
+        <table class="ui-table-dome full">
+          <thead>
+            <tr>
+              <th>主机名称</th>
+              <th>IP</th>
+              <th>CPU总量（个）</th>
+              <th>内存总量（MB）</th>
+              <th>运行实例（个）</th>
+              <th>状态</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr ng-if="!nodeList||nodelistFiltered.length===0">
+              <td colspan="6">无相关信息</td>
+            </tr>
+            <tr ng-repeat="node in nodelistFiltered=(nodeList|filter:{'name':hostKey})">
+              <td><a ng-bind="node.name" ui-sref="hostDetail({name:node.name,clusterId:clusterId})"></a></td>
+              <td ng-bind="node.ip"></td>
+              <td ng-bind="node.capacity.cpu"></td>
+              <td ng-bind="node.capacity.memory"></td>
+              <td ng-bind="node.runningPods"></td>
+              <td ng-switch="node.status"><span ng-switch-when="Ready" class="txt-safe">在线</span><span ng-switch-default="ng-switch-default" class="txt-prompt">离线</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </tab>
+      <tab heading="集群设置" active="tabActive[1].active" ui-sref="clusterDetail.info">
+        <button ng-click="checkEdit()" ng-if="!isEdit" class="ui-btn ui-btn-sm ui-btn-white edit-cluster">编辑</button>
+        <button ng-click="checkEdit()" ng-if="isEdit" class="ui-btn ui-btn-sm ui-btn-primary edit-cluster">取消编辑</button>
+        <div ng-form="ng-form" name="modifyclusterFrom">
+          <div ng-include="'index/tpl/tplClusterInfo/tplClusterInfo.html'" ng-if="!isEdit" class="tab-cluster"></div>
+          <div ng-include="'index/tpl/tplClusterInfo/tplClusterInfoEdit.html'" ng-if="isEdit" class="tab-cluster"></div>
+        </div>
+        <div ng-if="isEdit" class="com-bottom-option">
+          <div class="com-bottom-option-con">
+            <button ng-disabled="isWaitingModify" ng-click="needValid=true;modifyclusterFrom.$valid&amp;&amp;modifyCluster()" class="ui-btn ui-btn-bright ui-btn-md">保存设置</button><span ng-if="needValid&amp;&amp;(modifyclusterFrom.$invalid||!clusterIns.etcdValid||!clusterIns.zookeeperValid||!clusterIns.kafkaValid)" class="txt-error">存在不合法数据，请修改后提交。</span>
+          </div>
+        </div>
+      </tab>
+      <tab heading="namespace" ng-click="getNamespace()" active="tabActive[2].active" ui-sref="clusterDetail.namespace">
+        <loading ng-if="isWaitingNamespace"></loading>
+        <div ng-form="ng-form" role="form" name="namespaceForm" ng-class="{'need-valid':needValidNamespace}" class="info-options"><span class="namespace-title">namespace</span>
+          <div class="namespace-con">
+            <div class="new-namespace">
+              <input ng-model="namespaceTxt.namespace" name="namespace" ng-pattern="/^[a-zA-Z][a-zA-Z0-9_-]*$/" class="ui-input-white namespace-txt"/>
+              <button ng-disabled="isLoadingNamespace" ng-click="needValidNamespace=true;namespaceForm.$valid&amp;&amp;addNamespace()" class="ui-btn ui-btn-sm ui-btn-primary">添加namespace</button>
+            </div><span ng-if="(needValid||namespaceForm.namespace.$dirty)&amp;&amp;namespaceForm.namespace.$invalid" class="txt-error"></span>
+            <ul class="com-label-list namespace-list">
+              <li ng-repeat="namespace in namespaceList"><span class="label-item">{{namespace}}</span></li>
+            </ul>
+          </div>
+        </div>
+      </tab>
+      <tab heading="集群成员" ng-hide="!hasMemberPermisson" active="tabActive[3].active" ui-sref="clusterDetail.users">
+        <div ng-include="'index/tpl/tplUserList/tplUserList.html'" class="tab-member"></div>
+      </tab>
+    </tabset>
+  </div>
+</div>

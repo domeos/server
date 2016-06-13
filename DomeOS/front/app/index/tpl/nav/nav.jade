@@ -1,0 +1,45 @@
+nav.left-nav(ondragstart="return false" onselectstart="return false" onselect="document.selection.empty()" oncopy="document.selection.empty()" onbeforecopy="return false" ng-scrollbar rebuild-on-resize)
+	ul.nav-lists(dome-nav current-mod="currentMod.mod" login-user="loginUser")
+		li.dome-logo
+			a(href="/module/module.html")
+				img(src="index/images/logo-nav.png")
+		li(data-info="projectManage")
+			a.nav-item(ui-sref="projectManage")
+				span.nav-mod-project.icon-nav
+				| 项目管理
+				i.nav-border
+		li(data-info="deployManage")
+			a.nav-item(ui-sref="deployManage")
+				span.nav-mod-deploy.icon-nav
+				| 部署
+				i.nav-border
+		li(data-info="monitor")
+			a.nav-item(ui-sref="monitor")
+				span.nav-mod-monitor.icon-nav
+				| 监控
+				i.nav-border
+		li(data-info="image")
+			a.nav-item(ui-sref="imageManage")
+				span.nav-mod-mirror.icon-nav
+				| 镜像
+				i.nav-border
+		li(data-info="cluster")
+			a.nav-item(ui-sref="clusterManage")
+				span.nav-mod-cluster.icon-nav
+				| 集群管理
+				i.nav-border
+		li(data-info="user")
+			a.nav-item(ui-sref="groupManage")
+				span.nav-mod-user.icon-nav
+				| 组管理
+				i.nav-border
+		li(data-info="appStore")
+			a.nav-item(ui-sref="appStore")
+				span.nav-mod-app.icon-nav
+				| 应用商店
+				i.nav-border
+		li(data-info="global" ng-hide="loginUser.username!='admin'")
+			a.nav-item(ui-sref="globalSetting")
+				span.nav-mod-global.icon-nav
+				| 全局配置
+				i.nav-border

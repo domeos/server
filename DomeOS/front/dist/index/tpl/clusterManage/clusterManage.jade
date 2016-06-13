@@ -1,0 +1,25 @@
+.mod-cluster.cluster-manage
+	.mod-option
+		button.ui-btn.ui-btn-lg.ui-btn-bright(ui-sref="createCluster")
+			i.icon-add-white
+			| 新建集群
+	loading(ng-if="isLoading")
+	ul.cluster-list
+		li.no-cluster(ng-if="!clusterList||clusterList.length===0")
+			span 暂无集群，可以新建一个 
+		li(ng-repeat="cluster in clusterList")
+			.cluster-item.text-center
+				.cluster-header
+					a.ui-btn.ui-btn-sm.ui-btn-link.ui-btn-white.pull-right(ui-sref="clusterDetail({'id':cluster.id})") 管理
+					em.cluster-name(ng-bind="cluster.name")
+				.cluster-content
+					span.no-host(ng-if="cluster.nodeNum===0") 暂无主机，您可以：
+					span.cluster-info(ng-if="cluster.nodeNum!==0")
+						| 主机数
+						br/
+						span.cluster-embed.txt-bright(ng-cloak) {{cluster.nodeNum}}个
+					span.cluster-info(ng-if="cluster.nodeNum!==0")
+						| 实例数
+						br/
+						span.cluster-embed.txt-safe(ng-cloak) {{cluster.podNum}}个
+				a.ui-btn.ui-btn-lg.ui-btn-primary.addhost(ui-sref="addHost({id:cluster.id})") 添加主机

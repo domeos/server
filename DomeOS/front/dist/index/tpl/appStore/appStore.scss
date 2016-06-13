@@ -1,0 +1,60 @@
+@import "compass/css3";
+@import "common/css/common.scss";
+.app-store{
+	padding-left: $page-padding - 10;
+	padding-right: $page-padding - 10;
+	font-size: 0;
+	li{
+		display: inline-block;
+		width: 20%;
+		font-size: 12px;
+		padding: 20px 10px 0 10px;
+		.app-item{
+			border:$deep-border;
+			border-radius: $default-radius;
+			h3{
+				margin: 0;
+				padding: 14px;
+				font-size: 18px;
+				text-align: center;
+				border-bottom: $light-border;
+			}
+			.app-img-on{
+				position: relative;
+				overflow: hidden;
+				.cover-con{
+					position: absolute;
+					width: 100%;
+					height: 100%;
+					padding: 12px;
+					color: #fff;
+					bottom: 100%;
+					background-color: rgba(0,0,0,.5);
+					@include transition(bottom .2s);
+					@media (min-width: 1400px) {
+						font-size: 14px;
+					}
+					.ui-btn-deploy{
+						position: absolute;
+						bottom: 26px;
+						left:50%;
+						margin-left: -26px;
+						color: #fff;
+						background-color: rgba(0,0,0,0);
+						border-color: #fff;
+					}
+				}
+				img{
+					width: 100%;
+					min-height: 180px;
+				}
+				&:hover{
+					.cover-con{
+						bottom:0px;
+						@include transition(bottom .2s);
+					}
+				}
+			}
+		}
+	}
+}

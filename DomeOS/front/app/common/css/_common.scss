@@ -1,0 +1,102 @@
+/*
+ * @description: common css variable and function
+ * @version: 0.1
+ */
+
+$default-radius:3px;
+$nav-width:79px;
+$page-padding:20px;
+$wider-padding:52px;
+$dome-colors:(
+	dome:(
+		active:#77bf4f,
+		warning:#ffab00,
+		error:#ec6d51,
+		safe:#4ed6b2,
+		primary:#5dabf3,
+		bright:#2994e7
+		),
+	border:(
+		deep:#999,
+		default:#cfcfcf,
+		light:#eee
+		),
+	font:(
+		prompt:#ccc,
+		default:#888,
+		embed:#444
+		),
+	background:(
+		light:#f5f5f5,
+		primary:#def0fe
+		)
+	);
+$font-size:(
+	title:22px,
+	large:16px,
+	default:14px,
+	prompt:12px
+	);
+$light-border:1px solid #f5f5f5;
+$deep-border:1px solid #d4d7de;
+%dome-background{
+	@include background(linear-gradient(left,#5dabf3, #4ed6b2)); 
+}
+%nowrap{
+	overflow: hidden;
+	text-overflow:ellipsis;
+	white-space: nowrap;
+}
+%noback{
+	&,&:focus,&:link,&:visited,&:hover,&:active{
+		background:none;
+		border:none;
+		outline: none !important;
+		box-shadow: none;
+	}
+}
+%cursor{
+	&:hover{
+		cursor: pointer;
+	}
+}
+%vertical-middle{
+	display: inline-block;
+	vertical-align: middle;
+}
+// common  function
+@function font-size($format){
+	@if map-has-key($font-size,$format){
+		@return map-get($font-size,$format);
+	}
+	@warn "No color found for $font-size in #{$format} map.";
+}
+@function dome-color($map,$color){
+	@if map-has-key($dome-colors,$map){
+		@if map-has-key(map-get($dome-colors,$map),$color){
+			@return map-get(map-get($dome-colors,$map),$color);
+		}
+		@warn "No color found for #{$color} in #{$map} map.";
+	}
+	@warn "No color found for #{$map} in $dome-colors map.";
+}
+@function color($map,$color){
+	@if map-has-key($map,$color){
+		@return map-get($map,$color);
+	}
+	@warn "No color found for #{$color} in #{$map} map.";
+}
+@mixin get-sprite($icon,$name,$is-block){
+	background: sprite-url($icon) no-repeat sprite-position($icon, $name);
+	@if $is-block{
+		@extend %vertical-middle;
+		@include sprite-dimensions($icon, $name);
+	}
+}
+
+// keyframes mixin
+@mixin setKeyframes($name) {
+	@include keyframes($name){
+		@content;
+	}
+}

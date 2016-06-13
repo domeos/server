@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html ng-app="moduleApp">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>DomeOS-导航</title><!-- build:css /module/css/moduleApp.min.css -->
+    <link rel="stylesheet" href="../lib/css/bootstrap.css" type="text/css">
+    <link rel="stylesheet" href="../common/css/base.css" type="text/css">
+    <link rel="stylesheet" href="css/module.css" type="text/css">
+    <link rel="stylesheet" type="text/css"><!-- endbuild -->
+    <style>[ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .translate-cloak, .x-ng-cloak, .ng-hide {
+  display: none !important; }
+
+ng\:form {
+  display: block; }
+
+.ng-animate-start {
+  clip: rect(0, auto, auto, 0);
+  -ms-zoom: 1.0001; }
+
+.ng-animate-active {
+  clip: rect(-1px, auto, auto, 0);
+  -ms-zoom: 1; }
+
+
+
+/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJtYXBwaW5ncyI6IkFBQ0EsMEdBQW1HO0VBQUMsT0FBTyxFQUFDLGVBQWU7O0FBQUUsUUFBUTtFQUFDLE9BQU8sRUFBQyxLQUFLOztBQUFFLGlCQUFpQjtFQUFDLElBQUksRUFBQyxzQkFBbUI7RUFBQyxRQUFRLEVBQUMsTUFBTTs7QUFBRSxrQkFBa0I7RUFBQyxJQUFJLEVBQUMseUJBQXNCO0VBQUMsUUFBUSxFQUFDLENBQUMiLCJzb3VyY2VzIjpbImNvbW1vbi9jc3MvbmctY2xvYWsuc2NzcyJdLCJuYW1lcyI6W10sImZpbGUiOiJjb21tb24vY3NzL25nLWNsb2FrLmNzcyIsInNvdXJjZVJvb3QiOiIvc291cmNlLyIsInNvdXJjZXNDb250ZW50IjpbIkBjaGFyc2V0IFwiVVRGLThcIjtcbltuZ1xcOmNsb2FrXSxbbmctY2xvYWtdLFtkYXRhLW5nLWNsb2FrXSxbeC1uZy1jbG9ha10sLm5nLWNsb2FrLC50cmFuc2xhdGUtY2xvYWssLngtbmctY2xvYWssLm5nLWhpZGV7ZGlzcGxheTpub25lICFpbXBvcnRhbnQ7fW5nXFw6Zm9ybXtkaXNwbGF5OmJsb2NrO30ubmctYW5pbWF0ZS1zdGFydHtjbGlwOnJlY3QoMCxhdXRvLGF1dG8sMCk7LW1zLXpvb206MS4wMDAxO30ubmctYW5pbWF0ZS1hY3RpdmV7Y2xpcDpyZWN0KC0xcHgsYXV0byxhdXRvLDApOy1tcy16b29tOjE7fSJdfQ== */
+
+/*# sourceMappingURL=../../maps/common/css/ng-cloak.css.map */
+
+    </style>
+  </head>
+  <body ng-controller="appCtr">
+    <div class="module-con">
+      <div class="log-con"><img src="/module/images/logo-white.png" class="logo"><span ng-bind="domeVersion" class="version"></span></div>
+      <div class="option-con"><a href="http://doc.domeos.org" target="_blank" class="link-doc"><i class="icon-doc"></i>文档</a>
+        <div select-con class="user-con">
+          <button ng-cloak class="ui-btn ui-btn-none username ui-btn-select"><i class="icon-down up drop"></i>{{loginUser.username}}</button>
+          <ul class="com-user-option select-list">
+            <li class="arrow"></li>
+            <li select-item ng-if="loginUser.login_type=='USER'"><a ng-click="modifyPw()">修改密码</a></li>
+            <li select-item><a ng-click="logout()">退出登录</a></li>
+          </ul>
+        </div>
+      </div>
+      <ul class="list-module">
+        <li><a href="/#/projectManage" class="module">
+            <h4><i class="icon-project"></i>项目管理</h4></a><a href="/#/clusterManage" class="module">
+            <h4><i class="icon-cluster"></i> 集群管理</h4></a></li>
+        <li><a href="/#/deployManage" class="module">
+            <h4><i class="icon-deploy"></i>部署</h4></a><a href="/#/groupManage" class="module">
+            <h4><i class="icon-user"></i>组管理</h4></a></li>
+        <li><a href="/#/monitor" class="module">
+            <h4><i class="icon-monitor"></i>监控</h4></a><a href="/#/appStore" class="module">
+            <h4><i class="icon-app"></i>应用商店</h4></a></li>
+        <li><a href="/#/image" class="module">
+            <h4><i class="icon-image"></i>镜像</h4></a><a href="/#/globalSetting" ng-hide="loginUser.username!='admin'" class="module">
+            <h4><i class="icon-global"></i>全局配置</h4></a></li>
+      </ul>
+    </div>
+    <script type="text/ng-template" id="promptModal.html">
+      <div class="d-modal-header">提示</div>
+      <div class="modal-body">
+        <p ng-bind="promptTxt"></p>
+      </div>
+      <div class="modal-footer">
+        <button ng-click="cancel()" class="ui-btn ui-btn-primary ui-btn-sm">确定</button>
+      </div>
+    </script>
+    <script type="text/ng-template" id="warningModal.html">
+      <div class="d-modal-header">警告</div>
+      <div class="modal-body">
+        <p ng-bind="titleInfo" ng-class="{'font-size-16':detailInfo}" class="txt-error"></p>
+        <p ng-bind="detailInfo" class="txt-error tool-wrap-break"></p>
+      </div>
+      <div class="modal-footer">
+        <button ng-click="cancel()" class="ui-btn ui-btn-error ui-btn-sm">确定</button>
+      </div>
+    </script>
+    <script type="text/ng-template" id="modifyPwModal.html">
+      <div class="d-modal-header">修改密码</div>
+      <div class="modal-body">
+        <ul ng-form name="pwForm" role="form" ng-class="{'need-valid':needValid}" class="modal-info">
+          <li>
+            <label class="info-name">原密码</label>
+            <div class="info-txt text-left">
+              <input placeholder="请输入原密码" type="password" name="oldPw" ng-model="pwObj.oldpassword" required class="full ui-input-white">
+            </div>
+          </li>
+          <li>
+            <label class="info-name">新密码</label>
+            <div class="info-txt text-left">
+              <input placeholder="8-20位" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" type="password" name="newPw" ng-model="pwObj.newpassword" required ng-minlength="8" ng-maxlength="20" class="full ui-input-white"><span ng-if="(needValid||pwForm.newPw.$dirty)&amp;&amp;(pwForm.newPw.$error.minlength||pwForm.newPw.$error.maxlength)" class="txt-error">长度必须为8-20位</span>
+            </div>
+          </li>
+          <li>
+            <label class="info-name">确认新密码</label>
+            <div class="info-txt text-left">
+              <input placeholder="再次输入新密码" type="password" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" name="newPwAgain" ng-model="newPwAgain" required equal="pwObj.newpassword" class="full ui-input-white"><span ng-if="(needValidUser.valid||pwForm.newPwAgain.$dirty)&amp;&amp;pwForm.newPwAgain.$error.equal" class="txt-error">两次密码不一致</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button ng-click="cancel()" class="ui-btn ui-btn-white ui-btn-sm">取消</button>
+        <button ng-click="needValid=true;pwForm.$valid&amp;&amp;modiftPw()" class="ui-btn ui-btn-sm ui-btn-primary">确定</button>
+      </div>
+    </script>
+    <div></div><!-- build:js /module/js/lib.min.js -->
+    <script type="text/javascript" src="../lib/js/jquery.min.js"></script>
+    <script type="text/javascript" src="../lib/js/angular.min.js"></script>
+    <script type="text/javascript" src="../lib/js/angular-animate.min.js"></script>
+    <script type="text/javascript" src="../lib/js/ui-bootstrap-tpls.min.js"></script>
+    <script type="text/javascript" src="../common/publicModule/publicModule.js"></script>
+    <script type="text/javascript" src="../common/publicModule/directive/publicDirective.js"></script>
+    <script type="text/javascript" src="../common/domeModule/domeModule.js"></script>
+    <script type="text/javascript" src="../common/userModule/userModule.js"></script>
+    <script type="text/javascript" src=""></script><!-- endbuild -->
+    <!-- build:js /module/js/moduleApp.min.js -->
+    <script type="text/javascript" src="js/module.js"></script>
+    <script type="text/javascript" src=""></script><!-- endbuild -->
+  </body>
+</html>

@@ -1,0 +1,43 @@
+.mod-project.project-manage
+  .project-options
+    button.ui-btn.ui-btn-lg(ui-sref="createProject/1")
+      i.icon-add-white
+      | 创建新项目
+    .pull-right
+      span(ng-cloak) 共{{filteredProjectList.length}}个项目
+      input.ui-input-search.ui-input-fill(type="text" placeholder="输入项目名称查询" ng-model="proKeywards")
+  .mod-list
+    loading(ng-if="isLoading")
+    table.ui-table-dome
+      thead
+        tr
+          th 项目名称
+          th 构建时间
+          th 构建状态
+          th 代码源
+          th 操作
+      tbody
+        tr(ng-if="filteredProjectList.length===0")
+          td.text-center(colspan="6") 暂无相关项目
+        tr(ng-repeat="project in filteredProjectList =  (projectList|filter:{name:proKeywards})")
+          td
+            a(ng-bind="project.name" ui-sref="projectDetail({'project':project.id})")
+          td(ng-bind="parseDate(project.buildTime)")
+          td(ng-switch="project.buildStatus")
+            span.txt-success(ng-switch-when="Success") 成功
+            span.txt-warning(ng-switch-when="Fail") 失败
+            span.txt-normal(ng-switch-when="Building") 构建中
+            span.txt-normal(ng-switch-when="Preparing") 准备中
+            span.txt-normal(ng-switch-when="Send") 准备中
+            span(ng-switch-default) 未启动
+          td(ng-cloak ng-switch="project.codeManager")
+            span(ng-if="!project.nameWithNamespace") 无
+            a(href="{{project.codeHttpUrl}}" target="_blank" ng-show="project.nameWithNamespace")
+              i.icon-gitlab(ng-switch-when="gitlab")
+              i.icon-github(ng-switch-when="github")
+              | {{project.nameWithNamespace}}
+          //- td
+            a 查看
+          td
+            button.ui-btn.ui-btn-sm.ui-btn-safe(ng-click="openBuild(project.id,!!project.nameWithNamespace)") 构建
+            //- button.ui-btn.ui-btn-sm.ui-btn-primary 部署

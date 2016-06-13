@@ -1,0 +1,6 @@
+{
+  "emailSuffix":null,
+  "server":"ldap://ldap.test.com:389",
+  "username":"test",
+  "password":"123456789"
+}

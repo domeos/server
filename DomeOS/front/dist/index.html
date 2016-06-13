@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html ng-app="domeApp">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>DomeOS</title>
+    <style>[ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .translate-cloak, .x-ng-cloak, .ng-hide {
+  display: none !important; }
+
+ng\:form {
+  display: block; }
+
+.ng-animate-start {
+  clip: rect(0, auto, auto, 0);
+  -ms-zoom: 1.0001; }
+
+.ng-animate-active {
+  clip: rect(-1px, auto, auto, 0);
+  -ms-zoom: 1; }
+
+
+
+/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJtYXBwaW5ncyI6IkFBQ0EsMEdBQW1HO0VBQUMsT0FBTyxFQUFDLGVBQWU7O0FBQUUsUUFBUTtFQUFDLE9BQU8sRUFBQyxLQUFLOztBQUFFLGlCQUFpQjtFQUFDLElBQUksRUFBQyxzQkFBbUI7RUFBQyxRQUFRLEVBQUMsTUFBTTs7QUFBRSxrQkFBa0I7RUFBQyxJQUFJLEVBQUMseUJBQXNCO0VBQUMsUUFBUSxFQUFDLENBQUMiLCJzb3VyY2VzIjpbImNvbW1vbi9jc3MvbmctY2xvYWsuc2NzcyJdLCJuYW1lcyI6W10sImZpbGUiOiJjb21tb24vY3NzL25nLWNsb2FrLmNzcyIsInNvdXJjZVJvb3QiOiIvc291cmNlLyIsInNvdXJjZXNDb250ZW50IjpbIkBjaGFyc2V0IFwiVVRGLThcIjtcbltuZ1xcOmNsb2FrXSxbbmctY2xvYWtdLFtkYXRhLW5nLWNsb2FrXSxbeC1uZy1jbG9ha10sLm5nLWNsb2FrLC50cmFuc2xhdGUtY2xvYWssLngtbmctY2xvYWssLm5nLWhpZGV7ZGlzcGxheTpub25lICFpbXBvcnRhbnQ7fW5nXFw6Zm9ybXtkaXNwbGF5OmJsb2NrO30ubmctYW5pbWF0ZS1zdGFydHtjbGlwOnJlY3QoMCxhdXRvLGF1dG8sMCk7LW1zLXpvb206MS4wMDAxO30ubmctYW5pbWF0ZS1hY3RpdmV7Y2xpcDpyZWN0KC0xcHgsYXV0byxhdXRvLDApOy1tcy16b29tOjE7fSJdfQ== */
+
+/*# sourceMappingURL=../../maps/common/css/ng-cloak-8dd5fbe918.css.map */
+
+    </style>
+    <link rel="stylesheet" href="index/css/domeStyle-6ee4106033.min.css">
+  </head>
+  <body ng-controller="domeCtr" resize-body>
+    <div class="page">
+      <ng-include src="'index/tpl/nav/nav.html'"></ng-include>
+      <div class="content">
+        <header class="header">
+          <ul class="pull-right header-item">
+            <li class="header-doc"><a href="http://doc.domeos.org" target="_blank"><span class="icon-doc"></span>文档</a></li>
+            <li class="header-user">
+              <div select-con>
+                <button ng-cloak class="ui-btn ui-btn-none username ui-btn-select">{{loginUser.username}}<i class="icon-down-white up drop"></i></button>
+                <ul class="com-user-option select-list">
+                  <li class="arrow"></li>
+                  <li select-item ng-if="loginUser.loginType=='USER'"><a ng-click="modifyPw()">修改密码</a></li>
+                  <li select-item><a ng-click="logout()">退出登录</a></li>
+                </ul>
+              </div>
+            </li>
+          </ul>
+          <div class="breadcrunmbs"><span ncy-breadcrumb ncy-breadcrumb-text-separator=" &gt; "></span></div>
+          <div class="page-info">
+            <h1 ng-bind="title" class="page-title"></h1><span ng-bind="descrition" class="page-detail"></span>
+          </div>
+        </header>
+        <div ui-view="" class="module container"></div>
+      </div>
+    </div>
+    <script type="text/ng-template" id="promptModal.html">
+      <div class="d-modal-header">提示</div>
+      <div class="modal-body">
+        <p ng-bind="promptTxt"></p>
+      </div>
+      <div class="modal-footer">
+        <button ng-click="cancel()" class="ui-btn ui-btn-primary ui-btn-sm">确定</button>
+      </div>
+    </script>
+    <script type="text/ng-template" id="confirmModal.html">
+      <div class="d-modal-header">提示</div>
+      <div class="modal-body">
+        <p ng-bind="promptTxt"></p>
+      </div>
+      <div class="modal-footer">
+        <button ng-click="cancel()" class="ui-btn ui-btn-white ui-btn-sm">取消</button>
+        <button ng-click="sure()" class="ui-btn ui-btn-primary ui-btn-sm">继续</button>
+      </div>
+    </script>
+    <script type="text/ng-template" id="warningModal.html">
+      <div class="d-modal-header">警告</div>
+      <div class="modal-body">
+        <p ng-bind="titleInfo" ng-class="{'font-size-16':detailInfo}" class="txt-error"></p>
+        <p ng-bind="detailInfo" class="txt-error tool-wrap-break"></p>
+      </div>
+      <div class="modal-footer">
+        <button ng-click="cancel()" class="ui-btn ui-btn-error ui-btn-sm">确定</button>
+      </div>
+    </script>
+    <script type="text/ng-template" id="deleteModal.html">
+      <div class="d-modal-header">删除</div>
+      <div class="modal-body">
+        <p ng-bind="promptTxt" class="txt-error"></p>
+      </div>
+      <div class="modal-footer">
+        <button ng-click="cancel()" class="ui-btn ui-btn-white ui-btn-sm">取消</button>
+        <button ng-click="delete()" class="ui-btn ui-btn-error ui-btn-sm">确定</button>
+      </div>
+    </script>
+    <script type="text/ng-template" id="modifyPwModal.html">
+      <div class="d-modal-header">修改密码</div>
+      <div class="modal-body">
+        <ul ng-form name="pwForm" role="form" ng-class="{'need-valid':needValid}" class="modal-info">
+          <li>
+            <label class="info-name">原密码</label>
+            <div class="info-txt text-left">
+              <input placeholder="请输入原密码" type="password" name="oldPw" ng-model="pwObj.oldpassword" required class="full ui-input-white">
+            </div>
+          </li>
+          <li>
+            <label class="info-name">新密码</label>
+            <div class="info-txt text-left">
+              <input placeholder="8-20位" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" type="password" name="newPw" ng-model="pwObj.newpassword" required ng-minlength="8" ng-maxlength="20" class="full ui-input-white"><span ng-if="(needValid||pwForm.newPw.$dirty)&amp;&amp;(pwForm.newPw.$error.minlength||pwForm.newPw.$error.maxlength)" class="txt-error">长度必须为8-20位</span>
+            </div>
+          </li>
+          <li>
+            <label class="info-name">确认新密码</label>
+            <div class="info-txt text-left">
+              <input placeholder="再次输入新密码" type="password" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" name="newPwAgain" ng-model="newPwAgain" required equal="pwObj.newpassword" class="full ui-input-white"><span ng-if="(needValidUser.valid||pwForm.newPwAgain.$dirty)&amp;&amp;pwForm.newPwAgain.$error.equal" class="txt-error">两次密码不一致</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button ng-click="cancel()" class="ui-btn ui-btn-white ui-btn-sm">取消</button>
+        <button ng-click="needValid=true;pwForm.$valid&amp;&amp;modiftPw()" class="ui-btn ui-btn-sm ui-btn-primary">确定</button>
+      </div>
+    </script>
+    <script src="index/js/lib-1893bc0231.min.js"></script>
+    <script src="index/js/domeApp-5bff90af21.min.js"></script>
+  </body>
+</html>

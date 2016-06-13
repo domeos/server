@@ -1,0 +1,105 @@
+.member-con(ng-controller="tplUserListCtr")
+	.title-con
+		input.ui-input.ui-input-fill.ui-input-search.pull-right(placeholder="搜索{{resourceName}}成员" ng-model="userKey1")
+		h3.member-title.txt-bright(ng-cloak) {{resourceName}}成员
+		button.ui-btn.ui-btn-safe.ui-btn-sm(ng-click="isEdit=true" ng-show="!isEdit") 编辑
+		button.ui-btn.ui-btn-safe.ui-btn-sm(ng-click="isEdit=false" ng-show="isEdit") 退出编辑
+	.member-select(ng-if="isEdit")
+		.member-way(ng-hide="resourceType=='group'")
+			a.select-type(ng-click="toggleWay('member')" ng-class="{'active':selectWay=='member'}") 导入成员
+			a.select-type(ng-click="toggleWay('group')" ng-class="{'active':selectWay=='group'}") 导入组成员
+			a.select-type(ng-click="toggleWay('item')" ng-class="{'active':selectWay=='item'}") 导入{{resourceName}}成员
+		.member-search
+			//- 导入成员
+			.com-select-con(select-con label="true" ng-if="selectWay=='member'")
+				ul.selected-labels
+					li.select-label(ng-repeat="user in selectedUsers" ng-cloak)
+						a.icon-cancel(ng-click="cancelUser($index)")
+						| {{user.username}}
+					li.select-input
+						input.line-element.ui-btn-select(placeholder="搜索成员" ng-model="userKey.key" ng-keydown="userKeyUp($event,userKey.key,userListFiltered[0])")
+				ul.select-list
+					li(ng-if="!userList||userListFiltered.length===0")
+						a 无相关用户信息
+					li.select-item(ng-repeat="user in userListFiltered=(userList|filter:{'username':userKey.key})")
+						a(ng-bind="user.username" ng-click="checkUser(user)")
+			//- 导入组成员
+			.com-select-con(select-con ng-if="selectWay=='group'")
+				button.ui-btn.ui-btn-white.ui-btn-select(ng-cloak)
+					i.icon-down
+					| {{selectedGroup.name||'选择组'}}
+				ul.select-list
+					li.select-item(ng-repeat="group in groupList")
+						a(ng-bind="group.name" ng-click="toggleGroup(group.name,group.id)")
+			//- 导入项目/部署/集群成员
+			.com-select-con(select-con ng-if="selectWay=='item'")
+				button.ui-btn.ui-btn-white.ui-btn-select(ng-cloak)
+					i.icon-down
+					| {{selectResource.resourceName||'选择'+resourceName}}
+				ul.select-list
+					li.select-item(ng-repeat="resource in selectResourceUser")
+						a(ng-bind="resource.resourceName" ng-click="toggleResource($index)")
+			.com-select-con(select-con)
+				button.ui-btn.ui-btn-white.ui-btn-select
+					i.icon-down
+					| {{selectedRole}}
+				ul.select-list
+					li.select-item
+						a(ng-click="toggleRole('MASTER')") MASTER
+					li.select-item
+						a(ng-click="toggleRole('DEVELOPER')") DEVELOPER
+					li.select-item
+						a(ng-click="toggleRole('REPORTER')") REPORTER
+					li.select-item(ng-if="selectWay=='group'")
+						a(ng-click="toggleRole('oldRole')") 保留原有组权限
+					li.select-item(ng-if="selectWay=='item'")
+						a(ng-click="toggleRole('oldRole')" ng-cloak) 保留原有{{resourceName}}权限
+			button.ui-btn.ui-btn-primary.ui-btn-sm(ng-click="addMember()") 添加成员
+	.member-list
+		table.ui-table-dome
+			thead
+				tr
+					th 用户名称
+					th(ng-cloak) {{resourceName}}内权限
+					th 
+			tbody
+				tr(ng-if="!userInfos||userinfoFilterred1.length===0")
+					td(colspan="3") 无相关用户信息
+				tr
+				tr(ng-repeat="user in userinfoFilterred1=(userInfos|filter:{'username':userKey1})")
+					td(ng-bind="user.username")
+					td
+						span(ng-bind="user.role" ng-hide="isEdit")
+						.edit-role(ng-if="isEdit")
+							.com-select-con(select-con)
+								button.ui-btn.ui-btn-white.ui-btn-select(ng-cloak)
+									i.icon-down
+									| {{user.newRole}}
+								ul.select-list
+									li.select-item
+										a(ng-click="resourceInfo.toggleRole(user,'MASTER')") MASTER
+									li.select-item
+										a(ng-click="resourceInfo.toggleRole(user,'DEVELOPER')") DEVELOPER
+									li.select-item
+										a(ng-click="resourceInfo.toggleRole(user,'REPORTER')") REPORTER
+							button.ui-btn.ui-btn-primary.ui-btn-sm(ng-if="user.isDirty" ng-click="saveRole(user)") Save
+					td
+						a.icon-delete(ng-if="isEdit" ng-click="deleteUser(user)")
+	.title-con(ng-show="isGroupExist=(!!groupInfo&&!!groupInfo.userInfos&&groupInfo.userInfos.length!==0)")
+		input.ui-input.ui-input-fill.ui-input-search.pull-right(placeholder="搜索项目成员" ng-model="userKey2")
+		h3.member-title.txt-bright(ng-cloak) {{resourceName}}创建组
+	.member-list(ng-show="isGroupExist")
+		table.ui-table-dome
+			thead
+				tr
+					th 用户名称
+					th(ng-cloak) {{resourceName}}内权限
+					th 
+			tbody
+				tr(ng-if="userinfoFilterred2.length===0")
+					td(colspan="3") 无相关用户信息
+				tr(ng-repeat="user in userinfoFilterred2=(groupInfo.userInfos|filter:{'username':userKey2})")
+					td(ng-bind="user.username")
+					td
+						span(ng-bind="user.role")
+					td

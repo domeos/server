@@ -1,0 +1,80 @@
+.mod-deploy.deploy-manage
+	.mod-option
+		button.ui-btn.ui-btn-lg.ui-btn-bright(ui-sref="createDeploy/1")
+			i.icon-add-white
+			| 新建部署
+		.pull-right.right-option
+			span(ng-cloak) 共{{deployListFilter.length}}个部署
+			input.ui-input-search.ui-input-fill(type="text" placeholder="输入部署名称查询" ng-model="depKeyword")
+			button.ui-btn.ui-btn-sm.ui-btn-safe(ng-click="toggleShowSelect()" ng-if="!showSelect") 筛选
+				i.icon-down-white.up
+			button.ui-btn.ui-btn-sm.ui-btn-safe(ng-click="toggleShowSelect()" ng-if="showSelect") 收起
+				i.icon-down-white
+	.chose-lists(ng-if="showSelect")
+		.chose-item
+			span.chose-title 部署环境：
+			.chose-options
+				em(ng-class="{'active':selectOption.env.ALL}" ng-click="toggleAll('env')") 全部
+				em(ng-class="{'active':selectOption.env.PROD}" ng-click="toggleSelect('env','PROD')") 生产环境
+				em(ng-class="{'active':selectOption.env.TEST}" ng-click="toggleSelect('env','TEST')") 测试环境
+		.chose-item
+			span.chose-title 集群：
+			.chose-options
+				em(ng-class="{'active':selectOption.cluster.ALL}" ng-click="toggleAll('cluster')") 全部
+				em(ng-repeat="(opt,isSelect) in selectOption.cluster track by $index" ng-bind="opt" ng-class="{'active':isSelect}" ng-if="opt!=='ALL'" ng-click="toggleSelect('cluster',opt)")
+		.chose-item
+			span.chose-title namespace：
+			.chose-options
+				em(ng-class="{'active':selectOption.namespace.ALL}" ng-click="toggleAll('namespace')") 全部
+				em(ng-repeat="(opt,isSelect) in selectOption.namespace track by $index" ng-bind="opt" ng-class="{'active':isSelect}" ng-if="opt!=='ALL'" ng-click="toggleSelect('namespace',opt)")
+		.chose-item
+			span.chose-title 状态：
+			.chose-options
+				em(ng-class="{'active':selectOption.status.ALL}" ng-click="toggleAll('status')") 全部
+				em(ng-class="{'active':selectOption.status.DEPLOYING}" ng-click="toggleSelect('status','DEPLOYING')") 部署中
+				em(ng-class="{'active':selectOption.status.RUNNING}" ng-click="toggleSelect('status','RUNNING')") 运行中
+				//- em(ng-class="{'active':selectOption.status.AB_TEST}" ng-click="toggleSelect('status','AB_TEST')") 灰度发布
+				em(ng-class="{'active':selectOption.status.STOP}" ng-click="toggleSelect('status','STOP')") 停止
+				em(ng-class="{'active':selectOption.status.ERROR}" ng-click="toggleSelect('status','ERROR')") 异常
+				em(ng-class="{'active':selectOption.status.STOPPING}" ng-click="toggleSelect('status','STOPPING')") 停止中
+				em(ng-class="{'active':selectOption.status.UPDATING}" ng-click="toggleSelect('status','UPDATING')") 升级中
+				em(ng-class="{'active':selectOption.status.BACKROLLING}" ng-click="toggleSelect('status','BACKROLLING')") 回滚中
+				em(ng-class="{'active':selectOption.status.UPSCALING}" ng-click="toggleSelect('status','UPSCALING')") 扩容中
+				em(ng-class="{'active':selectOption.status.DOWNSCALING}" ng-click="toggleSelect('status','DOWNSCALING')") 缩容中
+	.mod-list
+		loading(ng-if="isLoading")
+		table.ui-table-dome
+			thead
+				tr
+					th 部署名称
+					th 上次升级
+					th 状态
+					th 所在集群
+					th 实例个数
+					th 资源占用比
+					th 内网域名
+			tbody
+				tr(ng-if="deployListFilter&&deployListFilter.length===0")
+					td(colspan="7") 无相关信息
+				tr(ng-repeat="deploy in deployListFilter=(deloyList|filter:{'deployName':depKeyword}|deployOptions:selectOption.env:selectOption.namespace:selectOption.cluster:selectOption.status)")
+					td
+						a.ui-table-link(ng-bind="deploy.deployName" ui-sref="deployDetail({'id':deploy.deployId})")
+					td(ng-bind="parseDate(deploy.lastUpdateTime)")
+					td(ng-switch="deploy.deploymentStatus")
+						span.txt-success(ng-switch-when="RUNNING") 运行中
+						span.txt-normal(ng-switch-when="DEPLOYING") 部署中
+						span.txt-warning(ng-switch-when="STOP") 停止
+						span.txt-warning(ng-switch-when="ERROR") 异常
+						//- span(ng-switch-when="AB_TEST") 灰度发布
+						span.txt-normal(ng-switch-when="BACKROLLING") 回滚中
+						span.txt-normal(ng-switch-when="STOPPING") 停止中
+						span.txt-normal(ng-switch-when="UPDATING") 升级中
+						span.txt-normal(ng-switch-when="UPSCALING") 扩容中
+						span.txt-normal(ng-switch-when="DOWNSCALING") 缩容中
+					td(ng-bind="deploy.clusterName")
+					td(ng-bind="deploy.replicas")
+					td(ng-cloak ng-class="{'txt-normal':deploy.comparePercent<30,'txt-success':deploy.comparePercent>=30&&deploy.comparePercent<70,'txt-warning':deploy.comparePercent>=70}")
+						i.icon-cpu(ng-if="deploy.compare=='cpu'" tooltip="CPU：{{deploy.cpuUsed}} / {{deploy.cpuTotal}}（个）" )
+						i.icon-memory(ng-if="deploy.compare=='memory'" tooltip="内存：{{deploy.memoryUsed}} / {{deploy.memoryTotal}}（MB）" )
+						| {{deploy.comparePercent}}%
+					td.dns-name.no-wrap(ng-bind="deploy.dnsName")

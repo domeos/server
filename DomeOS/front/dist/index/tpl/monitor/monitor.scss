@@ -1,0 +1,57 @@
+@import "compass/css3";
+@import "common/css/common.scss";
+.monitor-manage{
+	min-height: 700px;
+	.monitor-options{
+		padding: 20px $page-padding 20px $page-padding;
+		border-bottom: $light-border;
+		.option-title{
+			display: inline-block;
+			width: 56px;
+		}
+		.com-select-con{
+			display: inline-block;
+			margin-left: 6px;
+		}
+		.monitor-option{
+			display: inline-block;
+			margin-right: 18px;
+			margin-bottom: 12px;
+		}
+		.monitor-line{
+			.host-label{
+				width: 895px;
+			}
+		}
+	}
+	.monitor-info{
+		padding: 16px $page-padding 16px $page-padding;
+	}
+	.link-tooltip{
+		display: inline-block;
+		position: relative;
+	}
+}
+.mod-monitor{
+	th.active{
+		background-color: dome-color(background,primary);
+	}
+	.icon-down{
+		margin-left:4px;
+		&.up{
+			@include rotate(180deg);
+		}
+	}
+	.selected-count{
+		font-weight: 700;
+		color: dome-color(dome,primary);
+	}
+	.container-name{
+		width: 162px;
+	}
+	.container-image{
+		width: 127px;
+		word-break:break-all;
+	}
+	
+}

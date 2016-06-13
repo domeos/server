@@ -1,0 +1,80 @@
+.mod-deploy.create-deploy1(ng-form name="mirrorsListFrom" ng-class="{'need-valid':needValid.valid}" novalidate)
+	.mirror-con
+		.mirrror.com-select-con(select-con event-type="focus")
+			span.mirror-label 选择镜像
+			input.mirror-txt.search-txt.ui-btn-select(placeholder="搜索镜像" ng-model="mirKey")
+			i.icon-search
+			span.mirror-button
+				a.link-safe(ng-click="deployEditIns.addOtherImage()") 其他镜像
+			.select-list
+				ul
+					li(ng-if="imageFiltered.length===0")
+						a 无相关镜像信息
+					li.select-item(ng-repeat="image in imageFiltered=(deployEditIns.imageList|filter:{'imageName':mirKey})")
+						a(ng-click="deployEditIns.addImage(image)" ng-cloak)
+							| {{image.imageName}}
+							span.txt-prompt.pull-right(ng-bind="image.registry")
+	p.nomirror(ng-if="!editConfig.containerDrafts||editConfig.containerDrafts.length===0") 您尚未选择任何镜像。
+	.containerdrafts-con
+		ul(list-scroll width-offset="150")
+			li.nav-option(disabled="true")
+				span
+					a.icon-last.to-last
+					a.icon-next.to-next
+			li(ng-repeat="image in editConfig.containerDrafts" ng-cloak ng-click="currentContainerDraft.index=$index;" ng-class="{'active':currentContainerDraft.index===$index,'txt-error':needValid.valid&&mirrorsListFrom['Form'+$index].$invalid}")
+				| {{image.image}}
+				a.icon-cancel(ng-click="deleteImage($index);fresh()")
+	div(ng-repeat="image in editConfig.containerDrafts" ng-init="formName='Form'+$index;" ng-show="currentContainerDraft.index===$index")
+		ng-form.mirror-info-con(role="form" name="{{formName}}")
+			ul.mirror-info
+				li
+					span.info-name 镜像仓库
+					.info-content(ng-bind="image.registry")
+				li
+					span.info-name 镜像版本
+					.info-content
+						.com-select-con(select-con)
+							button.ui-btn.ui-btn-white.ui-btn-select(ng-cloak)
+								i.icon-down
+								| {{image.tag || '选择镜像版本'}}
+							ul.select-list
+								li.select-item(ng-repeat="tag in image.tagList")
+									a(ng-click="deployEditIns.toggleImageTag($parent.$index,tag.tag)")
+										span(ng-bind="tag.tag")
+										span.txt-prompt(ng-bind="parseDate(tag.createTime)")
+				li
+					span.info-name 运行过程环境变量
+					.info-content
+						table.ui-table-primary.ui-table-mirror(ng-show="image.oldEnv.length!==0")
+							thead
+								tr
+									th 环境变量名
+									th 环境变量值
+									th 描述
+							tbody
+								tr(ng-repeat="env in image.oldEnv")
+									td(ng-bind="env.key")
+									td.tb-value
+										input.ui-input-fill(ng-model="env.value" name="oldEnvValue")
+									td(ng-bind="env.description")
+						ul.env-list
+							li.env-line(ng-repeat="env in image.newEnv" ng-form name="childForm")
+								input.ui-input-fill(placeholder="环境变量名" ng-pattern="/^[A-Za-z_][A-Za-z0-9_]*$/" name="key" ng-model="env.key" is-required param1="{{env.value}}" param2="{{env.description}}")
+								input.ui-input-fill(placeholder="环境变量值" name="value" ng-model="env.value" is-required param1="{{env.key}}" param2="{{env.description}}")
+								input.ui-input-fill(placeholder="描述20字以内" name="description" ng-model="env.description")
+								a.icon-delete(ng-click="deployEditIns.deleteImageEnv($parent.$index,$index)")
+						span.add-env(ng-click="deployEditIns.addImageEnv($index)")
+							i.icon-add
+				li
+					span.info-name 容器大小
+					.info-content
+						| CPU(个)
+						input.ui-input-fill.ui-input-sm(ng-model="image.cpu" name="cpu" ng-pattern="/^(\\d*\\.)?\\d+$/" required)
+						| 内存(MB)
+						input.ui-input-fill.ui-input-sm(ng-model="image.mem" name="mem" ng-pattern="/^(\\d*\\.)?\\d+$/" required)
+						span.tool-inline-error(ng-if="(needValid.valid||mirrorsListFrom[formName].cpu.$dirty)&&mirrorsListFrom[formName].cpu.$invalid||(needValid.valid||mirrorsListFrom[formName].mem.$dirty)&&mirrorsListFrom[formName].mem.$invalid") 请填写数字
+	.com-bottom-option.text-center
+		span.com-bottom-option-con
+			button.ui-btn.ui-btn-md.ui-btn-bright(ng-click="needValid.valid=true;mirrorsListFrom.$valid&&toNext()") 下一步
+			span.txt-error(ng-if="needValid.valid&&mirrorsListFrom.$invalid") 存在不合法数据，请修改后提交！
+
