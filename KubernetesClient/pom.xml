@@ -6,7 +6,7 @@
 
     <groupId>org.domeos</groupId>
     <artifactId>kubernetesclient</artifactId>
-    <version>1.2.2-SNAPSHOT</version>
+    <version>1.2.3-SNAPSHOT</version>
     <url>http://maven.apache.org</url>
 
     <dependencies>

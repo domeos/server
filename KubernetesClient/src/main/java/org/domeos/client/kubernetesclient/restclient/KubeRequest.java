@@ -3,10 +3,8 @@ package org.domeos.client.kubernetesclient.restclient;
  * Created by anningluo on 15-11-24.
  */
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.*;
@@ -26,6 +24,7 @@ import org.domeos.client.kubernetesclient.responsehandler.RestClientResponseHand
 import org.domeos.client.kubernetesclient.responsehandler.UnitInputStreamResponseHandler;
 import org.domeos.client.kubernetesclient.unitstream.ClosableUnitInputStream;
 import org.domeos.client.kubernetesclient.unitstream.factory.ClosableUnitInputStreamFactory;
+import org.domeos.client.kubernetesclient.util.ObjectMapperManager;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -42,17 +41,8 @@ public abstract class KubeRequest {
     private KubeRESTClient client;
     protected HttpRequestBase realRequest;
     // protected HttpContext context;
-    private static ObjectMapper objectMapper = initObjectMapper();
+    private static ObjectMapper objectMapper = ObjectMapperManager.getObjectMapper();
     protected static Logger logger = Logger.getLogger(KubeRequest.class);
-
-    private static ObjectMapper initObjectMapper() {
-        ObjectMapper tmpObjectMapper = new ObjectMapper();
-        tmpObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        tmpObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
-        tmpObjectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        // tmpObjectMapper.configure(SerializationFeature.WRITE_NULL_MAP_VALUES, false);
-        return tmpObjectMapper;
-    }
 
     KubeRequest(KubeRESTClient client, HttpContext context) {
         this.client = client;

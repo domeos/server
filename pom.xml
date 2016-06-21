@@ -55,7 +55,7 @@
             <dependency>
                 <groupId>org.domeos</groupId>
                 <artifactId>KubernetesClient</artifactId>
-                <version>1.2-SNAPSHOT</version>
+                <version>1.2.3-SNAPSHOT</version>
             </dependency>
 
         </dependencies>

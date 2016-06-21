@@ -1,7 +1,6 @@
 package org.domeos.client.kubernetesclient.responsehandler;
 
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
@@ -10,6 +9,7 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.domeos.client.kubernetesclient.definitions.unversioned.Status;
 import org.domeos.client.kubernetesclient.unitstream.ClosableUnitInputStream;
 import org.domeos.client.kubernetesclient.unitstream.factory.ClosableUnitInputStreamFactory;
+import org.domeos.client.kubernetesclient.util.ObjectMapperManager;
 
 import java.io.IOException;
 
@@ -27,14 +27,7 @@ public class RestClientResponseHandler<T> implements ResponseHandler<Status> {
         this.thisRequest = request;
         responseHandler = handler;
     }
-    protected static ObjectMapper objectMapper = initObjectMapper();
-    private static ObjectMapper initObjectMapper() {
-        ObjectMapper tmpObjectMapper = new ObjectMapper();
-        tmpObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        tmpObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
-        // tmpObjectMapper.configure(SerializationFeature.WRITE_NULL_MAP_VALUES, false);
-        return tmpObjectMapper;
-    }
+    protected static ObjectMapper objectMapper = ObjectMapperManager.getObjectMapper();
     @Override
     public Status handleResponse(HttpResponse response) throws ClientProtocolException, IOException {
         // handle error
