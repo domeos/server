@@ -49,6 +49,7 @@ public class CiClusterServiceImpl implements CiClusterService {
             throw ApiException.wrapResultStat(ResultStat.CLUSTER_ALREADY_EXIST);
         }
 
+        globalBiz.deleteCiCluster();
         globalBiz.setCiCluster(ciCluster);
         return ResultStat.OK.wrap(ciCluster);
     }
