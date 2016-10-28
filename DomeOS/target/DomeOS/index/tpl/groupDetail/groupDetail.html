@@ -1,0 +1,10 @@
+
+<div class="mod-group group-detail">
+  <div class="group-detail-header">
+    <div class="mod-option hasborder">
+      <button class="ui-btn ui-btn-md ui-btn-bright" ng-click="deleteGroup()">删除该组</button>
+      <p class="txt-prompt">{{groupInfo.description}}</p>
+    </div>
+  </div>
+  <div class="tab-member" ng-include="'index/tpl/tplUserList/tplUserList.html'"></div>
+</div>

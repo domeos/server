@@ -3,17 +3,3 @@
 *.iml
 .idea
 .DS_Store
-src/main/webapp/anon/
-src/main/webapp/api/
-src/main/webapp/common/
-src/main/webapp/console/
-src/main/webapp/index/
-src/main/webapp/lib/
-src/main/webapp/log/
-src/main/webapp/login/
-src/main/webapp/maps/
-src/main/webapp/module/
-src/main/webapp/monitor/
-src/main/webapp/favicon.ico
-src/main/webapp/index.html
-src/main/webapp/rev-manifest.json

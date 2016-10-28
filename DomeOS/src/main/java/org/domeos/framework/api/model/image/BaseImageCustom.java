@@ -1,12 +1,12 @@
 package org.domeos.framework.api.model.image;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
-
 import org.domeos.framework.api.model.image.related.FileInfo;
 import org.domeos.framework.api.model.image.related.SourceImage;
 import org.domeos.framework.api.model.project.related.EnvSetting;
+import org.domeos.framework.engine.model.CustomObjectMapper;
 import org.domeos.framework.engine.model.RowModelBase;
+
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -232,8 +232,8 @@ public class BaseImageCustom extends RowModelBase {
 //        }
 //    }
 
-    public List<FileInfo> jsonToFileInfo (String jsonString) {
-        ObjectMapper mapper = new ObjectMapper();
+    public List<FileInfo> jsonToFileInfo(String jsonString) {
+        CustomObjectMapper mapper = new CustomObjectMapper();
         try {
             FileInfos fileInfos = mapper.readValue(jsonString, FileInfos.class);
             this.setFiles(fileInfos.getFiles());
@@ -259,8 +259,9 @@ public class BaseImageCustom extends RowModelBase {
         if (sourceImage == null && autoCustom == 1) {
             return "auto custom must select source image.";
         }
-        if (autoCustom == 0 && StringUtils.isBlank(dockerfileContent))
+        if (autoCustom == 0 && StringUtils.isBlank(dockerfileContent)) {
             return "you must input the dockerfile when you build image using dockerfile.";
+        }
         return null;
     }
 
@@ -286,12 +287,13 @@ public class BaseImageCustom extends RowModelBase {
     public static class ProjectListInfoComparator implements Comparator<BaseImageCustom> {
         @Override
         public int compare(BaseImageCustom t1, BaseImageCustom t2) {
-            if (t2.getCreateTime() > t1.getCreateTime())
+            if (t2.getCreateTime() > t1.getCreateTime()) {
                 return 1;
-            else if (t2.getCreateTime() < t1.getCreateTime())
+            } else if (t2.getCreateTime() < t1.getCreateTime()) {
                 return -1;
-            else
+            } else {
                 return 0;
+            }
         }
     }
 }

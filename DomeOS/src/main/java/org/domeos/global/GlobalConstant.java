@@ -47,4 +47,5 @@ public class GlobalConstant {
     public static String BUILD_CODE_PATH = "/code";
     public static String NODATA_CONFIG_NAME = "domeos.agent.alive";
     public static int alarmGroupId = 1000;
+    public static final int K8S_POD_COUNTS = 100;
 }

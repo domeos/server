@@ -1,5 +1,6 @@
 package org.domeos.util;
 
+import io.fabric8.kubernetes.api.model.Quantity;
 import org.apache.commons.lang3.StringUtils;
 import org.domeos.global.GlobalConstant;
 
@@ -33,13 +34,15 @@ public class CommonUtil {
         }
     }
 
-    public static String getMemory(String memory) {
+    public static Quantity getMemory(Quantity memoryQuantity) {
+        String memory = memoryQuantity.getAmount();
         if (memory.endsWith("K")) {
             memory = memory.substring(0, memory.length() - 1) + "000";
         }
         if (memory.endsWith("Ki")) {
             memory = String.valueOf(Long.valueOf(memory.substring(0, memory.length() - 2)) * 1024);
         }
-        return memory;
+        memoryQuantity.setAmount(memory);
+        return memoryQuantity;
     }
 }

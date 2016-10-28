@@ -160,4 +160,12 @@ public class DeployEvent extends DataModelBase{
     public void setUserName(String userName) {
         this.userName = userName;
     }
+
+    public boolean eventTerminated() {
+        if (getEventStatus() == null) {
+            return false;
+        }
+        return DeployEventStatus.FAILED.equals(eventStatus) || DeployEventStatus.SUCCESS.equals(eventStatus)
+                || DeployEventStatus.ABORTED.equals(eventStatus);
+    }
 }

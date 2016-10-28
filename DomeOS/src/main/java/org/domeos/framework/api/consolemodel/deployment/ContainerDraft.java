@@ -2,6 +2,8 @@ package org.domeos.framework.api.consolemodel.deployment;
 
 import org.apache.commons.lang3.StringUtils;
 import org.domeos.framework.api.model.deployment.related.HealthChecker;
+import org.domeos.framework.api.model.deployment.related.ImagePullPolicy;
+import org.domeos.framework.api.model.deployment.related.LogItemDraft;
 import org.domeos.util.CommonUtil;
 
 import java.util.List;
@@ -14,9 +16,11 @@ public class ContainerDraft {
     private String tag;
     private double cpu;
     private double mem;
+    private ImagePullPolicy imagePullPolicy;
     private List<EnvDraft> envs;
     private List<EnvDraft> envCheckers;
     private HealthChecker healthChecker;
+    private List<LogItemDraft> logItemDrafts;
 
     public String getRegistry() {
         return registry;
@@ -67,6 +71,19 @@ public class ContainerDraft {
         this.mem = mem;
     }
 
+    public ImagePullPolicy getImagePullPolicy() {
+        if (imagePullPolicy == null) {
+            return ImagePullPolicy.Always;
+        } else {
+            return imagePullPolicy;
+        }
+    }
+
+    public ContainerDraft setImagePullPolicy(ImagePullPolicy imagePullPolicy) {
+        this.imagePullPolicy = imagePullPolicy;
+        return this;
+    }
+
     public List<EnvDraft> getEnvCheckers() {
         return envCheckers;
     }
@@ -83,23 +100,43 @@ public class ContainerDraft {
         this.healthChecker = healthChecker;
     }
 
+    public List<LogItemDraft> getLogItemDrafts() {
+        return logItemDrafts;
+    }
+
+    public void setLogItemDrafts(List<LogItemDraft> logItemDrafts) {
+        this.logItemDrafts = logItemDrafts;
+    }
+
     public String checkLegality() {
+        String error;
         if (StringUtils.isBlank(image)) {
             return "image empty";
         } else if (StringUtils.isBlank(tag)) {
             return "tag empty";
         } else if (cpu < 0 || mem < 0) {
             return "cpu or mem is negative";
+        } else if (imagePullPolicy == null) {
+            imagePullPolicy = ImagePullPolicy.Always;
         } else {
             if (envs != null) {
                 for (EnvDraft envDraft : envs) {
-                    String error = envDraft.checkLegality();
+                    error = envDraft.checkLegality();
+                    if (!StringUtils.isBlank(error)) {
+                        return error;
+                    }
+                }
+            }
+            if (logItemDrafts != null && logItemDrafts.size() > 0) {
+                for (LogItemDraft logItemDraft : logItemDrafts) {
+                    error = logItemDraft.checkLegality();
                     if (!StringUtils.isBlank(error)) {
                         return error;
                     }
                 }
             }
         }
+
         return null;
     }
 

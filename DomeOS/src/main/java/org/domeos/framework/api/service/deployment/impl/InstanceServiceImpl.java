@@ -1,15 +1,11 @@
 package org.domeos.framework.api.service.deployment.impl;
 
+import io.fabric8.kubernetes.api.model.ContainerStatus;
+import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.api.model.PodList;
 import org.domeos.basemodel.HttpResponseTemp;
 import org.domeos.basemodel.ResultStat;
-import org.domeos.client.kubernetesclient.KubeClient;
-import org.domeos.client.kubernetesclient.definitions.v1.ContainerStatus;
-import org.domeos.client.kubernetesclient.definitions.v1.Pod;
-import org.domeos.client.kubernetesclient.definitions.v1.PodList;
-import org.domeos.client.kubernetesclient.exception.KubeInternalErrorException;
-import org.domeos.client.kubernetesclient.exception.KubeResponseException;
-import org.domeos.client.kubernetesclient.util.PodUtils;
-import org.domeos.client.kubernetesclient.util.filter.Filter;
+import org.domeos.exception.K8sDriverException;
 import org.domeos.framework.api.biz.cluster.ClusterBiz;
 import org.domeos.framework.api.biz.deployment.DeploymentBiz;
 import org.domeos.framework.api.controller.exception.ApiException;
@@ -22,6 +18,10 @@ import org.domeos.framework.api.model.resource.related.ResourceType;
 import org.domeos.framework.api.service.deployment.InstanceService;
 import org.domeos.framework.engine.AuthUtil;
 import org.domeos.framework.engine.k8s.NodeWrapper;
+import org.domeos.framework.engine.k8s.util.Fabric8KubeUtils;
+import org.domeos.framework.engine.k8s.util.KubeUtils;
+import org.domeos.framework.engine.k8s.util.PodUtils;
+import org.domeos.framework.engine.k8s.util.filter.Filter;
 import org.domeos.global.CurrentThreadInfo;
 import org.domeos.global.GlobalConstant;
 import org.domeos.util.DateUtil;
@@ -57,17 +57,23 @@ public class InstanceServiceImpl implements InstanceService {
     @Override
     public HttpResponseTemp<?> setPodAnnotation(String clusterName, String namespace, String podname, Map<String, String> annotations) {
         Cluster cluster = clusterBiz.getClusterByName(clusterName);
-        KubeClient client = new KubeClient(cluster.getApi(), namespace);
-        Pod pod;
+        if (cluster == null) {
+            throw ApiException.wrapMessage(ResultStat.CLUSTER_NOT_EXIST, "The cluster with name " + clusterName + " does not exist.");
+        }
         try {
+            KubeUtils client = Fabric8KubeUtils.buildKubeUtils(cluster, namespace);
+            Pod pod;
             pod = client.podInfo(podname);
+            if (pod == null) {
+                throw  ApiException.wrapMessage(ResultStat.POD_NOT_EXIST, "The pod with name " + podname + " does not exist.");
+            }
             Map<String, String> merged = pod.getMetadata().getAnnotations();
             for (String key : annotations.keySet()) {
                 merged.put(key, annotations.get(key));
             }
             pod.getMetadata().setAnnotations(merged);
             client.replacePod(podname, pod);
-        } catch (KubeResponseException | IOException | KubeInternalErrorException e) {
+        } catch (K8sDriverException | IOException  e) {
             logger.warn("exception happened when set pod annotation, detail:" + e.getMessage());
             return ResultStat.SERVER_INTERNAL_ERROR.wrap(null);
         }
@@ -76,6 +82,9 @@ public class InstanceServiceImpl implements InstanceService {
 
     public List<Instance> getInstances(int deployId) throws Exception {
         Deployment deployment = deploymentBiz.getById(GlobalConstant.DEPLOY_TABLE_NAME, deployId, Deployment.class);
+        if (deployment == null) {
+            throw ApiException.wrapMessage(ResultStat.DEPLOYMENT_NOT_EXIST, "The deployment with id=" + deployId + " does not exist.");
+        }
         Cluster cluster = clusterBiz.getById(GlobalConstant.CLUSTER_TABLE_NAME, deployment.getClusterId(), Cluster.class);
         if (cluster == null) {
             throw ApiException.wrapMessage(ResultStat.CLUSTER_NOT_EXIST, "The cluster with clusterId " + deployment.getClusterId() + " does not exist.");

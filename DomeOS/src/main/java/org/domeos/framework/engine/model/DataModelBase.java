@@ -5,7 +5,8 @@ import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.databind.ser.FilterProvider;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.domeos.framework.engine.exception.DaoConvertingException;
 
 import java.util.HashSet;
@@ -17,7 +18,8 @@ import java.util.Set;
 
 @JsonFilter("myFilter")
 public class DataModelBase implements IJsonable {
-    private static Logger logger = Logger.getLogger(DataModelBase.class);
+    private static Logger logger = LoggerFactory.getLogger(DataModelBase.class);
+
     @Override
     public int VERSION_NOW() {
         return 1;
@@ -27,6 +29,7 @@ public class DataModelBase implements IJsonable {
 
     private int ver = 1;
     private String fqcn = "";
+
     protected Set<String> excludeForJSON() {
         return new HashSet<>();
     }
@@ -59,7 +62,7 @@ public class DataModelBase implements IJsonable {
             T tmp = (T) clazz.newInstance();
             int versionNow = tmp.VERSION_NOW();
             if (versionNow == ver) {
-                return (T)objectMapper.readValue(str, clazz);
+                return (T) objectMapper.readValue(str, clazz);
             } else {
                 return tmp.fromString(str, ver);
             }
@@ -68,6 +71,7 @@ public class DataModelBase implements IJsonable {
             throw new DaoConvertingException("Parse Data from JSON failed, str = " + inputstr + e.getMessage(), e);
         }
     }
+
     public <T extends IJsonable> T fromString(String str, int ver) {
         if (str == null || str.length() == 0) {
             return null;
@@ -84,9 +88,9 @@ public class DataModelBase implements IJsonable {
             ver = VERSION_NOW();
             fqcn = this.getClass().getName();
             SimpleBeanPropertyFilter simpleBeanPropertyFilter = SimpleBeanPropertyFilter.serializeAllExcept(
-                this.excludeForJSON());
+                    this.excludeForJSON());
             FilterProvider filterProvider = new SimpleFilterProvider().setFailOnUnknownId(false)
-                .addFilter("myFilter", simpleBeanPropertyFilter);
+                    .addFilter("myFilter", simpleBeanPropertyFilter);
             return objectMapper.writer(filterProvider).writeValueAsString(this);
         } catch (Exception e) {
             logger.error("ObjectMapper to JSON failed for class:" + this.getClass().getName(), e);

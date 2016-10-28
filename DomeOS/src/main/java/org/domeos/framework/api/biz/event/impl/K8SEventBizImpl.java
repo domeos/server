@@ -1,8 +1,8 @@
 package org.domeos.framework.api.biz.event.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.domeos.client.kubernetesclient.definitions.v1.Event;
-import org.domeos.client.kubernetesclient.definitions.v1.ObjectReference;
+import io.fabric8.kubernetes.api.model.Event;
+import io.fabric8.kubernetes.api.model.ObjectReference;
 import org.domeos.framework.api.biz.event.K8SEventBiz;
 import org.domeos.framework.api.consolemodel.event.EventInfo;
 import org.domeos.framework.api.mapper.event.EventMapper;

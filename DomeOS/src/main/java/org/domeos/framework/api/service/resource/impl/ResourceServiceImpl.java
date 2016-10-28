@@ -5,7 +5,8 @@ package org.domeos.framework.api.service.resource.impl;
  */
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.domeos.basemodel.HttpResponseTemp;
 import org.domeos.basemodel.ResultStat;
 import org.domeos.framework.api.biz.auth.AuthBiz;
@@ -50,7 +51,7 @@ public class ResourceServiceImpl implements ResourceService {
     @Autowired
     AuthBiz authBiz;
 
-    private static Logger logger = Logger.getLogger(ResourceServiceImpl.class);
+    private static Logger logger = LoggerFactory.getLogger(ResourceServiceImpl.class);
 
 
     @Override

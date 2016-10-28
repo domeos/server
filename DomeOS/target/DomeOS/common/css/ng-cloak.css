@@ -1,0 +1,19 @@
+[ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .translate-cloak, .x-ng-cloak, .ng-hide {
+  display: none !important; }
+
+ng\:form {
+  display: block; }
+
+.ng-animate-start {
+  clip: rect(0, auto, auto, 0);
+  -ms-zoom: 1.0001; }
+
+.ng-animate-active {
+  clip: rect(-1px, auto, auto, 0);
+  -ms-zoom: 1; }
+
+
+
+/*# sourceMappingURL=data:application/json;charset=utf8;base64,eyJ2ZXJzaW9uIjozLCJtYXBwaW5ncyI6IkFBQ0EsMEdBQW1HO0VBQUMsT0FBTyxFQUFDLGVBQWU7O0FBQUUsUUFBUTtFQUFDLE9BQU8sRUFBQyxLQUFLOztBQUFFLGlCQUFpQjtFQUFDLElBQUksRUFBQyxzQkFBbUI7RUFBQyxRQUFRLEVBQUMsTUFBTTs7QUFBRSxrQkFBa0I7RUFBQyxJQUFJLEVBQUMseUJBQXNCO0VBQUMsUUFBUSxFQUFDLENBQUMiLCJzb3VyY2VzIjpbImNvbW1vbi9jc3MvbmctY2xvYWsuc2NzcyJdLCJuYW1lcyI6W10sImZpbGUiOiJjb21tb24vY3NzL25nLWNsb2FrLmNzcyIsInNvdXJjZXNDb250ZW50IjpbIkBjaGFyc2V0IFwiVVRGLThcIjtcclxuW25nXFw6Y2xvYWtdLFtuZy1jbG9ha10sW2RhdGEtbmctY2xvYWtdLFt4LW5nLWNsb2FrXSwubmctY2xvYWssLnRyYW5zbGF0ZS1jbG9haywueC1uZy1jbG9haywubmctaGlkZXtkaXNwbGF5Om5vbmUgIWltcG9ydGFudDt9bmdcXDpmb3Jte2Rpc3BsYXk6YmxvY2s7fS5uZy1hbmltYXRlLXN0YXJ0e2NsaXA6cmVjdCgwLGF1dG8sYXV0bywwKTstbXMtem9vbToxLjAwMDE7fS5uZy1hbmltYXRlLWFjdGl2ZXtjbGlwOnJlY3QoLTFweCxhdXRvLGF1dG8sMCk7LW1zLXpvb206MTt9Il19 */
+
+/*# sourceMappingURL=../../maps/common/css/ng-cloak.css.map */

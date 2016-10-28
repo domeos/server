@@ -33,7 +33,10 @@ public class CiClusterControllerTest extends BaseTestCase {
         ThreadContext.bind(securityManager);
 
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        FileInputStream fileInputStream = new FileInputStream("./src/test/resources/global/cicluster.json");
+        //FileInputStream fileInputStream = new FileInputStream("./src/test/resources/global/cicluster.json");
+        //FileInputStream fileInputStream = new FileInputStream("/home/luyue/CiCluster.json");
+        FileInputStream fileInputStream = new FileInputStream("/home/luyue/CiClusterput.json");
+
         byte[] buff = new byte[fileInputStream.available()];
         fileInputStream.read(buff);
         ciCluster = objectMapper.readValue(buff, CiCluster.class);
@@ -57,6 +60,7 @@ public class CiClusterControllerTest extends BaseTestCase {
                 .andExpect(status().isOk());
     }
 
+
     @Test
     public void T030Put() throws Exception {
         mockMvc.perform(put("/api/global/ci/cluster").contentType(MediaType.APPLICATION_JSON).content(ciClusterStr))
@@ -72,4 +76,5 @@ public class CiClusterControllerTest extends BaseTestCase {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value(ResultStat.OK.responseCode))
                 .andExpect(status().isOk());
     }
+
 }

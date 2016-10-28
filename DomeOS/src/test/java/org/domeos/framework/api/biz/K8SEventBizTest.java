@@ -1,13 +1,13 @@
 package org.domeos.framework.api.biz;
 
+import io.fabric8.kubernetes.api.model.Event;
+import io.fabric8.kubernetes.api.model.EventList;
 import org.domeos.base.BaseTestCase;
-import org.domeos.client.kubernetesclient.KubeClient;
-import org.domeos.client.kubernetesclient.definitions.v1.Event;
-import org.domeos.client.kubernetesclient.definitions.v1.EventList;
-import org.domeos.client.kubernetesclient.exception.KubeInternalErrorException;
-import org.domeos.client.kubernetesclient.exception.KubeResponseException;
+import org.domeos.exception.K8sDriverException;
 import org.domeos.framework.api.biz.event.K8SEventBiz;
 import org.domeos.framework.api.model.event.EventKind;
+import org.domeos.framework.engine.k8s.kubeutils.ClusterContext;
+import org.domeos.framework.engine.k8s.util.KubeUtils;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -26,15 +26,15 @@ public class K8SEventBizTest extends BaseTestCase{
     @Autowired
     K8SEventBiz k8SEventBiz;
 
-    KubeClient client;
+    KubeUtils client;
 
     int clusterId = 1;
 
     int deployId = 1;
 
     @Before
-    public void setUp() {
-        client = new KubeClient("10.16.42.200:8080");
+    public void setUp() throws K8sDriverException {
+        client = ClusterContext.createKubeClient();
 //        Properties pro = new Properties();
 //        pro.put("log4j.rootLogger", "DEBUG, console");
 //        pro.put("log4j.appender.console", "org.apache.log4j.ConsoleAppender");
@@ -45,9 +45,9 @@ public class K8SEventBizTest extends BaseTestCase{
     }
 
     @Test
-    public void T010CreateEvent() throws KubeResponseException, IOException, KubeInternalErrorException {
+    public void T010CreateEvent() throws K8sDriverException, IOException {
         EventList eventList = client.listEvent();
-        Event[] events = eventList.getItems();
+        List<Event> events = eventList.getItems();
 //        System.out.println(events);
         for (Event event : events) {
 //            System.out.println(event.getMetadata().getName());

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html ng-app="moduleApp">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>DomeOS-导航</title><!-- build:css /module/css/moduleApp.min.css -->
+    <link rel="stylesheet" href="../lib/css/bootstrap.css" type="text/css">
+    <link rel="stylesheet" href="../common/css/base.css" type="text/css">
+    <link rel="stylesheet" href="css/module.css" type="text/css">
+    <link rel="stylesheet" type="text/css"><!-- endbuild -->
+    <link rel="stylesheet" href="../common/css/ng-cloak.css" type="text/css">
+  </head>
+  <body ng-controller="appCtr">
+    <div class="module-con">
+      <div class="log-con"><img class="logo" src="/module/images/logo-white.png"><span class="version" ng-bind="domeVersion"></span></div>
+      <div class="option-con"><a class="link-doc" href="http://doc.domeos.org" target="_blank"><i class="icon-doc"></i>文档</a>
+        <div class="user-con" select-con>
+          <button class="ui-btn ui-btn-none username ui-btn-select" ng-cloak><i class="icon-down up drop"></i>{{loginUser.username}}</button>
+          <ul class="com-user-option select-list">
+            <li class="arrow"></li>
+            <li select-item> <a ng-click="modifySelfInfo()">修改资料 </a></li>
+            <li select-item ng-if="loginUser.loginType=='USER'"><a ng-click="modifyPw()">修改密码</a></li>
+            <li select-item><a ng-click="logout()">退出登录</a></li>
+          </ul>
+        </div>
+      </div>
+      <ul class="list-module">
+        <li><a class="module" href="/#/projectManage">
+            <h4><i class="icon-project"></i>项目管理</h4></a><a class="module" href="/#/clusterManage">
+            <h4><i class="icon-cluster"></i> 集群管理</h4></a></li>
+        <li><a class="module" href="/#/deployManage">
+            <h4><i class="icon-deploy"></i>部署</h4></a><a class="module" href="/#/groupManage">
+            <h4><i class="icon-user"></i>组管理</h4></a></li>
+        <li><a class="module" href="/#/monitor">
+            <h4><i class="icon-monitor"></i>监控报警</h4></a><a class="module" href="/#/appStore">
+            <h4><i class="icon-app"></i>应用商店</h4></a></li>
+        <li><a class="module" href="/#/image">
+            <h4><i class="icon-image"></i>镜像</h4></a><a class="module" href="/#/globalSetting" ng-hide="loginUser.username!='admin'">
+            <h4><i class="icon-global"></i>全局配置</h4></a></li>
+      </ul>
+    </div>
+    <script type="text/ng-template" id="promptModal.html">
+      <div class="d-modal-header">提示</div>
+      <div class="modal-body">
+        <p ng-bind="promptTxt"></p>
+      </div>
+      <div class="modal-footer">
+        <button class="ui-btn ui-btn-primary ui-btn-sm" ng-click="cancel()">确定</button>
+      </div>
+    </script>
+    <script type="text/ng-template" id="warningModal.html">
+      <div class="d-modal-header">警告</div>
+      <div class="modal-body">
+        <p class="txt-error" ng-bind="titleInfo" ng-class="{'font-size-16':detailInfo}"></p>
+        <p class="txt-error tool-wrap-break" ng-bind="detailInfo"></p>
+      </div>
+      <div class="modal-footer">
+        <button class="ui-btn ui-btn-error ui-btn-sm" ng-click="cancel()">确定</button>
+      </div>
+    </script>
+    <script type="text/ng-template" id="modifyPwModal.html">
+      <div class="d-modal-header">修改密码</div>
+      <div class="modal-body">
+        <ul class="modal-info" ng-form name="pwForm" role="form" ng-class="{'need-valid':needValid}">
+          <li>
+            <label class="info-name">原密码</label>
+            <div class="info-txt text-left">
+              <input class="full ui-input-white" placeholder="请输入原密码" type="password" name="oldPw" ng-model="pwObj.oldpassword" required>
+            </div>
+          </li>
+          <li>
+            <label class="info-name">新密码</label>
+            <div class="info-txt text-left">
+              <input class="full ui-input-white" placeholder="8-20位" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" type="password" name="newPw" ng-model="pwObj.newpassword" required ng-minlength="8" ng-maxlength="20"><span class="txt-error" ng-if="(needValid||pwForm.newPw.$dirty)&amp;&amp;(pwForm.newPw.$error.minlength||pwForm.newPw.$error.maxlength)">长度必须为8-20位</span>
+            </div>
+          </li>
+          <li>
+            <label class="info-name">确认新密码</label>
+            <div class="info-txt text-left">
+              <input class="full ui-input-white" placeholder="再次输入新密码" type="password" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" name="newPwAgain" ng-model="newPwAgain" required equal="pwObj.newpassword"><span class="txt-error" ng-if="(needValidUser.valid||pwForm.newPwAgain.$dirty)&amp;&amp;pwForm.newPwAgain.$error.equal">两次密码不一致</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button class="ui-btn ui-btn-white ui-btn-sm" ng-click="cancel()">取消</button>
+        <button class="ui-btn ui-btn-sm ui-btn-primary" ng-click="needValid=true;pwForm.$valid&amp;&amp;modiftPw()">确定</button>
+      </div>
+    </script>
+    <script type="text/ng-template" id="modifyUserInfoModal.html">
+      <div class="d-modal-header" ng-cloak>修改资料</div>
+      <div class="modal-body text-center modal-newpw" ng-form role="form" name="userInfoForm">
+        <ul class="modal-info">
+          <li><span class="info-name">用户名</span>
+            <div class="info-content text-left"><span class="align-input" ng-bind="user.username"></span></div>
+          </li>
+          <li><span class="info-name">邮箱</span>
+            <div class="info-content text-left">
+              <input class="ui-input-white full" ng-model="user.email" name="email">
+            </div>
+          </li>
+          <li><span class="info-name">电话</span>
+            <div class="info-content text-left">
+              <input class="ui-input-white full" ng-model="user.phone" name="phone">
+            </div>
+          </li>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button class="ui-btn ui-btn-sm ui-btn-white" ng-click="cancel()">取消</button>
+        <button class="ui-btn ui-btn-sm ui-btn-safe" ng-click="submit()">保存</button>
+      </div>
+    </script>
+    <div></div><!-- build:js /module/js/lib.min.js -->
+    <script type="text/javascript" src="../lib/js/jquery.min.js"></script>
+    <script type="text/javascript" src="../lib/js/angular.min.js"></script>
+    <script type="text/javascript" src="../lib/js/angular-animate.min.js"></script>
+    <script type="text/javascript" src="../lib/js/ui-bootstrap-tpls.min.js"></script>
+    <script type="text/javascript" src="../common/publicModule/publicModule.js"></script>
+    <script type="text/javascript" src="../common/publicModule/directive/publicDirective.js"></script>
+    <script type="text/javascript" src="../common/domeModule/domeModule.js"></script>
+    <script type="text/javascript" src="../common/userModule/userModule.js"></script>
+    <script type="text/javascript" src=""></script><!-- endbuild -->
+<!-- build:js /module/js/moduleApp.min.js -->
+    <script type="text/javascript" src="js/module.js"></script>
+    <script type="text/javascript" src=""></script><!-- endbuild -->
+  </body>
+</html>

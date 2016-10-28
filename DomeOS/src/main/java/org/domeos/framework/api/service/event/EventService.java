@@ -1,10 +1,11 @@
 package org.domeos.framework.api.service.event;
 
+import io.fabric8.kubernetes.api.model.Event;
 import org.domeos.basemodel.HttpResponseTemp;
-import org.domeos.client.kubernetesclient.definitions.v1.Event;
 import org.domeos.framework.api.consolemodel.event.EventInfo;
 import org.domeos.framework.api.model.deployment.Deployment;
 import org.domeos.framework.api.model.event.EventKind;
+import org.domeos.framework.engine.event.k8sEvent.K8sEventDetail;
 
 import java.io.IOException;
 import java.util.List;
@@ -16,7 +17,7 @@ public interface EventService {
 
     void createEvent(int clusterId, Event event) throws IOException;
 
-    int getDeployIdByEvent(int clusterId, Event event);
+    K8sEventDetail getDeployIdByEvent(int clusterId, Event event);
 
     void deleteDeploymentEvent(int clusterId, Deployment deployment);
 

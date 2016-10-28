@@ -1,6 +1,7 @@
 package org.domeos.framework.api.controller.auth;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.domeos.basemodel.HttpResponseTemp;
 import org.domeos.basemodel.ResultStat;
 import org.domeos.framework.api.consolemodel.auth.ChangeUserPassword;
@@ -23,7 +24,7 @@ import java.util.List;
 @Controller
 @RequestMapping("/api/user")
 public class UserController extends ApiController {
-    protected static Logger logger = Logger.getLogger(UserController.class);
+    protected static Logger logger = LoggerFactory.getLogger(UserController.class);
     @Autowired
     UserService userService;
 

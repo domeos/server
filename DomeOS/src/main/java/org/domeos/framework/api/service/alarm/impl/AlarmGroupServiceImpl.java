@@ -1,6 +1,7 @@
 package org.domeos.framework.api.service.alarm.impl;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.domeos.basemodel.HttpResponseTemp;
 import org.domeos.basemodel.ResultStat;
 import org.domeos.framework.api.biz.auth.AuthBiz;
@@ -25,7 +26,7 @@ import java.util.List;
 @Service("alarmGroupService")
 public class AlarmGroupServiceImpl implements AlarmGroupService {
 
-    private static Logger logger = Logger.getLogger(AlarmGroupServiceImpl.class);
+    private static Logger logger = LoggerFactory.getLogger(AlarmGroupServiceImpl.class);
 
     @Autowired
     AuthBiz authBiz;

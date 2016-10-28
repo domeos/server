@@ -1,11 +1,11 @@
 package org.domeos.framework.shiro.filter;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.web.filter.authc.FormAuthenticationFilter;
 import org.apache.shiro.web.util.WebUtils;
 import org.domeos.framework.api.model.auth.related.LoginType;
+import org.domeos.framework.engine.model.CustomObjectMapper;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -46,7 +46,7 @@ public class CustomAuthenticationFilter extends FormAuthenticationFilter {
             if (jsonStr.length() <= 0) {
                 return null;
             }
-            ObjectMapper objectMapper = new ObjectMapper();
+            CustomObjectMapper objectMapper = new CustomObjectMapper();
             JsonNode node = objectMapper.readValue(jsonStr, JsonNode.class);
             if (node.has("loginType")) {
                 return node.get("loginType").asText();

@@ -2,10 +2,7 @@ package org.domeos.framework.api.consolemodel.deployment;
 
 import org.domeos.framework.api.model.deployment.Deployment;
 import org.domeos.framework.api.model.deployment.Version;
-import org.domeos.framework.api.model.deployment.related.HostEnv;
-import org.domeos.framework.api.model.deployment.related.LogDraft;
-import org.domeos.framework.api.model.deployment.related.NetworkMode;
-import org.domeos.framework.api.model.deployment.related.LabelSelector;
+import org.domeos.framework.api.model.deployment.related.*;
 
 import java.util.List;
 
@@ -25,6 +22,9 @@ public class VersionDetail {
     private NetworkMode networkMode;
     private List<String> hostList;
     private List<String> volumes;
+    private VersionType versionType;
+    private VersionString versionString;
+
 
     public VersionDetail() {
     }
@@ -41,6 +41,11 @@ public class VersionDetail {
         setLabelSelectors(version.getLabelSelectors());
         setNetworkMode(deployment.getNetworkMode());
         setVolumes(version.getVolumes());
+        if (version.getVersionType() == null) {
+            setVersionType(VersionType.CUSTOM);
+        } else {
+            setVersionType(version.getVersionType());
+        }
 
         if (deployment.getHealthChecker() != null && containerDrafts != null) {
             for (ContainerDraft containerDraft : containerDrafts) {
@@ -167,5 +172,21 @@ public class VersionDetail {
 
     public void setVolumes(List<String> volumes) {
         this.volumes = volumes;
+    }
+
+    public VersionType getVersionType() {
+        return versionType;
+    }
+
+    public void setVersionType(VersionType versionType) {
+        this.versionType = versionType;
+    }
+
+    public VersionString getVersionString() {
+        return versionString;
+    }
+
+    public void setVersionString(VersionString versionString) {
+        this.versionString = versionString;
     }
 }

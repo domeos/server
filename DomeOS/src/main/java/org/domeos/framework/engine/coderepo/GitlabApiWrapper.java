@@ -2,7 +2,6 @@ package org.domeos.framework.engine.coderepo;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -15,6 +14,7 @@ import org.domeos.exception.GitlabTokenException;
 import org.domeos.exception.ProjectHookException;
 import org.domeos.framework.api.consolemodel.project.CodeSourceInfo;
 import org.domeos.framework.api.model.ci.related.CommitInformation;
+import org.domeos.framework.engine.model.CustomObjectMapper;
 import org.domeos.global.ClientConfigure;
 import org.domeos.global.GlobalConstant;
 import org.domeos.util.HttpsClient;
@@ -40,7 +40,7 @@ public class GitlabApiWrapper implements CodeApiInterface {
     GitlabAPI api;
     String url;
     String token;
-    ObjectMapper mapper;
+    CustomObjectMapper mapper;
 
     public GitlabApiWrapper() {
     }
@@ -58,9 +58,9 @@ public class GitlabApiWrapper implements CodeApiInterface {
     }
 
     public void init() {
-        mapper = new ObjectMapper();
+        mapper = new CustomObjectMapper();
         if (url != null && token != null) {
-            this.api = GitlabAPI.connect(url, token);
+            this.api = GitlabAPI.connect(url, token).ignoreCertificateErrors(true);
         }
     }
 
@@ -92,7 +92,7 @@ public class GitlabApiWrapper implements CodeApiInterface {
         }
 
         try {
-            return api.addProjectHook(projectId, hookUrl, pushEvents, tagPushEvents, false, false, false) != null;
+            return api.addProjectHook(projectId, hookUrl, pushEvents, false, false, tagPushEvents, false) != null;
         } catch (IOException ignored) {
             logger.warn("set webhook for gitlab project " + projectId + "error, " + ignored.getMessage());
         }
@@ -156,10 +156,7 @@ public class GitlabApiWrapper implements CodeApiInterface {
         try {
             GitlabBranch info = api.getBranch(projectId, branch);
             if (info != null && info.getCommit() != null) {
-                GitlabBranchCommit commit = info.getCommit();
-                return new CommitInformation(info.getName(), commit.getId(), commit.getMessage(), commit.getAuthoredDate().getTime(),
-                        commit.getAuthorName(), commit.getAuthorEmail(), commit.getCommittedDate().getTime(), commit.getCommiterName(),
-                        commit.getCommitterEmail());
+                return generateCommitInfo(info.getName(), info.getCommit());
             }
         } catch (IOException ignored) {
             logger.warn("get project " + projectId + " branch commit info from gitlab error, " + ignored.getMessage());
@@ -172,11 +169,8 @@ public class GitlabApiWrapper implements CodeApiInterface {
             List<GitlabTag> tags = api.getTags(projectId);
             if (tags != null) {
                 for (GitlabTag gitlabTag : tags) {
-                    if (gitlabTag.getName().equals(tag)) {
-                        GitlabBranchCommit commit = gitlabTag.getCommit();
-                        return new CommitInformation(gitlabTag.getName(), commit.getId(), commit.getMessage(), commit.getAuthoredDate().getTime(),
-                                commit.getAuthorName(), commit.getAuthorEmail(), commit.getCommittedDate().getTime(), commit.getCommiterName(),
-                                commit.getCommitterEmail());
+                    if (gitlabTag.getName().equals(tag) && gitlabTag.getCommit() != null) {
+                        return generateCommitInfo(gitlabTag.getName(), gitlabTag.getCommit());
                     }
                 }
             }
@@ -428,5 +422,23 @@ public class GitlabApiWrapper implements CodeApiInterface {
         public void setPassword(String password) {
             this.password = password;
         }
+    }
+
+    private CommitInformation generateCommitInfo(String name, GitlabBranchCommit commit) {
+        CommitInformation commitInformation = new CommitInformation();
+        commitInformation.setName(name);
+        commitInformation.setId(commit.getId());
+        commitInformation.setMessage(commit.getMessage());
+        commitInformation.setAuthoredDate(commit.getAuthoredDate().getTime());
+        if (commit.getAuthor() != null) {
+            commitInformation.setAuthorName(commit.getAuthor().getName());
+            commitInformation.setAuthorEmail(commit.getAuthor().getEmail());
+        }
+        commitInformation.setCommittedDate(commit.getCommittedDate().getTime());
+        if (commit.getCommitter() != null) {
+            commitInformation.setCommitterName(commit.getCommitter().getName());
+            commitInformation.setCommitterEmail(commit.getCommitter().getEmail());
+        }
+        return commitInformation;
     }
 }

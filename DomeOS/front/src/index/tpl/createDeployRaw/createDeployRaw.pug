@@ -1,0 +1,21 @@
+.mod-deploy.create-deploy-raw(ng-form name="mirrorsListFrom" ng-class="{'need-valid':needValid.valid}" novalidate)
+    loading(ng-if="loadingsIns.isLoading||deployIns.loadingIns.isLoading")
+    ul.com-list-info
+        li.has-border
+            span.info-name(ng-if="config.versionType === 'JSON'") JSON配置
+            span.info-name(ng-if="config.versionType === 'YAML'") YAML配置
+            .info-content
+                label.config-input-group-label
+                    .config-input-group
+                        .config-input-group-top.code-area(ng-bind="config.versionString.deploymentStrHead")
+                        .config-input-group-textarea-tip
+                            a(ng-click="setPodStrToDefault()" href="javascript:void 0;" ng-if="podStrUndoText === null && config.versionType === 'YAML'") YAML配置样例
+                            a(ng-click="setPodStrToDefault()" href="javascript:void 0;" ng-if="podStrUndoText === null && config.versionType === 'JSON'") JSON配置样例
+                            a(ng-click="undoPodStrToDefault()" href="javascript:void 0;" ng-if="podStrUndoText !== null") 撤销
+                        textarea.ui-input-fill.ui-input-group-vertical-middle.code-area(ng-model="config.versionString.podSpecStr" ng-change="clearPodStrUndoText()" style="width: calc(100% - {{config.versionString.indent + 2}}ch); margin-left: {{config.versionString.indent + 2}}ch;")
+                        .config-input-group-bottom.code-area(ng-bind="config.versionString.deploymentStrTail")
+    .com-bottom-option.text-center
+        span.com-bottom-option-con
+            button.ui-btn.ui-btn-md.ui-btn-bright(ng-disabled="loadingsIns.isLoading||deployIns.loadingIns.isLoading" ng-click="toLastStep()") 上一步
+            button.ui-btn.ui-btn-md.ui-btn-bright(ng-disabled="loadingsIns.isLoading||deployIns.loadingIns.isLoading" ng-click="needValid.valid=true;mirrorsListFrom.$valid&&toCreate()") 完成
+            span.txt-error(ng-if="needValid.valid&&mirrorsListFrom.$invalid") 存在不合法数据，请修改后提交！

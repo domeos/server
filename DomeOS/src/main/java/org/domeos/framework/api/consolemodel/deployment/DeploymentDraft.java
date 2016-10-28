@@ -44,6 +44,9 @@ public final class DeploymentDraft {
     private DeploymentAccessType accessType = DeploymentAccessType.K8S_SERVICE;
     private int exposePortNum = 0;
 
+    private VersionType versionType = VersionType.CUSTOM;
+    private String podSpecStr;
+
     private List<InnerServiceDraft> innerServiceDrafts; // inner service information
 
     public String getDeployName() {
@@ -202,6 +205,22 @@ public final class DeploymentDraft {
         return innerServiceDrafts;
     }
 
+    public VersionType getVersionType() {
+        return versionType;
+    }
+
+    public void setVersionType(VersionType versionType) {
+        this.versionType = versionType;
+    }
+
+    public String getPodSpecStr() {
+        return podSpecStr;
+    }
+
+    public void setPodSpecStr(String podSpecStr) {
+        this.podSpecStr = podSpecStr;
+    }
+
     public void setInnerServiceDrafts(List<InnerServiceDraft> innerServiceDrafts) {
         this.innerServiceDrafts = innerServiceDrafts;
     }
@@ -216,7 +235,7 @@ public final class DeploymentDraft {
             error = "creator is blank";
         } else if (StringUtils.isBlank(namespace)){
             error = "namespace is blank";
-        } else if (containerDrafts == null || containerDrafts.size() <= 0) {
+        } else if (StringUtils.isBlank(podSpecStr) && (containerDrafts == null || containerDrafts.size() <= 0 )) {
             error = "containerSpec size is 0";
         } else if (clusterId <= 0) {
             error = "cluster id less than 0";
@@ -231,12 +250,18 @@ public final class DeploymentDraft {
             }
         } else if (exposePortNum < 0) {
             error = "exposePortNum is less than 0";
-        } else {
+        } else if (StringUtils.isBlank(podSpecStr)) {
             for (ContainerDraft containerDraft : containerDrafts) {
                 error = containerDraft.checkLegality();
                 if (!StringUtils.isBlank(error)) {
                     return error;
                 }
+            }
+        } else {
+            Version test = toVersion();
+            error = test.checkLegality();
+            if (StringUtils.isBlank(error)) {
+                return error;
             }
         }
         return error;
@@ -257,6 +282,7 @@ public final class DeploymentDraft {
         deployment.setCreateTime(System.currentTimeMillis());
         deployment.setExposePortNum(getExposePortNum());
         deployment.setHealthChecker(getHealthCheckerDraft());
+        deployment.setVersionType(getVersionType());
         return deployment;
     }
 
@@ -298,6 +324,10 @@ public final class DeploymentDraft {
         version.setLogDraft(getLogDraft());
         version.setVolumes(getVolumes());
         version.setHostList(getHostList());
+        version.setVersionType(getVersionType());
+        if (getVersionType() != VersionType.CUSTOM) {
+            version.setPodSpecStr(podSpecStr);
+        }
         return version;
     }
 }

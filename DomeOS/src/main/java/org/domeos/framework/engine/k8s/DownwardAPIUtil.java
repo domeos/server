@@ -1,8 +1,8 @@
 package org.domeos.framework.engine.k8s;
 
-import org.domeos.client.kubernetesclient.definitions.v1.EnvVar;
-import org.domeos.client.kubernetesclient.definitions.v1.EnvVarSource;
-import org.domeos.client.kubernetesclient.definitions.v1.ObjectFieldSelector;
+import io.fabric8.kubernetes.api.model.EnvVar;
+import io.fabric8.kubernetes.api.model.EnvVarSource;
+import io.fabric8.kubernetes.api.model.ObjectFieldSelector;
 
 import java.util.ArrayList;
 import java.util.List;

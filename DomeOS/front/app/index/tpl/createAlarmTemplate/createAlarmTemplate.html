@@ -1,7 +1,0 @@
-
-<div ng-form="ng-form" ng-class="{'need-valid':needValid.valid}" role="form" name="createTplFrom" class="mod-alarm create-alarm-tpl">
-  <loading ng-if="isLoading||alarmTemplateIns.loadingIns.isLoading"></loading>
-  <ng-include src="'index/tpl/tplAlarmTemplate/tplAlarmTemplateEdit.html'"></ng-include>
-  <div class="com-bottom-option"><span class="com-bottom-option-con"><a ui-sref="alarm.templates" class="ui-btn ui-btn-link ui-btn-md ui-btn-bright">返回</a>
-      <button ng-disabled="isLoading||alarmTemplateIns.loadingIns.isLoading" ng-click="needValid.valid=true;createTplFrom.$valid&amp;&amp;toCreate()" class="ui-btn ui-btn-md ui-btn-bright">完成创建</button><span ng-if="needValid.valid&amp;&amp;createTplFrom.$invalid" class="txt-error">存在不合法数据，请修改后提交。</span></span></div>
-</div>

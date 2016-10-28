@@ -22,7 +22,7 @@ public interface VersionMapper {
     @Options(useGeneratedKeys = true, keyProperty = "item.id", keyColumn = "id")
     int insertRow(@Param("item") Version item, @Param("data") String data);
 
-    @Update("update " + VersionBiz.VERSION_TABLE_NAME + " set state = 'INAVTIVE', removed = 1 where deployId = ${deployId}")
+    @Update("update " + VersionBiz.VERSION_TABLE_NAME + " set state = 'INACTIVE', removed = 1 where deployId = ${deployId}")
     int disableAllVersion(@Param("deployId") int deployId);
 
     @Select("select " + RowMapper.BASIC_COLUMNS + " from " + VersionBiz.VERSION_TABLE_NAME

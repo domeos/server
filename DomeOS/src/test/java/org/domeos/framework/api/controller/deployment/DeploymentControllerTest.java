@@ -414,4 +414,20 @@ public class DeploymentControllerTest extends BaseTestCase {
 
     */
 
+    @Test
+    public void T130crateYamlDeployment() throws Exception {
+        FileInputStream podSpecYamlStream = new FileInputStream("./src/test/resources/Deployment/deploymentDraft4.json");
+        byte[] podSpecYamlBuff = new byte[podSpecYamlStream.available()];
+        podSpecYamlStream.read(podSpecYamlBuff);
+        String podSpecYamlStr = new String(podSpecYamlBuff);
+        System.out.println(podSpecYamlStr);
+        mockMvc.perform(post("/api/deploy/create").contentType(MediaType.APPLICATION_JSON).content(podSpecYamlStr))
+                .andDo(print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value(ResultStat.OK.responseCode))
+                .andExpect(status().isOk());
+
+        //yamlTest.toPodSPec(podSpecYamlStr);
+
+    }
+
 }

@@ -1,6 +1,7 @@
 package org.domeos.framework.api.service.alarm.impl;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.domeos.basemodel.HttpResponseTemp;
 import org.domeos.basemodel.ResultStat;
 import org.domeos.framework.api.controller.exception.ApiException;
@@ -17,7 +18,7 @@ import java.util.Set;
 @Service("alarmSenderService")
 public class AlarmSenderServiceImpl implements AlarmSenderService {
 
-    private static Logger logger = Logger.getLogger(AlarmSenderServiceImpl.class);
+    private static Logger logger = LoggerFactory.getLogger(AlarmSenderServiceImpl.class);
 
     @Override
     public HttpResponseTemp<?> sendSMS(String tos, String content) {

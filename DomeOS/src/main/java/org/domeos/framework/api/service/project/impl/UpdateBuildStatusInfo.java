@@ -1,13 +1,13 @@
 package org.domeos.framework.api.service.project.impl;
 
 
-import org.domeos.client.kubernetesclient.util.PodBriefStatus;
 import org.domeos.framework.api.biz.image.ImageBiz;
 import org.domeos.framework.api.biz.project.ProjectBiz;
 import org.domeos.framework.api.model.ci.BuildHistory;
 import org.domeos.framework.api.model.ci.related.BuildState;
 import org.domeos.framework.api.model.image.BaseImageCustom;
 import org.domeos.framework.engine.k8s.JobWrapper;
+import org.domeos.framework.engine.k8s.util.PodBriefStatus;
 import org.domeos.framework.engine.model.JobType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

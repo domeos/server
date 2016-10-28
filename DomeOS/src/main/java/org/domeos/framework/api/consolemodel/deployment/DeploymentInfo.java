@@ -3,6 +3,7 @@ package org.domeos.framework.api.consolemodel.deployment;
 import org.domeos.framework.api.model.deployment.Deployment;
 import org.domeos.framework.api.model.deployment.related.DeploymentStatus;
 import org.domeos.framework.api.model.deployment.related.HostEnv;
+import org.domeos.framework.api.model.deployment.related.VersionType;
 
 /**
  * Created by xxs on 15/12/15.
@@ -23,6 +24,7 @@ public class DeploymentInfo {
     private double memoryUsed;
     private boolean stateful;
     private String serviceDnsName;
+    private VersionType versionType;
 
     public void setDeployId(int deployId) {
         this.deployId = deployId;
@@ -153,5 +155,13 @@ public class DeploymentInfo {
 
     public void setServiceDnsName(String serviceDnsName) {
         this.serviceDnsName = serviceDnsName;
+    }
+
+    public VersionType getVersionType() {
+        return versionType;
+    }
+
+    public void setVersionType(VersionType versionType) {
+        this.versionType = versionType;
     }
 }

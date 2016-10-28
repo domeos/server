@@ -1,0 +1,6 @@
+{
+  "emailSuffix":null,
+  "server":"ldap://ldap.sohu-inc.com:389",
+  "username":"feiliu206363",
+  "password":"123456789"
+}

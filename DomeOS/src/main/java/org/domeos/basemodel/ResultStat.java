@@ -50,6 +50,7 @@ public enum ResultStat {
     DEPLOYMENT_GETVERSION_FAILED(1206),
     DEPLOYMENT_STATUS_NOT_ALLOW(1207),
     DEPLOYMENT_ABORT_EVENT_FAILED(1208),
+    DEPLOYMENT_YAML_ERROR(1209),
 
     // version related
     VERSION_NOT_EXIST(1300),
@@ -133,6 +134,9 @@ public enum ResultStat {
     MONITOR_DATA_ALARM_ERROR(2408),
     POST_ALARM_ERROR(2409),
     AGENT_NOT_READY(2410),
+
+    // pod related
+    POD_NOT_EXIST(2500),
 
     MAX(9999);
     //!!----------------do not modify code below------------------!!

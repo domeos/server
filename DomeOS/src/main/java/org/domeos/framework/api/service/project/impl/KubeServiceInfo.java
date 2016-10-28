@@ -1,11 +1,11 @@
 package org.domeos.framework.api.service.project.impl;
 
 import org.domeos.framework.api.biz.cluster.ClusterBiz;
+import org.domeos.framework.api.biz.global.GlobalBiz;
 import org.domeos.framework.api.biz.image.ImageBiz;
 import org.domeos.framework.api.biz.project.ProjectBiz;
 import org.domeos.framework.api.model.cluster.Cluster;
 import org.domeos.framework.api.model.global.CiCluster;
-import org.domeos.framework.api.biz.global.GlobalBiz;
 import org.domeos.framework.engine.model.JobType;
 import org.domeos.global.GlobalConstant;
 import org.springframework.beans.factory.annotation.Autowired;

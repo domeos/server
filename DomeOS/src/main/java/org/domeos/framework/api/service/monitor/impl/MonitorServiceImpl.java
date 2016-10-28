@@ -2,9 +2,9 @@ package org.domeos.framework.api.service.monitor.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.domeos.basemodel.HttpResponseTemp;
 import org.domeos.basemodel.ResultStat;
 import org.domeos.framework.api.biz.global.GlobalBiz;
@@ -26,6 +26,7 @@ import org.domeos.framework.api.model.operation.OperationType;
 import org.domeos.framework.api.model.resource.related.ResourceType;
 import org.domeos.framework.api.service.monitor.MonitorService;
 import org.domeos.framework.engine.AuthUtil;
+import org.domeos.framework.engine.model.CustomObjectMapper;
 import org.domeos.global.CurrentThreadInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -42,13 +43,16 @@ import java.util.*;
 @Service("monitorService")
 public class MonitorServiceImpl implements MonitorService {
 
-    private static Logger logger = Logger.getLogger(MonitorServiceImpl.class);
+    private static Logger logger = LoggerFactory.getLogger(MonitorServiceImpl.class);
 
     @Autowired
     MonitorBiz monitorBiz;
 
     @Autowired
     GlobalBiz globalBiz;
+
+    @Autowired
+    CustomObjectMapper mapper;
 
     @Override
     public HttpResponseTemp<?> insertTargets(TargetRequest targetRequest) {
@@ -62,7 +66,6 @@ public class MonitorServiceImpl implements MonitorService {
 
         AuthUtil.verify(CurrentThreadInfo.getUserId(), targetRequest.getClusterId(), ResourceType.CLUSTER, OperationType.GET);
 
-        ObjectMapper mapper = new ObjectMapper();
         String targetRequestJson;
         try {
             targetRequestJson = mapper.writeValueAsString(targetRequest);
@@ -86,7 +89,6 @@ public class MonitorServiceImpl implements MonitorService {
 
         AuthUtil.verify(CurrentThreadInfo.getUserId(), cid, ResourceType.CLUSTER, OperationType.GET);
 
-        ObjectMapper mapper = new ObjectMapper();
         String targetRequestJson = monitorBiz.getMonitorTargetById(targetId);
         if (StringUtils.isBlank(targetRequestJson)) {
             throw ApiException.wrapMessage(ResultStat.TARGET_REQUEST_NOT_LEGAL, "target id does not exist");
@@ -173,7 +175,6 @@ public class MonitorServiceImpl implements MonitorService {
         if (graphHistoryResponses == null) {
             throw ApiException.wrapMessage(ResultStat.MONITOR_DATA_QUERY_ERROR, "query response is null");
         }
-
         // re-arrage GraphHistoryResponses
         Map<String, List<GraphHistoryResponse>> graphHistoryResponseMap = arrangeGraphHistoryResponseList(graphHistoryResponses,
                 monitorDataRequest.getTargetType());
@@ -220,13 +221,13 @@ public class MonitorServiceImpl implements MonitorService {
         List<String> rawCounters = new ArrayList<>();
         switch (targetType) {
             case "node":
-                rawCounters = monitorBiz.getNodeCountersByEndpoints(joinStringSet(endpoints, ","));
+//                rawCounters = monitorBiz.getNodeCountersByEndpoints(joinStringSet(endpoints, ","));
+                rawCounters = monitorBiz.getNodeCountersByEndpoints(endpoints);
                 break;
             case "pod":
             case "container":
                 rawCounters = monitorBiz.getContainerCountersByEndpoints(joinStringSet(endpoints, ","), joinStringSet(containers, ","));
         }
-
         return rawCounters;
     }
 
@@ -255,8 +256,9 @@ public class MonitorServiceImpl implements MonitorService {
         switch (monitorDataRequest.getTargetType()) {
             case "node":
                 for (String counter : counters) {
-                    for (TargetInfo targetInfo : monitorDataRequest.getTargetInfos())
+                    for (TargetInfo targetInfo : monitorDataRequest.getTargetInfos()) {
                         graphHistoryRequest.getEndpoint_counters().add(new EndpointCounter(targetInfo.getNode(), counter));
+                    }
                 }
                 break;
             case "pod":
@@ -287,7 +289,6 @@ public class MonitorServiceImpl implements MonitorService {
     public List<GraphHistoryResponse> postJson(String requestUrl, GraphHistoryRequest graphHistoryRequest) throws IOException {
 
         HttpURLConnection conn;
-        ObjectMapper mapper = new ObjectMapper();
         List<GraphHistoryResponse> graphHistoryResponses;
         try {
 
@@ -463,7 +464,7 @@ public class MonitorServiceImpl implements MonitorService {
             if (monitorResult.getCounterResults().get("container.mem.limit").size() < length) {
                 length = monitorResult.getCounterResults().get("container.mem.limit").size();
             }
-            for (int index=0; index<length; index++) {
+            for (int index = 0; index < length; index++) {
                 Map<String, Double> currentMap = monitorResult.getCounterResults().get("container.mem.usage.percent").get(index);
                 for (String key : currentMap.keySet()) {
                     if (key.equals("timeStamp")) {
@@ -503,8 +504,6 @@ public class MonitorServiceImpl implements MonitorService {
 
 
     private TargetRequest fetchTargetRequest(long targetId) {
-
-        ObjectMapper mapper = new ObjectMapper();
         String targetRequestJson = monitorBiz.getMonitorTargetById(targetId);
         if (StringUtils.isBlank(targetRequestJson)) {
             return null;

@@ -1,7 +1,8 @@
 package org.domeos.framework.api.service.auth.impl;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.*;
 import org.apache.shiro.subject.Subject;
@@ -42,7 +43,7 @@ import java.util.Set;
 @Service("userService")
 public class UserServiceImpl implements UserService {
 
-    protected static Logger logger = Logger.getLogger(UserServiceImpl.class);
+    protected static Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
     @Autowired
     AuthBiz authBiz;
     @Autowired

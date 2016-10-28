@@ -1,22 +1,25 @@
 package org.domeos.service.development.impl;
 
-import org.apache.log4j.Logger;
+import io.fabric8.kubernetes.api.model.PodList;
+import io.fabric8.kubernetes.api.model.ReplicationController;
+import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.KubernetesClientException;
+import org.domeos.exception.K8sDriverException;
+import org.domeos.framework.engine.k8s.kubeutils.ClusterContext;
 import org.domeos.framework.engine.k8s.model.UpdatePhase;
 import org.domeos.framework.engine.k8s.model.UpdateStatus;
-import org.domeos.global.GlobalConstant;
 import org.domeos.framework.engine.k8s.updater.ReplicationControllerUpdater;
-import org.domeos.client.kubernetesclient.KubeClient;
-import org.domeos.client.kubernetesclient.definitions.v1.PodList;
-import org.domeos.client.kubernetesclient.definitions.v1.ReplicationController;
-import org.domeos.client.kubernetesclient.exception.KubeInternalErrorException;
-import org.domeos.client.kubernetesclient.exception.KubeResponseException;
-import org.domeos.client.kubernetesclient.util.RCBriefStatus;
-import org.domeos.client.kubernetesclient.util.RCUtils;
+import org.domeos.framework.engine.k8s.util.KubeUtils;
+import org.domeos.framework.engine.k8s.util.RCBriefStatus;
+import org.domeos.framework.engine.k8s.util.RCUtils;
+import org.domeos.global.GlobalConstant;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -32,11 +35,12 @@ import static org.springframework.test.util.AssertionErrors.fail;
 public class ReplicationControllerUpdaterTest {
     private static ReplicationController oldRC;
     private static ReplicationController newRC;
-    private static KubeClient client = null;
+    private static KubeUtils<KubernetesClient> client = null;
     private static boolean isCreate = false;
-    private static Logger logger = Logger.getLogger(ReplicationControllerUpdaterTest.class);
+    private static Logger logger = LoggerFactory.getLogger(ReplicationControllerUpdaterTest.class);
+
     @BeforeClass
-    public static void setUp() {
+    public static void setUp() throws K8sDriverException {
         ClusterContext.init();
         client = ClusterContext.createKubeClient();
         oldRC = ClusterContext.createCentosReplicationController("test-updater1-" + UUID.randomUUID(), 3);
@@ -48,7 +52,7 @@ public class ReplicationControllerUpdaterTest {
         long startTime = System.currentTimeMillis();
         long timeout = 60000;
         try {
-            ReplicationController tmpRC = client.createReplicationController(oldRC);
+            ReplicationController tmpRC;
             while (status != RCBriefStatus.SuccessRunning) {
                 tmpRC = client.replicationControllerInfo(RCUtils.getName(oldRC));
                 // tmpRC = client.replicationControllerInfo("");
@@ -64,7 +68,7 @@ public class ReplicationControllerUpdaterTest {
                 Thread.sleep(500);
             }
             isCreate = status == RCBriefStatus.SuccessRunning;
-        } catch (KubeInternalErrorException | KubeResponseException | IOException e) {
+        } catch (KubernetesClientException | IOException e) {
             logger.info("create rc failed");
             isCreate = false;
         } catch (InterruptedException e) {
@@ -104,12 +108,12 @@ public class ReplicationControllerUpdaterTest {
     }
 
     @AfterClass
-    public static void tearDown() {
+    public static void tearDown() throws K8sDriverException {
         assumeTrue(client != null);
         try {
             client.deleteReplicationController(RCUtils.getName(oldRC));
             client.deleteReplicationController(RCUtils.getName(newRC));
-        } catch (KubeResponseException | IOException | KubeInternalErrorException e) {
+        } catch (KubernetesClientException | IOException e) {
             logger.error("delete rc failed");
         }
     }

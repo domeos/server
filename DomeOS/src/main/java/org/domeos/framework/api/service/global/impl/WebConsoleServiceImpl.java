@@ -1,7 +1,6 @@
 package org.domeos.framework.api.service.global.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.domeos.basemodel.HttpResponseTemp;
 import org.domeos.basemodel.ResultStat;
@@ -13,6 +12,7 @@ import org.domeos.framework.api.model.operation.OperationType;
 import org.domeos.framework.api.model.resource.related.ResourceType;
 import org.domeos.framework.api.service.global.WebConsoleService;
 import org.domeos.framework.engine.AuthUtil;
+import org.domeos.framework.engine.model.CustomObjectMapper;
 import org.domeos.global.CurrentThreadInfo;
 import org.domeos.util.CommonUtil;
 import org.slf4j.Logger;
@@ -43,6 +43,9 @@ public class WebConsoleServiceImpl implements WebConsoleService {
 
     @Autowired
     GlobalBiz globalBiz;
+
+    @Autowired
+    CustomObjectMapper mapper;
 
     private void checkAdmin() {
         if (!AuthUtil.isAdmin(CurrentThreadInfo.getUserId())) {
@@ -153,7 +156,7 @@ public class WebConsoleServiceImpl implements WebConsoleService {
             return null;
         } else {
             source = source.substring(lastIndex + 1);
-            if (! source.contains(key)) {
+            if (!source.contains(key)) {
                 return null;
             } else {
                 int indexOfKey = source.indexOf(key);
@@ -167,9 +170,6 @@ public class WebConsoleServiceImpl implements WebConsoleService {
     }
 
     public void transferPost(String requestUrl, String host, String container, HttpServletRequest request, HttpServletResponse response) throws IOException {
-
-        ObjectMapper mapper = new ObjectMapper();
-
         URL url = new URL(requestUrl);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setDoOutput(true);
@@ -186,7 +186,7 @@ public class WebConsoleServiceImpl implements WebConsoleService {
             params += entry.getValue()[0];
             params += "&";
         }
-        params = params.substring(0, params.length()-1);
+        params = params.substring(0, params.length() - 1);
         byte[] data = params.getBytes("UTF-8");
         OutputStream outStream = conn.getOutputStream();
         outStream.write(data);

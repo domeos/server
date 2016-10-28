@@ -1,8 +1,10 @@
 package org.domeos.framework.api.biz.global.impl;
 
 import org.apache.commons.lang3.StringUtils;
+import org.domeos.framework.api.biz.cluster.ClusterBiz;
 import org.domeos.framework.api.biz.global.GlobalBiz;
 import org.domeos.framework.api.mapper.global.GlobalMapper;
+import org.domeos.framework.api.model.cluster.Cluster;
 import org.domeos.framework.api.model.global.*;
 import org.domeos.framework.api.model.image.BuildImage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +17,9 @@ import org.springframework.stereotype.Service;
 public class GlobalBizImpl implements GlobalBiz {
     @Autowired
     GlobalMapper globalMapper;
+
+    @Autowired
+    ClusterBiz clusterBiz;
 
     public int addGlobalInfo(GlobalInfo globalInfo) {
         globalInfo.setCreateTime(System.currentTimeMillis());
@@ -398,35 +403,65 @@ public class GlobalBizImpl implements GlobalBiz {
     }
 
     public CiCluster getCiCluster() {
-        GlobalInfo host = globalMapper.getGlobalInfoByType(GlobalType.CI_CLUSTER_HOST);
+//        GlobalInfo host = globalMapper.getGlobalInfoByType(GlobalType.CI_CLUSTER_HOST);
         GlobalInfo namespace = globalMapper.getGlobalInfoByType(GlobalType.CI_CLUSTER_NAMESPACE);
         GlobalInfo clusterId = globalMapper.getGlobalInfoByType(GlobalType.CI_CLUSTER_ID);
-        GlobalInfo clusterName = globalMapper.getGlobalInfoByType(GlobalType.CI_CLUSTER_NAME);
-        if (host != null && namespace != null && clusterId != null && clusterName != null) {
-            return new CiCluster(host.getId(),
-                    namespace.getValue(),
-                    host.getValue(),
-                    Integer.parseInt(clusterId.getValue()),
-                    clusterName.getValue(),
-                    host.getCreateTime(),
-                    host.getLastUpdate());
+        if (clusterId == null) {
+            return null;
         }
+//        GlobalInfo clusterName = globalMapper.getGlobalInfoByType(GlobalType.CI_CLUSTER_NAME);
+        Cluster cluster = clusterBiz.getClusterById(Integer.parseInt(clusterId.getValue()));
+        if (cluster != null) {
+            CiCluster ciCluster = new CiCluster();
+            ciCluster.setNamespace(namespace.getValue());
+            ciCluster.setHost(cluster.getApi());
+            ciCluster.setClusterId(Integer.parseInt(clusterId.getValue()));
+            ciCluster.setClusterName(cluster.getName());
+            ciCluster.setCreateTime(cluster.getCreateTime());
+            ciCluster.setLastUpdate(clusterId.getLastUpdate());
+            ciCluster.setUsername(cluster.getUsername());
+            ciCluster.setPassword(cluster.getPassword());
+            ciCluster.setOauthToken(cluster.getOauthToken());
+            return ciCluster;
+        }
+//        GlobalInfo username = globalMapper.getGlobalInfoByType(GlobalType.CI_CLUSTER_USERNAME);
+//        GlobalInfo password = globalMapper.getGlobalInfoByType(GlobalType.CI_CLUSTER_PASSWORD);
+//        GlobalInfo oauthToken = globalMapper.getGlobalInfoByType(GlobalType.CI_CLUSTER_OAUTHTOKEN);
+//
+//        if (host != null && namespace != null && clusterName != null) {
+//            return new CiCluster(host.getId(),
+//                    namespace.getValue(),
+//                    host.getValue(),
+//                    Integer.parseInt(clusterId.getValue()),
+//                    clusterName.getValue(),
+//                    host.getCreateTime(),
+//                    host.getLastUpdate(),
+//                    username.getValue(),
+//                    password.getValue(),
+//                    oauthToken.getValue());
+//        }
         return null;
     }
 
     public void setCiCluster(CiCluster ciCluster) {
         long time = System.currentTimeMillis();
-        ciCluster.setCreateTime(time);
-        ciCluster.setLastUpdate(time);
-        GlobalInfo host = new GlobalInfo(GlobalType.CI_CLUSTER_HOST, ciCluster.getHost(), time, time);
-        globalMapper.addGlobalInfo(host);
-        ciCluster.setId(host.getId());
+//        ciCluster.setCreateTime(time);
+//        ciCluster.setLastUpdate(time);
+//        GlobalInfo host = new GlobalInfo(GlobalType.CI_CLUSTER_HOST, ciCluster.getHost(), time, time);
+//        globalMapper.addGlobalInfo(host);
+//        ciCluster.setId(host.getId());
         GlobalInfo namespace = new GlobalInfo(GlobalType.CI_CLUSTER_NAMESPACE, ciCluster.getNamespace(), time, time);
         globalMapper.addGlobalInfo(namespace);
         GlobalInfo clusterId = new GlobalInfo(GlobalType.CI_CLUSTER_ID, String.valueOf(ciCluster.getClusterId()), time, time);
         globalMapper.addGlobalInfo(clusterId);
-        GlobalInfo clusterName = new GlobalInfo(GlobalType.CI_CLUSTER_NAME, ciCluster.getClusterName(), time, time);
-        globalMapper.addGlobalInfo(clusterName);
+//        GlobalInfo clusterName = new GlobalInfo(GlobalType.CI_CLUSTER_NAME, ciCluster.getClusterName(), time, time);
+//        globalMapper.addGlobalInfo(clusterName);
+//        GlobalInfo username = new GlobalInfo(GlobalType.CI_CLUSTER_USERNAME, ciCluster.getUsername(), time, time);
+//        globalMapper.addGlobalInfo(username);
+//        GlobalInfo password = new GlobalInfo(GlobalType.CI_CLUSTER_PASSWORD, ciCluster.getPassword(), time, time);
+//        globalMapper.addGlobalInfo(password);
+//        GlobalInfo oauthToken = new GlobalInfo(GlobalType.CI_CLUSTER_OAUTHTOKEN, ciCluster.getOauthToken(), time, time);
+//        globalMapper.addGlobalInfo(oauthToken);
     }
 
     public void deleteCiCluster() {

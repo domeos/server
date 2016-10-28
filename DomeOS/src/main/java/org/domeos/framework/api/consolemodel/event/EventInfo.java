@@ -1,6 +1,6 @@
 package org.domeos.framework.api.consolemodel.event;
 
-import org.domeos.client.kubernetesclient.definitions.v1.Event;
+import io.fabric8.kubernetes.api.model.Event;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

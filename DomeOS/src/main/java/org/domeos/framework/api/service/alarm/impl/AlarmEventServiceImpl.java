@@ -1,6 +1,7 @@
 package org.domeos.framework.api.service.alarm.impl;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.domeos.basemodel.HttpResponseTemp;
 import org.domeos.basemodel.ResultStat;
 import org.domeos.framework.api.biz.alarm.AlarmBiz;
@@ -42,7 +43,7 @@ import java.util.concurrent.Future;
 @Service("alarmEventService")
 public class AlarmEventServiceImpl implements AlarmEventService {
 
-    private static Logger logger = Logger.getLogger(AlarmEventServiceImpl.class);
+    private static Logger logger = LoggerFactory.getLogger(AlarmEventServiceImpl.class);
 
     @Autowired
     AlarmBiz alarmBiz;

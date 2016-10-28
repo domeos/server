@@ -1,21 +1,20 @@
 package org.domeos.framework.engine.k8s.updater;
 
-import org.apache.log4j.Logger;
-import org.domeos.client.kubernetesclient.definitions.v1.Pod;
+import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.api.model.PodList;
+import io.fabric8.kubernetes.api.model.ReplicationController;
 import org.domeos.exception.DeploymentEventException;
+import org.domeos.exception.K8sDriverException;
 import org.domeos.framework.api.model.deployment.Policy;
 import org.domeos.framework.engine.k8s.model.UpdatePhase;
 import org.domeos.framework.engine.k8s.model.UpdatePolicy;
 import org.domeos.framework.engine.k8s.model.UpdateReplicationCount;
 import org.domeos.framework.engine.k8s.model.UpdateStatus;
-import org.domeos.client.kubernetesclient.KubeClient;
-import org.domeos.client.kubernetesclient.definitions.v1.PodList;
-import org.domeos.client.kubernetesclient.definitions.v1.ReplicationController;
-import org.domeos.client.kubernetesclient.exception.KubeInternalErrorException;
-import org.domeos.client.kubernetesclient.exception.KubeResponseException;
-import org.domeos.client.kubernetesclient.util.PodUtils;
-import org.domeos.client.kubernetesclient.util.RCUtils;
-import org.domeos.framework.engine.k8s.KubeUtil;
+import org.domeos.framework.engine.k8s.util.KubeUtils;
+import org.domeos.framework.engine.k8s.util.PodUtils;
+import org.domeos.framework.engine.k8s.util.RCUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
@@ -28,7 +27,7 @@ import java.util.concurrent.RejectedExecutionException;
  */
 public class ReplicationControllerUpdater {
     private static ExecutorService executor = Executors.newCachedThreadPool();
-    private KubeClient client = null;
+    private KubeUtils client = null;
     private ReplicationController oldRC;
     private ReplicationController newRC;
     private UpdateStrategy strategy;
@@ -36,14 +35,14 @@ public class ReplicationControllerUpdater {
     private Future updateFuture = null;
     private StatusChangeHandler<UpdateStatus> statusHandler;  // call every time status change
     private static final ReplicationControllerUpdater EMPTY_UPDATER = new ReplicationControllerUpdater();
-    private static Logger logger = Logger.getLogger(ReplicationControllerUpdater.class);
+    private static Logger logger = LoggerFactory.getLogger(ReplicationControllerUpdater.class);
 
     public static ReplicationControllerUpdater EmptyUpdater() {
         return EMPTY_UPDATER;
     }
 
-    public static ReplicationControllerUpdater RollingUpdater(
-            KubeClient client,
+    private static ReplicationControllerUpdater RollingUpdater(
+            KubeUtils client,
             ReplicationController oldRC,
             ReplicationController newRC,
             StatusChangeHandler<UpdateStatus> handler,
@@ -73,22 +72,22 @@ public class ReplicationControllerUpdater {
     }
 
     public static ReplicationControllerUpdater RollingUpdater(
-            KubeClient client,
+            KubeUtils client,
             ReplicationController oldRC,
             ReplicationController newRC) {
         return RollingUpdater(client, oldRC, newRC, null, null);
     }
 
     public static ReplicationControllerUpdater RollingUpdater(
-            KubeClient client,
+            KubeUtils client,
             ReplicationController oldRC,
             ReplicationController newRC,
             Policy policy) {
         return RollingUpdater(client, oldRC, newRC, null, policy);
     }
 
-    public ReplicationControllerUpdater(
-            KubeClient client,
+    private ReplicationControllerUpdater(
+            KubeUtils client,
             ReplicationController oldRC,
             ReplicationController newRC,
             UpdateStrategy strategy) {
@@ -109,7 +108,7 @@ public class ReplicationControllerUpdater {
         startIn(executor);
     }
 
-    public void startIn(ExecutorService otherExecutor) {
+    private void startIn(ExecutorService otherExecutor) {
         try {
             updateFuture = otherExecutor.submit(new UpdateReplicationController());
         } catch (RejectedExecutionException | NullPointerException e) {
@@ -131,7 +130,7 @@ public class ReplicationControllerUpdater {
         return statusNow;
     }
 
-    public void stop() {
+    private void stop() {
         if (updateFuture == null || updateFuture.isDone()) {
             return;
         }
@@ -239,7 +238,7 @@ public class ReplicationControllerUpdater {
                     }
                 }
             }
-        } catch (KubeResponseException | IOException | KubeInternalErrorException e) {
+        } catch (IOException | K8sDriverException e) {
             updateFailed("Kubernetes failed with message=" + e.getMessage());
             // isSuccess = false;
             return false;
@@ -251,8 +250,8 @@ public class ReplicationControllerUpdater {
         return true;
     }
 
-    public boolean updateOneStep(UpdatePolicy policy, ReplicationController oldRC, ReplicationController newRC)
-            throws KubeResponseException, IOException, KubeInternalErrorException, DeploymentEventException {
+    private boolean updateOneStep(UpdatePolicy policy, ReplicationController oldRC, ReplicationController newRC)
+            throws IOException, K8sDriverException, DeploymentEventException {
         if (!checkUpdateStatus(policy, oldRC, newRC)) {
             return false;
         }
@@ -269,15 +268,18 @@ public class ReplicationControllerUpdater {
                 return false;
             }
         }
-        ReplicationController actionTmpRC = null;
+        ReplicationController actionTmpRC;
+        int replicas;
         if (policy.isRemoveOldFirst()) {
             actionTmpRC = oldRC;
             actionTmpRC.getSpec().setReplicas(policy.getOldReplicaCount());
+            replicas = policy.getOldReplicaCount();
         } else {
             actionTmpRC = newRC;
             actionTmpRC.getSpec().setReplicas(policy.getNewReplicaCount());
+            replicas = policy.getNewReplicaCount();
         }
-        client.replaceReplicationController(RCUtils.getName(actionTmpRC), actionTmpRC);
+        client.scaleReplicationController(RCUtils.getName(actionTmpRC), replicas);
         if (!waitForReady(policy, actionTmpRC, true)) {
             return false;
         }
@@ -298,18 +300,20 @@ public class ReplicationControllerUpdater {
         if (!policy.isRemoveOldFirst()) {
             actionTmpRC = oldRC;
             actionTmpRC.getSpec().setReplicas(policy.getOldReplicaCount());
+            replicas = policy.getOldReplicaCount();
         } else {
             actionTmpRC = newRC;
             actionTmpRC.getSpec().setReplicas(policy.getNewReplicaCount());
+            replicas = policy.getNewReplicaCount();
         }
-        client.replaceReplicationController(RCUtils.getName(actionTmpRC), actionTmpRC);
+        client.scaleReplicationController(RCUtils.getName(actionTmpRC), replicas);
 
         return waitForReady(policy, actionTmpRC, false) && checkUpdateStatus(policy, oldRC, newRC);
     }
 
-    public boolean waitForReady(UpdatePolicy policy, ReplicationController rc, boolean isFirstAction)
-            throws KubeResponseException, IOException, KubeInternalErrorException, DeploymentEventException {
-        int desireInt = 0;
+    private boolean waitForReady(UpdatePolicy policy, ReplicationController rc, boolean isFirstAction)
+            throws IOException, K8sDriverException, DeploymentEventException {
+        int desireInt;
         if (isFirstAction ^ policy.isRemoveOldFirst()) {
             // for old
             desireInt = policy.getNewReplicaCount();
@@ -317,14 +321,13 @@ public class ReplicationControllerUpdater {
             desireInt = policy.getOldReplicaCount();
         }
         long start = System.currentTimeMillis();
-        KubeUtil kubeUtil = new KubeUtil(client);
         PodList tmpPodList = client.listPod(RCUtils.getSelector(rc));
         if (tmpPodList == null && desireInt != 0) {
             return false;
         }
         while (tmpPodList != null && (desireInt != PodUtils.getPodReadyNumber(tmpPodList.getItems())
-                || desireInt != tmpPodList.getItems().length)) {
-            kubeUtil.clearNotRunningPod(tmpPodList);
+                || desireInt != tmpPodList.getItems().size())) {
+            client.clearNotRunningPod(tmpPodList);
             /*
             try {
                 if (failedJudgment.isAnyFailed(tmpPodList)) {
@@ -337,7 +340,7 @@ public class ReplicationControllerUpdater {
                 return false;
             }
             */
-            long waitTime = 0;
+            long waitTime;
             if (policy.getMaxTimeForReady() < 0) {
                 waitTime = policy.getCheckReadyPeriod();
             } else {
@@ -362,8 +365,8 @@ public class ReplicationControllerUpdater {
         return true;
     }
 
-    public UpdateReplicationCount getPodReadyCount(ReplicationController oldRC, ReplicationController newRC)
-            throws KubeResponseException, IOException, KubeInternalErrorException {
+    private UpdateReplicationCount getPodReadyCount(ReplicationController oldRC, ReplicationController newRC)
+            throws IOException, K8sDriverException {
         PodList oldPods = client.listPod(RCUtils.getSelector(oldRC));
         PodList newPods = client.listPod(RCUtils.getSelector(newRC));
         return new UpdateReplicationCount(PodUtils.getPodReadyNumber(oldPods.getItems()),
@@ -372,22 +375,22 @@ public class ReplicationControllerUpdater {
 
     /*
     public boolean checkUpdateResultStatus(UpdatePolicy policy, ReplicationController oldRC, ReplicationController newRC)
-            throws KubeResponseException, IOException, KubeInternalErrorException {
+            throws KubeResponseException, IOException, K8sDriverException, KubeInternalErrorException {
         UpdateReplicationCount readyCountNow = getUpdateStatus(oldRC, newRC);
 
     }
     */
 
     // this function is used to check condition in policy whether be satisfied
-    public boolean checkUpdateStatus(UpdatePolicy policy, ReplicationController oldRC, ReplicationController newRC)
-            throws KubeResponseException, IOException, KubeInternalErrorException {
+    private boolean checkUpdateStatus(UpdatePolicy policy, ReplicationController oldRC, ReplicationController newRC)
+            throws IOException, K8sDriverException {
         UpdateReplicationCount readyCount = getPodReadyCount(oldRC, newRC);
         int totalReadyCountNow = readyCount.getNewReplicaCount() + readyCount.getOldReplicaCount();
         if ((policy.getMinPodReadyCount() > 0 && totalReadyCountNow < policy.getMinPodReadyCount())
                 || (policy.getMaxPodReadyCount() > 0 && totalReadyCountNow > policy.getMaxPodReadyCount())) {
             updateFailed("check update status failed with oldPodReadyCount=" + readyCount.getOldReplicaCount()
-                            + ", newPodReadyCount=" + readyCount.getNewReplicaCount() + ", but require minPodReadyCount="
-                            + policy.getMinPodReadyCount() + ", maxPodReadCount=" + policy.getMaxPodReadyCount()
+                    + ", newPodReadyCount=" + readyCount.getNewReplicaCount() + ", but require minPodReadyCount="
+                    + policy.getMinPodReadyCount() + ", maxPodReadCount=" + policy.getMaxPodReadyCount()
             );
             return false;
         }
@@ -404,11 +407,11 @@ public class ReplicationControllerUpdater {
             return true;
         }
     */
-    public UpdateReplicationCount getDesireCount(ReplicationController oldRC, ReplicationController newRC) {
+    private UpdateReplicationCount getDesireCount(ReplicationController oldRC, ReplicationController newRC) {
         return new UpdateReplicationCount(oldRC.getSpec().getReplicas(), newRC.getSpec().getReplicas());
     }
 
-    public class UpdateReplicationController implements Runnable {
+    private class UpdateReplicationController implements Runnable {
         @Override
         public void run() {
             try {
@@ -419,7 +422,7 @@ public class ReplicationControllerUpdater {
         }
     }
 
-    public void updateFailed(String reason) {
+    private void updateFailed(String reason) {
         logger.error("update failed for reason=" + reason);
         synchronized (status) {
             status.setPhase(UpdatePhase.Failed);
@@ -428,7 +431,7 @@ public class ReplicationControllerUpdater {
         }
     }
 
-    public void updateStatus(int oldReplicas, int newReplicas) {
+    private void updateStatus(int oldReplicas, int newReplicas) {
         synchronized (status) {
             status.setPhase(UpdatePhase.Starting);
             status.setOldReplicaCount(oldReplicas);
@@ -440,7 +443,7 @@ public class ReplicationControllerUpdater {
 
 /*
 class UpdateStrategyFactory {
-    private Logger logger = Logger.getLogger(UpdateStrategyFactory.class);
+    private Logger logger = LoggerFactory.getLogger(UpdateStrategyFactory.class);
     UpdateStrategy getUpdateStrategy(String strategyName) {
         try {
             Class classType = Class.forName(strategyName);

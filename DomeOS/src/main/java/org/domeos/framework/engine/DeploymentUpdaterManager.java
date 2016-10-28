@@ -5,8 +5,8 @@ import org.domeos.framework.api.model.deployment.Deployment;
 import org.domeos.framework.api.consolemodel.deployment.EnvDraft;
 import org.domeos.framework.api.model.deployment.Policy;
 import org.domeos.framework.api.model.deployment.Version;
-import org.domeos.client.kubernetesclient.KubeClient;
 import org.domeos.framework.engine.k8s.updater.DeploymentUpdater;
+import org.domeos.framework.engine.k8s.util.KubeUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -22,7 +22,7 @@ public class DeploymentUpdaterManager {
         return allDeploymentUpdater.get(deploymentId);
     }
 
-    public DeploymentUpdater createUpdater(KubeClient client, Deployment deployment, Version dstVersion, int replicas, List<EnvDraft> extraEnvs) {
+    public DeploymentUpdater createUpdater(KubeUtils client, Deployment deployment, Version dstVersion, int replicas, List<EnvDraft> extraEnvs) {
         DeploymentUpdater updater;
         if (replicas == -1) {
             updater = new DeploymentUpdater(client, deployment, dstVersion, extraEnvs);
@@ -33,7 +33,7 @@ public class DeploymentUpdaterManager {
         return updater;
     }
 
-    public DeploymentUpdater createUpdater(KubeClient client, Deployment deployment, Version dstVersion,
+    public DeploymentUpdater createUpdater(KubeUtils client, Deployment deployment, Version dstVersion,
                                            int replicas, List<EnvDraft> extraEnvs, Policy policy, List<LoadBalancer> lbs) {
         DeploymentUpdater updater;
         if (replicas == -1) {

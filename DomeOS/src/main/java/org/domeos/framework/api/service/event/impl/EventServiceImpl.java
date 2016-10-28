@@ -1,14 +1,15 @@
 package org.domeos.framework.api.service.event.impl;
 
+import io.fabric8.kubernetes.api.model.Event;
 import org.domeos.basemodel.HttpResponseTemp;
 import org.domeos.basemodel.ResultStat;
-import org.domeos.client.kubernetesclient.definitions.v1.Event;
 import org.domeos.framework.api.biz.deployment.DeploymentBiz;
 import org.domeos.framework.api.biz.event.K8SEventBiz;
 import org.domeos.framework.api.consolemodel.event.EventInfo;
 import org.domeos.framework.api.model.deployment.Deployment;
 import org.domeos.framework.api.model.event.EventKind;
 import org.domeos.framework.api.service.event.EventService;
+import org.domeos.framework.engine.event.k8sEvent.K8sEventDetail;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,34 +41,39 @@ public class EventServiceImpl implements EventService{
 
     @Override
     public void createEvent(int clusterId, Event event) throws IOException {
-        k8SEventBiz.createEvent(clusterId, getDeployIdByEvent(clusterId, event), event);
+        K8sEventDetail detail = getDeployIdByEvent(clusterId, event);
+        int deployId = -1;
+        if (detail != null) {
+            deployId = detail.getDeployId();
+        }
+        k8SEventBiz.createEvent(clusterId, deployId, event);
     }
 
     @Override
-    public int getDeployIdByEvent(int clusterId, Event event) {
+    public K8sEventDetail getDeployIdByEvent(int clusterId, Event event) {
         String eventName = event.getMetadata().getName();
-        String namspace = event.getMetadata().getNamespace();
+        String namespace = event.getMetadata().getNamespace();
         if (eventName != null) {
             Matcher matcher = deployNamePattern.matcher(eventName);
             if (matcher.find()) {
                 String deployName = matcher.group(1);
-                String key = buildCacheKey(clusterId, namspace, deployName);
+                String key = buildCacheKey(clusterId, namespace, deployName);
                 Integer deployId = deployNameIdMap.get(key);
                 if (deployId != null) {
-                    return deployId;
+                    return new K8sEventDetail(event, deployId, clusterId);
                 }
                 List<Deployment> deployments = deploymentBiz.getDeployment(clusterId, deployName);
                 if (deployments != null && deployments.size() > 0) {
                     for (Deployment deployment : deployments) {
-                        if (namspace.equals(deployment.getNamespace())) {
+                        if (namespace.equals(deployment.getNamespace())) {
                             deployNameIdMap.putIfAbsent(key, deployment.getId());
-                            return deployment.getId();
+                            return new K8sEventDetail(event, deployment.getId(), clusterId);
                         }
                     }
                 }
             }
         }
-        return -1;
+        return null;
     }
 
     private String buildCacheKey(int clusterId, String namespace, String deployName) {

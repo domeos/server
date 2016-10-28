@@ -1,5 +1,7 @@
 package org.domeos.framework.api.model.cluster.related;
 
+import io.fabric8.kubernetes.api.model.Quantity;
+
 import java.util.Map;
 
 /**
@@ -10,7 +12,7 @@ public class NodeInfo {
     private String name;
     private String ip;
     private Map<String, String> labels;
-    private Map<String, String> capacity;
+    private Map<String, Quantity> capacity;
     private int runningPods;
     private String status;
     private long createTime;
@@ -40,11 +42,11 @@ public class NodeInfo {
         this.labels = labels;
     }
 
-    public Map<String, String> getCapacity() {
+    public Map<String, Quantity> getCapacity() {
         return capacity;
     }
 
-    public void setCapacity(Map<String, String> capacity) {
+    public void setCapacity(Map<String, Quantity> capacity) {
         this.capacity = capacity;
     }
 

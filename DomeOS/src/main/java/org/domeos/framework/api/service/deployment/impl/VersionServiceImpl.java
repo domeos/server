@@ -1,5 +1,6 @@
 package org.domeos.framework.api.service.deployment.impl;
 
+import io.fabric8.kubernetes.api.model.ReplicationController;
 import org.apache.commons.lang3.StringUtils;
 import org.domeos.basemodel.ResultStat;
 import org.domeos.framework.api.biz.cluster.ClusterBiz;
@@ -8,14 +9,17 @@ import org.domeos.framework.api.biz.deployment.VersionBiz;
 import org.domeos.framework.api.consolemodel.deployment.ContainerDraft;
 import org.domeos.framework.api.consolemodel.deployment.VersionDetail;
 import org.domeos.framework.api.consolemodel.deployment.VersionInfo;
+import org.domeos.framework.api.consolemodel.deployment.VersionString;
 import org.domeos.framework.api.controller.exception.ApiException;
 import org.domeos.framework.api.model.cluster.Cluster;
 import org.domeos.framework.api.model.deployment.Deployment;
 import org.domeos.framework.api.model.deployment.Version;
+import org.domeos.framework.api.model.deployment.related.VersionType;
 import org.domeos.framework.api.model.operation.OperationType;
 import org.domeos.framework.api.model.resource.related.ResourceType;
 import org.domeos.framework.api.service.deployment.VersionService;
 import org.domeos.framework.engine.AuthUtil;
+import org.domeos.framework.engine.k8s.RcBuilder;
 import org.domeos.global.CurrentThreadInfo;
 import org.domeos.global.GlobalConstant;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -96,7 +100,17 @@ public class VersionServiceImpl implements VersionService {
         versionDetail.setNetworkMode(deployment.getNetworkMode());
         versionDetail.setVersion(versionId);
         versionDetail.setVolumes(version.getVolumes());
+        versionDetail.setVersionType(version.getVersionType() == null? VersionType.CUSTOM : version.getVersionType());
+        if (version.getVersionType() != VersionType.CUSTOM) {
+            ReplicationController replicationController =
+                    new RcBuilder(deployment, null, version,  null, deployment.getDefaultReplicas()).build();
+            VersionString versionString = VersionString.getRCStr(replicationController, version.getVersionType());
+            if (versionString != null) {
+                versionString.setPodSpecStr(version.getPodSpecStr());
 
+            }
+            versionDetail.setVersionString(versionString);
+        }
         if (deployment.getHealthChecker() != null && versionDetail.getContainerDrafts() != null) {
             for (ContainerDraft containerDraft : versionDetail.getContainerDrafts()) {
                 if (containerDraft.getHealthChecker() == null) {

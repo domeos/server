@@ -7,11 +7,15 @@ buildscript {
 apply plugin: 'java'
 apply plugin: 'maven'
 
+// IDE plugins
+apply plugin: 'idea'
+apply plugin: 'eclipse'
+
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
 group = 'org.gitlab'
-version = '1.1.8-SNAPSHOT'
+version = '1.2.7-SNAPSHOT'
 
 repositories {
     mavenLocal()

@@ -1,5 +1,8 @@
 package org.gitlab.api;
 
+import org.gitlab.api.models.GitlabBuildVariable;
+import org.gitlab.api.models.GitlabProject;
+import org.gitlab.api.models.GitlabGroup;
 import org.gitlab.api.models.GitlabUser;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -9,6 +12,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.URL;
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.Assert.*;
@@ -19,15 +23,17 @@ public class GitlabAPITest {
 
     GitlabAPI api;
 
-    private static final String TEST_URL = System.getProperty("TEST_URL", "http://localhost");
-    private static final String TEST_TOKEN = System.getProperty("TEST_TOKEN", "y0E5b9761b7y4qk");
+//    private static final String TEST_URL = System.getProperty("TEST_URL", "http://localhost");
+//    private static final String TEST_TOKEN = System.getProperty("TEST_TOKEN", "y0E5b9761b7y4qk");
+    private static final String TEST_URL = System.getProperty("TEST_URL", "https://10.10.54.36:8443");
+    private static final String TEST_TOKEN = System.getProperty("TEST_TOKEN", "XMbLkB5CxMPmkrgTJqMy");
 
     String rand = UUID.randomUUID().toString().replace("-", "").substring(0, 8);
 
 
     @Before
     public void setup() throws IOException {
-        api = GitlabAPI.connect(TEST_URL, TEST_TOKEN);
+        api = GitlabAPI.connect(TEST_URL, TEST_TOKEN).ignoreCertificateErrors(true);
         try {
             api.dispatch().with("login", "INVALID").with("password", rand).to("session", GitlabUser.class);
         } catch (ConnectException e) {
@@ -44,7 +50,7 @@ public class GitlabAPITest {
 
     @Test
     public void testAllProjects() throws IOException {
-        api.getAllProjects();
+        List<GitlabProject> projects = api.getAllProjects();
     }
 
     @Test
@@ -62,6 +68,51 @@ public class GitlabAPITest {
     public void testGetUrl() throws IOException {
         URL expected = new URL(TEST_URL);
         assertEquals(expected + "/", api.getUrl("").toString());
+    }
+
+    @Test
+    public void testCreateUpdateDeleteVariable() throws IOException {
+        String key = randVal("key");
+        String value = randVal("value");
+        String newValue = randVal("new_value");
+        String projectName = randVal("project");
+
+        GitlabProject project = api.createProject(projectName);
+        assertNotNull(project);
+
+        GitlabBuildVariable variable = api.createBuildVariable(project.getId(), key, value);
+        assertNotNull(variable);
+
+        GitlabBuildVariable refetched = api.getBuildVariable(project.getId(), key);
+
+        assertNotNull(refetched);
+
+        assertEquals(refetched.getKey(), variable.getKey());
+        assertEquals(refetched.getValue(), variable.getValue());
+
+        api.updateBuildVariable(project.getId(), key, newValue);
+
+
+        GitlabBuildVariable postUpdate = api.getBuildVariable(project.getId(), key);
+
+
+        assertNotNull(postUpdate);
+        assertEquals(postUpdate.getKey(), variable.getKey());
+        assertNotEquals(postUpdate.getValue(), variable.getValue());
+        assertEquals(postUpdate.getValue(), newValue);
+
+
+        api.deleteBuildVariable(project.getId(), key);
+
+        // expect a 404, but we have no access to it
+        try {
+            GitlabBuildVariable shouldNotExist = api.getBuildVariable(project.getId(), key);
+            assertNull(shouldNotExist);
+        } catch (FileNotFoundException thisIsSoOddForAnRESTApiClient) {
+            assertTrue(true); // expected
+        }
+
+        api.deleteProject(project.getId());
     }
 
     @Test
@@ -119,7 +170,28 @@ public class GitlabAPITest {
 
     }
 
+    @Test
+    public void testGetGroupByPath() throws IOException {
+        // Given
+        String name = "groupName";
+        String path = "groupPath";
+
+        GitlabGroup originalGroup = api.createGroup(name, path);
+
+        // When
+        GitlabGroup group = api.getGroup(path);
+
+        // Then:
+        assertNotNull(group);
+        assertEquals(originalGroup.getId(), group.getId());
+        assertEquals(originalGroup.getName(), group.getName());
+        assertEquals(originalGroup.getPath(), group.getPath());
+
+        // Cleanup
+        api.deleteGroup(group.getId());
+    }
+
     private String randVal(String postfix) {
-        return rand + "-" + postfix;
+        return rand + "_" + postfix;
     }
 }

@@ -7,7 +7,10 @@ import org.domeos.framework.engine.exception.DaoConvertingException;
 import org.domeos.framework.engine.model.RowModelBase;
 import sun.net.util.IPAddressUtil;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Created by xupeng on 16-4-5.
@@ -29,7 +32,7 @@ public class LoadBalancer extends RowModelBase {
             } else if (ver == 1) {
                 String fqcn = "org.domeos.framework.api.model.LoadBalancer.LoadBalancerV1";
                 Class clazz = Class.forName(fqcn);
-                LoadBalancerV1 loadBalancerV1 = (LoadBalancerV1)objectMapper.readValue(str, clazz);
+                LoadBalancerV1 loadBalancerV1 = (LoadBalancerV1) objectMapper.readValue(str, clazz);
                 return fromLoadBalancerV1(loadBalancerV1);
             } else {
                 return null;
@@ -125,7 +128,7 @@ public class LoadBalancer extends RowModelBase {
         if (clusterId <= 0) {
             return "cluster id less than 0";
         } else if (externalIPs == null || externalIPs.size() == 0) {
-        //     return "do not have external ip info";
+            //     return "do not have external ip info";
             return "";  // for stateful deployment
         } else {
             for (String ip : externalIPs) {

@@ -18,7 +18,7 @@ public class DomeosController extends ApiController {
     @ResponseBody
     @RequestMapping(value = "/version", method = RequestMethod.GET)
     HttpResponseTemp<?> version() {
-        return ResultStat.OK.wrap("0.3");
+        return ResultStat.OK.wrap("0.3.1");
     }
 
     @ResponseBody

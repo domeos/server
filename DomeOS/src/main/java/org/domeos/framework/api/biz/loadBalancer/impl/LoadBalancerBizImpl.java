@@ -1,5 +1,6 @@
 package org.domeos.framework.api.biz.loadBalancer.impl;
 
+import org.apache.commons.lang.StringUtils;
 import org.domeos.basemodel.ResultStat;
 import org.domeos.framework.api.biz.base.impl.BaseBizImpl;
 import org.domeos.framework.api.biz.loadBalancer.LoadBalancerBiz;
@@ -36,7 +37,7 @@ public class LoadBalancerBizImpl extends BaseBizImpl implements LoadBalancerBiz{
         List<RowMapperDao> daoList = loadBalancerMapper.getLBListByDeploy(deployId);
         for (RowMapperDao dao: daoList) {
             LoadBalancer loadBalancer = checkResult(dao, LoadBalancer.class);
-            if (loadBalancer.getDnsName() == null && loadBalancer.getName() != null) {
+            if (loadBalancer.getDnsName() == null && !StringUtils.isBlank(loadBalancer.getName())) {
                 loadBalancer.setDnsName(loadBalancer.getName().substring(4));
             }
             result.add(loadBalancer);

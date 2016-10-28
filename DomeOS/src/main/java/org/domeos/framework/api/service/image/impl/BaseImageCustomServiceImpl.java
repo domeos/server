@@ -3,8 +3,7 @@ package org.domeos.framework.api.service.image.impl;
 import org.apache.commons.lang3.StringUtils;
 import org.domeos.basemodel.HttpResponseTemp;
 import org.domeos.basemodel.ResultStat;
-import org.domeos.client.kubernetesclient.definitions.v1.EnvVar;
-import org.domeos.client.kubernetesclient.definitions.v1beta1.Job;
+import org.domeos.exception.JobNotFoundException;
 import org.domeos.framework.api.biz.file.FileContentBiz;
 import org.domeos.framework.api.biz.global.GlobalBiz;
 import org.domeos.framework.api.biz.image.ImageBiz;
@@ -38,10 +37,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.Callable;
 
 
@@ -90,7 +86,7 @@ public class BaseImageCustomServiceImpl implements BaseImageCustomService {
         try {
             addRelatedFileInfo(baseImageCustom);
         } catch (Exception e) {
-            throw  ApiException.wrapUnknownException(e);
+            throw ApiException.wrapUnknownException(e);
         }
         return ResultStat.OK.wrap(baseImageCustom);
     }
@@ -123,7 +119,7 @@ public class BaseImageCustomServiceImpl implements BaseImageCustomService {
         return ResultStat.OK.wrap(JobType.NEITHER.name());
     }
 
-    public void addRelatedFileInfo(BaseImageCustom baseImageCustom) throws Exception {
+    private void addRelatedFileInfo(BaseImageCustom baseImageCustom) throws Exception {
         // save the conf file info
         // generate and save the dockerfile info
 
@@ -264,26 +260,21 @@ public class BaseImageCustomServiceImpl implements BaseImageCustomService {
         }
 
         String registryUrl = globalBiz.getRegistry().registryDomain();
-        EnvVar[] envVars = generateEnvs(server.serverInfo(), baseImageCustom.getId(), baseImageCustom.getImageName(),
+        Map<String, String> envMap = generateEnvs(server.serverInfo(), baseImageCustom.getId(), baseImageCustom.getImageName(),
                 baseImageCustom.getImageTag(), registryUrl,
                 secret, "BASEIMAGECUSTOM", baseImageCustom.getDockerfile());
-        if (envVars == null) {
+        if (envMap == null || envMap.size() == 0) {
             throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "no env info for build kube job");
         }
-        Job job = jobWrapper.sendJob(jobWrapper.generateJob(buildImage.getName(), envVars));
-        if (job == null) {
-            throw ApiException.wrapMessage(ResultStat.SERVER_INTERNAL_ERROR, "send job return null");
-        }
+        try {
+            String jobName = jobWrapper.sendJob(jobWrapper.generateJob(buildImage.getName(), envMap));
+            baseImageCustom.setState(BuildState.Building.name());
+            baseImageCustom.setTaskName(jobName);
 
-        if (job == null || job.getMetadata() == null) {
+            imageBiz.updateBaseImageCustomById(baseImageCustom);
+        } catch (JobNotFoundException e) {
             throw ApiException.wrapMessage(ResultStat.SEND_JOB_ERROR, "job is null");
         }
-        
-        baseImageCustom.setState(BuildState.Building.name());
-        baseImageCustom.setTaskName(job.getMetadata().getName());
-
-        imageBiz.updateBaseImageCustomById(baseImageCustom);
-
         /*
         kubeBuildMapper.addKubeBuild(new KubeBuild(baseImageCustom.getId(), job.getMetadata().getName(), BuildState.SEND.name(),
          KubeBuild.KubeBuildType.BASEIMAGE.getType()));
@@ -359,8 +350,9 @@ public class BaseImageCustomServiceImpl implements BaseImageCustomService {
     @Override
     public String getFileJson(String secret, int imageId) {
         BaseImageCustom baseImageCustom = imageBiz.getBaseImageCustomById(imageId);
-        if (baseImageCustom == null || !baseImageCustom.getSecret().equals(secret))
+        if (baseImageCustom == null || !baseImageCustom.getSecret().equals(secret)) {
             return null;
+        }
         return baseImageCustom.getFileJson();
     }
 
@@ -455,9 +447,9 @@ public class BaseImageCustomServiceImpl implements BaseImageCustomService {
         return null;
     }
 
-    public EnvVar[] generateEnvs(String server, int imageId, String imageName, String imageTag, String registryUrl,
-                                 String secret, String type, String dockerfile) {
-        return new EnvVar[]{
+    private Map<String, String> generateEnvs(String server, int imageId, String imageName, String imageTag, String registryUrl,
+                                             String secret, String type, String dockerfile) {
+        /*return new EnvVar[]{
                 new EnvVar().putName("SERVER").putValue(server),
                 new EnvVar().putName("IMAGEID").putValue(String.valueOf(imageId)),
                 new EnvVar().putName("IMAGENAME").putValue(imageName),
@@ -466,7 +458,17 @@ public class BaseImageCustomServiceImpl implements BaseImageCustomService {
                 new EnvVar().putName("SECRET").putValue(secret),
                 new EnvVar().putName("DOCKERFILE").putValue(dockerfile),
                 new EnvVar().putName("TYPE").putValue(type)
-        };
+        };*/
+        Map<String, String> retMap = new LinkedHashMap<>();
+        retMap.put("SERVER", server);
+        retMap.put("IMAGEID", String.valueOf(imageId));
+        retMap.put("IMAGENAME", imageName);
+        retMap.put("IMAGETAG", imageTag);
+        retMap.put("REGISTRYURL", registryUrl);
+        retMap.put("SECRET", secret);
+        retMap.put("DOCKERFILE", dockerfile);
+        retMap.put("TYPE", type);
+        return retMap;
     }
 
     //unused for the feature of user identified cancel

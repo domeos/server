@@ -1,7 +1,6 @@
 package org.domeos.framework.api.service.image.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -10,14 +9,16 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpHead;
 import org.apache.http.util.EntityUtils;
-import org.apache.log4j.Logger;
 import org.domeos.framework.api.model.image.BaseImage;
 import org.domeos.framework.api.model.image.DockerImage;
+import org.domeos.framework.engine.model.CustomObjectMapper;
 import org.domeos.global.ClientConfigure;
-import org.domeos.util.DateUtil;
 import org.domeos.global.GlobalConstant;
-import org.domeos.util.HttpsClient;
 import org.domeos.util.CommonUtil;
+import org.domeos.util.DateUtil;
+import org.domeos.util.HttpsClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -32,10 +33,10 @@ import java.util.concurrent.Future;
  * Created by feiliu206363 on 2015/12/2.
  */
 public class PrivateRegistry {
-    private static Logger logger = org.apache.log4j.Logger.getLogger(PrivateRegistry.class);
+    private static CustomObjectMapper mapper = new CustomObjectMapper();
+    private static Logger logger = LoggerFactory.getLogger(PrivateRegistry.class);
 
     public static long getCreateTime(BaseImage baseImage) {
-        ObjectMapper mapper = new ObjectMapper();
         String imageInfo = getHttpResposeBody(generateUrl(baseImage));
         if (StringUtils.isBlank(imageInfo)) {
             return 0;
@@ -69,7 +70,6 @@ public class PrivateRegistry {
     }
 
     public static double getImageSize(BaseImage baseImage) {
-        ObjectMapper mapper = new ObjectMapper();
         String imageInfo = getHttpResposeBody(generateUrl(baseImage));
         long size = 0;
         try {
@@ -166,7 +166,6 @@ public class PrivateRegistry {
     }
 
     public static List<String> getDockerImages(String url) {
-        ObjectMapper mapper = new ObjectMapper();
         String images = getHttpResposeBody(generateGetImagesUrl(url));
         try {
             JsonNode repositories = mapper.readTree(images).get("repositories");
@@ -203,7 +202,6 @@ public class PrivateRegistry {
     }
 
     public static List<DockerImage> getDockerImageInfo(String name, String url) {
-        ObjectMapper mapper = new ObjectMapper();
         String result = getHttpResposeBody(generateGetImageTagsUrl(url, name));
         try {
             JsonNode tags = mapper.readTree(result).get("tags");
@@ -255,7 +253,6 @@ public class PrivateRegistry {
     }
 
     public static long getCreateTime(String url) {
-        ObjectMapper mapper = new ObjectMapper();
         String imageInfo = getHttpResposeBody(url);
         try {
             JsonNode manifests = mapper.readTree(imageInfo);

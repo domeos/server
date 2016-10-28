@@ -1,9 +1,9 @@
 package org.domeos.framework.engine.coderepo;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.domeos.exception.WebHooksException;
+import org.domeos.framework.engine.model.CustomObjectMapper;
 import org.domeos.util.DateUtil;
 
 import java.io.IOException;
@@ -30,7 +30,7 @@ public class GitWebHook implements WebHook {
     }
 
     public GitWebHook(String webHooksStr) throws WebHooksException {
-        ObjectMapper mapper = new ObjectMapper();
+        CustomObjectMapper mapper = new CustomObjectMapper();
         try {
             JsonNode node = mapper.readValue(webHooksStr, JsonNode.class);
             if (node.has("object_kind")) {

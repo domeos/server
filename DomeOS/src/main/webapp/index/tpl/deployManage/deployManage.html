@@ -1,0 +1,57 @@
+
+<div class="mod-deploy deploy-manage">
+  <div class="mod-option">
+    <button class="ui-btn ui-btn-lg ui-btn-bright" ui-sref="createDeployCommon"><i class="icon-add-white"></i>新建部署</button>
+    <div class="pull-right right-option"><span ng-cloak="ng-cloak">共{{deployListFilter.length}}个部署</span>
+      <input class="ui-input-search ui-input-fill" type="text" placeholder="输入部署名称查询" ng-model="depKeyword"/>
+      <button class="ui-btn ui-btn-sm ui-btn-safe" ng-click="toggleShowSelect()" ng-if="!showSelect">筛选<i class="icon-down-white up"></i></button>
+      <button class="ui-btn ui-btn-sm ui-btn-safe" ng-click="toggleShowSelect()" ng-if="showSelect">收起<i class="icon-down-white"></i></button>
+    </div>
+  </div>
+  <div class="chose-lists" ng-if="showSelect">
+    <div class="chose-item"><span class="chose-title">部署环境：</span>
+      <div class="chose-options"><em ng-class="{'active':selectOption.env.ALL}" ng-click="toggleAll('env')">全部</em><em ng-class="{'active':selectOption.env.PROD}" ng-click="toggleSelect('env','PROD')">生产环境</em><em ng-class="{'active':selectOption.env.TEST}" ng-click="toggleSelect('env','TEST')">测试环境</em></div>
+    </div>
+    <div class="chose-item"><span class="chose-title">集群：</span>
+      <div class="chose-options"><em ng-class="{'active':selectOption.cluster.ALL}" ng-click="toggleAll('cluster')">全部</em><em ng-repeat="(opt,isSelect) in selectOption.cluster track by $index" ng-bind="opt" ng-class="{'active':isSelect}" ng-if="opt!=='ALL'" ng-click="toggleSelect('cluster',opt)"></em></div>
+    </div>
+    <div class="chose-item"><span class="chose-title">namespace：</span>
+      <div class="chose-options"><em ng-class="{'active':selectOption.namespace.ALL}" ng-click="toggleAll('namespace')">全部</em><em ng-repeat="(opt,isSelect) in selectOption.namespace track by $index" ng-bind="opt" ng-class="{'active':isSelect}" ng-if="opt!=='ALL'" ng-click="toggleSelect('namespace',opt)"></em></div>
+    </div>
+    <div class="chose-item"><span class="chose-title">状态：</span>
+      <div class="chose-options"><em ng-class="{'active':selectOption.status.ALL}" ng-click="toggleAll('status')">全部</em><em ng-class="{'active':selectOption.status.DEPLOYING}" ng-click="toggleSelect('status','DEPLOYING')">部署中</em><em ng-class="{'active':selectOption.status.RUNNING}" ng-click="toggleSelect('status','RUNNING')">运行中</em><em ng-class="{'active':selectOption.status.STOP}" ng-click="toggleSelect('status','STOP')">停止</em><em ng-class="{'active':selectOption.status.ERROR}" ng-click="toggleSelect('status','ERROR')">异常</em><em ng-class="{'active':selectOption.status.STOPPING}" ng-click="toggleSelect('status','STOPPING')">停止中</em><em ng-class="{'active':selectOption.status.UPDATING}" ng-click="toggleSelect('status','UPDATING')">升级中</em><em ng-class="{'active':selectOption.status.BACKROLLING}" ng-click="toggleSelect('status','BACKROLLING')">回滚中</em><em ng-class="{'active':selectOption.status.UPSCALING}" ng-click="toggleSelect('status','UPSCALING')">扩容中</em><em ng-class="{'active':selectOption.status.DOWNSCALING}" ng-click="toggleSelect('status','DOWNSCALING')">缩容中</em><em ng-class="{'active':selectOption.status.ABORTING}" ng-click="toggleSelect('status','ABORTING')">中断中</em><em ng-class="{'active':selectOption.status.BACKROLL_ABORTED}" ng-click="toggleSelect('status','BACKROLL_ABORTED')">回滚已中断</em><em ng-class="{'active':selectOption.status.UPDATE_ABORTED}" ng-click="toggleSelect('status','UPDATE_ABORTED')">升级已中断</em></div>
+    </div>
+  </div>
+  <div class="mod-list">
+    <loading ng-if="isLoading"></loading>
+    <table class="ui-table-dome">
+      <thead>
+        <tr>
+          <th>部署名称</th>
+          <th>上次升级</th>
+          <th>状态</th>
+          <th>所在集群</th>
+          <th>namespace</th>
+          <th>实例个数</th>
+          <th>资源占用比</th>
+          <th>内网域名</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-if="deployListFilter&amp;&amp;deployListFilter.length===0">
+          <td colspan="7">无相关信息</td>
+        </tr>
+        <tr ng-repeat="deploy in deployListFilter=(deloyList|filter:{'deployName':depKeyword}|deployOptions:selectOption.env:selectOption.namespace:selectOption.cluster:selectOption.status)">
+          <td><a class="ui-table-link" ng-bind="deploy.deployName" ui-sref="deployDetail({'id':deploy.deployId})"></a></td>
+          <td ng-bind="vmDome.parseDate(deploy.lastUpdateTime)"></td>
+          <td ng-switch="deploy.deploymentStatus"><span class="txt-success" ng-switch-when="RUNNING">运行中</span><span class="txt-normal" ng-switch-when="DEPLOYING">部署中</span><span class="txt-warning" ng-switch-when="STOP">停止</span><span class="txt-warning" ng-switch-when="ERROR">异常</span><span class="txt-normal" ng-switch-when="BACKROLLING">回滚中</span><span class="txt-normal" ng-switch-when="STOPPING">停止中</span><span class="txt-normal" ng-switch-when="UPDATING">升级中</span><span class="txt-normal" ng-switch-when="UPSCALING">扩容中</span><span class="txt-normal" ng-switch-when="DOWNSCALING">缩容中</span><span class="txt-normal" ng-switch-when="ABORTING">中断中</span><span class="txt-warning" ng-switch-when="BACKROLL_ABORTED">回滚已中断</span><span class="txt-warning" ng-switch-when="UPDATE_ABORTED">升级已中断</span></td>
+          <td ng-bind="deploy.clusterName"></td>
+          <td ng-bind="deploy.namespace"></td>
+          <td ng-bind="deploy.replicas"></td>
+          <td ng-cloak="ng-cloak" ng-class="{'txt-normal':deploy.comparePercent&lt;30,'txt-success':deploy.comparePercent&gt;=30&amp;&amp;deploy.comparePercent&lt;70,'txt-warning':deploy.comparePercent&gt;=70}"><i class="icon-cpu" ng-if="deploy.compare=='cpu'" tooltip="CPU：{{deploy.cpuUsed}} / {{deploy.cpuTotal}}（个）"></i><i class="icon-memory" ng-if="deploy.compare=='memory'" tooltip="内存：{{deploy.memoryUsed}} / {{deploy.memoryTotal}}（MB）"></i>{{deploy.comparePercent}}%</td>
+          <td class="dns-name no-wrap" ng-bind="deploy.dnsName"></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

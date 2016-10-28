@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-type" content="text/html;charset=utf-8">
+    <title>集群管理</title>
+    <script type="text/javascript" src="../anon/js/jquery-1.8.3.min.js"></script>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+        body{
+            font-size: 14px;
+        }
+        #menu{
+            width: 800px;
+            overflow: hidden;
+            margin: 100px auto;
+            border: 1px solid #BF9660;
+        }
+        #menu #nav{
+            display: block;
+            width: 100%;
+            padding: 0;
+            margin: 0;
+            list-style: none;
+        }
+        #menu #nav li{
+            float: left;
+            width: 200px;
+        }
+        #menu #nav li a{
+            display: block;
+            line-height: 27px;
+            text-decoration: none;
+            padding: 0 0 0 5px;
+            text-align: center;
+            color: #333333;
+        }
+        #menu_con{
+            width: auto;
+            height: auto;
+            border-top: none;
+        }
+        .tag{
+            padding: 10px;
+            overflow: hidden;
+        }
+        .selected{
+            background: #CCCCFF;
+            color: #FFFFFF;
+        }
+        button{
+            width: 100px;
+            height: 30px;
+            cursor: pointer;
+        }
+        input{
+            height: 30px;
+        }
+    </style>
+</head>
+<body>
+<div id="menu">
+    <ul id="nav">
+        <li><a href="#" class="selected">添加权限</a></li>
+        <li><a href="#" class="">资源列表</a></li>
+        <li><a href="#" class="">修改权限</a></li>
+        <li><a href="#" class="">删除权限</a></li>
+    </ul>
+    <div id="menu_con">
+        <div class="tag" style="display:block">
+            <table>
+                <tr>
+                    <td><h3>资源配置</h3></td>
+                </tr>
+                <tr>
+                    <td>资源id: </td>
+                    <td><input id="resource_id" type="text"/></td>
+                </tr>
+                <tr>
+                    <td>资源类型: </td>
+                    <td><input id="resource_type" type="text"/></td>
+                </tr>
+                <tr>
+                    <td><h3>owner配置</h3></td>
+                </tr>
+                <tr>
+                    <td>owner编号: </td>
+                    <td><input id="owner_id" type="text"/></td>
+                <tr>
+                    <td>owner类型: </td>
+                    <td><input id="owner_type" type="text"/></td>
+                </tr>
+                </tr>
+                <tr>
+                    <td>角色: </td>
+                    <td><input id="role" type="text"/></td>
+                </tr>
+                <tr>
+                    <td><button id="addOwnerInfo">增加owner配置</button>
+                        <button id="delOwnerInfo">删除owner配置</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="3">
+                        <table id="ownerSet"><tbody></tbody></table>
+                    </td>
+                </tr>
+                <tr>
+                    <td><button id="setResource">添加</button></td>
+                </tr>
+            </table>
+        </div>
+        <div class="tag" style="display:none">
+        </div>
+        <div class="tag" style="display:none">
+        </div>
+        <div class="tag" style="display:none">
+        </div>
+    </div>
+</div>
+
+<script type="application/javascript">
+    var ownerInfos = new Array();
+    $(function () {
+        $('#addOwnerInfo').bind('click', function(event) {
+            var tb = document.getElementById("ownerSet");
+            var row = tb.insertRow();
+            var cell = row.insertCell();
+            cell.innerHTML = "owrner编号: " + $('#owner_id').val()
+                    + "    owner类型: " + $('#owner_type').val()
+                    + "    角色: " + $('#role').val();
+            ownerInfos.push ({
+                owner_id: $('#owner_id').val(),
+                owner_type: $('#owner_type').val(),
+                role: $('#role').val()
+            });
+        });
+    });
+    $(function () {
+        $('#delOwnerInfo').bind('click', function(event) {
+            var tb = document.getElementById("ownerSet");
+            tb.deleteRow(tb.lastElementChild);
+            deployImages.pop();
+        });
+    });
+    $(function() {
+        $('#setResource').bind('click', function(event) {
+            var resource_id = $('#resource_id').val();
+            var resource_type = $('#resource_type').val();
+            var data = {
+                resource_id: resource_id,
+                resource_type: resource_type,
+                ownerInfos: ownerInfos
+            };
+            alert(JSON.stringify(data));
+            $.ajax({
+                type: 'post',
+                url: '/api/resource',
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                dataType: 'json',
+                success: function() {
+                    alert('receive success');
+                },
+                error: function() {
+                    alert('receive error');
+                }
+            });
+        });
+    });
+</script>
+
+<script>
+    var tabs = function() {
+        function tag(name, elem) {
+            return (elem || document).getElementsByTagName(name);
+        }
+        function id(name) {
+            return document.getElementById(name);
+        }
+        function first(elem) {
+            elem = elem.firstChild;
+            return elem && elem.nodeType == 1 ? elem : next(elem);
+        }
+        function next(elem) {
+            do {
+                elem = elem.nextSibling;
+            } while(elem && elem.nodeType != 1)
+            return elem;
+        }
+        return {
+            set:function(elemId, tabId) {
+                var elem = tag("li", id(elemId));
+                var tabs = tag("div", id(tabId));
+                var listNum = elem.length;
+                var tabNum  = tabs.length;
+                for(var i=0; i<listNum; i++) {
+                    elem[i].onclick = (function(i) {
+                        return function() {
+                            for(var j=0; j<tabNum; j++) {
+                                if(i==j) {
+                                    tabs[j].style.display = "block";
+                                    elem[j].firstChild.className = "selected";
+                                }
+                                else {
+                                    tabs[j].style.display = "none";
+                                    elem[j].firstChild.className = "";
+                                }
+                            }
+                        }
+                    })(i)
+                }
+            }
+        }
+    }();
+
+    tabs.set("nav", "menu_con");
+</script>
+</body>
+</html>

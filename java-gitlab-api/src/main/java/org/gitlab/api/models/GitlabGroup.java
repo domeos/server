@@ -49,10 +49,15 @@ public class GitlabGroup {
     }
 
     public GitlabAccessLevel getLdapAccess() {
+        if (ldapAccess == null) {
+            return null;
+        }
         return GitlabAccessLevel.fromAccessValue(ldapAccess);
     }
 
     public void setLdapAccess(GitlabAccessLevel ldapGitlabAccessLevel) {
-        this.ldapAccess = ldapGitlabAccessLevel.accessValue;
+        if (ldapGitlabAccessLevel != null) {
+            this.ldapAccess = ldapGitlabAccessLevel.accessValue;
+        }
     }
 }

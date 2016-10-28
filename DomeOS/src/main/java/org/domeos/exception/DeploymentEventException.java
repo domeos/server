@@ -9,6 +9,9 @@ public class DeploymentEventException extends Exception {
     public DeploymentEventException(String message) {
         super(message);
     }
+    public DeploymentEventException(Exception e) {
+        super(e);
+    }
     public DeploymentEventException(String message, Throwable cause) {
         super(message, cause);
     }

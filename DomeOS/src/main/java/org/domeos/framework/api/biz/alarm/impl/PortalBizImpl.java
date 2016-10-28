@@ -1,7 +1,8 @@
 package org.domeos.framework.api.biz.alarm.impl;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.domeos.framework.api.biz.alarm.AlarmBiz;
 import org.domeos.framework.api.biz.alarm.PortalBiz;
 import org.domeos.framework.api.biz.auth.AuthBiz;
@@ -29,7 +30,7 @@ import java.util.List;
 @Service("portalBiz")
 public class PortalBizImpl extends BaseBizImpl implements PortalBiz {
 
-    private static Logger logger = Logger.getLogger(PortalBizImpl.class);
+    private static Logger logger = LoggerFactory.getLogger(PortalBizImpl.class);
 
     @Autowired
     AuthBiz authBiz;
@@ -231,7 +232,7 @@ public class PortalBizImpl extends BaseBizImpl implements PortalBiz {
                 }
             }
             if (!StringUtils.isBlank(alarmString)) {
-                alarmString = alarmString.substring(0, alarmString.length()-2);
+                alarmString = alarmString.substring(0, alarmString.length() - 2);
                 alarmEventService.ignoreAlarmsInside(alarmString);
             }
             portalStrategyMapper.deleteStrategyByContainerIds(deleteContainerIds);
@@ -296,7 +297,7 @@ public class PortalBizImpl extends BaseBizImpl implements PortalBiz {
             }
         }
         if (!StringUtils.isBlank(alarmString)) {
-            alarmString = alarmString.substring(0, alarmString.length()-2);
+            alarmString = alarmString.substring(0, alarmString.length() - 2);
             alarmEventService.ignoreAlarmsInside(alarmString);
         }
         portalStrategyMapper.deleteStrategyByTemplateId(template.getId());
@@ -377,12 +378,12 @@ public class PortalBizImpl extends BaseBizImpl implements PortalBiz {
 
     // misc
 
-    private static int booleanToInt(boolean var){
+    private static int booleanToInt(boolean var) {
         return var ? 1 : 0;
     }
 
-    private static String fixNullString(String var){
-        return (var==null) ? "" : var;
+    private static String fixNullString(String var) {
+        return (var == null) ? "" : var;
     }
 
     private static String convertMetricForHost(String metric) {
@@ -444,7 +445,7 @@ public class PortalBizImpl extends BaseBizImpl implements PortalBiz {
         Action action = new Action();
         StringBuilder uicBuilder = new StringBuilder();
         for (UserGroupInfo userGroupInfo : userGroupList) {
-            String userGroupName = authBiz.getGroupById((int)userGroupInfo.getId()).getName();
+            String userGroupName = authBiz.getGroupById((int) userGroupInfo.getId()).getName();
             if (StringUtils.isBlank(userGroupName)) {
                 continue;
             }

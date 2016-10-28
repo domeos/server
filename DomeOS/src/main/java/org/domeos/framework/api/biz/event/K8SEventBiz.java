@@ -1,6 +1,6 @@
 package org.domeos.framework.api.biz.event;
 
-import org.domeos.client.kubernetesclient.definitions.v1.Event;
+import io.fabric8.kubernetes.api.model.Event;
 import org.domeos.framework.api.consolemodel.event.EventInfo;
 import org.domeos.framework.api.model.event.EventKind;
 

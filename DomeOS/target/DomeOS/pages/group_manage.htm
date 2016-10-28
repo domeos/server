@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-type" content="text/html;charset=utf-8">
+    <title>用户组管理</title>
+    <script type="text/javascript" src="../anon/js/jquery-1.8.3.min.js"></script>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+        body{
+            font-size: 14px;
+        }
+        #menu{
+            width: 1200px;
+            overflow: hidden;
+            margin: 100px auto;
+            border: 1px solid #BF9660;
+        }
+        #menu #nav{
+            display: block;
+            width: 100%;
+            padding: 0;
+            margin: 0;
+            list-style: none;
+        }
+        #menu #nav li{
+            float: left;
+            width: 200px;
+        }
+        #menu #nav li a{
+            display: block;
+            line-height: 27px;
+            text-decoration: none;
+            padding: 0 0 0 5px;
+            text-align: center;
+            color: #333333;
+        }
+        #menu_con{
+            width: auto;
+            height: auto;
+            border-top: none;
+        }
+        .tag{
+            padding: 10px;
+            overflow: hidden;
+        }
+        .selected{
+            background: #CCCCFF;
+            color: #FFFFFF;
+        }
+        button{
+            width: 100px;
+            height: 30px;
+            cursor: pointer;
+        }
+        input{
+            height: 30px;
+        }
+    </style>
+</head>
+<body>
+<div id="menu">
+    <ul id="nav">
+        <li><a href="#" class="selected">创建组</a></li>
+        <li><a href="#" class="">删除组</a></li>
+        <li><a href="#" class="">组列表</a></li>
+        <li><a href="#" class="">添加修改组成员</a></li>
+        <li><a href="#" class="">删除组成员</a></li>
+        <li><a href="#" class="">组成员</a></li>
+    </ul>
+    <div id="menu_con">
+        <div class="tag" style="display:block">
+            <table>
+                <tr>
+                    <td><h3>组信息</h3></td>
+                </tr>
+                <tr>
+                    <td>组名称: </td>
+                    <td><input id="name" type="text"/></td>
+                </tr>
+                <tr>
+                    <td>组描述: </td>
+                    <td><input id="desc" type="text"/></td>
+                </tr>
+                <tr>
+                    <td><button id="createGroup">创建</button></td>
+                </tr>
+            </table>
+        </div>
+        <div class="tag" style="display:none">
+            <table>
+                <tr>
+                    <td><h3>组信息</h3></td>
+                </tr>
+                <tr>
+                    <td>组名称: </td>
+                    <td><input id="Delname" type="text"/></td>
+                </tr>
+                <tr>
+                    <td><button id="deleteGroup">删除</button></td>
+                </tr>
+            </table>
+        </div>
+        <div class="tag" style="display:none">
+            <table>
+                <tr>
+                    <td><button id="listGroup">获取</button></td>
+                </tr>
+            </table>
+        </div>
+        <div class="tag" style="display:none">
+            <table>
+                <tr>
+                    <td><h3>组成员信息</h3></td>
+                </tr>
+                <tr>
+                    <td>组id: </td>
+                    <td><input id="addGroupId" type="text"/></td>
+                </tr>
+                <tr>
+                    <td>用户id: </td>
+                    <td><input id="addUserId" type="text" placeholder="多个用户id用逗号分割"/></td>
+                </tr>
+                <tr>
+                    <td>用户角色: </td>
+                    <td><input id="userRole" type="text" placeholder="master/developer/reporter"/></td>
+                </tr>
+                <tr>
+                    <td><button id="addGroupMembers">添加修改</button></td>
+                </tr>
+            </table>
+        </div>
+        <div class="tag" style="display:none">
+            <table>
+                <tr>
+                    <td><h3>组成员信息</h3></td>
+                </tr>
+                <tr>
+                    <td>组id: </td>
+                    <td><input id="delGroupId" type="text"/></td>
+                </tr>
+                <tr>
+                    <td>用户id: </td>
+                    <td><input id="delUserId" type="text"/></td>
+                </tr>
+                <tr>
+                    <td><button id="deleteGroupMember">删除</button></td>
+                </tr>
+            </table>
+        </div>
+        <div class="tag" style="display:none">
+            <table>
+                <tr>
+                    <td>组id: </td>
+                    <td><input id="listGroupId" type="text"/></td>
+                </tr>
+                <tr>
+                    <td><button id="listGroupMember">获取</button></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script type="application/javascript">
+    $(function() {
+        $('#createGroup').bind('click', function(event) {
+            var name = $('#name').val();
+            var desc = $('#desc').val();
+            var data = {
+                name: name,
+                description: desc
+            };
+            alert(JSON.stringify(data));
+            $.ajax({
+                type: 'post',
+                url: '/api/group/create',
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                dataType: 'json',
+                success: function() {
+                    console.log(JSON.stringify(result));
+                },
+                error: function() {
+                    alert('send error');
+                }
+            });
+        });
+    });
+    $(function() {
+        $('#listGroup').bind('click', function(event) {
+            $.ajax({
+                type: 'get',
+                url: '/api/group/list',
+                success: function(result) {
+                    console.log(JSON.stringify(result));
+                    $('#listGroup').after('<p>'+JSON.stringify(result)+'</p>');
+                },
+                erroe: function() {
+                    alert('send error');
+                }
+            });
+        });
+    });
+    $(function() {
+        $('#deleteGroup').bind('click', function(event) {
+            var name = $('#Delname').val();
+            $.ajax({
+                type: 'delete',
+                url: '/api/group/delete/'+name,
+                success: function(result) {
+                    console.log(JSON.stringify(result));
+                },
+                erroe: function() {
+                    alert('send error');
+                }
+            });
+        });
+    });
+    $(function() {
+        $('#addGroupMembers').bind('click', function(event) {
+            var groupId = $('#addGroupId').val();
+            var userId = $('#addUserId').val();
+            var role = $('#userRole').val();
+            var ids = new Array();
+            ids = userId.split(',');
+            var members = new Array();
+            for(var i=0; i< ids.length;i++){
+                var tmp = {
+                    userId: Number(ids[i]),
+                    role: role
+                };
+                members.push(tmp);
+            }
+            var data = {
+                members: members
+            };
+
+            $.ajax({
+                type: 'post',
+                url: '/api/group_members/'+groupId,
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                dataType: 'json',
+                success: function(result) {
+                    console.log(JSON.stringify(result));
+                },
+                erroe: function() {
+                    alert('send error');
+                }
+            });
+        });
+    });
+    $(function() {
+        $('#addGroupMember').bind('click', function(event) {
+            var groupId = $('#addGroupId').val();
+            var userId = $('#addUserId').val();
+            var role = $('#userRole').val();
+            var data = {
+                userId: userId,
+                group_id: groupId,
+                role: role
+            };
+            $.ajax({
+                type: 'post',
+                url: '/api/group_members',
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                dataType: 'json',
+                success: function(result) {
+                    console.log(JSON.stringify(result));
+                },
+                erroe: function() {
+                    alert('send error');
+                }
+            });
+        });
+    });
+    $(function() {
+        $('#deleteGroupMember').bind('click', function(event) {
+            var groupId = $('#delGroupId').val();
+            var userId = $('#delUserId').val();
+            $.ajax({
+                type: 'delete',
+                url: '/api/group_members/'+groupId+'/'+userId,
+                success: function(result) {
+                    console.log(JSON.stringify(result));
+                },
+                erroe: function() {
+                    alert('send error');
+                }
+            });
+        });
+    });
+    $(function() {
+        $('#listGroupMember').bind('click', function(event) {
+            var groupId = $('#listGroupId').val();
+            $.ajax({
+                type: 'get',
+                url: '/api/group_members/'+groupId,
+                success: function(result) {
+                    console.log(JSON.stringify(result));
+                },
+                erroe: function() {
+                    alert('send error');
+                }
+            });
+        });
+    });
+</script>
+
+<script>
+    var tabs = function() {
+        function tag(name, elem) {
+            return (elem || document).getElementsByTagName(name);
+        }
+        function id(name) {
+            return document.getElementById(name);
+        }
+        function first(elem) {
+            elem = elem.firstChild;
+            return elem && elem.nodeType == 1 ? elem : next(elem);
+        }
+        function next(elem) {
+            do {
+                elem = elem.nextSibling;
+            } while(elem && elem.nodeType != 1)
+            return elem;
+        }
+        return {
+            set:function(elemId, tabId) {
+                var elem = tag("li", id(elemId));
+                var tabs = tag("div", id(tabId));
+                var listNum = elem.length;
+                var tabNum  = tabs.length;
+                for(var i=0; i<listNum; i++) {
+                    elem[i].onclick = (function(i) {
+                        return function() {
+                            for(var j=0; j<tabNum; j++) {
+                                if(i==j) {
+                                    tabs[j].style.display = "block";
+                                    elem[j].firstChild.className = "selected";
+                                }
+                                else {
+                                    tabs[j].style.display = "none";
+                                    elem[j].firstChild.className = "";
+                                }
+                            }
+                        }
+                    })(i)
+                }
+            }
+        }
+    }();
+    tabs.set("nav", "menu_con");
+</script>
+</body>
+</html>

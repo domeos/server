@@ -1,7 +1,8 @@
 package org.domeos.framework.api.service.alarm.impl;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.domeos.framework.api.biz.alarm.AlarmBiz;
 import org.domeos.framework.api.biz.alarm.PortalBiz;
 import org.domeos.framework.api.biz.auth.AuthBiz;
@@ -25,7 +26,7 @@ import java.util.List;
 @Service("assistService")
 public class AssistServiceImpl implements AssistService {
 
-    private static Logger logger = Logger.getLogger(AssistServiceImpl.class);
+    private static Logger logger = LoggerFactory.getLogger(AssistServiceImpl.class);
 
     @Autowired
     PortalBiz portalBiz;

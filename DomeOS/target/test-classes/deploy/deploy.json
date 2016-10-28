@@ -1,0 +1,35 @@
+{
+  "deployName":"metasync-test-xp",
+  "creator":{
+    "creatorType":"USER",
+    "creatorId":1
+  },
+  "containerDrafts":[
+    {
+      "image":"private-registry.sohucs.com/sohucs/scs/metasync",
+      "tag":"0.1",
+      "cpu":1.0,
+      "mem":1024
+    }
+  ],
+  "replicas":1,
+  "hostEnv":"PROD",
+  "clusterName":"mycluster",
+  "stateful":true,
+  "scalable":false,
+  "volumes":["/opt/tomcat/logs"],
+  "hostList":["bx_42_201"],
+  "loadBalanceDraft":[{
+    "port":18080,
+    "targetPort":8080,
+    "externalIPs":["10.16.54.11"],
+    "type":"TCP",
+    "clusterName":"mycluster"
+  }],
+  "healthCheckerDraft":{
+    "type":"HTTP",
+    "port":8080,
+    "timeout":3,
+    "url":"/favicon.ico"
+  }
+}

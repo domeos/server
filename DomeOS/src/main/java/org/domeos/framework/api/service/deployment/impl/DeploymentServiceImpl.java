@@ -1,20 +1,19 @@
 package org.domeos.framework.api.service.deployment.impl;
 
+import io.fabric8.kubernetes.api.KubernetesHelper;
+import io.fabric8.kubernetes.api.model.Event;
+import io.fabric8.kubernetes.api.model.ReplicationController;
+import io.fabric8.kubernetes.api.model.ReplicationControllerBuilder;
 import org.apache.commons.lang3.StringUtils;
-import org.domeos.framework.api.biz.deployment.DeploymentStatusBiz;
-import org.domeos.framework.api.model.deployment.Policy;
-import org.domeos.framework.api.model.deployment.related.LoadBalanceDraft;
 import org.domeos.basemodel.HttpResponseTemp;
 import org.domeos.basemodel.ResultStat;
-import org.domeos.client.kubernetesclient.KubeClient;
-import org.domeos.client.kubernetesclient.definitions.v1.Event;
-import org.domeos.client.kubernetesclient.exception.KubeInternalErrorException;
-import org.domeos.client.kubernetesclient.exception.KubeResponseException;
 import org.domeos.exception.DeploymentEventException;
+import org.domeos.exception.K8sDriverException;
 import org.domeos.framework.api.biz.OperationHistory;
 import org.domeos.framework.api.biz.cluster.ClusterBiz;
 import org.domeos.framework.api.biz.deployment.DeployEventBiz;
 import org.domeos.framework.api.biz.deployment.DeploymentBiz;
+import org.domeos.framework.api.biz.deployment.DeploymentStatusBiz;
 import org.domeos.framework.api.biz.deployment.VersionBiz;
 import org.domeos.framework.api.biz.event.K8SEventBiz;
 import org.domeos.framework.api.biz.loadBalancer.LoadBalancerBiz;
@@ -33,6 +32,7 @@ import org.domeos.framework.api.model.auth.related.Role;
 import org.domeos.framework.api.model.cluster.Cluster;
 import org.domeos.framework.api.model.deployment.DeployEvent;
 import org.domeos.framework.api.model.deployment.Deployment;
+import org.domeos.framework.api.model.deployment.Policy;
 import org.domeos.framework.api.model.deployment.Version;
 import org.domeos.framework.api.model.deployment.related.*;
 import org.domeos.framework.api.model.global.GlobalInfo;
@@ -50,6 +50,9 @@ import org.domeos.framework.engine.RuntimeDriver;
 import org.domeos.framework.engine.exception.DaoException;
 import org.domeos.framework.engine.exception.DriverException;
 import org.domeos.framework.engine.k8s.K8sDriver;
+import org.domeos.framework.engine.k8s.RcBuilder;
+import org.domeos.framework.engine.k8s.util.Fabric8KubeUtils;
+import org.domeos.framework.engine.k8s.util.KubeUtils;
 import org.domeos.framework.engine.runtime.IResourceStatus;
 import org.domeos.global.ClientConfigure;
 import org.domeos.global.CurrentThreadInfo;
@@ -176,27 +179,26 @@ public class DeploymentServiceImpl implements DeploymentService {
         }
         Deployment deployment = deploymentDraft.toDeployment();
         deployment.setState(DeploymentStatus.STOP.name());
-        try {
-            deploymentBiz.createDeployment(deployment);
-        } catch (Exception e) {
-            throw ApiException.wrapUnknownException(e);
-        }
+        deploymentBiz.createDeployment(deployment);
+
         try {
             loadBalancerBiz.insertLoadBalancers(deployment.getId(), lbs);
-        } catch (Exception e) {
+        } catch (DaoException e) {
             deploymentBiz.removeById(GlobalConstant.DEPLOY_TABLE_NAME, deployment.getId());
             throw ApiException.wrapUnknownException(e);
+        } catch (ApiException e) {
+            deploymentBiz.removeById(GlobalConstant.DEPLOY_TABLE_NAME, deployment.getId());
+            throw e;
         }
-
         Version version = deploymentDraft.toVersion();
         version.setDeployId(deployment.getId());
         version.setCreateTime(deployment.getCreateTime());
         try {
             versionBiz.insertVersionWithLogCollect(version, cluster);
-        } catch (Exception e) {
+        } catch (ApiException e) {
             // failed
             deploymentBiz.removeById(GlobalConstant.DEPLOY_TABLE_NAME, deployment.getId());
-            throw ApiException.wrapUnknownException(e);
+            throw e;
         }
 
         Resource resource = new Resource(deployment.getId(), ResourceType.DEPLOY);
@@ -250,7 +252,7 @@ public class DeploymentServiceImpl implements DeploymentService {
     public void removeDeployment(int deployId) throws IOException {
         checkDeployPermit(deployId, OperationType.DELETE);
         Deployment deployment = deploymentBiz.getById(GlobalConstant.DEPLOY_TABLE_NAME, deployId, Deployment.class);
-        DeploymentStatus deploymentStatus =  deploymentStatusBiz.getDeploymentStatus(deployId);
+        DeploymentStatus deploymentStatus = deploymentStatusBiz.getDeploymentStatus(deployId);
         if (deploymentStatus == null || !deploymentStatus.equals(DeploymentStatus.STOP)) {
             throw ApiException.wrapMessage(ResultStat.CANNOT_DELETE_DEPLOYMENT, "deployment status is " + deployment.getState() + " now");
         }
@@ -312,7 +314,7 @@ public class DeploymentServiceImpl implements DeploymentService {
     }
 
     @Override
-    public List<DeploymentInfo> listDeployment() throws IOException, KubeInternalErrorException, KubeResponseException {
+    public List<DeploymentInfo> listDeployment() throws IOException {
         List<DeploymentInfo> deploymentInfos = new ArrayList<>();
         List<Resource> resources = getResourceList();
         if (resources == null || resources.size() == 0) {
@@ -348,7 +350,7 @@ public class DeploymentServiceImpl implements DeploymentService {
     }
 
 
-    public class GetDeploymentInfoTask implements Callable<DeploymentInfo> {
+    private class GetDeploymentInfoTask implements Callable<DeploymentInfo> {
         Deployment deployment;
 
         public GetDeploymentInfoTask(Deployment deployment) {
@@ -385,6 +387,8 @@ public class DeploymentServiceImpl implements DeploymentService {
             if (loadBalancers != null && loadBalancers.size() > 0) {
                 serviceDnsName = buildServiceDnsName(deployment);
             }
+            VersionType versionType = deployment.getVersionType() == null ? VersionType.CUSTOM : deployment.getVersionType();
+            deploymentInfo.setVersionType(versionType);
             // end TODO
             deploymentInfo.setServiceDnsName(serviceDnsName);
             deploymentInfo.setCreateTime(deployment.getCreateTime());
@@ -393,7 +397,7 @@ public class DeploymentServiceImpl implements DeploymentService {
     }
 
     @Override
-    public DeploymentDetail getDeployment(int deployId) throws IOException, KubeInternalErrorException, KubeResponseException {
+    public DeploymentDetail getDeployment(int deployId) throws IOException, DeploymentEventException {
         checkDeployPermit(deployId, OperationType.GET);
 
         Deployment deployment = deploymentBiz.getDeployment(deployId);
@@ -418,6 +422,8 @@ public class DeploymentServiceImpl implements DeploymentService {
         deploymentDetail.setNetworkMode(deployment.getNetworkMode());
         deploymentDetail.setLastUpdateTime(deployment.getLastUpdateTime());
         deploymentDetail.setHealthChecker(deployment.getHealthChecker());
+        VersionType versionType = deployment.getVersionType() == null ? VersionType.CUSTOM : deployment.getVersionType();
+        deploymentDetail.setVersionType(versionType);
 
         // set deploymentStatus
         deploymentDetail.setDeploymentStatus(deploymentStatusBiz.getDeploymentStatus(deployId));
@@ -459,15 +465,18 @@ public class DeploymentServiceImpl implements DeploymentService {
         deploymentDetail.setDeploymentStatus(deploymentStatusBiz.getDeploymentStatus(deployId));
 
         // set current replicas
-        String clusterApiServer = cluster.getApi();
-        String namespace = deployment.getNamespace();
         long currentReplicas;
-        KubeClient client = new KubeClient(clusterApiServer, namespace);
+        KubeUtils client = null;
+        try {
+            client = Fabric8KubeUtils.buildKubeUtils(cluster, deployment.getNamespace());
+        } catch (K8sDriverException e) {
+            throw new DeploymentEventException(e);
+        }
         RuntimeDriver driver = ClusterRuntimeDriver.getClusterDriver(cluster.getId());
         if (driver == null) {
             throw ApiException.wrapMessage(ResultStat.CLUSTER_NOT_EXIST, " There is no RuntimeDriver for cluster(" + cluster.toString() + ").");
         }
-        List<DeploymentSnapshot> deploymentSnapshots = ((K8sDriver)driver).queryCurrentSnapshot(client, deployment);
+        List<DeploymentSnapshot> deploymentSnapshots = ((K8sDriver) driver).queryCurrentSnapshot(client, deployment);
         currentReplicas = getTotalReplicas(deploymentSnapshots);
         deploymentDetail.setCurrentReplicas(currentReplicas);
 
@@ -475,9 +484,17 @@ public class DeploymentServiceImpl implements DeploymentService {
         if (deploymentSnapshots != null) {
             List<VersionDetail> versionDetails = new ArrayList<>(deploymentSnapshots.size());
             for (DeploymentSnapshot deploymentSnapshot : deploymentSnapshots) {
-                Version version = versionBiz.getVersion(deployId, (int)deploymentSnapshot.getVersion());
+                Version version = versionBiz.getVersion(deployId, (int) deploymentSnapshot.getVersion());
                 VersionDetail versionDetail = new VersionDetail(version, deployment);
+                ReplicationController replicationController =
+                        new RcBuilder(deployment, loadBalancers, version,  null, new Long(currentReplicas).intValue()).build();
+                VersionString versionString = VersionString.getRCStr(replicationController, version.getVersionType());
+                if (versionString != null) {
+                    versionString.setPodSpecStr(version.getPodSpecStr());
+                }
+                versionDetail.setVersionString(versionString);
                 versionDetails.add(versionDetail);
+
             }
             deploymentDetail.setCurrentVersions(versionDetails);
         } else {
@@ -489,7 +506,7 @@ public class DeploymentServiceImpl implements DeploymentService {
 
     @Override
     public void stopDeployment(int deployId)
-            throws KubeResponseException, IOException, KubeInternalErrorException, DeploymentEventException {
+            throws IOException, DeploymentEventException {
         Deployment deployment = deploymentBiz.getDeployment(deployId);
         if (deployment == null) {
             throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "no such deployment:" + deployId);
@@ -511,7 +528,7 @@ public class DeploymentServiceImpl implements DeploymentService {
         try {
             deploymentBiz.updateState(GlobalConstant.DEPLOY_TABLE_NAME, DeploymentStatus.STOPPING.name(), deployId);
             driver.stopDeploy(deployment, CurrentThreadInfo.getUser());
-        } catch (DeploymentEventException | KubeResponseException | KubeInternalErrorException e) {
+        } catch (DeploymentEventException e) {
             deploymentStatusManager.failedEventForDeployment(deployId, null, e.getMessage());
             throw ApiException.wrapMessage(ResultStat.DEPLOYMENT_STOP_FAILED, e.getMessage());
         }
@@ -519,7 +536,7 @@ public class DeploymentServiceImpl implements DeploymentService {
 
     @Override
     public void startDeployment(int deployId, int versionId, int replicas)
-            throws IOException, KubeInternalErrorException, KubeResponseException, DeploymentEventException, DaoException {
+            throws IOException, DeploymentEventException, DaoException {
         Deployment deployment = deploymentBiz.getDeployment(deployId);
         if (deployment == null) {
             throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "no such deployment:" + deployId);
@@ -567,7 +584,7 @@ public class DeploymentServiceImpl implements DeploymentService {
 
     @Override
     public HttpResponseTemp<?> startUpdate(int deployId, int versionId, int replicas, Policy policy)
-            throws IOException, KubeResponseException, KubeInternalErrorException, DeploymentEventException, DaoException {
+            throws IOException, DeploymentEventException, DaoException {
 
         // ** get deployment and version
         Deployment deployment = deploymentBiz.getDeployment(deployId);
@@ -594,7 +611,7 @@ public class DeploymentServiceImpl implements DeploymentService {
         try {
             List<EnvDraft> allExtraEnvs = buildExtraEnv(cluster);
             driver.startUpdate(deployment, versionId, replicas, allExtraEnvs, CurrentThreadInfo.getUser(), policy);
-        } catch (DeploymentEventException | KubeResponseException | KubeInternalErrorException e) {
+        } catch (DeploymentEventException e) {
             deploymentStatusManager.failedEventForDeployment(deployId, null, e.getMessage());
             return ResultStat.DEPLOYMENT_UPDATE_FAILED.wrap(null, e.getMessage());
         }
@@ -608,7 +625,7 @@ public class DeploymentServiceImpl implements DeploymentService {
 
     @Override
     public HttpResponseTemp<?> startRollback(int deployId, int versionId, int replicas, Policy policy)
-            throws IOException, KubeResponseException, KubeInternalErrorException, DeploymentEventException, DaoException {
+            throws IOException, DeploymentEventException, DaoException {
 
         // ** get deployment and version
         Deployment deployment = deploymentBiz.getDeployment(deployId);
@@ -637,7 +654,7 @@ public class DeploymentServiceImpl implements DeploymentService {
         try {
             List<EnvDraft> allExtraEnvs = buildExtraEnv(cluster);
             driver.rollbackDeploy(deployment, versionId, replicas, allExtraEnvs, CurrentThreadInfo.getUser(), policy);
-        } catch (DeploymentEventException | KubeResponseException | KubeInternalErrorException e) {
+        } catch (DeploymentEventException e) {
             deploymentStatusManager.failedEventForDeployment(deployId, null, e.getMessage());
             ResultStat.DEPLOYMENT_UPDATE_FAILED.wrap(e.getMessage());
         }
@@ -776,7 +793,7 @@ public class DeploymentServiceImpl implements DeploymentService {
 
     @Override
     public HttpResponseTemp<?> abortDeployOperation(int deployId)
-            throws KubeInternalErrorException, KubeResponseException, IOException, DeploymentEventException, DaoException {
+            throws IOException, DeploymentEventException, DaoException {
         Deployment deployment = deploymentBiz.getDeployment(deployId);
         if (deployment == null) {
             throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "no such deployment:" + deployId);
@@ -836,7 +853,7 @@ public class DeploymentServiceImpl implements DeploymentService {
         return serviceDnsName;
     }
 
-    public List<EnvDraft> buildExtraEnv(Cluster cluster) {
+    private List<EnvDraft> buildExtraEnv(Cluster cluster) {
         List<EnvDraft> extraEnvs = new LinkedList<>();
         if (domeosAddr == null) {
             GlobalInfo info = globalMapper.getGlobalInfoByType(GlobalType.SERVER);
@@ -847,7 +864,7 @@ public class DeploymentServiceImpl implements DeploymentService {
         return extraEnvs;
     }
 
-    public int getTotalReplicas(List<DeploymentSnapshot> snapshots) {
+    private int getTotalReplicas(List<DeploymentSnapshot> snapshots) {
         int replicas = 0;
         if (snapshots == null || snapshots.size() == 0) {
             return replicas;
@@ -857,4 +874,31 @@ public class DeploymentServiceImpl implements DeploymentService {
         }
         return replicas;
     }
+
+    public VersionString getRCStr(DeploymentDraft deploymentDraft) {
+        String rcName = GlobalConstant.RC_NAME_PREFIX + deploymentDraft.getDeployName();
+        Map<String, String> annotations = new HashMap<>();
+        annotations.put("deployName", deploymentDraft.getDeployName());
+        ReplicationController replicationController = new ReplicationControllerBuilder()
+                .withNewMetadata()
+                .withName(rcName.toLowerCase())
+                .withNamespace(deploymentDraft.getNamespace())
+                .endMetadata()
+                .withNewSpec()
+                .withNewTemplate()
+                .withNewMetadata()
+                .withAnnotations(annotations)
+                .withDeletionGracePeriodSeconds(0L)
+                .endMetadata()
+                .withNewSpec()
+                .endSpec()
+                .endTemplate()
+                .withReplicas(deploymentDraft.getReplicas())
+                .endSpec()
+                .build();
+        return VersionString.getRCStr(replicationController, deploymentDraft.getVersionType());
+
+    }
+
+
 }

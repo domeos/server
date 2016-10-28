@@ -1,25 +1,19 @@
 package org.domeos.framework.api.service.deployment.impl;
 
-import org.apache.log4j.Logger;
 import org.domeos.basemodel.ResultStat;
-import org.domeos.client.kubernetesclient.exception.KubeInternalErrorException;
-import org.domeos.client.kubernetesclient.exception.KubeResponseException;
-import org.domeos.exception.DataBaseContentException;
 import org.domeos.exception.DeploymentEventException;
-import org.domeos.framework.api.biz.deployment.DeploymentBiz;
 import org.domeos.framework.api.biz.deployment.DeploymentStatusBiz;
 import org.domeos.framework.api.biz.deployment.impl.DeployEventBizImpl;
 import org.domeos.framework.api.controller.exception.ApiException;
 import org.domeos.framework.api.model.auth.User;
 import org.domeos.framework.api.model.deployment.DeployEvent;
-import org.domeos.framework.api.model.deployment.Deployment;
 import org.domeos.framework.api.model.deployment.related.DeployEventStatus;
 import org.domeos.framework.api.model.deployment.related.DeployOperation;
 import org.domeos.framework.api.model.deployment.related.DeploymentSnapshot;
 import org.domeos.framework.api.model.deployment.related.DeploymentStatus;
 import org.domeos.framework.api.service.deployment.DeploymentStatusManager;
-import org.domeos.framework.engine.ClusterRuntimeDriver;
-import org.domeos.framework.engine.RuntimeDriver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -29,8 +23,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created by anningluo on 2015/12/19.
@@ -46,13 +38,10 @@ public class DeploymentStatusManagerImpl implements DeploymentStatusManager {
     @Autowired
     private DeploymentStatusBiz deploymentStatusBiz;
 
-    @Autowired
-    private DeploymentBiz deploymentBiz;
-
     private static ExecutorService executors = Executors.newCachedThreadPool();
-    private static ScheduledExecutorService monitorExectors = Executors.newSingleThreadScheduledExecutor();
+    //    private static ScheduledExecutorService monitorExectors = Executors.newSingleThreadScheduledExecutor();
     private static boolean isMonitorStart = false;
-    private static Logger logger = Logger.getLogger(DeploymentStatusManagerImpl.class);
+    private static Logger logger = LoggerFactory.getLogger(DeploymentStatusManagerImpl.class);
     // in ms
     private static long expirePeriod = 10 * 60 * 1000;
     private static long checkPeriod = 5000;
@@ -67,12 +56,6 @@ public class DeploymentStatusManagerImpl implements DeploymentStatusManager {
 
     public DeploymentStatusManagerImpl() {
         if (!isMonitorStart) {
-            try {
-                // executors.submit(new EventMonitor());
-                monitorExectors.scheduleAtFixedRate(new EventMonitor(), 30000, checkPeriod, TimeUnit.MILLISECONDS);
-            } catch (Exception e) {
-                logger.fatal("start deployment monitor thread failed\n" + e);
-            }
             isMonitorStart = true;
         }
     }
@@ -85,7 +68,7 @@ public class DeploymentStatusManagerImpl implements DeploymentStatusManager {
         if (event == null && !operation.equals(DeployOperation.START)) {
             throw new DeploymentEventException("no history event found, no start record.");
         }
-        if (event != null && !isEventTerminal(event)) {
+        if (event != null && !DeployEventStatus.isTerminal(event.getEventStatus())) {
             throw new DeploymentEventException("latest event(" + event.getOperation() + ") with eid="
                     + event.getEid() + "is in status " + event.getEventStatus() + ", not terminated");
         }
@@ -127,7 +110,7 @@ public class DeploymentStatusManagerImpl implements DeploymentStatusManager {
                 break;
             default:
                 throw ApiException.wrapMessage(ResultStat.DEPLOYMENT_ABORT_EVENT_FAILED, "The newest deploy event operation is "
-                + currentEvent.getOperation() + ", can not be aborted.");
+                        + currentEvent.getOperation() + ", can not be aborted.");
         }
         currentEvent.setEventStatus(DeployEventStatus.ABORTED);
         eventBiz.updateEvent(currentEvent);
@@ -142,7 +125,7 @@ public class DeploymentStatusManagerImpl implements DeploymentStatusManager {
         if (event == null) {
             throw new DeploymentEventException("could not find event(eid=" + eid + ")");
         }
-        if (isEventTerminal(event)) {
+        if (DeployEventStatus.isTerminal(event.getEventStatus())) {
             throw new DeploymentEventException("latest event(" + event.getOperation() + ") with eid="
                     + event.getEid() + "is in status " + event.getEventStatus() + ", not terminated");
         }
@@ -195,7 +178,7 @@ public class DeploymentStatusManagerImpl implements DeploymentStatusManager {
         if (event == null) {
             throw new DeploymentEventException("could not find event(eid=" + eid + ")");
         }
-        if (isEventTerminal(event)) {
+        if (DeployEventStatus.isTerminal(event.getEventStatus())) {
             throw new DeploymentEventException("latest event(" + event.getOperation() + ") with eid="
                     + event.getEid() + "is in status " + event.getEventStatus() + ", has terminated");
         }
@@ -241,7 +224,7 @@ public class DeploymentStatusManagerImpl implements DeploymentStatusManager {
         if (event == null) {
             throw new DeploymentEventException("could not find event(eid=" + eid + ")");
         }
-        if (isEventTerminal(event)) {
+        if (DeployEventStatus.isTerminal(event.getEventStatus())) {
             throw new DeploymentEventException("latest event(" + event.getOperation() + ") with eid="
                     + event.getEid() + " is in status " + event.getEventStatus() + ", has terminated");
         }
@@ -287,153 +270,6 @@ public class DeploymentStatusManagerImpl implements DeploymentStatusManager {
         event.setUserId(user.getId());
         event.setUserName(user.getUsername());
         return event;
-    }
-
-    public boolean isEventTerminal(DeployEvent event) {
-        if (event == null || event.getEventStatus() == null) {
-            return false;
-        }
-        if (event.getEventStatus().equals(DeployEventStatus.FAILED)
-                || event.getEventStatus().equals(DeployEventStatus.SUCCESS)
-                || event.getEventStatus().equals(DeployEventStatus.ABORTED)) {
-            return true;
-        }
-        // todo : expire may be not consistence on different server
-        //          it should use mysql time.
-        /*
-        if (event.getStatusExpire() < System.currentTimeMillis()) {
-            return true;
-        }
-        */
-        return false;
-    }
-
-    public boolean isDeploymentStatusTerminal(Deployment deployment) {
-        if (deployment == null
-                || deploymentStatusBiz.getDeploymentStatus(deployment.getId()).equals(DeploymentStatus.STOP)
-                || deploymentStatusBiz.getDeploymentStatus(deployment.getId()).equals(DeploymentStatus.RUNNING)
-                || deploymentStatusBiz.getDeploymentStatus(deployment.getId()).equals(DeploymentStatus.ERROR)
-                || deploymentStatusBiz.getDeploymentStatus(deployment.getId()).equals(DeploymentStatus.UPDATE_ABORTED)
-                || deploymentStatusBiz.getDeploymentStatus(deployment.getId()).equals(DeploymentStatus.BACKROLL_ABORTED)) {
-            return true;
-        }
-        return false;
-    }
-
-    public class EventMonitor implements Runnable {
-        @Override
-        public void run() {
-            try {
-                List<Deployment> unfinishedStatusDeployments = deploymentBiz.listUnfinishedStatusDeployment();
-                for (Deployment deployment : unfinishedStatusDeployments) {
-                    DeployEvent event = eventBiz.getNewestEventByDeployId(deployment.getId());
-                    if (!isDeploymentStatusTerminal(deployment) && (event == null || isEventTerminal(event))) {
-                        deploymentStatusBiz.setDeploymentStatus(deployment.getId(), DeploymentStatus.ERROR);
-                    }
-                }
-                List<DeployEvent> unfinishedEvent = null;
-                if (eventBiz == null) {
-                    return;
-                }
-                try {
-                    unfinishedEvent = eventBiz.getUnfinishedEvent();
-                } catch (Exception e) {
-                    logger.error("monitor event failed when query unfinished event to mysql with message="
-                            + e.getMessage());
-                }
-                if (unfinishedEvent == null || unfinishedEvent.size() == 0) {
-                    return;
-                }
-                for (DeployEvent event : unfinishedEvent) {
-                    // todo : not sync on different server
-                    if (isEventTerminal(event)) {
-                        continue;
-                    }
-                    if (event.getStatusExpire() < System.currentTimeMillis()) {
-                        executors.submit(new ExpiredEventExecutor(event));
-                        continue;
-                    }
-                    executors.submit(new EventChecker(event));
-                }
-            } catch (Exception e) {
-                logger.error(e.getMessage());
-            }
-        }
-    }
-
-    public class ExpiredEventExecutor implements Runnable {
-        private DeployEvent event;
-
-        public ExpiredEventExecutor(DeployEvent event) {
-            this.event = event;
-        }
-
-        @Override
-        public void run() {
-            try {
-                Deployment deployment = deploymentBiz.getDeployment(event.getDeployId());
-                if (deployment == null) {
-                    throw new DataBaseContentException("get deployment with deployId=" + event.getDeployId() + " failed.");
-                }
-                RuntimeDriver driver = ClusterRuntimeDriver.getClusterDriver(deployment.getClusterId());
-                driver.expiredEvent(deployment, event);
-            } catch (IOException | DeploymentEventException | KubeResponseException | KubeInternalErrorException e) {
-                logger.error("change expired event status failed, eid="
-                        + event.getEid() + ", deploymentId=" + event.getDeployId()
-                        + ", error message=" + e.getMessage());
-            } catch ( DataBaseContentException e) {
-                logger.error("data base content error:" + e.getMessage());
-            } catch (Exception e) {
-                logger.error(e);
-            }
-        }
-    }
-
-    public class EventChecker implements Runnable {
-        private DeployEvent event;
-
-        public EventChecker(DeployEvent event) {
-            this.event = event;
-        }
-
-        @Override
-        public void run() {
-            try {
-                Deployment deployment = deploymentBiz.getDeployment(event.getDeployId());
-                if (deployment == null) {
-                    throw new DataBaseContentException("no deployment found for event="
-                            + event.getDeployId() + " with deployId=" + event.getDeployId());
-                }
-                RuntimeDriver driver = ClusterRuntimeDriver.getClusterDriver(deployment.getClusterId());
-                switch (event.getOperation()) {
-                    case START:
-                    case SCALE_DOWN:
-                    case SCALE_UP:
-                        driver.checkBasicEvent(deployment, event);
-                        break;
-                    case STOP:
-                        driver.checkStopEvent(deployment, event);
-                        break;
-                    case UPDATE:
-                    case ROLLBACK:
-                        driver.checkUpdateEvent(deployment, event);
-                        break;
-                    case ABORT_START:
-                    case ABORT_UPDATE:
-                    case ABORT_ROLLBACK:
-                    case ABORT_SCALE_UP:
-                    case ABORT_SCALE_DOWN:
-                        driver.checkAbortEvent(deployment, event);
-                        break;
-                }
-            } catch (KubeResponseException | IOException | KubeInternalErrorException | DeploymentEventException e) {
-                logger.error("Check deploy event status error: " + e.getMessage());
-            } catch (DataBaseContentException e) {
-                logger.error("Data base content error:" + e.getMessage());
-            } catch (Exception e) {
-                logger.error(e.getMessage());
-            }
-        }
     }
 
     @Override

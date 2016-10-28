@@ -16,6 +16,10 @@ public class CiCluster {
     private String clusterName;
     private long createTime;
     private long lastUpdate;
+    //add
+    private String username;
+    private String password;
+    private String oauthToken;
 
     public CiCluster() {
     }
@@ -29,6 +33,21 @@ public class CiCluster {
         this.createTime = createTime;
         this.lastUpdate = lastUpdate;
     }
+
+    public CiCluster(int id, String namespace, String host, int clusterId, String clusterName, long createTime, long lastUpdate,
+                     String username, String password, String oauthToken) {
+        this.id = id;
+        this.namespace = namespace;
+        this.host = host;
+        this.clusterId = clusterId;
+        this.clusterName = clusterName;
+        this.createTime = createTime;
+        this.lastUpdate = lastUpdate;
+        this.username = username;
+        this.password = password;
+        this.oauthToken = oauthToken;
+    }
+
 
     public int getId() {
         return id;
@@ -84,6 +103,30 @@ public class CiCluster {
 
     public void setLastUpdate(long lastUpdate) {
         this.lastUpdate = lastUpdate;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getOauthToken() {
+        return oauthToken;
+    }
+
+    public void setOauthToken(String oauthToken) {
+        this.oauthToken = oauthToken;
     }
 
     public String checkLegality() {

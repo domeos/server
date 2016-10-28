@@ -1,8 +1,10 @@
 package org.domeos.framework.api.model.deployment;
 
+import org.domeos.framework.api.model.deployment.related.DeploymentStatus;
 import org.domeos.framework.api.model.deployment.related.HealthChecker;
 import org.domeos.framework.api.model.deployment.related.HostEnv;
 import org.domeos.framework.api.model.deployment.related.NetworkMode;
+import org.domeos.framework.api.model.deployment.related.VersionType;
 import org.domeos.framework.engine.model.RowModelBase;
 
 /**
@@ -21,6 +23,8 @@ public class Deployment extends RowModelBase {
     private int clusterId = 0;
     private long lastUpdateTime = 0;
     private int exposePortNum = 0;
+    private String yamlPodSpec;
+    private VersionType versionType;
 
     public String getClusterName() {
         return clusterName;
@@ -108,5 +112,29 @@ public class Deployment extends RowModelBase {
 
     public void setExposePortNum(int exposePortNum) {
         this.exposePortNum = exposePortNum;
+    }
+
+    public String getYamlPodSpec() {
+        return yamlPodSpec;
+    }
+
+    public void setYamlPodSpec(String yamlPodSpec) {
+        this.yamlPodSpec = yamlPodSpec;
+    }
+
+    public VersionType getVersionType() {
+        return versionType;
+    }
+
+    public void setVersionType(VersionType versionType) {
+        this.versionType = versionType;
+    }
+
+    public boolean deployTerminated() {
+        return DeploymentStatus.STOP.name().equals(this.getState())
+                || DeploymentStatus.RUNNING.name().equals(this.getState())
+                || DeploymentStatus.ERROR.name().equals(this.getState())
+                || DeploymentStatus.UPDATE_ABORTED.name().equals(this.getState())
+                || DeploymentStatus.BACKROLL_ABORTED.name().equals(this.getState());
     }
 }

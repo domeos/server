@@ -1,0 +1,96 @@
+
+<div class="mod-cluster cluster-detail">
+  <div class="mod-option"><a class="ui-btn ui-btn-lg ui-btn-link ui-btn-bright" ui-sref="addHost({id:clusterId})"><i class="icon-add-white"></i>添加主机</a><a class="icon-delete" ng-click="deleteCluster()"></a></div>
+  <div class="cluster-info">
+    <tabset>
+      <tab heading="主机列表" active="tabActive[0].active" ui-sref="clusterDetail.hostlist">
+        <loading ng-if="isWaitingHost"></loading>
+        <div class="info-options"><span>已选中{{nodeListIns.selectedCount}}个</span>
+          <button class="ui-btn ui-btn-bright ui-btn-sm" ng-click="addLabels()">添加主机标签</button>
+          <div class="info-right"><span class="info-count" ng-cloak="ng-cloak">共{{nodelistFiltered.length}}台主机</span>
+            <input class="ui-input-fill ui-input-white ui-input-search" placeholder="输入主机名查找" ng-model="hostKey"/>
+          </div>
+        </div>
+        <table class="ui-table-dome full">
+          <thead>
+            <tr>
+              <th>
+                <dome-check d-id="allNode" ng-model="nodeListIns.isCheckAll" d-change="nodeListIns.checkAllItem(model)"></dome-check>主机名称
+              </th>
+              <th>IP</th>
+              <th>CPU总量（个）</th>
+              <th>内存总量（MB）</th>
+              <th>运行实例（个）</th>
+              <th>状态</th>
+              <th ng-if="config.buildConfig===1">是否用于构建</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr ng-if="nodelistFiltered.length===0">
+              <td colspan="6">无相关信息</td>
+            </tr>
+            <tr ng-repeat="node in nodelistFiltered=(nodeListIns.nodeList|filter:{'name':hostKey})">
+              <td>
+                <dome-check d-id="node{{$index}}" ng-model="node.isSelected" d-change="nodeListIns.toggleCheck(node,model)"></dome-check><a class="ui-table-link" ng-bind="node.name" ui-sref="hostDetail({name:node.name,clusterId:clusterId})"></a>
+              </td>
+              <td ng-bind="node.ip"></td>
+              <td ng-bind="node.capacity.cpu"></td>
+              <td ng-bind="node.capacity.memory"></td>
+              <td ng-bind="node.runningPods"></td>
+              <td ng-switch="node.status"><span class="txt-safe" ng-switch-when="Ready">在线</span><span class="txt-prompt" ng-switch-default="ng-switch-default">离线</span></td>
+              <td ng-if="config.buildConfig===1">
+                <dome-toggle ng-class="{'on':node.isUsedByBuild}" ng-click="toggleNodeLabel(node)"></dome-toggle>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </tab>
+      <tab heading="集群设置" active="tabActive[1].active" ui-sref="clusterDetail.info">
+        <button class="ui-btn ui-btn-sm ui-btn-white edit-cluster" ng-click="checkEdit()" ng-if="!isEdit">编辑</button>
+        <button class="ui-btn ui-btn-sm ui-btn-primary edit-cluster" ng-click="checkEdit()" ng-if="isEdit">取消编辑</button>
+        <div ng-form="ng-form" name="modifyclusterFrom">
+          <div class="tab-cluster" ng-include="'index/tpl/tplClusterInfo/tplClusterInfo.html'" ng-if="!isEdit"></div>
+          <div class="tab-cluster" ng-include="'index/tpl/tplClusterInfo/tplClusterInfoEdit.html'" ng-if="isEdit"></div>
+        </div>
+        <div class="com-bottom-option" ng-if="isEdit">
+          <div class="com-bottom-option-con">
+            <button class="ui-btn ui-btn-bright ui-btn-md" ng-disabled="isWaitingModify" ng-click="valid.needValid=true;modifyclusterFrom.$valid&amp;&amp;modifyCluster()">保存设置</button><span class="txt-error" ng-if="valid.needValid&amp;&amp;(modifyclusterFrom.$invalid||!clusterIns.etcdValid||!clusterIns.zookeeperValid||!clusterIns.kafkaValid)">存在不合法数据，请修改后提交。</span>
+          </div>
+        </div>
+      </tab>
+      <tab heading="namespace" ng-click="getNamespace()" active="tabActive[2].active" ui-sref="clusterDetail.namespace">
+        <loading ng-if="isWaitingNamespace"></loading>
+        <div class="info-options" ng-form="ng-form" role="form" name="namespaceForm" ng-class="{'need-valid':needValidNamespace}"><span class="namespace-title">namespace</span>
+          <div class="namespace-con">
+            <p class="txt-prompt namespace-description">通过namespace对集群内的部署进行逻辑划分，同一集群的同一namespace下，不会出现同名部署。</p>
+            <div class="new-namespace">
+              <input class="ui-input-white namespace-txt" ng-model="namespaceTxt.namespace" name="namespace" ng-pattern="/^[a-zA-Z][a-zA-Z0-9_-]*$/"/>
+              <button class="ui-btn ui-btn-sm ui-btn-primary" ng-disabled="isLoadingNamespace" ng-click="needValidNamespace=true;namespaceForm.$valid&amp;&amp;addNamespace()">添加namespace</button>
+            </div><span class="txt-error" ng-if="(valid.needValid||namespaceForm.namespace.$dirty)&amp;&amp;namespaceForm.namespace.$invalid"></span>
+            <ul class="com-label-list namespace-list">
+              <li ng-repeat="namespace in namespaceList"><span class="label-item">{{namespace}}</span></li>
+            </ul>
+          </div>
+        </div>
+      </tab>
+      <tab heading="集群成员" ng-hide="!hasMemberPermisson" active="tabActive[3].active" ui-sref="clusterDetail.users">
+        <div class="tab-member" ng-include="'index/tpl/tplUserList/tplUserList.html'"></div>
+      </tab>
+    </tabset>
+  </div>
+</div>
+<script type="text/ng-template" id="addLabelModal.html">
+  <div class="d-modal-header">添加主机标签</div>
+  <div class="modal-body modal-addlabel"><span class="label-name">主机标签</span>
+    <div class="labels-wrap">
+      <input class="ui-input ui-input-white label-txt" ng-model="newLabel"/>
+      <button class="ui-btn ui-btn-sm ui-btn-primary" ng-click="addLabel()" ng-disabled="!newLabel">添加标签</button>
+      <p class="txt-prompt">会对勾选的主机加上相同的主机标签</p>
+      <div class="labels-con"><span class="ui-label" ng-repeat="label in labelList" ng-cloak="ng-cloak">{{label}}<a class="icon-cancel" ng-click="deleteLabel($index)"></a></span></div>
+    </div>
+    <div class="modal-footer">
+      <button class="ui-btn ui-btn-primary ui-btn-sm pull-right" ng-click="submitLabels()">确定</button>
+      <button class="ui-btn ui-btn-white ui-btn-sm pull-right" ng-click="cancel()">取消</button>
+    </div>
+  </div>
+</script>

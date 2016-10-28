@@ -1,20 +1,22 @@
 package org.domeos.framework.engine.k8s;
 
-import org.apache.log4j.Logger;
-import org.domeos.client.kubernetesclient.KubeClient;
-import org.domeos.client.kubernetesclient.definitions.v1.Pod;
-import org.domeos.client.kubernetesclient.definitions.v1.PodList;
-import org.domeos.client.kubernetesclient.definitions.v1beta1.Job;
-import org.domeos.client.kubernetesclient.exception.KubeInternalErrorException;
-import org.domeos.client.kubernetesclient.exception.KubeResponseException;
-import org.domeos.client.kubernetesclient.util.PodUtils;
+import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.api.model.PodList;
+import io.fabric8.kubernetes.api.model.extensions.Job;
+import org.domeos.exception.K8sDriverException;
+import org.domeos.framework.api.biz.global.GlobalBiz;
 import org.domeos.framework.api.biz.image.ImageBiz;
 import org.domeos.framework.api.biz.project.ProjectBiz;
 import org.domeos.framework.api.model.ci.BuildHistory;
 import org.domeos.framework.api.model.ci.related.BuildState;
+import org.domeos.framework.api.model.cluster.Cluster;
 import org.domeos.framework.api.model.global.CiCluster;
 import org.domeos.framework.api.model.image.BaseImageCustom;
-import org.domeos.framework.api.biz.global.GlobalBiz;
+import org.domeos.framework.engine.k8s.util.Fabric8KubeUtils;
+import org.domeos.framework.engine.k8s.util.KubeUtils;
+import org.domeos.framework.engine.k8s.util.PodUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -35,12 +37,6 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 @Component
 public class BuildStatusManager {
-    /*
-    private static BuildStatusManager INSTANCE;
-    public static BuildStatusManager getInstance() {
-        return INSTANCE;
-    }
-    */
 
     @Autowired
     ProjectBiz projectBiz;
@@ -58,8 +54,8 @@ public class BuildStatusManager {
     private long checkDelay = 0;
     private AtomicLong preparingExpireTime = new AtomicLong(10 * 60 * 1000);
     private String namespace = "default";
-    private String apiServer = null;
-    private static Logger logger = Logger.getLogger(BuildStatusManager.class);
+    private Cluster cluster = null;
+    private static Logger logger = LoggerFactory.getLogger(BuildStatusManager.class);
 
     @PostConstruct
     public void init() {
@@ -67,7 +63,7 @@ public class BuildStatusManager {
             monitorExecutor.scheduleAtFixedRate(new BuildChecker(),
                     checkDelay, checkPeriod, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
-            logger.fatal("start build monitor thread failed");
+            logger.error("start build monitor thread failed");
         }
         // INSTANCE = new BuildStatusManager();
     }
@@ -96,24 +92,33 @@ public class BuildStatusManager {
         this.preparingExpireTime.set(preparingExpireTime);
     }
 
-    public KubeClient getKubeClient() {
-        if (apiServer == null) {
+    private KubeUtils getClient() {
+        if (cluster == null) {
             synchronized (this) {
-                if (apiServer == null) {
-                    CiCluster cluster = globalBiz.getCiCluster();
-                    if (cluster == null) {
+                if (cluster == null) {
+                    CiCluster ciCluster = globalBiz.getCiCluster();
+                    if (ciCluster == null) {
                         return null;
                     }
-                    apiServer = cluster.getHost();
-                    namespace = cluster.getNamespace();
+                    // TODO: should add auth info to ci cluster
+                    cluster = new Cluster();
+                    cluster.setApi(ciCluster.getHost());
+                    namespace = ciCluster.getNamespace();
                 }
             }
         }
-        return new KubeClient(apiServer, namespace);
+
+        // TODO: when we have different cluster type, should add more op here
+        try {
+            return Fabric8KubeUtils.buildKubeUtils(cluster, namespace);
+        } catch (K8sDriverException e) {
+            logger.error("generate k8s client error, message is " + e);
+            return null;
+        }
     }
 
-    public boolean deleteJob(KubeClient client, String jobName)
-            throws KubeResponseException, IOException, KubeInternalErrorException {
+    private boolean deleteJob(KubeUtils client, String jobName)
+            throws IOException, K8sDriverException {
         Job job = client.jobInfo(jobName);
         if (job == null) {
             return true;
@@ -128,7 +133,7 @@ public class BuildStatusManager {
         PodList podList = client.listPod(jobSelector);
         int count = 0;
         int maxCount = 10;
-        while (podList != null && podList.getItems() != null && podList.getItems().length != 0) {
+        while (podList != null && podList.getItems() != null && podList.getItems().size() != 0) {
             if (count >= maxCount) {
                 return false;
             }
@@ -142,7 +147,7 @@ public class BuildStatusManager {
     }
 
     public Map<String, String> getBuildJobSelector(String jobName) {
-        Map<String, String> selector = new HashMap<String, String>();
+        Map<String, String> selector = new HashMap<>();
         selector.put("build", jobName);
         return selector;
     }
@@ -197,16 +202,18 @@ public class BuildStatusManager {
         }
     }
 
-    private class TerminatedChecker implements Runnable{
+    private class TerminatedChecker implements Runnable {
         BuildHistory info;
+
         public TerminatedChecker(BuildHistory info) {
             this.info = info;
         }
+
         @Override
         public void run() {
             try {
                 String jobName = info.getTaskName();
-                KubeClient client = getKubeClient();
+                KubeUtils client = getClient();
                 if (client == null) {
                     return;
                 }
@@ -223,19 +230,21 @@ public class BuildStatusManager {
         }
     }
 
-    private class BaseImageTerminatedChecker implements Runnable{
+    private class BaseImageTerminatedChecker implements Runnable {
         BaseImageCustom info;
+
         public BaseImageTerminatedChecker(BaseImageCustom info) {
             this.info = info;
         }
+
         @Override
         public void run() {
             try {
-                KubeClient client = getKubeClient();
-                if (client == null) {
+                KubeUtils kubernetesClient = getClient();
+                if (kubernetesClient == null) {
                     return;
                 }
-                if (deleteJob(client, info.getTaskName())) {
+                if (deleteJob(kubernetesClient, info.getTaskName())) {
                     imageBiz.updateBaseImageCustomGC(info.getId(), 1);
                 } else {
                     imageBiz.updateBaseImageCustomGC(info.getId(), 0);
@@ -249,16 +258,18 @@ public class BuildStatusManager {
 
     private class PrepareChecker implements Runnable {
         BuildHistory info;
+
         public PrepareChecker(BuildHistory info) {
             this.info = info;
         }
+
         @Override
         public void run() {
             try {
                 long createTime = info.getCreateTime();
                 if (createTime + preparingExpireTime.get() < System.currentTimeMillis()) {
                     // expired
-                    KubeClient client = getKubeClient();
+                    KubeUtils client = getClient();
                     if (deleteJob(client, info.getTaskName())) {
                         info.setIsGC(1);
                     } else {
@@ -277,16 +288,18 @@ public class BuildStatusManager {
 
     private class BaseImagePrepareChecker implements Runnable {
         BaseImageCustom info;
+
         public BaseImagePrepareChecker(BaseImageCustom info) {
             this.info = info;
         }
+
         @Override
         public void run() {
             try {
                 long createTime = info.getCreateTime();
                 if (createTime + preparingExpireTime.get() < System.currentTimeMillis()) {
                     // expired
-                    KubeClient client = getKubeClient();
+                    KubeUtils client = getClient();
                     if (deleteJob(client, info.getTaskName())) {
                         imageBiz.updateBaseImageCustomGC(info.getId(), 1);
                     } else {

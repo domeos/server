@@ -35,7 +35,7 @@ public class SubversionApiWrapper implements CodeApiInterface {
     SVNRepository repository;
     int svnId;
 
-    public SubversionApiWrapper(){
+    public SubversionApiWrapper() {
     }
 
     public SubversionApiWrapper(int svnId) {
@@ -43,7 +43,7 @@ public class SubversionApiWrapper implements CodeApiInterface {
         init();
     }
 
-    public SubversionApiWrapper(String url, String name, String password){
+    public SubversionApiWrapper(String url, String name, String password) {
         this.svnId = -1;
         this.url = url;
         this.name = name;
@@ -51,17 +51,17 @@ public class SubversionApiWrapper implements CodeApiInterface {
         init();
     }
 
-    public void initWithsvnId(int svnId){
+    public void initWithsvnId(int svnId) {
         this.svnId = svnId;
         SubversionUser subversion = SubversionInfo.getSubversion(svnId);
-        if(subversion != null) {
+        if (subversion != null) {
             this.name = subversion.getName();
             this.password = subversion.getPassword();
             this.url = subversion.getSvnPath();
         }
     }
 
-    public void init(){
+    public void init() {
         if (url != null && name != null && password != null) {
             DAVRepositoryFactory.setup();
             SVNRepositoryFactoryImpl.setup();
@@ -77,7 +77,7 @@ public class SubversionApiWrapper implements CodeApiInterface {
         }
     }
 
-   public List<CodeSourceInfo> listCodeInfo(int userId){
+    public List<CodeSourceInfo> listCodeInfo(int userId) {
         List<CodeSourceInfo> codeSourceInfos = new LinkedList<>();
         List<SubversionUser> subversions = SubversionInfo.getSubversionsByUserId(userId);
         if (subversions != null) {
@@ -91,7 +91,7 @@ public class SubversionApiWrapper implements CodeApiInterface {
         return codeSourceInfos;
     }
 
-    public boolean setProjectHook(int projectId, String hookUrl, boolean pushEvents, boolean tagPushEvents){
+    public boolean setProjectHook(int projectId, String hookUrl, boolean pushEvents, boolean tagPushEvents) {
         return false;
     }
 
@@ -103,7 +103,7 @@ public class SubversionApiWrapper implements CodeApiInterface {
                 return null;
             }
             SVNURL url = repository.getLocation();
-            if (url ==  null) {
+            if (url == null) {
                 return null;
             }
             svnProjectInfo.setAccessLevel(null);
@@ -137,10 +137,10 @@ public class SubversionApiWrapper implements CodeApiInterface {
             info.setProjectId(svnId);
             projectInfos.add(info);
         }
-        return  projectInfos;
+        return projectInfos;
     }
 
-    public Collection listEntries(String path){
+    public Collection listEntries(String path) {
         Collection entries = null;
         try {
             entries = repository.getDir(path, -1, null, (Collection) null);
@@ -150,18 +150,18 @@ public class SubversionApiWrapper implements CodeApiInterface {
         return entries;
     }
 
-    public int setDeployKey(int projectId, String title, String key){
-        return  0;
+    public int setDeployKey(int projectId, String title, String key) {
+        return 0;
     }
 
-    public CommitInformation getCommitInfo(int svnId, String path){
+    public CommitInformation getCommitInfo(int svnId, String path) {
         initWithsvnId(svnId);
         init();
         CommitInformation info = new CommitInformation();
         try {
             SVNDirEntry entry = repository.info(path, -1);
-            Collection logEntries = repository.log(new String[] {path}, null,  0, -1, true, true );
-            Iterator entries = logEntries.iterator( );
+            Collection logEntries = repository.log(new String[]{path}, null, 0, -1, true, true);
+            Iterator entries = logEntries.iterator();
             if (entries.hasNext()) {
                 SVNLogEntry logEntry = (SVNLogEntry) entries.next();
                 info.setId(name);
@@ -181,23 +181,25 @@ public class SubversionApiWrapper implements CodeApiInterface {
         }
         return info;
     }
-    public CommitInformation getTagCommitInfo(int projectId, String tag){
-        return getCommitInfo(projectId, "tags/"+tag);
+
+    public CommitInformation getTagCommitInfo(int projectId, String tag) {
+        return getCommitInfo(projectId, "tags/" + tag);
 
     }
 
-    public CommitInformation getBranchCommitInfo(int projectId, String branch){
-        return getCommitInfo(projectId, "branches/"+branch);
+    public CommitInformation getBranchCommitInfo(int projectId, String branch) {
+        return getCommitInfo(projectId, "branches/" + branch);
 
     }
 
-    public boolean checkDeployKey(int projectId, int deployKeyId){
+    public boolean checkDeployKey(int projectId, int deployKeyId) {
         return false;
     }
-    public byte[] getReadme(int projectId, String branch){
+
+    public byte[] getReadme(int projectId, String branch) {
         initWithsvnId(projectId);
         init();
-        Collection entries = listEntries("branches/"+branch);
+        Collection entries = listEntries("branches/" + branch);
         for (Object entry1 : entries) {
             SVNDirEntry entry = (SVNDirEntry) entry1;
             if (entry.getName().equalsIgnoreCase("readme.md")) {
@@ -206,7 +208,8 @@ public class SubversionApiWrapper implements CodeApiInterface {
         }
         return null;
     }
-    public List<String> getBranches(int projectId){
+
+    public List<String> getBranches(int projectId) {
         initWithsvnId(projectId);
         init();
         Collection entries = listEntries("branches");
@@ -215,16 +218,17 @@ public class SubversionApiWrapper implements CodeApiInterface {
             SVNDirEntry entry = (SVNDirEntry) entry1;
             branches.add(entry.getName());
         }
-        return  branches;
+        return branches;
     }
 
-    public byte[] getDockerfile(int projectId, String ref, String fileName){
+    public byte[] getDockerfile(int projectId, String ref, String fileName) {
 
         initWithsvnId(projectId);
         init();
-        if(fileName == null)
-            return  null;
-        return (ref == null) ? getFile(fileName) : getFile(ref+"/"+fileName) ;
+        if (fileName == null) {
+            return null;
+        }
+        return (ref == null) ? getFile(fileName) : getFile(ref + "/" + fileName);
     }
 
     @Override
@@ -238,9 +242,9 @@ public class SubversionApiWrapper implements CodeApiInterface {
         return null;
     }
 
-    public byte[] getFile(String path){
+    public byte[] getFile(String path) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try{
+        try {
             repository.getFile(path, -1, null, baos);
         } catch (SVNException e) {
             return null;
@@ -249,7 +253,7 @@ public class SubversionApiWrapper implements CodeApiInterface {
     }
 
     public RSAKeyPair getDeployKey(int projectId) {
-        return  null;
+        return null;
     }
 
 }

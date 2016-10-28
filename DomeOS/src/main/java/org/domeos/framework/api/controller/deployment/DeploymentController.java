@@ -127,4 +127,10 @@ public class DeploymentController extends ApiController {
         return ResultStat.OK.wrap(deploymentService.listDeployEvent(deployId));
     }
 
+    @ResponseBody
+    @RequestMapping(value = "/deploymentstr", method = RequestMethod.POST)
+    public HttpResponseTemp<?> getRCStr(@RequestBody DeploymentDraft deploymentDraft) throws Exception {
+        return ResultStat.OK.wrap(deploymentService.getRCStr(deploymentDraft));
+    }
+
 }

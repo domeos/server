@@ -2,28 +2,21 @@ package org.gitlab.api.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-/**
- * Created by feiliu206363 on 2015/11/25.
- */
 public class GitlabTag {
-    public final static String URL = "/repository/tags";
 
-    @JsonProperty("name")
-    private String name;
+    public final static String URL = "/repository/tags";
 
     @JsonProperty("commit")
     private GitlabBranchCommit commit;
 
-    @JsonProperty("protected")
-    private boolean branchProtected;
+    @JsonProperty("release")
+    private GitlabRelease release;
 
-    public String getName() {
-        return name;
-    }
+    @JsonProperty("name")
+    private String name;
 
-    public void setName(String name) {
-        this.name = name;
-    }
+    @JsonProperty("message")
+    private String message;
 
     public GitlabBranchCommit getCommit() {
         return commit;
@@ -33,11 +26,27 @@ public class GitlabTag {
         this.commit = commit;
     }
 
-    public boolean isProtected() {
-        return branchProtected;
+    public GitlabRelease getRelease() {
+        return release;
     }
 
-    public void setProtected(boolean isProtected) {
-        this.branchProtected = isProtected;
+    public void setRelease(GitlabRelease release) {
+        this.release = release;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 }

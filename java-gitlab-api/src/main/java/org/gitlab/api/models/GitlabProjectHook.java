@@ -17,15 +17,15 @@ public class GitlabProjectHook {
     @JsonProperty("push_events")
     private boolean pushEvents;
 
-    @JsonProperty("tag_push_events")
-    private boolean tagPushEvents;
-
     @JsonProperty("issues_events")
     private boolean issueEvents;
 
     @JsonProperty("merge_requests_events")
     private boolean mergeRequestsEvents;
 
+    @JsonProperty("tag_push_events")
+    private boolean tagPushEvents;
+    
     @JsonProperty("created_at")
     private Date createdAt;
 
@@ -64,14 +64,6 @@ public class GitlabProjectHook {
         this.pushEvents = pushEvents;
     }
 
-    public boolean getTagPushEvents() {
-        return tagPushEvents;
-    }
-
-    public void setTagPushEvents(boolean tagPushEvents) {
-        this.tagPushEvents = tagPushEvents;
-    }
-
     public boolean getIssueEvents() {
         return issueEvents;
     }
@@ -88,6 +80,15 @@ public class GitlabProjectHook {
         this.mergeRequestsEvents = mergeRequestsEvents;
     }
 
+    
+    public boolean isTagPushEvents() {
+    	return tagPushEvents;
+    }
+    
+    public void setTagPushEvents(boolean tagPushEvents) {
+    	this.tagPushEvents = tagPushEvents;
+    }
+    
     public Date getCreatedAt() {
         return createdAt;
     }

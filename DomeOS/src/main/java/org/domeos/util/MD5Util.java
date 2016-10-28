@@ -30,11 +30,11 @@ public class MD5Util {
         StringBuilder md5StrBuff = new StringBuilder();
 
         for (byte aByteArray : byteArray) {
-            if (Integer.toHexString(0xFF & aByteArray).length() == 1)
-                md5StrBuff.append("0").append(
-                        Integer.toHexString(0xFF & aByteArray));
-            else
+            if (Integer.toHexString(0xFF & aByteArray).length() == 1) {
+                md5StrBuff.append("0").append(Integer.toHexString(0xFF & aByteArray));
+            } else {
                 md5StrBuff.append(Integer.toHexString(0xFF & aByteArray));
+            }
         }
 
         return md5StrBuff.toString();

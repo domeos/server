@@ -6,7 +6,7 @@
 
     <groupId>org.domeos</groupId>
     <artifactId>server</artifactId>
-    <version>0.2-SNAPSHOT</version>
+    <version>0.3.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <description>
@@ -35,7 +35,6 @@
     <modules>
         <module>DomeOS</module>
         <module>java-gitlab-api</module>
-        <module>KubernetesClient</module>
     </modules>
 
     <dependencyManagement>
@@ -45,17 +44,12 @@
             <dependency>
                 <groupId>org.domeos</groupId>
                 <artifactId>DomeOS</artifactId>
-                <version>0.2-SNAPSHOT</version>
+                <version>0.4-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.domeos</groupId>
                 <artifactId>java-gitlab-api</artifactId>
-                <version>1.2.2-SNAPSHOT</version>
-            </dependency>
-            <dependency>
-                <groupId>org.domeos</groupId>
-                <artifactId>KubernetesClient</artifactId>
-                <version>1.2-SNAPSHOT</version>
+                <version>1.2.3-SNAPSHOT</version>
             </dependency>
 
         </dependencies>
@@ -79,7 +73,7 @@
                                 <artifactItem>
                                     <groupId>org.domeos</groupId>
                                     <artifactId>DomeOS</artifactId>
-                                    <version>0.2-SNAPSHOT</version>
+                                    <version>0.3.1-SNAPSHOT</version>
                                     <type>war</type>
                                     <destFileName>ROOT.war</destFileName>
                                 </artifactItem>

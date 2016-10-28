@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html ng-app="domeApp">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    </head>
+    <body>
+        <p>用户管理相关</p>
+		
+		<p>1.获取所有用户信息（admin可以操作）</p>
+		<div>
+			<button id="listAllUser">获取所有用户信息</button>
+		</div>
+		
+		<p>2.获取某个用户信息（admin可以获取任意用户信息，但普通用户只能获取自己信息）</p>
+		<div>
+    		用户名：<input id="usernameGet"><br><br>
+    		<button id="getUser">获取某个用户信息</button>
+    	</div>
+		
+		<p>3.删除某个用户（admin可以操作）</p>
+		<div>
+    		用户名：<input id="usernameDel"><br><br>
+    		<button id="deleteUser">删除某个用户</button>
+    	</div>
+		
+		<p>4.添加用户（admin可以操作）</p>
+		<div>
+    		用户名：<input id="usernameAdd"><br><br>
+			密码：<input id="passwordAdd"><br><br>
+			邮箱：<input id="emailAdd"><br><br>
+            手机号：<input id="phoneAdd"><br><br>
+    		<button id="addUser">添加用户（admin可以操作）</button>
+    	</div>
+		
+		<p>5.修改用户信息（admin可以修改任意用户信息，普通用户只能修改自己）</p>
+		<div>
+    		用户名：<input id="usernameMod"><br><br>
+			邮箱：<input id="emailMod"><br><br>
+    		<button id="modifyUser">修改用户信息</button>
+    	</div>
+		
+		<p>6.修改密码（admin可以修改任意用户密码，普通用户只能修改自己密码，且需要验证老密码）</p>
+		<div>
+    		用户名：<input id="usernameChangeAdmin"><br><br>
+			密码：<input id="passwordChangeAdmin"><br><br>
+    		<button id="changePwdAdmin">修改任意用户密码</button>
+    	</div>
+		
+		<p>7.修改密码（普通用户只能修改自己密码，且需要验证老密码）</p>
+		<div>
+    		用户名：<input id="usernameChangeNormal"><br><br>
+			老密码：<input id="oldPwdChangeNormal"><br><br>
+			新密码：<input id="newPwdChangeNormal"><br><br>
+    		<button id="changePwd">修改用户密码</button>
+    	</div>
+		
+    	<script type="text/javascript" src="../anon/js/jquery-1.8.3.min.js"></script>
+    	<script type="text/javascript">
+		$(function() {
+    		$('#listAllUser').bind('click', function(event) {
+    			$.ajax({
+    				type: 'get',
+    				url: '/api/user/list',
+    				success: function(result) {
+						console.log(result);
+						$('#listAllUser').after('<p>'+JSON.stringify(result)+'</p>');
+    				},
+    				erroe: function() {
+    					alert('发送失败');
+    				}
+    			});
+    		});
+    	});
+		$(function() {
+    		$('#getUser').bind('click', function(event) {
+    			/* Act on the event */
+    			var username = $('#usernameGet').val();
+    			$.ajax({
+    				type: 'get',
+    				url: '/api/user/get/'+username,
+    				success: function(result) {
+						console.log(result);
+						$('#usernameGet').after('<p>'+JSON.stringify(result)+'</p>');
+    				},
+    				erroe: function() {
+    					alert('发送失败');
+    				}
+    			});
+    		});
+    	});
+		$(function() {
+    		$('#deleteUser').bind('click', function(event) {
+    			/* Act on the event */
+    			var username = $('#usernameDel').val();
+    			$.ajax({
+    				type: 'delete',
+    				url: '/api/user/delete/'+username,
+    				success: function(result) {
+						console.log(result);
+						$('#deleteUser').after('<p>'+JSON.stringify(result)+'</p>');
+    				},
+    				erroe: function() {
+    					alert('发送失败');
+    				}
+    			});
+    		});
+    	});
+		$(function() {
+    		$('#addUser').bind('click', function(event) {
+			    var username = $('#usernameAdd').val(),
+    				password = $('#passwordAdd').val(),
+					email = $('#emailAdd').val();
+    			var data = {
+    				username: username,
+    				password: password,
+					email:email
+    			};
+    			$.ajax({
+    				type: 'post',
+    				url: '/api/user/create',
+					data: JSON.stringify(data),
+					contentType: "application/json; charset=utf-8",
+    				dataType: 'json',
+    				success: function(result) {
+						console.log(result);
+						$('#addUser').after('<p>'+JSON.stringify(result)+'</p>');
+    				},
+    				erroe: function() {
+    					alert('发送失败');
+    				}
+    			});
+    		});
+    	});
+		$(function() {
+    		$('#modifyUser').bind('click', function(event) {
+			    var username = $('#usernameMod').val(),
+					email = $('#emailMod').val();
+    			$.ajax({
+    				type: 'post',
+    				url: '/api/user/modify?username='+username+'&email='+email,
+    				success: function(result) {
+						console.log(result);
+						$('#modifyUser').after('<p>'+JSON.stringify(result)+'</p>');
+    				},
+    				erroe: function() {
+    					alert('发送失败');
+    				}
+    			});
+    		});
+    	});
+		$(function() {
+    		$('#changePwdAdmin').bind('click', function(event) {
+			    var username = $('#usernameChangeAdmin').val(),
+    				password = $('#passwordChangeAdmin').val();
+    			var data = {
+    				username: username,
+    				password: password
+    			};
+    			$.ajax({
+    				type: 'post',
+    				url: '/api/user/adminChangePassword',
+					data: JSON.stringify(data),
+					contentType: "application/json; charset=utf-8",
+    				dataType: 'json',
+    				success: function(result) {
+						console.log(result);
+						$('#changePwdAdmin').after('<p>'+JSON.stringify(result)+'</p>');
+    				},
+    				erroe: function() {
+    					alert('发送失败');
+    				}
+    			});
+    		});
+    	});
+		$(function() {
+    		$('#changePwd').bind('click', function(event) {
+			    var username = $('#usernameChangeNormal').val(),
+    				oldPwd = $('#oldPwdChangeNormal').val(),
+					newPwd = $('#newPwdChangeNormal').val();
+    			var data = {
+    				username: username,
+    				oldpassword: oldPwd,
+					newpassword: newPwd
+    			};
+    			$.ajax({
+    				type: 'post',
+    				url: '/api/user/changePassword',
+					data: JSON.stringify(data),
+					contentType: "application/json; charset=utf-8",
+    				dataType: 'json',
+    				success: function(result) {
+						console.log(result);
+						$('#changePwd').after('<p>'+JSON.stringify(result)+'</p>');
+    				},
+    				erroe: function() {
+    					alert('发送失败');
+    				}
+    			});
+    		});
+    	});
+		</script>
+    </body>
+    </html>

@@ -56,7 +56,7 @@ public class AllExclusiveImages {
     }
 
     public void sortExclusiveImages(List<ExclusiveImage> imageList) {
-        if (imageList.size() > 0) {
+        if (imageList != null && imageList.size() > 0) {
             Collections.sort(imageList, new Comparator<ExclusiveImage>() {
                 @Override
                 public int compare(ExclusiveImage o1, ExclusiveImage o2) {

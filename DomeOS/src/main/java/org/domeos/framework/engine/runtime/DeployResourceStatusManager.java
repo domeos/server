@@ -1,11 +1,10 @@
 package org.domeos.framework.engine.runtime;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.domeos.client.kubernetesclient.KubeClient;
-import org.domeos.client.kubernetesclient.definitions.v1.ContainerStatus;
-import org.domeos.client.kubernetesclient.definitions.v1.Pod;
-import org.domeos.client.kubernetesclient.definitions.v1.PodList;
-import org.domeos.client.kubernetesclient.util.filter.Filter;
+import io.fabric8.kubernetes.api.model.ContainerStatus;
+import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.api.model.PodList;
+import io.fabric8.kubernetes.api.model.Quantity;
 import org.domeos.framework.api.biz.cluster.ClusterBiz;
 import org.domeos.framework.api.biz.global.GlobalBiz;
 import org.domeos.framework.api.model.cluster.Cluster;
@@ -15,6 +14,9 @@ import org.domeos.framework.api.model.monitor.falcon.EndpointCounter;
 import org.domeos.framework.api.model.monitor.falcon.GraphHistoryRequest;
 import org.domeos.framework.api.model.monitor.falcon.GraphHistoryResponse;
 import org.domeos.framework.api.service.monitor.MonitorService;
+import org.domeos.framework.engine.k8s.util.Fabric8KubeUtils;
+import org.domeos.framework.engine.k8s.util.KubeUtils;
+import org.domeos.framework.engine.k8s.util.filter.Filter;
 import org.domeos.global.GlobalConstant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,9 +40,9 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class DeployResourceStatusManager implements IResourceStatus {
 
-    static ClusterBiz clusterBiz;
-    static GlobalBiz globalBiz;
-    static MonitorService monitorSelfService;
+    private static ClusterBiz clusterBiz;
+    private static GlobalBiz globalBiz;
+    private static MonitorService monitorSelfService;
 
     private static final long FIRST_RUN_WAIT_SECONDS = 10;
     private static final long RUN_INTERVAL_SECONDS = 300;
@@ -77,7 +79,7 @@ public class DeployResourceStatusManager implements IResourceStatus {
         DeployResourceStatusManager.monitorSelfService = monitorSelfService;
     }
 
-    public void startUpdateResourceStatus() {
+    private void startUpdateResourceStatus() {
         executorService.scheduleWithFixedDelay(new UpdateStatusRunnable(), FIRST_RUN_WAIT_SECONDS, RUN_INTERVAL_SECONDS,
                 TimeUnit.SECONDS);
     }
@@ -96,9 +98,9 @@ public class DeployResourceStatusManager implements IResourceStatus {
                     List<Cluster> clusterList = clusterBiz.listClusters();
                     if (clusterList != null && clusterList.size() > 0) {
                         for (Cluster cluster : clusterList) {
-                            PodList podList = null;
+                            PodList podList;
                             try {
-                                KubeClient kubeClient = new KubeClient(cluster.getApi());
+                                KubeUtils kubeClient = Fabric8KubeUtils.buildKubeUtils(cluster, null);
                                 podList = kubeClient.listAllPod();
                             } catch (Exception ex) {
                                 logger.warn("get pod list of " + cluster.getName() + " exception: " + ex.getMessage());
@@ -114,12 +116,12 @@ public class DeployResourceStatusManager implements IResourceStatus {
                     Map<Long, DeployRunningContainer> deployWithContainerIds = new HashMap<>();
                     for (PodList podList : allPodList) {
                         Filter.getPodSuccessRunningFilter().filter(podList);
-                        if (podList == null || podList.getItems() == null || podList.getItems().length == 0) {
+                        if (podList == null || podList.getItems() == null || podList.getItems().size() == 0) {
                             continue;
                         }
                         for (Pod pod : podList.getItems()) {
                             if (pod.getStatus() == null || pod.getStatus().getContainerStatuses() == null
-                                    || pod.getStatus().getContainerStatuses().length == 0 || pod.getMetadata() == null
+                                    || pod.getStatus().getContainerStatuses().size() == 0 || pod.getMetadata() == null
                                     || pod.getMetadata().getLabels() == null) {
                                 continue;
                             }
@@ -155,7 +157,7 @@ public class DeployResourceStatusManager implements IResourceStatus {
                                 } else {
                                     DeployRunningContainer deployRunningContainer = new DeployRunningContainer(deployId, versionId);
                                     deployRunningContainer.insertNewRecord(pod.getSpec().getNodeName(), containerId);
-                                    Map<String, String> limits = pod.getSpec().getContainers()[0].getResources().getLimits();
+                                    Map<String, Quantity> limits = pod.getSpec().getContainers().get(0).getResources().getLimits();
                                     if (limits != null && limits.containsKey("cpu")) {
                                         double cpuTotal = transferKubeResourceValue(limits.get("cpu"));
                                         deployRunningContainer.setCpuTotal(cpuTotal);
@@ -281,8 +283,9 @@ public class DeployResourceStatusManager implements IResourceStatus {
         return queryData;
     }
 
-    private double transferKubeResourceValue(String kubeValue) {
+    private double transferKubeResourceValue(Quantity quantity) {
         try {
+            String kubeValue = quantity.getAmount();
             if (kubeValue.length() < 2) {
                 return Double.parseDouble(kubeValue);
             } else {

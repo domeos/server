@@ -1,13 +1,14 @@
 package org.domeos.framework.engine.k8s;
 
-import org.domeos.client.kubernetesclient.definitions.v1.*;
-import org.domeos.client.kubernetesclient.definitions.v1.Container;
+import io.fabric8.kubernetes.api.model.*;
+import io.fabric8.kubernetes.api.model.Container;
 import org.domeos.framework.api.consolemodel.deployment.ContainerDraft;
 import org.domeos.framework.api.consolemodel.deployment.EnvDraft;
 import org.domeos.framework.api.model.LoadBalancer.LoadBalancer;
 import org.domeos.framework.api.model.deployment.Deployment;
 import org.domeos.framework.api.model.deployment.Version;
 import org.domeos.framework.api.model.deployment.related.*;
+import org.domeos.framework.engine.k8s.util.StringUtils;
 import org.domeos.global.GlobalConstant;
 
 import java.util.*;
@@ -53,7 +54,6 @@ public class RcBuilder {
             || index >= version.getHostList().size()) {
             return null;
         }
-        ReplicationController rc = new ReplicationController();
         // * init rc metadate
         String rcName = null;
         Map<String, String> rcLabel = buildRCLabelWithSpecifyVersion(deployment, version);
@@ -63,11 +63,11 @@ public class RcBuilder {
             rcName = GlobalConstant.RC_NAME_PREFIX + deployment.getName() + "-v" + version.getVersion() + "-i" + index;
             addIndex(rcLabel, index);
         }
-        rc.putMetadata(new ObjectMeta())
-            .getMetadata()
-            .putName(rcName.toLowerCase())
-            .putLabels(rcLabel)
-            .putNamespace(deployment.getNamespace());
+
+        ReplicationController rc = new ReplicationControllerBuilder()
+                .withNewMetadata().withName(rcName.toLowerCase())
+                .withLabels(rcLabel)
+                .withNamespace(deployment.getNamespace()).endMetadata().build();
 
         // * init rc spec
         ReplicationControllerSpec rcSpec = new ReplicationControllerSpec();
@@ -87,21 +87,36 @@ public class RcBuilder {
 //        }
         // TODO (openxxs) tmp solution: for old load balancer
         Map<String, String> podLabels = buildRCLabelWithSpecifyVersionAndLoadBalancer(deployment, version, loadBalancers);
-        rcSpec.putTemplate(new PodTemplateSpec())
-            .getTemplate()
-            .putMetadata(new ObjectMeta())
-            .getMetadata()
-            // TODO (openxxs) tmp solution: for old load balancer
-            .putLabels(podLabels)
-//            .putLabels(rcSelector)
-            .putAnnotations(annotations)
-            .putDeletionGracePeriodSeconds(0);
+
+        rcSpec = new ReplicationControllerSpecBuilder(rcSpec)
+                .withNewTemplate()
+                .withNewMetadata()
+                .withLabels(podLabels)
+                .withAnnotations(annotations)
+                .withDeletionGracePeriodSeconds(0L)
+                .endMetadata()
+                .endTemplate().build();
+//        rcSpec.putTemplate(new PodTemplateSpec())
+//            .getTemplate()
+//            .putMetadata(new ObjectMeta())
+//            .getMetadata()
+//            // TODO (openxxs) tmp solution: for old load balancer
+//            .putLabels(podLabels)
+////            .putLabels(rcSelector)
+//            .putAnnotations(annotations)
+//            .putDeletionGracePeriodSeconds(0);
         // *** create node selector
+
+
         PodSpec podSpec = new PodSpec();
-        podSpec.putHostNetwork(deployment.getNetworkMode() == NetworkMode.HOST);
-        rcSpec.getTemplate().putSpec(podSpec);
-        if (index < 0) {
-            Map<String, String> nodeSelector = new HashMap<>();
+        if (!StringUtils.isBlank(version.getPodSpecStr())) {
+            podSpec = version.toPodSpec();
+            Map<String, String> nodeSelector;
+            if (podSpec.getNodeSelector() == null) {
+                nodeSelector = new HashMap<>();
+            } else {
+                nodeSelector = podSpec.getNodeSelector();
+            }
             List<LabelSelector> selectors = version.getLabelSelectors();
             if (selectors != null) {
                 for (LabelSelector selector : version.getLabelSelectors()) {
@@ -114,37 +129,64 @@ public class RcBuilder {
                     nodeSelector.put(selector.getName(), selector.getContent());
                 }
             }
-            rcSpec.getTemplate().getSpec().putNodeSelector(nodeSelector);
-        } else if (index < version.getHostList().size()){
-            String nodeName = version.getHostList().get(index);
-            rcSpec.getTemplate().getSpec()
-                .putNodeName(nodeName);
+            podSpec.setNodeSelector(nodeSelector);
+            rcSpec.getTemplate().setSpec(podSpec);
         } else {
-            return null;
-        }
+            podSpec.setHostNetwork(deployment.getNetworkMode() == NetworkMode.HOST);
+            rcSpec.getTemplate().setSpec(podSpec);
+            if (index < 0) {
+                Map<String, String> nodeSelector = new HashMap<>();
+                List<LabelSelector> selectors = version.getLabelSelectors();
+                if (selectors != null) {
+                    for (LabelSelector selector : version.getLabelSelectors()) {
+                        if (selector.getName() == null) {
+                            continue;
+                        }
+                        if (selector.getContent() == null) {
+                            selector.setContent("");
+                        }
+                        nodeSelector.put(selector.getName(), selector.getContent());
+                    }
+                }
+                rcSpec.getTemplate().getSpec().setNodeSelector(nodeSelector);
+            } else if (index < version.getHostList().size()) {
+                String nodeName = version.getHostList().get(index);
+                rcSpec.getTemplate().getSpec()
+                        .setNodeName(nodeName);
+            } else {
+                return null;
+            }
         /*
         if (deployment.getHostEnv() != null) {
             nodeSelector.put("hostEnv", deployment.getHostEnv().toString());
         }
         */
-        // *** init container and node selector
+            // *** init container and node selector
         /*
         if (index >= 0 && index < version.getHostList().size()) {
             addHostNetworkEnvs(deployment, version);
         }
         */
-        Container[] containers = buildContainer(deployment, version, index, nodeIpList, extraEnvs);
-        if (containers == null) {
-            return null;
-        }
-        rcSpec.getTemplate()
-            .getSpec()
-            .putContainers(containers);
-        // if configure to autoCollect or autoDelete log, need to set volumes
-        // so that data can be shared accross different containers in a Pod
-        if (version.getLogDraft() != null && version.getLogDraft().needFlumeContainer()) {
-            Volume[] volumes = LogDraft.formatPodVolume(version.getLogDraft());
-            rcSpec.getTemplate().getSpec().setVolumes(volumes);
+            List<Container> containers = buildContainer(deployment, version, index, nodeIpList, extraEnvs);
+            if (containers == null) {
+                return null;
+            }
+            rcSpec.getTemplate()
+                    .getSpec()
+                    .setContainers(containers);
+            // if configure to autoCollect or autoDelete log, need to set volumes
+            // so that data can be shared accross different containers in a Pod
+            if (version.getLogDraft() != null) {
+                List<Volume> volumes;
+                if (version.getLogDraft().getLogItemDrafts() != null) {
+                    volumes = LogDraft.formatPodVolume(version.getLogDraft()); // version 0.3
+                } else {
+                    volumes = LogDraft.formatPodVolume(version.getContainerDrafts()); // version > 0.3
+                }
+                if (volumes != null && volumes.size() > 0) {
+                    rcSpec.getTemplate().getSpec().setVolumes(volumes);
+                }
+            }
         }
         rcSpec.setReplicas(replicas);
         rc.setSpec(rcSpec);
@@ -196,7 +238,7 @@ public class RcBuilder {
         return label;
     }
 
-    public static Container[] buildContainer(Deployment deployment, Version version, int index,
+    public static List<Container> buildContainer(Deployment deployment, Version version, int index,
                                              List<String> nodeIpList, List<EnvDraft> extraEnvs) {
         if (version == null || version.getContainerDrafts() == null
             || version.getContainerDrafts().size() == 0) {
@@ -221,12 +263,13 @@ public class RcBuilder {
         }
         // idx used to distinguish container name
         int idx = 0;
+        int logVolumeMountIdx = 1;  // logVolumeMountIdx to distinguish log volume seq
         for (ContainerDraft containerDraft : version.getContainerDrafts()) {
-            Container container = new Container();
-            container.putImage(containerDraft.formatImage() + ":" + containerDraft.getTag())
-                .putName(deployment.getName() + "-" + idx)
-                .putResources(formatResource(containerDraft));
-
+            Container container = new ContainerBuilder()
+                    .withImage(containerDraft.formatImage() + ":" + containerDraft.getTag())
+                    .withName(deployment.getName() + "-" + idx)
+                    .withResources(formatResource(containerDraft))
+                    .build();
             // ** ** add env
             List<EnvDraft> containerEnvs = new LinkedList<>();
             if (allExtraEnvs.size() > 0) {
@@ -245,8 +288,7 @@ public class RcBuilder {
             List<EnvVar> envVarList = formatEnv(containerEnvs);
             envVarList.addAll(DownwardAPIUtil.generateDownwardEnvs());
 
-            EnvVar[] envs = envVarList.toArray(new EnvVar[envVarList.size()]);
-            container.setEnv(envs);
+            container.setEnv(envVarList);
 
             // health checker
             HealthChecker deploymentHealthChecker = deployment.getHealthChecker();
@@ -261,36 +303,58 @@ public class RcBuilder {
                 container.setLivenessProbe(probe);
             }
 
-            // set pull image always
-            container.setImagePullPolicy("Always");
+            // set image pulling policy, default is always
+            container.setImagePullPolicy(containerDraft.getImagePullPolicy().name());
 
             // if configure to autoCollect or autoDelete log, need to set volumeMount
-            if (version.getLogDraft() != null && version.getLogDraft().needFlumeContainer()) {
-                VolumeMount[] volumeMounts = LogDraft.formatOriginalContainerVolumeMount(version.getLogDraft());
-                container.setVolumeMounts(volumeMounts);
+            // to make compitable for the old version
+            // move List<LogItemDraft> from logDraft to container
+            if (version.getLogDraft() != null ) {
+                List<LogItemDraft> logItemDrafts = version.getLogDraft().getLogItemDrafts();  // version 0.3
+                int increase = 0;
+                if (logItemDrafts == null) {
+                    logItemDrafts = containerDraft.getLogItemDrafts();  // version >= 0.4
+                    increase = 1;
+                }
+                List<VolumeMount> volumeMounts = LogDraft.formatOriginalContainerVolumeMount(logItemDrafts, logVolumeMountIdx);
+                if (volumeMounts != null && volumeMounts.size() > 0) {
+                    container.setVolumeMounts(volumeMounts);
+                    logVolumeMountIdx += (volumeMounts.size() * increase);
+                }
+
             }
             containers.add(container);
             idx++;
         }
         // if configured to autoCollect or autoDelete log, then need to add flume-image container
-        if (version.getLogDraft() != null && version.getLogDraft().needFlumeContainer()) {
-            Container container = new Container();
+        if (version.getLogDraft() != null) {
             LogDraft logDraft = version.getLogDraft();
             List<EnvVar> envVarList = new LinkedList<>();
             envVarList.addAll(formatEnv(allExtraEnvs));
-            envVarList.addAll(Arrays.asList(LogDraft.formatEnv(logDraft)));
             envVarList.addAll(DownwardAPIUtil.generateDownwardEnvs());
-
+            if (logDraft.getLogItemDrafts() != null ) {
+                envVarList.addAll(LogDraft.formatLogDraftEnv(logDraft));
+            } else {
+                envVarList.addAll(LogDraft.formatContainerLogEnv(logDraft.getKafkaBrokers(), version.getContainerDrafts()));
+            }
             EnvVar[] envs = envVarList.toArray(new EnvVar[envVarList.size()]);
-            container.putImage(logDraft.getFlumeDraft().formatImage() + ":" + logDraft.getFlumeDraft().getTag())
-                .putName(deployment.getName() + "-" + idx)
-                .putEnv(envs)
-                .putVolumeMounts(LogDraft.formatFlumeContainerVolumeMount(logDraft))
-                .putResources(formatResource(logDraft.getFlumeDraft()));
+            List<VolumeMount> logVolumeMounts;
+            if (logDraft.getLogItemDrafts() != null) {
+                logVolumeMounts = LogDraft.formatFlumeContainerVolumeMount(logDraft);
+            } else {
+                logVolumeMounts = LogDraft.formatFlumeContainerVolumeMount(version.getContainerDrafts());
+            }
+            Container container = new ContainerBuilder()
+                    .withImage(logDraft.getFlumeDraft().formatImage() + ":" + logDraft.getFlumeDraft().getTag())
+                    .withName(deployment.getName() + "-" + idx)
+                    .withEnv(envs)
+                    .withVolumeMounts(logVolumeMounts)
+                    .withResources(formatResource(logDraft.getFlumeDraft()))
+                    .build();
             containers.add(container);
-            size++;
         }
-        return containers.toArray(new Container[size]);
+
+        return containers;
     }
 
     private static Probe buildProbe(HealthChecker healthChecker) {
@@ -304,12 +368,12 @@ public class RcBuilder {
             case HTTP:
                 HTTPGetAction httpGetAction = new HTTPGetAction();
                 httpGetAction.setPath(healthChecker.getUrl());
-                httpGetAction.setPort(healthChecker.getPort());
+                httpGetAction.setPort(new IntOrString(healthChecker.getPort()));
                 probe.setHttpGet(httpGetAction);
                 break;
             case TCP:
                 TCPSocketAction tcpSocketAction = new TCPSocketAction();
-                tcpSocketAction.setPort(healthChecker.getPort());
+                tcpSocketAction.setPort(new IntOrString(healthChecker.getPort()));
                 probe.setTcpSocket(tcpSocketAction);
                 break;
             default:
@@ -324,8 +388,10 @@ public class RcBuilder {
         }
         List<EnvVar> envs = new LinkedList<>();
         for (EnvDraft envDraft : envDrafts) {
-            EnvVar tmpEnv = new EnvVar();
-            tmpEnv.putName(envDraft.getKey()).putValue(envDraft.getValue());
+            EnvVar tmpEnv = new EnvVarBuilder()
+                    .withName(envDraft.getKey())
+                    .withValue(envDraft.getValue())
+                    .build();
             envs.add(tmpEnv);
         }
         return envs;
@@ -333,12 +399,12 @@ public class RcBuilder {
 
     public static ResourceRequirements formatResource(ContainerDraft containerDraft) {
         ResourceRequirements result = new ResourceRequirements();
-        Map<String, String> resource = new HashMap<>();
+        Map<String, Quantity> resource = new HashMap<>();
         if (containerDraft.getCpu() > 0) {
-            resource.put("cpu", String.valueOf(containerDraft.getCpu()));
+            resource.put("cpu", new Quantity(String.valueOf(containerDraft.getCpu())));
         }
         if (containerDraft.getMem() > 0) {
-            resource.put("memory", String.valueOf(containerDraft.getMem()) + "Mi");
+            resource.put("memory", new Quantity(String.valueOf(containerDraft.getMem()) + "Mi"));
         }
         result.setLimits(resource);
         return result;

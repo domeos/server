@@ -1,172 +1,225 @@
-const gulp = require('gulp'),
-    jade = require('gulp-jade'),
-    sass = require('gulp-ruby-sass'),
-    eslint = require('gulp-eslint'),
-    // jshint = require('gulp-jshint'),
-    sourcemaps = require('gulp-sourcemaps'),
-    babel = require('gulp-babel'),
-    rev = require('gulp-rev'),
-    revReplace = require('gulp-rev-replace'),
-    // copy = require('gulp-file-copy'),
-    clean = require('gulp-clean'),
-    uglify = require('gulp-uglify'),
-    minifyCss = require('gulp-minify-css'),
-    filter = require('gulp-filter'),
-    sequence = require('gulp-sequence'),
-    plumber = require('gulp-plumber'),
-    useref = require('gulp-useref'),
-    gulpIf = require('gulp-if'),
-    rename = require('gulp-rename');
+/*!
+ * Usage:
+ *   gulp # same as gulp build
+ *   gulp watch --backend <backend_address>:<backend_port> --port <port_to_listen>
+ *     # watch changes and start a server for debugging frontend
+ *   gulp release # compile to ../src/main/webapp for release
+ *   gulp build # compile to app folder for debugging
+ */
 
-const paths = {
-    sass: 'app/**/*.scss',
-    jade: ['app/**/*.jade', 'app/*.jade'],
-    indexJade: 'app/index/_index.jade',
-    js: ['app/**/*.js', '!app/lib/**/*.js', '!app/console/**/*.js'],
-    es: ['app/**/*.es'],
-    html: ['dist/index.html', 'dist/**/*.html', '!dist/index/_index.html'],
-    allNeedCopyFiles: ['app/**/*.*', 'app/*', '!app/**/*.{jade,scss,es}'],
-    src: 'app',
-    dest: 'dist'
+const gulp = require('gulp');
+const gutil = require('gulp-util');
+
+const through = require('through2');
+const del = require('del');
+const sequence = require('gulp-sequence');
+const plumber = require('gulp-plumber');
+const cache = require('gulp-cache');
+
+const sourcemaps = require('gulp-sourcemaps');
+const sass = require('gulp-ruby-sass');
+const babel = require('gulp-babel');
+const pug = require('gulp-pug');
+const imagemin = require('gulp-imagemin');
+
+const connect = require('gulp-connect');
+const proxy = require('http-proxy-middleware');
+
+const conf = {
+  backend: 'beta.domeos.sohucs.com:80',
+  port: 8080
 };
 
+var mode = 'debug';
+const paths = {
+  src: {
+    base: 'src',
+    all: 'src/*',
+    scss: 'src/**/*.scss',
+    css: 'src/**/*.css',
+    babel: 'src/**/*.es',
+    js: 'src/**/*.js',
+    pug: 'src/**/*.pug',
+    html: 'src/**/*.html',
+    img: [
+      'src/**/*.png',
+      'src/**/*.gif',
+      'src/**/*.jpg',
+      'src/**/*.jpeg',
+      'src/**/*.ico',
+    ],
+    font: [
+      'src/**/*.svg',
+      'src/**/*.TTF',
+      'src/**/*.ttf',
+      'src/**/*.woff',
+      'src/**/*.woff2',
+      'src/**/*.eot',
+    ],
+    plugin: [
+      'src/**/*.swf'
+    ],
+  },
+  debug: {
+    dst: 'app',
+    clean: 'app'
+  },
+  release: {
+    dst: '../src/main/webapp',
+    clean: [
+      '../src/main/webapp/**/*',
+      '!../src/main/webapp/pages{,/**/*}',
+      '!../src/main/webapp/WEB-INF{,/**/*}',
+    ]
+  }
+};
 
-gulp.task('sass', function () {
-    return sass(paths.sass, {
-        sourcemap: true,
-        stopOnError: true,
-        compass: true
-    })
-        .pipe(plumber())
-        .on('error', sass.logError)
-        .pipe(sourcemaps.write())
-        .pipe(sourcemaps.write('maps', {
-            includeContent: false,
-            sourceRoot: 'source'
-        }))
-        .pipe(gulp.dest(paths.src));
+const watchs = [
+];
+
+watchs.push([paths.src.scss, ['scss']]);
+gulp.task('scss', function () {
+  return sass(paths.src.scss, {
+    sourcemap: true,
+    stopOnError: true,
+    compass: true,
+  })
+    .pipe(plumber())
+    .on('error', sass.logError)
+    .pipe(sourcemaps.write())
+    .pipe(sourcemaps.write('maps', {
+      includeContent: false,
+      sourceRoot: 'source'
+    }))
+    .pipe(gulp.dest(paths[mode].dst));
 });
 
+watchs.push([paths.src.css, ['copycss']]);
+gulp.task('copycss', function () {
+  return gulp.src(paths.src.css)
+    .pipe(plumber())
+    .pipe(gulp.dest(paths[mode].dst));
+});
+
+gulp.task('styles', ['scss', 'copycss'], function () {
+});
+
+watchs.push([paths.src.babel, ['babel']]);
 gulp.task('babel', function () {
-    return gulp.src(paths.es)
-        .pipe(plumber())
-        .pipe(sourcemaps.init())
-        .pipe(babel({
-            presets: ['es2015']
-        }))
-        .pipe(sourcemaps.write())
-        .pipe(gulp.dest(paths.src))
+  return gulp.src(paths.src.babel)
+    .pipe(plumber())
+    .pipe(sourcemaps.init())
+    .pipe(babel({ presets: ['es2015'] }))
+    .pipe(sourcemaps.write())
+    .pipe(gulp.dest(paths[mode].dst));
 });
 
-gulp.task('jade', function () {
-    return gulp.src(paths.jade)
-        .pipe(plumber())
-        .pipe(jade({
-            pretty: true
-        }))
-        .pipe(gulp.dest(paths.src));
-});
-gulp.task('indexJade', function () {
-    return gulp.src(paths.indexJade)
-        .pipe(plumber())
-        .pipe(jade({
-            pretty: true
-        }))
-        .pipe(rename('index.html'))
-        .pipe(gulp.dest(paths.src));
+watchs.push([paths.src.js, ['copyjs']]);
+gulp.task('copyjs', function () {
+  return gulp.src(paths.src.js)
+    .pipe(plumber())
+    .pipe(gulp.dest(paths[mode].dst));
 });
 
+gulp.task('scripts', ['babel', 'copyjs'], function () {
+});
 
-gulp.task('lint', function () {
-    return gulp.src(paths.js.concat(paths.es))
-        .pipe(eslint({
-            extends: 'eslint:recommended',
-            env: {
-                browser: true,
-                node: true,
-                es6: true
-            },
-            ecmaFeatures: {
-                modules: true,
-                jsx: true
-            },
-            globals: {
-                angular: true,
-                jQuery: true,
-                AmCharts: true,
-                domeApp: true,
-                logApp: true,
-                publicModule: true,
-                showdown: true,
-                $: true,
-                _: true
-            },
-            rules: {
-                semi: 2,
-                // quotes: [1, 'single'],
-                'space-before-blocks': 1,
-                'comma-dangle': 2,
-                'no-mixed-spaces-and-tabs': 0,
-                'no-console': 0,
-                'no-extra-parens': 2, //不必要的括号
-                'accessor-pairs': 2, //enforce getter and setter pairs in objects
-                'array-callback-return': 1, //enforce return statements in callbacks of array methods
-                'guard-for-in': 2, //require for-in loops to include an if statement
-                'no-caller': 2, //disallow the use of arguments.caller or arguments.callee
-                // 'no-empty-function': 2
-                'no-empty-pattern': 2,
-                'no-eval': 2,
-                'no-extra-bind': 2,
-                'no-extra-label': 2,
-                'no-lone-blocks': 2, // disallow unnecessary nested blocks
-                'no-loop-func': 2,
-                'no-new': 2, //disallow new operators outside of assignments or comparisons
-                'no-return-assign': 2, //disallow assignment operators in return statements
-                'no-self-compare': 2,
-                'no-self-assign': 2,
-                'no-unused-expressions': 0,
-                'no-unused-vars': 0
-            }
-        }))
-        .pipe(eslint.formatEach('compact', process.stderr));
+watchs.push([paths.src.pug, ['pug']]);
+gulp.task('pug', function () {
+  return gulp.src(paths.src.pug)
+    .pipe(plumber())
+    .pipe(pug({ pretty: true }))
+    .pipe(gulp.dest(paths[mode].dst));
 });
-gulp.task('useref', function () {
-    return gulp.src(paths.html)
-        .pipe(useref())
-        .pipe(gulpIf('*.js', uglify()))
-        .pipe(gulpIf('*.css', minifyCss()))
-        .pipe(gulp.dest(paths.dest));
+
+watchs.push([paths.src.html, ['copyhtml']]);
+gulp.task('copyhtml', function () {
+  return gulp.src(paths.src.html)
+    .pipe(plumber())
+    .pipe(gulp.dest(paths[mode].dst));
 });
-gulp.task('rev', ['useref'], function () {
-    return gulp.src(paths.dest + '/**/*.{js,css,png,jpg,jpeg,svg}')
-        .pipe(rev())
-        .pipe(gulp.dest(paths.dest))
-        .pipe(rev.manifest())
-        .pipe(gulp.dest(paths.dest));
+
+gulp.task('htmls', ['pug', 'copyhtml'], function () {
 });
-gulp.task('revReplace', ['rev'], function () {
-    var manifest = gulp.src(paths.dest + '/rev-manifest.json');
-    return gulp.src(paths.dest + '/**/*')
-        .pipe(revReplace({
-            manifest: manifest
-        }))
-        .pipe(gulp.dest(paths.dest));
+
+watchs.push([paths.src.img, ['img']]);
+gulp.task('img', function () {
+  return gulp.src(paths.src.img)
+    .pipe(plumber())
+    .pipe(cache(imagemin()))
+    .pipe(gulp.dest(paths.src.base))
+    .pipe(gulp.dest(paths[mode].dst));
 });
-gulp.task('copy', ['clean'], function () {
-    return gulp.src(paths.allNeedCopyFiles).pipe(gulp.dest(paths.dest));
+
+watchs.push([paths.src.font, ['font']]);
+gulp.task('font', function () {
+  return gulp.src(paths.src.font)
+    .pipe(plumber())
+    .pipe(gulp.dest(paths[mode].dst));
 });
+
+watchs.push([paths.src.plugin, ['plugin']]);
+gulp.task('plugin', function () {
+  return gulp.src(paths.src.plugin)
+    .pipe(plumber())
+    .pipe(gulp.dest(paths[mode].dst));
+});
+
 gulp.task('clean', function () {
-    return gulp.src(paths.dest, {
-        reload: false
-    })
-        .pipe(clean({
-            force: true
-        }));
+  return del(paths[mode].clean, { force: true });
 });
-gulp.task('package', sequence('lint', 'jade', 'indexJade', 'sass', 'copy', 'revReplace'));
-gulp.task('watch', ['lint'], function () {
-    gulp.watch(paths.sass, ['sass']);
-    gulp.watch(paths.jade, ['jade']);
-    gulp.watch(paths.es, ['babel']);
-    gulp.watch(paths.indexJade, ['indexJade']);
+
+gulp.task('build', function (callback) {
+  sequence('clean', ['styles', 'scripts', 'pug', 'htmls', 'img', 'font', 'plugin'], callback);
+});
+
+gulp.task('default', ['build'], function () {
+});
+
+gulp.task('connect', ['build'], function () {
+  var backend = gutil.env.backend || conf.backend;
+  var base = {
+    middleware: function (connect, opt) {
+      var middlewares = [];
+      if (backend) middlewares.push([
+        proxy('/api', {
+          target: 'http://' + backend,
+          changeOrigin: true,
+        })
+      ]);
+      middlewares.push(function (req, res, next) {
+        gutil.log(req.method, req.url);
+        next();
+      });
+      return middlewares;
+    }
+  };
+  connect.server(Object.assign({}, base, {
+    port: Number(gutil.env.port) || conf.port,
+    root: './' + paths[mode].dst,
+  }));
+});
+
+gulp.task('watch', ['build', 'connect'], function () {
+  if (!gutil.env.backend) {
+    gutil.log(gutil.colors.yellow('No backend paramter given, `' + conf.backend + '` would be chosen.'));
+  }
+  if (!gutil.env.backend) {
+    gutil.log(gutil.colors.yellow('No port paramter given, gulp will listen to port `' + conf.port + '` by default.'));
+  }
+  watchs.forEach(function (watch) {
+    gulp.watch(watch[0], watch[1]);
+  });
+});
+
+gulp.task('releaseinfo', function () {
+  gutil.log(gutil.colors.yellow('All output have been copied to "' + paths.release.dst + '".'));
+  gutil.log(gutil.colors.yellow('Do not forget to add new files to git before commit.'));
+  gutil.log(gutil.colors.yellow('It is better to run `gulp release` 2 times to make sure everything works fine.'));
+  gutil.log(gutil.colors.yellow('Good luck.'));
+});
+
+gulp.task('release', function (callback) {
+  mode = 'release';
+  sequence('build', 'releaseinfo', callback);
 });

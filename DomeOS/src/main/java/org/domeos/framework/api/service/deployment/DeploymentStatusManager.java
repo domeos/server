@@ -15,7 +15,6 @@ import java.util.List;
 public interface DeploymentStatusManager {
 
     /**
-     *
      * @param deployId
      * @param user
      * @param srcSnapshot
@@ -28,6 +27,7 @@ public interface DeploymentStatusManager {
 
     /**
      * register abort operation event
+     *
      * @param deployId
      * @param user
      * @throws DeploymentEventException
@@ -35,7 +35,6 @@ public interface DeploymentStatusManager {
     long registerAbortEvent(int deployId, User user) throws DeploymentEventException, IOException;
 
     /**
-     *
      * @param eid
      * @param currentSnapshot
      * @throws IOException
@@ -45,7 +44,6 @@ public interface DeploymentStatusManager {
             throws IOException, DeploymentEventException;
 
     /**
-     *
      * @param eid
      * @param currentSnapshot
      * @throws IOException
@@ -55,7 +53,6 @@ public interface DeploymentStatusManager {
             throws IOException, DeploymentEventException;
 
     /**
-     *
      * @param eid
      * @param currentSnapshot
      * @param message
@@ -66,7 +63,6 @@ public interface DeploymentStatusManager {
             throws IOException, DeploymentEventException;
 
     /**
-     *
      * @param deploymentId
      * @param currentSnapshot
      * @param message
@@ -78,8 +74,10 @@ public interface DeploymentStatusManager {
 
     /**
      * check available deployment state from current state
+     *
      * @param curState current deployment state
      * @param dstState destination deployment state
      */
     void checkStateAvailable(DeploymentStatus curState, DeploymentStatus dstState);
+
 }

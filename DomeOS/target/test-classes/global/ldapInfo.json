@@ -1,0 +1,5 @@
+{
+  "id":1,
+  "emailSuffix":null,
+  "server":"ldap://ldap.sohu-inc.com:389"
+}

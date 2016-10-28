@@ -15,17 +15,9 @@ public class GitlabBranchCommit {
 
     @JsonProperty("authored_date")
     private Date authoredDate;
-    @JsonProperty("author_name")
-    private String authorName;
-    @JsonProperty("author_email")
-    private String authorEmail;
 
     @JsonProperty("committed_date")
     private Date committedDate;
-    @JsonProperty("committer_name")
-    private String commiterName;
-    @JsonProperty("committer_email")
-    private String committerEmail;
 
     public String getId() {
         return id;
@@ -73,38 +65,6 @@ public class GitlabBranchCommit {
 
     public void setAuthoredDate(Date authoredDate) {
         this.authoredDate = authoredDate;
-    }
-
-    public String getAuthorName() {
-        return authorName;
-    }
-
-    public void setAuthorName(String authorName) {
-        this.authorName = authorName;
-    }
-
-    public String getAuthorEmail() {
-        return authorEmail;
-    }
-
-    public void setAuthorEmail(String authorEmail) {
-        this.authorEmail = authorEmail;
-    }
-
-    public String getCommiterName() {
-        return commiterName;
-    }
-
-    public void setCommiterName(String commiterName) {
-        this.commiterName = commiterName;
-    }
-
-    public String getCommitterEmail() {
-        return committerEmail;
-    }
-
-    public void setCommitterEmail(String committerEmail) {
-        this.committerEmail = committerEmail;
     }
 
     public Date getCommittedDate() {

@@ -4,7 +4,7 @@
     <groupId>org.domeos</groupId>
     <artifactId>DomeOS</artifactId>
     <packaging>war</packaging>
-    <version>0.2-SNAPSHOT</version>
+    <version>0.3.1-SNAPSHOT</version>
     <name>DomeOS Maven Webapp</name>
     <url>http://maven.apache.org</url>
 
@@ -111,25 +111,20 @@
         </dependency>
 
 
-        <!--<dependency>-->
-        <!--<groupId>org.slf4j</groupId>-->
-        <!--<artifactId>slf4j-api</artifactId>-->
-        <!--<version>1.7.7</version>-->
-        <!--</dependency>-->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
             <version>1.7.7</version>
         </dependency>
         <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.12</version>
+        </dependency>
+        <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <version>1.4.187</version>
-        </dependency>
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.16</version>
         </dependency>
         <dependency>
             <groupId>com.googlecode.xmemcached</groupId>
@@ -174,7 +169,6 @@
             <artifactId>velocity-tools</artifactId>
             <version>2.0</version>
         </dependency>
-
 
         <dependency>
             <groupId>jstl</groupId>
@@ -233,7 +227,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.2.3</version>
+            <version>2.7.4</version>
         </dependency>
         <!-- GENERAL UTILS end -->
         <dependency>
@@ -241,11 +235,7 @@
             <artifactId>etcd4j</artifactId>
             <version>2.7.0</version>
         </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.12</version>
-        </dependency>
+
         <dependency>
             <groupId>com.jayway.jsonpath</groupId>
             <artifactId>json-path</artifactId>
@@ -256,6 +246,19 @@
             <artifactId>jsch</artifactId>
             <version>0.1.44-1</version>
         </dependency>
+        <!--<dependency>-->
+        <!--<groupId>com.sohu.upload</groupId>-->
+        <!--<artifactId>kubernetesclient</artifactId>-->
+        <!--<version>1.2.5-SNAPSHOT</version>-->
+        <!--</dependency>-->
+
+        <dependency>
+            <groupId>io.fabric8</groupId>
+            <artifactId>openshift-client</artifactId>
+            <version>1.4.4</version>
+        </dependency>
+
+
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
@@ -274,75 +277,19 @@
             <version>20080701</version>
         </dependency>
         <dependency>
-            <groupId>org.domeos</groupId>
-            <artifactId>java-gitlab-api</artifactId>
-            <version>1.2.2-SNAPSHOT</version>
+            <groupId>io.fabric8</groupId>
+            <artifactId>kubernetes-api</artifactId>
+            <version>2.2.155</version>
         </dependency>
         <dependency>
             <groupId>org.domeos</groupId>
-            <artifactId>kubernetesclient</artifactId>
-            <version>1.2.2-SNAPSHOT</version>
+            <artifactId>java-gitlab-api</artifactId>
+            <version>1.2.3-SNAPSHOT</version>
         </dependency>
     </dependencies>
-
     <build>
         <finalName>DomeOS</finalName>
         <plugins>
-            <plugin>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <tasks>
-                                <copy todir="src/main/webapp"
-                                      overwrite="true">
-                                    <fileset dir="front/app">
-                                        <include name="**/*.*" />
-                                    </fileset>
-                                </copy>
-                            </tasks>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>copy</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}/tarball</outputDirectory>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.domeos</groupId>
-                                    <artifactId>kubernetesclient</artifactId>
-                                    <classifier>jar-with-dependencies</classifier>
-                                    <destFileName>kubernetesclient.jar</destFileName>
-                                </artifactItem>
-                                <artifactItem>
-                                    <groupId>org.domeos</groupId>
-                                    <artifactId>java-gitlab-api</artifactId>
-                                    <classifier>jar-with-dependencies</classifier>
-                                    <destFileName>java-gitlab-api.jar</destFileName>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
-                </configuration>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
@@ -356,6 +303,23 @@
                     <suppressionsFileExpression>checkstyle.suppressions.file</suppressionsFileExpression>
                 </configuration>
                 <version>2.13</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.7</source>
+                    <target>1.7</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <includes>
+                        <include>**/*Tests.java</include>
+                        <include>**/*Test.java</include>
+                    </includes>
+                    <testFailureIgnore>true</testFailureIgnore>
+                </configuration>
             </plugin>
         </plugins>
     </build>

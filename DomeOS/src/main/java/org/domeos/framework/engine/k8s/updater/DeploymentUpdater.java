@@ -1,16 +1,11 @@
 package org.domeos.framework.engine.k8s.updater;
 
-import org.apache.log4j.Logger;
-import org.domeos.client.kubernetesclient.KubeClient;
-import org.domeos.client.kubernetesclient.definitions.v1.Pod;
-import org.domeos.client.kubernetesclient.definitions.v1.PodList;
-import org.domeos.client.kubernetesclient.definitions.v1.ReplicationController;
-import org.domeos.client.kubernetesclient.definitions.v1.ReplicationControllerList;
-import org.domeos.client.kubernetesclient.exception.KubeInternalErrorException;
-import org.domeos.client.kubernetesclient.exception.KubeResponseException;
-import org.domeos.client.kubernetesclient.util.PodUtils;
-import org.domeos.client.kubernetesclient.util.RCUtils;
+import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.api.model.PodList;
+import io.fabric8.kubernetes.api.model.ReplicationController;
+import io.fabric8.kubernetes.api.model.ReplicationControllerList;
 import org.domeos.exception.DeploymentEventException;
+import org.domeos.exception.K8sDriverException;
 import org.domeos.exception.TimeoutException;
 import org.domeos.framework.api.consolemodel.deployment.EnvDraft;
 import org.domeos.framework.api.model.LoadBalancer.LoadBalancer;
@@ -21,7 +16,12 @@ import org.domeos.framework.engine.k8s.RcBuilder;
 import org.domeos.framework.engine.k8s.model.DeploymentUpdatePhase;
 import org.domeos.framework.engine.k8s.model.DeploymentUpdateStatus;
 import org.domeos.framework.engine.k8s.model.UpdatePhase;
+import org.domeos.framework.engine.k8s.util.KubeUtils;
+import org.domeos.framework.engine.k8s.util.PodUtils;
+import org.domeos.framework.engine.k8s.util.RCUtils;
 import org.domeos.global.GlobalConstant;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -36,8 +36,8 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * Created by anningluo on 2015/12/16.
  */
-public class DeploymentUpdater {
-    private KubeClient client;
+public class  DeploymentUpdater {
+    private KubeUtils client;
     private Deployment deployment;
     private Version dstVersion;
     // lock sequence rcUpdaterLock -> status -> rcUpdater.status
@@ -50,10 +50,10 @@ public class DeploymentUpdater {
     private int replicas;
     private ReplicationController targetRC = null;
     private static ExecutorService executors = Executors.newCachedThreadPool();
-    private static Logger logger = Logger.getLogger(DeploymentUpdater.class);
+    private static Logger logger = LoggerFactory.getLogger(DeploymentUpdater.class);
     private Policy policy;
 
-    public DeploymentUpdater(KubeClient client, Deployment deployment, Version version, List<EnvDraft> extraEnvs) {
+    public DeploymentUpdater(KubeUtils client, Deployment deployment, Version version, List<EnvDraft> extraEnvs) {
         this.client = client;
         this.deployment = deployment;
         this.dstVersion = version;
@@ -61,7 +61,7 @@ public class DeploymentUpdater {
         this.targetRC = new RcBuilder(deployment, null, version, extraEnvs, replicas).build();
     }
 
-    public DeploymentUpdater(KubeClient client, Deployment deployment, Version version, List<EnvDraft> extraEnvs, Policy policy, List<LoadBalancer> lbs) {
+    public DeploymentUpdater(KubeUtils client, Deployment deployment, Version version, List<EnvDraft> extraEnvs, Policy policy, List<LoadBalancer> lbs) {
         this.client = client;
         this.deployment = deployment;
         this.dstVersion = version;
@@ -70,7 +70,7 @@ public class DeploymentUpdater {
         this.policy = policy;
     }
 
-    public DeploymentUpdater(KubeClient client, Deployment deployment, Version version, int replicas, List<EnvDraft> extraEnvs) {
+    public DeploymentUpdater(KubeUtils client, Deployment deployment, Version version, int replicas, List<EnvDraft> extraEnvs) {
         this.client = client;
         this.deployment = deployment;
         this.dstVersion = version;
@@ -79,7 +79,7 @@ public class DeploymentUpdater {
         this.targetRC = new RcBuilder(deployment, null, version, extraEnvs, replicas).build();
     }
 
-    public DeploymentUpdater(KubeClient client, Deployment deployment, Version version, int replicas, List<EnvDraft> extraEnvs,
+    public DeploymentUpdater(KubeUtils client, Deployment deployment, Version version, int replicas, List<EnvDraft> extraEnvs,
                              Policy policy, List<LoadBalancer> lbs) {
         this.client = client;
         this.deployment = deployment;
@@ -109,10 +109,10 @@ public class DeploymentUpdater {
         future = executors.submit(new UpdateDeployment());
     }
 
-    public ReplicationController selectMaxVersionRC(Map<String, String> rcSelector)
-            throws KubeResponseException, IOException, KubeInternalErrorException {
+    private ReplicationController selectMaxVersionRC(Map<String, String> rcSelector)
+            throws IOException, K8sDriverException {
         ReplicationControllerList rcList = client.listReplicationController(rcSelector);
-        if (rcList == null || rcList.getItems().length == 0) {
+        if (rcList == null || rcList.getItems().size() == 0) {
             // failedPhase("no previous replication controller found");
             return null;
         }
@@ -140,9 +140,9 @@ public class DeploymentUpdater {
         oneStepUpdater.update();
     }
 
-    public void deleteOtherRC() throws KubeResponseException, IOException, KubeInternalErrorException, DeploymentEventException {
+    private void deleteOtherRC() throws IOException, K8sDriverException, DeploymentEventException {
         ReplicationControllerList rcList = client.listReplicationController(rcSelector);
-        if (rcList == null || rcList.getItems() == null || rcList.getItems()[0] == null) {
+        if (rcList == null || rcList.getItems() == null || rcList.getItems().get(0) == null) {
             return;
         }
         for (ReplicationController rc : rcList.getItems()) {
@@ -247,7 +247,7 @@ public class DeploymentUpdater {
     }
 
     private void waitRCSuccess(String rcName, long interBreak, long timeout)
-            throws KubeResponseException, IOException, KubeInternalErrorException, TimeoutException, DeploymentEventException {
+            throws IOException, K8sDriverException, TimeoutException, DeploymentEventException {
         long startTimePoint = System.currentTimeMillis();
         ReplicationController rc = client.replicationControllerInfo(rcName);
         if (rc == null || rc.getSpec() == null || rc.getSpec().getSelector() == null) {
@@ -261,7 +261,7 @@ public class DeploymentUpdater {
                     + ", but return null");
         }
         while (PodUtils.getPodReadyNumber(podList.getItems()) != replicas
-                || podList.getItems().length != replicas) {
+                || podList.getItems().size() != replicas) {
             if (System.currentTimeMillis() - startTimePoint > timeout) {
                 throw new TimeoutException("TIMEOUT: wait rc=" + rcName + " for "
                         + timeout + "millisecond.");
@@ -279,7 +279,20 @@ public class DeploymentUpdater {
         }
     }
 
-    class UpdateDeployment implements Runnable {
+    public boolean checkStatus() {
+        if (targetRC.getSpec().getReplicas() > 0) {
+            try {
+                waitRCSuccess(RCUtils.getName(targetRC), 1000, 5 * 60 * 1000);
+                succeedPhase();
+                return true;
+            } catch (IOException | K8sDriverException | TimeoutException | DeploymentEventException e) {
+                e.printStackTrace();
+            }
+        }
+        return false;
+    }
+
+    private class UpdateDeployment implements Runnable {
         @Override
         public void run() {
             try {
@@ -288,11 +301,11 @@ public class DeploymentUpdater {
 
                 // ** check whether target RC exist, create it if not
                 ReplicationControllerList targetRCList = client.listReplicationController(targetRC.getMetadata().getLabels());
-                if (targetRCList == null || targetRCList.getItems() == null || targetRCList.getItems().length == 0) {
+                if (targetRCList == null || targetRCList.getItems() == null || targetRCList.getItems().size() == 0) {
                     // ** ** no target rc exist, create new
                     targetRC.getSpec().setReplicas(0);
                     client.createReplicationController(targetRC);
-                } else if (targetRCList.getItems().length != 1) {
+                } else if (targetRCList.getItems().size() != 1) {
                     // ** ** make sure only one rc for one version in kubernetes
                     failedPhase("update deployment(id=" + deployment.getId()
                             + ") to version=" + dstVersion.getVersion()
@@ -300,7 +313,7 @@ public class DeploymentUpdater {
                     return;
                 } else {
                     // ** ** attach to exist rc of target version
-                    targetRC = targetRCList.getItems()[0];
+                    targetRC = targetRCList.getItems().get(0);
                     targetRC.getSpec().setReplicas(0);
                 }
 
@@ -345,12 +358,12 @@ public class DeploymentUpdater {
                 currentTargetRC = client.replicationControllerInfo(RCUtils.getName(targetRC));
                 currentTargetReplicas = currentTargetRC.getSpec().getReplicas();
                 if (!keepRcQuantity && currentTargetReplicas < replicas) {
-                    currentTargetRC.getSpec().setReplicas(replicas);
-                    client.replaceReplicationController(RCUtils.getName(currentTargetRC), currentTargetRC);
+                    client.scaleReplicationController(RCUtils.getName(currentTargetRC), replicas);
                 }
-                waitRCSuccess(RCUtils.getName(targetRC), 1000, currentTargetReplicas * 5 * 60 * 1000);
+                long timeout = (currentTargetReplicas > 0) ? currentTargetReplicas : 1L;
+                waitRCSuccess(RCUtils.getName(targetRC), 1000, timeout * 5 * 60 * 1000);
                 succeedPhase();
-            } catch (KubeResponseException | IOException | KubeInternalErrorException e) {
+            } catch (IOException | K8sDriverException e) {
                 failedPhase("kubernetes failed with message=" + e.getMessage());
             } catch (Exception e) {
                 failedPhase("update deployment(id=" + deployment.getId()

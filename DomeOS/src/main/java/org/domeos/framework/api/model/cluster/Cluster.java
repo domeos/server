@@ -12,6 +12,9 @@ import org.domeos.util.CommonUtil;
 public class Cluster extends RowModelBase {
 
     private String api;
+    private String username;
+    private String password;
+    private String oauthToken;
     private String tag;
     private String domain;
     private String dns;
@@ -25,20 +28,12 @@ public class Cluster extends RowModelBase {
     public Cluster() {
     }
 
-    public Cluster(String api, String tag, String domain, String dns, String etcd, String ownerName, int logConfig, ClusterLog clusterLog) {
-        this.api = api;
-        this.tag = tag;
-        this.domain = domain;
-        this.dns = dns;
-        this.etcd = etcd;
-        this.ownerName = ownerName;
-        this.logConfig = logConfig;
-        this.clusterLog = clusterLog;
-    }
-
     public Cluster(ClusterInfo clusterInfo) {
         this.setName(clusterInfo.getName());
         this.setState("active");
+        this.setUsername(clusterInfo.getUsername());
+        this.setPassword(clusterInfo.getPassword());
+        this.setOauthToken(clusterInfo.getOauthToken());
         this.setCreateTime(clusterInfo.getCreateTime());
         this.setApi(clusterInfo.getApi());
         this.setTag(clusterInfo.getTag());
@@ -56,6 +51,30 @@ public class Cluster extends RowModelBase {
 
     public void setApi(String api) {
         this.api = api;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getOauthToken() {
+        return oauthToken;
+    }
+
+    public void setOauthToken(String oauthToken) {
+        this.oauthToken = oauthToken;
     }
 
     public String getTag() {

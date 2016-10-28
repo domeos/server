@@ -1,0 +1,11 @@
+{
+  "projectId":1,
+  "dockerFrom":"ubuntu:12.04",
+  "dockerEnv":"TEST a,TEST2 b",
+  "command1":"apt-get install git",
+  "rootPath":"/code",
+  "workDir":"/code",
+  "command2":"make install",
+  "dockerExpose":"8080",
+  "dockerCmd":"/bin/bash"
+}

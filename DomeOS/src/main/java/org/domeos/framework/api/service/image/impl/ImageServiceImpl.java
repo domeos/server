@@ -1,13 +1,15 @@
 package org.domeos.framework.api.service.image.impl;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.domeos.basemodel.HttpResponseTemp;
 import org.domeos.basemodel.ResultStat;
 import org.domeos.framework.api.biz.global.GlobalBiz;
 import org.domeos.framework.api.biz.image.ImageBiz;
 import org.domeos.framework.api.biz.project.ProjectBiz;
 import org.domeos.framework.api.controller.exception.ApiException;
+import org.domeos.framework.api.controller.exception.PermitException;
 import org.domeos.framework.api.model.global.Registry;
 import org.domeos.framework.api.model.image.*;
 import org.domeos.framework.api.model.operation.OperationType;
@@ -33,7 +35,7 @@ import java.util.concurrent.Future;
 @Service("imageService")
 public class ImageServiceImpl implements ImageService {
 
-    private static Logger logger = org.apache.log4j.Logger.getLogger(ImageServiceImpl.class);
+    private static Logger logger = LoggerFactory.getLogger(ImageServiceImpl.class);
 
     @Autowired
     ImageBiz imageBiz;
@@ -171,7 +173,6 @@ public class ImageServiceImpl implements ImageService {
     }
 
 
-
     public class GetProjectImageTask implements Callable<DockerImage> {
 
         private String image;
@@ -188,7 +189,7 @@ public class ImageServiceImpl implements ImageService {
         @Override
         public DockerImage call() throws Exception {
             Project project = projectBiz.getProjectByName(image);
-            if (project != null && AuthUtil.verify((int)userId, project.getId(), ResourceType.PROJECT, OperationType.GET)) {
+            if (project != null && AuthUtil.verify((int) userId, project.getId(), ResourceType.PROJECT, OperationType.GET)) {
                 return new DockerImage(project.getId(), registry, image, null, project.getEnvConfDefault(), 0);
             }
             return null;
@@ -206,17 +207,7 @@ public class ImageServiceImpl implements ImageService {
             registryUrl = registry.fullRegistry();
         }
 
-        Project project = projectBiz.getProjectByName(projectName);
         HashSet<DockerImage> dockerImages = new HashSet<>();
-        if (project != null) {
-            if (AuthUtil.verify(userId, project.getId(), ResourceType.PROJECT, OperationType.GET)) {
-                List<DockerImage> images = PrivateRegistry.getDockerImageInfo(projectName, CommonUtil.fullUrl(registryUrl));
-                if (images != null) {
-                    dockerImages.addAll(images);
-                }
-            }
-        }
-
         List<BaseImage> baseImages = imageBiz.getBaseImagesByNameAndRegistry(projectName, registryUrl);
         if (baseImages != null && baseImages.size() > 0) {
             List<Future<DockerImage>> futures = new LinkedList<>();
@@ -236,6 +227,22 @@ public class ImageServiceImpl implements ImageService {
                 }
             }
         }
+
+        Project project = projectBiz.getProjectByName(projectName);
+        if (project != null) {
+            try {
+                AuthUtil.verify(userId, project.getId(), ResourceType.PROJECT, OperationType.GET);
+                List<DockerImage> images = PrivateRegistry.getDockerImageInfo(projectName, CommonUtil.fullUrl(registryUrl));
+                if (images != null) {
+                    dockerImages.addAll(images);
+                }
+            } catch (PermitException e) {
+                if (dockerImages.size() == 0) {
+                    throw e;
+                }
+            }
+        }
+
         return ResultStat.OK.wrap(doSort(dockerImages));
     }
 
@@ -258,7 +265,7 @@ public class ImageServiceImpl implements ImageService {
         }
     }
 
-    private List<DockerImage> doSort(HashSet<DockerImage> images){
+    private List<DockerImage> doSort(HashSet<DockerImage> images) {
         List<DockerImage> list = new ArrayList<>();
         list.addAll(images);
         Collections.sort(list, new DockerImage.DockerImageComparator());
@@ -393,9 +400,9 @@ public class ImageServiceImpl implements ImageService {
         AllExclusiveImages imageList = new AllExclusiveImages();
         List<ExclusiveImage> publicCompileImages = null, privateCompileImages = null, publicRunImages = null, privateRunImages = null;
         if (StringUtils.equalsIgnoreCase(ExclusiveBuildType.JAVA.name(), type)) {
-            publicCompileImages = getExclusiveImages("domeos/"+ExclusiveImage.ImageType.JAVACOMPILE.getType(), CommonUtil.fullUrl(publicRegistryUrl), true);
+            publicCompileImages = getExclusiveImages("domeos/" + ExclusiveImage.ImageType.JAVACOMPILE.getType(), CommonUtil.fullUrl(publicRegistryUrl), true);
             privateCompileImages = getExclusiveImages(ExclusiveImage.ImageType.JAVACOMPILE.getType(), CommonUtil.fullUrl(privateRegistryUrl), false);
-            publicRunImages = getExclusiveImages("domeos/"+ExclusiveImage.ImageType.JAVARUN.getType(), CommonUtil.fullUrl(publicRegistryUrl), true);
+            publicRunImages = getExclusiveImages("domeos/" + ExclusiveImage.ImageType.JAVARUN.getType(), CommonUtil.fullUrl(publicRegistryUrl), true);
             privateRunImages = getExclusiveImages(ExclusiveImage.ImageType.JAVARUN.getType(), CommonUtil.fullUrl(privateRegistryUrl), false);
         }
         imageList.setCompilePublicImageList(publicCompileImages);
@@ -436,9 +443,9 @@ public class ImageServiceImpl implements ImageService {
 
     public List<ExclusiveImage> getExclusiveImages(String name, String registryUrl, boolean isPublic) {
         List<DockerImage> dockerImages = PrivateRegistry.getDockerImageInfo(name, CommonUtil.fullUrl(registryUrl));
+        List<ExclusiveImage> imageList = new ArrayList<>();
         if (dockerImages != null) {
             Collections.sort(dockerImages, new DockerImage.DockerImageComparator());
-            List<ExclusiveImage> imageList = new ArrayList<>();
             List<Future<ExclusiveImage>> futureExclusiveImages = new LinkedList<>();
             for (DockerImage image : dockerImages) {
                 Future<ExclusiveImage> future = ClientConfigure.executorService.submit(new PublicExclusiveImageTask(image, isPublic));
@@ -448,7 +455,7 @@ public class ImageServiceImpl implements ImageService {
                 try {
                     ExclusiveImage imageInfo = futureImage.get();
                     imageList.add(imageInfo);
-                } catch (InterruptedException |  ExecutionException e) {
+                } catch (InterruptedException | ExecutionException e) {
                     logger.warn("get exclusive image list error, message is " + e.getMessage());
                 }
             }
@@ -467,15 +474,14 @@ public class ImageServiceImpl implements ImageService {
                     try {
                         BaseImage baseImage = future.get();
                         ExclusiveImage image = new ExclusiveImage(baseImage.getImageName(), baseImage.getImageTag(),
-                                baseImage.getRegistry(), isPublic,  baseImage.getCreateTime());
+                                baseImage.getRegistry(), isPublic, baseImage.getCreateTime());
                         imageList.add(image);
                     } catch (InterruptedException | ExecutionException e) {
                         logger.warn("get base image list error, message is " + e.getMessage());
                     }
                 }
             }
-            return imageList;
         }
-        return  null;
+        return imageList;
     }
 }

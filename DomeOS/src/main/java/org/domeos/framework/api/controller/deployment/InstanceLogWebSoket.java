@@ -51,9 +51,9 @@ public class InstanceLogWebSoket {
                 } catch (Exception e) {
                     try {
                         session.getBasicRemote().sendText(e.getMessage());
-                        logger.error("send build log realtime message error, " + e.getMessage());
+                        logger.error("send instance log realtime message error, " + e.getMessage());
                     } catch (IOException e1) {
-                        logger.error("send build log realtime message error, " + e.getMessage());
+                        logger.error("send instance log realtime message error, " + e.getMessage());
                     }
                 }
             } else {

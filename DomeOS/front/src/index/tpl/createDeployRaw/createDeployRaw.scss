@@ -1,0 +1,11 @@
+@import "compass/css3";
+@import "common/css/common.scss";
+
+.create-deploy-raw, .mod-deploy {
+
+    
+  .config-input-group-label { width:60%; }
+  .config-input-group textarea { height: 400px; resize: vertical; }
+  .config-input-group-textarea-tip { text-align: right; margin-top: -20px; a { color: #2994e7; } }
+
+}

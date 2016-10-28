@@ -1,12 +1,11 @@
 package org.domeos.framework.api.service.deployment;
 
 import org.domeos.basemodel.HttpResponseTemp;
-import org.domeos.client.kubernetesclient.exception.KubeInternalErrorException;
-import org.domeos.client.kubernetesclient.exception.KubeResponseException;
 import org.domeos.exception.DeploymentEventException;
 import org.domeos.framework.api.consolemodel.deployment.DeploymentDetail;
 import org.domeos.framework.api.consolemodel.deployment.DeploymentDraft;
 import org.domeos.framework.api.consolemodel.deployment.DeploymentInfo;
+import org.domeos.framework.api.consolemodel.deployment.VersionString;
 import org.domeos.framework.api.model.deployment.DeployEvent;
 import org.domeos.framework.api.model.deployment.Policy;
 import org.domeos.framework.engine.exception.DaoException;
@@ -52,20 +51,17 @@ public interface DeploymentService {
      * @param deployId deployment id
      * @return deployment detail
      * @throws IOException
-     * @throws KubeInternalErrorException
-     * @throws KubeResponseException
+     * @throws DeploymentEventException
      */
-    DeploymentDetail getDeployment(int deployId) throws IOException, KubeInternalErrorException, KubeResponseException;
+    DeploymentDetail getDeployment(int deployId) throws IOException, DeploymentEventException;
 
     /**
      * list abstract info of deployments
      *
      * @return List of DeploymentInfo
      * @throws IOException
-     * @throws KubeInternalErrorException
-     * @throws KubeResponseException
      */
-    List<DeploymentInfo> listDeployment() throws IOException, KubeInternalErrorException, KubeResponseException;
+    List<DeploymentInfo> listDeployment() throws IOException;
 
     /**
      * start deployment
@@ -75,12 +71,11 @@ public interface DeploymentService {
      * @param replicas  the number of RC
      * @return
      * @throws IOException
-     * @throws KubeInternalErrorException
-     * @throws KubeResponseException
+     * @throws DaoException
      * @throws DeploymentEventException
      */
     void startDeployment(int deployId, int versionId, int replicas)
-            throws IOException, KubeInternalErrorException, KubeResponseException, DeploymentEventException, DaoException;
+            throws IOException, DeploymentEventException, DaoException;
 
     /**
      * stop deployment
@@ -88,12 +83,10 @@ public interface DeploymentService {
      * @param deployId deployment id
      * @return
      * @throws IOException
-     * @throws KubeInternalErrorException
-     * @throws KubeResponseException
      * @throws DeploymentEventException
      */
     void stopDeployment(int deployId)
-            throws IOException, KubeInternalErrorException, KubeResponseException, DeploymentEventException;
+            throws IOException, DeploymentEventException;
 
     /**
      * start deployment update
@@ -103,12 +96,11 @@ public interface DeploymentService {
      * @param replicas  the number of new version RC
      * @return
      * @throws IOException
-     * @throws KubeInternalErrorException
-     * @throws KubeResponseException
+     * @throws DaoException
      * @throws DeploymentEventException
      */
     HttpResponseTemp<?> startUpdate(int deployId, int versionId, int replicas, Policy policy)
-            throws IOException, KubeInternalErrorException, KubeResponseException, DeploymentEventException, DaoException;
+            throws IOException, DeploymentEventException, DaoException;
 
     /**
      * start rollback for deployment
@@ -119,12 +111,11 @@ public interface DeploymentService {
      * @param policy the policy of rollback
      * @return
      * @throws IOException
-     * @throws KubeInternalErrorException
-     * @throws KubeResponseException
+     * @throws DaoException
      * @throws DeploymentEventException
      */
     HttpResponseTemp<?> startRollback(int deployId, int versionId, int replicas, Policy policy)
-            throws IOException, KubeInternalErrorException, KubeResponseException, DeploymentEventException, DaoException;
+            throws IOException, DeploymentEventException, DaoException;
 
     /**
      * scale up for deployment
@@ -167,5 +158,7 @@ public interface DeploymentService {
      * @return
      */
     HttpResponseTemp<?> abortDeployOperation(int deployId)
-            throws KubeInternalErrorException, KubeResponseException, IOException, DeploymentEventException, DaoException;
+            throws IOException, DeploymentEventException, DaoException;
+
+    VersionString getRCStr(DeploymentDraft deploymentDraft);
 }

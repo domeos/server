@@ -1,0 +1,29 @@
+{
+  "id": 1,
+  "name": "test/domeos_test",
+  "description": "this is for test case",
+  "authority": 1,
+  "dockerfileConfig": {
+    "baseImageName": "sohucs/redhat",
+    "baseImageTag": "7.0",
+    "baseImageRegistry": "private-registry.sohucs.com",
+    "codeStoragePath": "/code",
+    "startCmd": "/bin/sh"
+  },
+  "confFiles": {
+    "/file/file1": "file/file1",
+    "/file/file2": "file/file2"
+  },
+  "envConfDefault": [
+    {
+      "key": "TEST1",
+      "value": "test",
+      "description": "first test env"
+    },
+    {
+      "key": "TEST2",
+      "value": "test2",
+      "description": "second test env"
+    }
+  ]
+}

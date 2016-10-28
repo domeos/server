@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 /**
  */
-public abstract class    ApiController {
+public abstract class ApiController {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -59,6 +59,5 @@ public abstract class    ApiController {
         logger.error("unexpected exception happened:" + e.getMessage(), e);
         return responseToEntity(ResultStat.SERVER_INTERNAL_ERROR.wrap(null, e.getMessage()));
     }
-
 
 }

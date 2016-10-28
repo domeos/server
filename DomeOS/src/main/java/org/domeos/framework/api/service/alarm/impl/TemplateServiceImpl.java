@@ -1,6 +1,7 @@
 package org.domeos.framework.api.service.alarm.impl;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.domeos.basemodel.HttpResponseTemp;
 import org.domeos.basemodel.ResultStat;
 import org.domeos.framework.api.biz.alarm.AlarmBiz;
@@ -30,7 +31,7 @@ import java.util.List;
 @Service("templateService")
 public class TemplateServiceImpl implements TemplateService {
 
-    private static Logger logger = Logger.getLogger(TemplateServiceImpl.class);
+    private static Logger logger = LoggerFactory.getLogger(TemplateServiceImpl.class);
 
     @Autowired
     AlarmBiz alarmBiz;

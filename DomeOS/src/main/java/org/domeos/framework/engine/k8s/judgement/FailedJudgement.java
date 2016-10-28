@@ -1,13 +1,15 @@
 package org.domeos.framework.engine.k8s.judgement;
 
-import org.domeos.client.kubernetesclient.definitions.v1.ContainerStatus;
-import org.domeos.client.kubernetesclient.definitions.v1.Pod;
-import org.domeos.client.kubernetesclient.definitions.v1.PodList;
-import org.domeos.client.kubernetesclient.util.PodUtils;
+
+import io.fabric8.kubernetes.api.model.ContainerStatus;
+import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.api.model.PodList;
+import org.domeos.framework.engine.k8s.util.PodUtils;
 import org.domeos.util.DateUtil;
 import org.domeos.global.GlobalConstant;
 
 import java.text.ParseException;
+import java.util.List;
 import java.util.TimeZone;
 
 /**
@@ -26,11 +28,11 @@ public class FailedJudgement {
 
     // true for failed
     // false for not failed or unknow status
-    public boolean isFailed(Pod pod) throws ParseException {
+    private boolean isFailed(Pod pod) throws ParseException {
         if (pod == null || pod.getStatus() == null || pod.getMetadata() == null) {
             return false;
         }
-        long startTime = 0;
+        long startTime;
         if (pod.getStatus().getContainerStatuses() == null) {
             if (pod.getMetadata().getCreationTimestamp() == null) {
                 // is it return true better ?
@@ -39,7 +41,7 @@ public class FailedJudgement {
             startTime = DateUtil.string2timestamp(pod.getMetadata().getCreationTimestamp(),
                     TimeZone.getTimeZone(GlobalConstant.UTC_TIME));
         } else {
-            startTime = DateUtil.string2timestamp(pod.getStatus().getStartTime(), TimeZone.getTimeZone(GlobalConstant.UTC_TIME));
+            startTime = DateUtil.string2timestamp(pod.getMetadata().getCreationTimestamp(), TimeZone.getTimeZone(GlobalConstant.UTC_TIME));
         }
         // PodBriefStatus podStatus = PodUtils.getStatus(pod);
         long current = System.currentTimeMillis();
@@ -79,7 +81,7 @@ public class FailedJudgement {
         return !(podList == null || podList.getItems() == null) && isAnyFailed(podList.getItems());
     }
 
-    public boolean isAnyFailed(Pod[] pods) throws ParseException {
+    private boolean isAnyFailed(List<Pod> pods) throws ParseException {
         if (pods == null) {
             return false;
         }

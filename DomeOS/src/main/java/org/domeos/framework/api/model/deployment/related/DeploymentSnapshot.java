@@ -33,4 +33,9 @@ public class DeploymentSnapshot {
     public void setReplicas(long replicas) {
         this.replicas = replicas;
     }
+
+    @Override
+    public String toString() {
+        return "{version=" + version + ", replicas=" + replicas + "}";
+    }
 }

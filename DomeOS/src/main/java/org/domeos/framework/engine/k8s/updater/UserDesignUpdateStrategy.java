@@ -1,17 +1,18 @@
 package org.domeos.framework.engine.k8s.updater;
 
-import org.apache.log4j.Logger;
-import org.domeos.client.kubernetesclient.definitions.v1.PodList;
-import org.domeos.client.kubernetesclient.util.PodUtils;
+import io.fabric8.kubernetes.api.model.PodList;
 import org.domeos.framework.api.model.deployment.Policy;
 import org.domeos.framework.engine.k8s.model.UpdatePolicy;
 import org.domeos.framework.engine.k8s.model.UpdateReplicationCount;
+import org.domeos.framework.engine.k8s.util.PodUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by feiliu206363 on 2016/4/27.
  */
 public class UserDesignUpdateStrategy implements UpdateStrategy {
-    private static Logger logger = Logger.getLogger(RollingUpdateStrategy.class);
+    private static Logger logger = LoggerFactory.getLogger(RollingUpdateStrategy.class);
 
     private Policy policy;
 
@@ -53,7 +54,7 @@ public class UserDesignUpdateStrategy implements UpdateStrategy {
                 nextTargetCount.setNewReplicaCount(rcCount);
             } else {
                 // fatal
-                logger.fatal("bad update strategy situation");
+                logger.error("bad update strategy situation");
                 isFailed = true;
             }
         } else if (totalReadyPodNow < totalDesireReadyPod) {
@@ -64,7 +65,7 @@ public class UserDesignUpdateStrategy implements UpdateStrategy {
                 int rcCount = Math.min(desireCount.getOldReplicaCount(), oldReadyCount + policy.getUpdateStep());
                 nextTargetCount.setOldReplicaCount(rcCount);
             } else {
-                logger.fatal("bad update strategy situation");
+                logger.error("bad update strategy situation");
                 isFailed = true;
             }
         } else {

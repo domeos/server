@@ -7,5 +7,9 @@ public enum DeployEventStatus {
     PROCESSING,
     SUCCESS,
     FAILED,
-    ABORTED
+    ABORTED;
+
+    public static boolean isTerminal(DeployEventStatus status) {
+        return SUCCESS.equals(status) || FAILED.equals(status) || ABORTED.equals(status);
+    }
 }

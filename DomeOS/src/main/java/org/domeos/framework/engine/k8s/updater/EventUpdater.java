@@ -1,19 +1,28 @@
 package org.domeos.framework.engine.k8s.updater;
 
-import org.domeos.client.kubernetesclient.KubeClient;
-import org.domeos.client.kubernetesclient.definitions.v1.Event;
-import org.domeos.client.kubernetesclient.exception.KubeInternalErrorException;
-import org.domeos.client.kubernetesclient.exception.KubeResponseException;
-import org.domeos.client.kubernetesclient.util.TimeoutResponseHandler;
+import io.fabric8.kubernetes.api.model.Event;
+import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.KubernetesClientException;
+import io.fabric8.kubernetes.client.Watch;
+import io.fabric8.kubernetes.client.Watcher;
+import org.domeos.exception.DataBaseContentException;
+import org.domeos.exception.K8sDriverException;
 import org.domeos.framework.api.biz.cluster.ClusterBiz;
 import org.domeos.framework.api.biz.deployment.DeploymentBiz;
+import org.domeos.framework.api.biz.deployment.DeploymentStatusBiz;
+import org.domeos.framework.api.biz.deployment.impl.DeployEventBizImpl;
 import org.domeos.framework.api.biz.event.K8SEventBiz;
 import org.domeos.framework.api.model.cluster.Cluster;
+import org.domeos.framework.api.model.deployment.DeployEvent;
 import org.domeos.framework.api.model.deployment.Deployment;
+import org.domeos.framework.api.model.deployment.related.DeployOperation;
+import org.domeos.framework.api.model.deployment.related.DeploymentStatus;
 import org.domeos.framework.api.service.event.EventService;
 import org.domeos.framework.engine.event.DMEventSender;
 import org.domeos.framework.engine.event.k8sEvent.K8SEventReceivedEvent;
 import org.domeos.framework.engine.event.k8sEvent.K8sEventDetail;
+import org.domeos.framework.engine.k8s.util.Fabric8KubeUtils;
+import org.domeos.framework.engine.k8s.util.KubeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +54,12 @@ public class EventUpdater {
 
     @Autowired
     ClusterBiz clusterBiz;
+
+    @Autowired
+    private DeployEventBizImpl eventBiz;
+
+    @Autowired
+    private DeploymentStatusBiz deploymentStatusBiz;
 
     private ConcurrentHashMap<Integer, Future> processingClusterMap = new ConcurrentHashMap<>();
 
@@ -78,7 +93,7 @@ public class EventUpdater {
 
     }
 
-    public void checkUpdateTask() {
+    private void checkUpdateTask() {
         List<Cluster> clusters = clusterBiz.listClusters();
         Set<Integer> keys = new TreeSet<>(processingClusterMap.keySet());
 
@@ -102,6 +117,7 @@ public class EventUpdater {
                 }
             }
             keys.remove(clusterId);
+            checkDeployStatus(cluster);
         }
 
         // cancel deleted cluster
@@ -141,45 +157,133 @@ public class EventUpdater {
         }
     }
 
-    private long updateCluster(Cluster cluster, String version) throws KubeResponseException,
-            IOException, KubeInternalErrorException {
+    private long updateCluster(Cluster cluster, String version) throws KubernetesClientException, IOException {
         AtomicLong count = new AtomicLong(0);
-        String server = cluster.getApi();
-        KubeClient client = new KubeClient(server);
-        int clusterId = cluster.getId();
+        KubeUtils kubeUtils = null;
+        try {
+            kubeUtils = Fabric8KubeUtils.buildKubeUtils(cluster, null);
+        } catch (K8sDriverException e) {
+            throw new KubernetesClientException(e.getMessage());
+        }
+        KubernetesClient client = (KubernetesClient) kubeUtils.getClient();
+        final int clusterId = cluster.getId();
 
         logger.info("start to watch event for cluster:{} from resourceVersion:{}", clusterId, version);
-        client.watchEvent(version, new EventHandler(clusterId, count));
+        final CountDownLatch closeLatch = new CountDownLatch(1);
+        if (version != null) {
+            try (Watch watch = client.events().withResourceVersion(version).watch(new eventWatcher(count, clusterId, closeLatch))) {
+                closeLatch.await();
+            } catch (KubernetesClientException | InterruptedException e) {
+                logger.error("Could not watch resources", e);
+            }
+        } else {
+            try (Watch watch = client.events().watch(new eventWatcher(count, clusterId, closeLatch))) {
+                closeLatch.await();
+            } catch (KubernetesClientException | InterruptedException e) {
+                logger.error("Could not watch resources", e);
+            }
+        }
+
         return count.get();
     }
 
-    private class EventHandler extends TimeoutResponseHandler<Event> {
+    private void checkDeployStatus(Cluster cluster) {
+        List<Deployment> deployments = deploymentBiz.listDeploymentByClusterId(cluster.getId());
 
-        int clusterId;
-        AtomicLong counter;
+        if (deployments == null || deployments.size() == 0) {
+            return;
+        }
 
-        public EventHandler(int clusterId, AtomicLong counter) {
-            this.clusterId = clusterId;
+        for (Deployment deployment : deployments) {
+            DeployEvent event = null;
+            try {
+                event = eventBiz.getNewestEventByDeployId(deployment.getId());
+            } catch (IOException e) {
+                logger.error("get eventBiz, getNewestEventByDeployId error, deployId=" + deployment.getId());
+            }
+            if (event == null) {
+                continue;
+            }
+            if (!deployment.deployTerminated() && event.eventTerminated()) {
+                switch (event.getEventStatus()) {
+                    case FAILED:
+                        deploymentStatusBiz.setDeploymentStatus(deployment.getId(), DeploymentStatus.ERROR);
+                        logger.info("set deployment to error with id " + deployment.getId());
+                        break;
+                    case ABORTED:
+                        if (DeployOperation.ABORT_UPDATE.equals(event.getOperation())) {
+                            deploymentStatusBiz.setDeploymentStatus(deployment.getId(), DeploymentStatus.UPDATE_ABORTED);
+                            logger.info("set deployment to update_aborted with id " + deployment.getId());
+                        } else if (DeployOperation.ABORT_ROLLBACK.equals(event.getOperation())) {
+                            deploymentStatusBiz.setDeploymentStatus(deployment.getId(), DeploymentStatus.BACKROLL_ABORTED);
+                            logger.info("set deployment to rollback_aborted with id " + deployment.getId());
+                        } else if (DeployOperation.ABORT_START.equals(event.getOperation())) {
+                            deploymentStatusBiz.setDeploymentStatus(deployment.getId(), DeploymentStatus.STOP);
+                            logger.info("set deployment to stop with id " + deployment.getId());
+                        } else {
+                            deploymentStatusBiz.setDeploymentStatus(deployment.getId(), DeploymentStatus.RUNNING);
+                            logger.info("set deployment to running with id " + deployment.getId());
+                        }
+                        break;
+                    case SUCCESS:
+                        deploymentStatusBiz.setDeploymentStatus(deployment.getId(), DeploymentStatus.RUNNING);
+                        logger.info("set deployment to running with id " + deployment.getId());
+                        break;
+                    default:
+                        break;
+                }
+            } else {
+                try {
+                    EventChecker eventChecker = new EventChecker(deployment, event);
+                    eventChecker.checkEvent();
+                    if (!event.eventTerminated() && event.getStatusExpire() < System.currentTimeMillis()) {
+                        event.setMessage("deployment expired");
+                        eventChecker.checkExpireEvent();
+                    }
+                } catch (DataBaseContentException e) {
+                    logger.warn("catch io exception when create event checker, message={}", e.getMessage());
+                }
+            }
+        }
+    }
+
+    private class eventWatcher implements Watcher<Event> {
+        private int clusterId;
+        private AtomicLong counter;
+        private CountDownLatch closeLatch;
+
+        private eventWatcher(AtomicLong counter, int clusterId, CountDownLatch closeLatch) {
             this.counter = counter;
+            this.clusterId = clusterId;
+            this.closeLatch = closeLatch;
         }
 
         @Override
-        public boolean handleResponse(Event event) throws IOException {
-            try {
-                int deployId = eventService.getDeployIdByEvent(clusterId, event);
-                K8sEventDetail details = new K8sEventDetail(event, deployId, clusterId);
-                DMEventSender.publishEvent(new K8SEventReceivedEvent(details));
-            } catch (Exception e) {
-                logger.warn("exception happened when processing event, detail:" + e.getMessage(), e);
+        public void eventReceived(Action action, Event event) {
+            K8sEventDetail details = eventService.getDeployIdByEvent(clusterId, event);
+            if (details == null || details.getDeployId() <= 0 || details.getClusterId() <= 0) {
+                return;
             }
-            eventService.createEvent(clusterId, event);
+            DMEventSender.publishEvent(new K8SEventReceivedEvent(details));
             counter.incrementAndGet();
+            try {
+                eventService.createEvent(clusterId, event);
+            } catch (IOException e) {
+                logger.warn("exception happened when create k8sevent into database, detail:" + e.getMessage(), e);
+            }
             if (logger.isDebugEnabled()) {
                 logger.debug("insert event name:{}, kind:{}, reason:{}, version:{}",
                         event.getMetadata().getName(), event.getInvolvedObject().getKind(),
                         event.getReason(), event.getMetadata().getResourceVersion());
             }
-            return true;
+        }
+
+        @Override
+        public void onClose(KubernetesClientException e) {
+            if (e != null) {
+                logger.error(e.getMessage(), e);
+                closeLatch.countDown();
+            }
         }
     }
 

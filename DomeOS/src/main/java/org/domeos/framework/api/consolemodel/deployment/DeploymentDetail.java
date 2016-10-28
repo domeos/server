@@ -27,6 +27,7 @@ public class DeploymentDetail {
     private int exposePortNum;
     private List<InnerServiceDraft> innerServiceDrafts;
     private NetworkMode networkMode;
+    private VersionType versionType;
 
 
     public void setDeployId(int deployId) {
@@ -179,5 +180,13 @@ public class DeploymentDetail {
 
     public void setNetworkMode(NetworkMode networkMode) {
         this.networkMode = networkMode;
+    }
+
+    public VersionType getVersionType() {
+        return versionType;
+    }
+
+    public void setVersionType(VersionType versionType) {
+        this.versionType = versionType;
     }
 }

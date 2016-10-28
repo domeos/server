@@ -1,0 +1,25 @@
+{
+  "deployName": "yamldeploytest",
+  "createTime": 1454382498,
+  "creator": {
+    "creatorType": "USER",
+    "creatorId": 1
+  },
+  "namespace": "default",
+  "clusterId": 25,
+  "hostEnv": "TEST",
+  "loadBalanceDrafts": [],
+  "replicas": 1,
+  "labelSelectors": [
+    {
+      "name": "TESTENV",
+      "content": "HOSTENVTYPE"
+    }
+  ],
+  "stateful": false,
+  "scalable": true,
+  "hostList": [],
+  "accessType": "K8S_SERVICE",
+  "versionType": "YAML",
+  "podSpecStr": "containers:\n  - name: key-value-store\n    image: redis\n    ports:\n      - containerPort: 6379\n  - name: frontend\n    image: django\n    ports:\n      - containerPort: 8000"
+}

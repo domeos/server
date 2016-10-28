@@ -65,6 +65,7 @@ public class GitConfigServiceImpl implements GitConfigService {
         }
 
         GlobalInfo globalInfo = new GlobalInfo(gitConfig.getType(), gitConfig.getUrl());
+        globalBiz.deleteGlobalInfoByType(gitConfig.getType());
         globalBiz.addGlobalInfo(globalInfo);
         gitConfig.setId(globalInfo.getId());
 

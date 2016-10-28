@@ -1,11 +1,10 @@
 package org.domeos.framework.api.model.deployment.related;
 
+import io.fabric8.kubernetes.api.model.*;
 import org.apache.commons.lang3.StringUtils;
+
 import org.domeos.framework.api.consolemodel.deployment.ContainerDraft;
-import org.domeos.client.kubernetesclient.definitions.v1.EmptyDirVolumeSource;
-import org.domeos.client.kubernetesclient.definitions.v1.EnvVar;
-import org.domeos.client.kubernetesclient.definitions.v1.Volume;
-import org.domeos.client.kubernetesclient.definitions.v1.VolumeMount;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,10 +57,9 @@ public class LogDraft {
      * so that the flume container can access the log file
      * @return
      */
-    public static VolumeMount[] formatOriginalContainerVolumeMount(LogDraft logDraft) {
+    public static List<VolumeMount> formatOriginalContainerVolumeMount(List<LogItemDraft> logItemDrafts, int idxSuffix) {
         List<VolumeMount> volumeMounts = new ArrayList<>();
-        int idxSuffix = 1;
-        for (LogItemDraft logItemDraft : logDraft.getLogItemDrafts()) {
+        for (LogItemDraft logItemDraft : logItemDrafts) {
             if (logItemDraft.isAutoCollect() || logItemDraft.isAutoDelete()) {
                 VolumeMount volumeMount = new VolumeMount();
                 volumeMount.setName("data" + idxSuffix);
@@ -70,7 +68,7 @@ public class LogDraft {
                 idxSuffix++;
             }
         }
-        return volumeMounts.toArray(new VolumeMount[]{});
+        return volumeMounts;
     }
 
     /**
@@ -78,7 +76,8 @@ public class LogDraft {
      * @param logDraft
      * @return
      */
-    public static VolumeMount[] formatFlumeContainerVolumeMount(LogDraft logDraft) {
+    @Deprecated
+    public static List<VolumeMount> formatFlumeContainerVolumeMount(LogDraft logDraft) {
         List<VolumeMount> volumeMounts = new ArrayList<>();
         int idxSuffix = 1;
         for (LogItemDraft logItemDraft : logDraft.getLogItemDrafts()) {
@@ -90,40 +89,155 @@ public class LogDraft {
                 idxSuffix++;
             }
         }
-        return volumeMounts.toArray(new VolumeMount[]{});
+        return volumeMounts;
     }
 
-    public static Volume[] formatPodVolume(LogDraft logDraft) {
+    public static List<VolumeMount> formatFlumeContainerVolumeMount(List<ContainerDraft> containerDrafts) {
+        List<VolumeMount> volumeMounts = new ArrayList<>();
+        int idxSuffix = 1;
+        for (ContainerDraft containerDraft : containerDrafts) {
+            for (LogItemDraft logItemDraft : containerDraft.getLogItemDrafts()) {
+                if (logItemDraft.isAutoCollect() || logItemDraft.isAutoDelete()) {
+                    VolumeMount volumeMount = new VolumeMount();
+                    volumeMount.setName("data" + idxSuffix);
+                    volumeMount.setMountPath(FLUME_MOUNT_PATH_PREFIX + idxSuffix);
+                    volumeMounts.add(volumeMount);
+                    idxSuffix++;
+                }
+            }
+        }
+        return volumeMounts;
+    }
+
+    @Deprecated
+    public static List<Volume> formatPodVolume(LogDraft logDraft) {
         List<Volume> volumes = new ArrayList<>();
         int idxSuffix = 1;
         for (LogItemDraft logItemDraft : logDraft.getLogItemDrafts()) {
             if (logItemDraft.isAutoCollect() || logItemDraft.isAutoDelete()) {
-                Volume volume = new Volume();
-                volume.setName("data" + idxSuffix);
-                volume.setEmptyDir(new EmptyDirVolumeSource());
+                Volume volume = new VolumeBuilder()
+                        .withName("data" + idxSuffix)
+                        .withEmptyDir(new EmptyDirVolumeSource())
+                        .build();
                 volumes.add(volume);
                 idxSuffix++;
             }
         }
-        return volumes.toArray(new Volume[]{});
+        return volumes;
     }
 
-    public static EnvVar[] formatEnv(LogDraft logDraft) {
+    public static List<Volume> formatPodVolume(List<ContainerDraft> containerDrafts) {
+        List<Volume> volumes = new ArrayList<>();
+        int idxSuffix = 1;
+        for (ContainerDraft containerDraft : containerDrafts) {
+            for (LogItemDraft logItemDraft : containerDraft.getLogItemDrafts()) {
+                if (logItemDraft.isAutoCollect() || logItemDraft.isAutoDelete()) {
+                    Volume volume = new Volume();
+                    volume.setName("data" + idxSuffix);
+                    volume.setEmptyDir(new EmptyDirVolumeSource());
+                    volumes.add(volume);
+                    idxSuffix++;
+                }
+            }
+        }
+        return volumes;
+    }
+
+    public static List<EnvVar> formatContainerLogEnv(String kafkaBrokers, List<ContainerDraft> containerDrafts) {
+        List<EnvVar> envs = new ArrayList<>();
+        int idxSuffix = 1;
+        int idxFlumeSuffix=1;
+        int idxCleanSuffix=1;
+        for ( ContainerDraft containerDraft : containerDrafts) {
+            for (LogItemDraft logItemDraft : containerDraft.getLogItemDrafts()) {
+                if (logItemDraft.isAutoCollect()) {
+                    String logFileName = FLUME_MOUNT_PATH_PREFIX + idxSuffix
+                            + "/" + LogItemDraft.getLogFileName(logItemDraft.getLogPath());
+                    EnvVar tmpEnv = new EnvVarBuilder()
+                            .withName(String.format("DOMEOS_FLUME_LOGFILE%d", idxFlumeSuffix))
+                            .withValue(logFileName)
+                            .build();
+                    envs.add(tmpEnv);
+                    tmpEnv = new EnvVarBuilder()
+                            .withName(String.format("DOMEOS_FLUME_TOPIC%d", idxFlumeSuffix))
+                            .withValue(logItemDraft.getLogTopic())
+                            .build();
+                    envs.add(tmpEnv);
+                    if (!StringUtils.isBlank(logItemDraft.getProcessCmd())) {
+                        tmpEnv = new EnvVarBuilder()
+                                .withName(String.format("DOMEOS_FLUME_MORECMD%d", idxFlumeSuffix))
+                                .withValue(logItemDraft.getProcessCmd())
+                                .build();
+                        envs.add(tmpEnv);
+                    }
+                    idxFlumeSuffix++;
+                }
+                if (logItemDraft.isAutoDelete()) {
+                    String logFileName = FLUME_MOUNT_PATH_PREFIX + idxSuffix
+                            + "/" + LogItemDraft.getLogFileName(logItemDraft.getLogPath());
+                    EnvVar tmpEnv = new EnvVarBuilder()
+                            .withName(String.format("DOMEOS_CLEAN_LOGFILE%d", idxCleanSuffix))
+                            .withValue(logFileName)
+                            .build();
+                    envs.add(tmpEnv);
+                    tmpEnv = new EnvVarBuilder()
+                            .withName(String.format("DOMEOS_CLEAN_EXPIRETIME%d", idxCleanSuffix))
+                            .withValue(Long.toString(logItemDraft.getLogExpired()*60))
+                            .build();
+                    // HOUR to minute
+                    envs.add(tmpEnv);
+                    idxCleanSuffix++;
+                }
+                idxSuffix++;
+            }
+        }
+        if (idxFlumeSuffix > 1) {
+            EnvVar tmpEnv = new EnvVarBuilder()
+                    .withName("DOMEOS_FLUME_LOG_COUNT")
+                    .withValue(Integer.toString(idxFlumeSuffix-1))
+                    .build();
+            envs.add(tmpEnv);
+            // kafka
+            tmpEnv = new EnvVarBuilder()
+                    .withName("DOMEOS_FLUME_BROKER")
+                    .withValue(kafkaBrokers)
+                    .build();
+            envs.add(tmpEnv);
+        }
+        if (idxCleanSuffix > 1) {
+            // delete log count
+            EnvVar tmpEnv = new EnvVarBuilder()
+                    .withName("DOMEOS_CLEAN_LOG_COUNT")
+                    .withValue(Integer.toString(idxCleanSuffix-1))
+                    .build();
+            envs.add(tmpEnv);
+        }
+        return envs;
+    }
+
+    @Deprecated
+    public static List<EnvVar> formatLogDraftEnv(LogDraft logDraft) {
         List<EnvVar> envs = new ArrayList<>();
         if (logDraft.isAutoCollect()) {
             // collect log count
-            EnvVar tmpEnv = new EnvVar();
-            tmpEnv.putName("DOMEOS_FLUME_LOG_COUNT").putValue(Integer.toString(logDraft.autoCollectLogCount()));
+            EnvVar tmpEnv = new EnvVarBuilder()
+                    .withName("DOMEOS_FLUME_LOG_COUNT")
+                    .withValue(Integer.toString(logDraft.autoCollectLogCount()))
+                    .build();
             envs.add(tmpEnv);
             // kafka
-            tmpEnv = new EnvVar();
-            tmpEnv.putName("DOMEOS_FLUME_BROKER").putValue(logDraft.getKafkaBrokers());
+            tmpEnv = new EnvVarBuilder()
+                    .withName("DOMEOS_FLUME_BROKER")
+                    .withValue(logDraft.getKafkaBrokers())
+                    .build();
             envs.add(tmpEnv);
         }
         if (logDraft.isAutoDelete()) {
             // delete log count
-            EnvVar tmpEnv = new EnvVar();
-            tmpEnv.putName("DOMEOS_CLEAN_LOG_COUNT").putValue(Integer.toString(logDraft.autoDeleteLogCount()));
+            EnvVar tmpEnv = new EnvVarBuilder()
+                    .withName("DOMEOS_CLEAN_LOG_COUNT")
+                    .withValue(Integer.toString(logDraft.autoDeleteLogCount()))
+                    .build();
             envs.add(tmpEnv);
         }
         int idxSuffix = 1;
@@ -131,33 +245,40 @@ public class LogDraft {
         int idxCleanSuffix=1;
         for (LogItemDraft logItemDraft : logDraft.getLogItemDrafts()) {
             if (logItemDraft.isAutoCollect()) {
-                EnvVar tmpEnv = new EnvVar();
                 String logFileName = FLUME_MOUNT_PATH_PREFIX + idxSuffix
                     + "/" + LogItemDraft.getLogFileName(logItemDraft.getLogPath());
-                tmpEnv.putName(String.format("DOMEOS_FLUME_LOGFILE%d", idxFlumeSuffix)).putValue(logFileName);
+                EnvVar tmpEnv = new EnvVarBuilder()
+                        .withName(String.format("DOMEOS_FLUME_LOGFILE%d", idxFlumeSuffix))
+                        .withValue(logFileName)
+                        .build();
                 envs.add(tmpEnv);
-                tmpEnv = new EnvVar();
-                tmpEnv.putName(String.format("DOMEOS_FLUME_TOPIC%d", idxFlumeSuffix)).putValue(
-                    logItemDraft.getLogTopic());
+                tmpEnv = new EnvVarBuilder()
+                        .withName(String.format("DOMEOS_FLUME_TOPIC%d", idxFlumeSuffix))
+                        .withValue(logItemDraft.getLogTopic())
+                        .build();
                 envs.add(tmpEnv);
                 if (!StringUtils.isBlank(logItemDraft.getProcessCmd())) {
-                    tmpEnv = new EnvVar();
-                    tmpEnv.putName(String.format("DOMEOS_FLUME_MORECMD%d", idxFlumeSuffix)).putValue(
-                        logItemDraft.getProcessCmd());
+                    tmpEnv = new EnvVarBuilder()
+                            .withName(String.format("DOMEOS_FLUME_MORECMD%d", idxFlumeSuffix))
+                            .withValue(logItemDraft.getProcessCmd())
+                            .build();
                     envs.add(tmpEnv);
                 }
                 idxFlumeSuffix++;
             }
             if (logItemDraft.isAutoDelete()) {
-                EnvVar tmpEnv = new EnvVar();
                 String logFileName = FLUME_MOUNT_PATH_PREFIX + idxSuffix
                     + "/" + LogItemDraft.getLogFileName(logItemDraft.getLogPath());
-                tmpEnv.putName(String.format("DOMEOS_CLEAN_LOGFILE%d", idxCleanSuffix)).putValue(logFileName);
+                EnvVar tmpEnv = new EnvVarBuilder()
+                        .withName(String.format("DOMEOS_CLEAN_LOGFILE%d", idxCleanSuffix))
+                        .withValue(logFileName)
+                        .build();
                 envs.add(tmpEnv);
-                tmpEnv = new EnvVar();
+                tmpEnv = new EnvVarBuilder()
+                        .withName(String.format("DOMEOS_CLEAN_EXPIRETIME%d", idxCleanSuffix))
+                        .withValue(Long.toString(logItemDraft.getLogExpired()*60))
+                        .build();
                 // HOUR to minute
-                tmpEnv.putName(String.format("DOMEOS_CLEAN_EXPIRETIME%d", idxCleanSuffix)).putValue(
-                    Long.toString(logItemDraft.getLogExpired()*60));
                 envs.add(tmpEnv);
                 idxCleanSuffix++;
             }
@@ -166,7 +287,7 @@ public class LogDraft {
 //        tmpEnv = new EnvVar();
 //        tmpEnv.putName("DOMEOS_FLUME_CHANNEL_DIR").putValue("/log");
 //        envs.add(tmpEnv);
-        return envs.toArray(new EnvVar[]{});
+        return envs;
     }
 
     private int autoCollectLogCount() {

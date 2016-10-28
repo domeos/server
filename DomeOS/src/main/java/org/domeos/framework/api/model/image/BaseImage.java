@@ -75,7 +75,7 @@ public class BaseImage {
 
     public String imageInfo() {
         if (StringUtils.isBlank(registry)) {
-            return  imageName;
+            return imageName;
         } else {
             String prefix = CommonUtil.domainUrl(registry);
             return prefix + "/" + imageName;
@@ -91,12 +91,12 @@ public class BaseImage {
     }
 
     public boolean equals(Object other) {
-        BaseImage baseImage = (BaseImage)other;
+        BaseImage baseImage = (BaseImage) other;
         return this.imageName.equals(baseImage.getImageName()) && this.registry.equals(baseImage.getRegistry());
     }
 
     @Override
     public String toString() {
-        return "{\"imageName\":" + imageName + ",\"imageTag\":" + imageTag +",\"registry\":" + registry + "}";
+        return "{\"imageName\":" + imageName + ",\"imageTag\":" + imageTag + ",\"registry\":" + registry + "}";
     }
 }

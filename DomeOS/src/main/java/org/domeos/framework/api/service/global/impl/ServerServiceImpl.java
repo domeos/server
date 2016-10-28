@@ -50,6 +50,7 @@ public class ServerServiceImpl implements ServerService {
             throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "server info already exist");
         }
 
+        globalBiz.deleteServer();
         globalBiz.setServer(server);
         return ResultStat.OK.wrap(server);
     }

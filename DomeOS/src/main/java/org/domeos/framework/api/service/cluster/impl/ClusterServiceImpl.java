@@ -1,13 +1,10 @@
 package org.domeos.framework.api.service.cluster.impl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.domeos.basemodel.HttpResponseTemp;
 import org.domeos.basemodel.ResultStat;
-import org.domeos.client.kubernetesclient.definitions.v1.*;
-import org.domeos.client.kubernetesclient.util.NodeUtils;
-import org.domeos.client.kubernetesclient.util.PodUtils;
+import org.domeos.exception.K8sDriverException;
 import org.domeos.framework.api.biz.auth.AuthBiz;
 import org.domeos.framework.api.biz.cluster.ClusterBiz;
 import org.domeos.framework.api.biz.deployment.DeploymentBiz;
@@ -22,10 +19,8 @@ import org.domeos.framework.api.controller.exception.PermitException;
 import org.domeos.framework.api.model.auth.related.Role;
 import org.domeos.framework.api.model.cluster.Cluster;
 import org.domeos.framework.api.model.cluster.related.NamespaceInfo;
-import org.domeos.framework.api.model.cluster.related.NodeInfo;
 import org.domeos.framework.api.model.cluster.related.NodeLabel;
 import org.domeos.framework.api.model.deployment.Deployment;
-import org.domeos.framework.api.model.deployment.related.Instance;
 import org.domeos.framework.api.model.global.CiCluster;
 import org.domeos.framework.api.model.operation.OperationType;
 import org.domeos.framework.api.model.resource.Resource;
@@ -33,22 +28,24 @@ import org.domeos.framework.api.model.resource.related.ResourceType;
 import org.domeos.framework.api.service.cluster.ClusterService;
 import org.domeos.framework.engine.AuthUtil;
 import org.domeos.framework.engine.ClusterRuntimeDriver;
+import org.domeos.framework.engine.RuntimeDriverFactory;
 import org.domeos.framework.engine.exception.DaoException;
 import org.domeos.framework.engine.k8s.K8sDriver;
 import org.domeos.framework.engine.k8s.NodeWrapper;
+import org.domeos.framework.engine.k8s.util.Fabric8KubeUtils;
+import org.domeos.framework.engine.k8s.util.KubeUtils;
+import org.domeos.framework.engine.model.CustomObjectMapper;
 import org.domeos.global.ClientConfigure;
 import org.domeos.global.CurrentThreadInfo;
-import org.domeos.framework.engine.RuntimeDriverFactory;
 import org.domeos.global.GlobalConstant;
-import org.domeos.util.CommonUtil;
-import org.domeos.util.DateUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.text.ParseException;
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -75,6 +72,9 @@ public class ClusterServiceImpl implements ClusterService {
 
     @Autowired
     AuthBiz authBiz;
+
+    @Autowired
+    CustomObjectMapper mapper;
 
     @Override
     public HttpResponseTemp<?> setCluster(ClusterCreate clusterCreate) {
@@ -109,7 +109,6 @@ public class ClusterServiceImpl implements ClusterService {
 
         resourceBiz.addResource(cluster.getId(), ResourceType.CLUSTER, creatorDraft.getCreatorId(), creatorDraft.getCreatorType(), Role.MASTER);
 
-//        ClusterRuntimeDriver.addClusterDriver(cluster.getId(), new K8sDriver().init(cluster));
         ClusterRuntimeDriver.addClusterDriver(cluster.getId(), RuntimeDriverFactory.getRuntimeDriver(K8sDriver.class, cluster));
 
         return ResultStat.OK.wrap(clusterInfo);
@@ -138,9 +137,8 @@ public class ClusterServiceImpl implements ClusterService {
             buildConfig = 1;
         }
 
-        ClusterInfo clusterInfo = new ClusterInfo(cluster.getId(), cluster.getName(), cluster.getApi(), cluster.getTag(),
-                cluster.getDomain(), cluster.getDns(), cluster.getEtcd(), cluster.getOwnerName(), cluster.getLogConfig(),
-                cluster.getCreateTime(), buildConfig, cluster.getClusterLog());
+        ClusterInfo clusterInfo = ClusterInfo.fromCluster(cluster);
+        clusterInfo.setBuildConfig(buildConfig);
         return ResultStat.OK.wrap(clusterInfo);
     }
 
@@ -158,15 +156,15 @@ public class ClusterServiceImpl implements ClusterService {
             throw ApiException.wrapResultStat(ResultStat.CLUSTER_NOT_EXIST);
         }
 
-        oldCluster.update(clusterInfo);
-
         try {
+            KubeUtils kubeUtils = Fabric8KubeUtils.buildKubeUtils(oldCluster, null);
+            kubeUtils.deleteKubeUtils(oldCluster);
+            oldCluster.update(clusterInfo);
             clusterBiz.updateCluster(oldCluster);
-        } catch (DaoException e) {
+        } catch (DaoException | K8sDriverException e) {
             throw ApiException.wrapKnownException(ResultStat.CANNOT_UPDATE_CLUSTER, e);
         }
 
-//        ClusterRuntimeDriver.updateClusterDriver(clusterInfo.getId(), new K8sDriver().init(oldCluster));
         ClusterRuntimeDriver.updateClusterDriver(clusterInfo.getId(), RuntimeDriverFactory.getRuntimeDriver(K8sDriver.class, oldCluster));
 
         return ResultStat.OK.wrap(clusterInfo);
@@ -177,13 +175,25 @@ public class ClusterServiceImpl implements ClusterService {
 
         checkOperationPermission(id, OperationType.DELETE);
 
+        Cluster oldCluster = clusterBiz.getById(GlobalConstant.CLUSTER_TABLE_NAME, id, Cluster.class);
+        if (oldCluster == null) {
+            throw ApiException.wrapResultStat(ResultStat.CLUSTER_NOT_EXIST);
+        }
+
         List<Deployment> deployments = deploymentBiz.listDeploymentByClusterId(id);
         if (deployments != null && deployments.size() > 0) {
             throw ApiException.wrapMessage(ResultStat.DEPLOYMENT_EXIST, "There are deployments in this cluster, you must delete them first");
         }
         clusterBiz.removeById(GlobalConstant.CLUSTER_TABLE_NAME, id);
+        resourceBiz.deleteResourceByIdAndType(id, ResourceType.CLUSTER);
 
         ClusterRuntimeDriver.removeClusterDriver(id);
+        try {
+            KubeUtils kubeUtils = Fabric8KubeUtils.buildKubeUtils(oldCluster, null);
+            kubeUtils.deleteKubeUtils(oldCluster);
+        } catch (K8sDriverException e) {
+            throw ApiException.wrapKnownException(ResultStat.CREATOR_ERROR, e);
+        }
 
         return ResultStat.OK.wrap(null);
     }
@@ -223,31 +233,10 @@ public class ClusterServiceImpl implements ClusterService {
 
     @Override
     public HttpResponseTemp<?> getNodeListByClusterId(int id) {
-
         checkOperationPermission(id, OperationType.GET);
-
         try {
             NodeWrapper nodeWrapper = new NodeWrapper().init(id, null);
-            NodeList nodeList = getClusterNodeList(nodeWrapper);
-            List<NodeInfo> nodeInfo = new LinkedList<>();
-            if (nodeList != null && nodeList.getItems() != null) {
-                List<Future<NodeInfo>> futures = new LinkedList<>();
-                for (Node node : nodeList.getItems()) {
-                    Future<NodeInfo> future = ClientConfigure.executorService.submit(new NodeInfoTask(node, id));
-                    futures.add(future);
-                }
-                for (Future<NodeInfo> future : futures) {
-                    try {
-                        NodeInfo info = future.get();
-                        if (info != null) {
-                            nodeInfo.add(info);
-                        }
-                    } catch (InterruptedException | ExecutionException e) {
-                        logger.warn("get cluster node list error, message is " + e.getMessage());
-                    }
-                }
-            }
-            return ResultStat.OK.wrap(nodeInfo);
+            return ResultStat.OK.wrap(nodeWrapper.getNodeListByClusterId());
         } catch (Exception e) {
             throw ApiException.wrapUnknownException(e);
         }
@@ -255,26 +244,10 @@ public class ClusterServiceImpl implements ClusterService {
 
     @Override
     public HttpResponseTemp<?> getNodeByClusterIdAndName(int id, String name) {
-
         checkOperationPermission(id, OperationType.GET);
-
         try {
             NodeWrapper nodeWrapper = new NodeWrapper().init(id, null);
-            NodeList nodeList = getClusterNodeList(nodeWrapper);
-            NodeInfo nodeInfo = null;
-            if (nodeList != null && nodeList.getItems() != null) {
-                for (Node node : nodeList.getItems()) {
-                    if (node.getMetadata() != null && name.equals(node.getMetadata().getName())) {
-                        nodeInfo = new NodeInfo();
-                        fillNodeInfo(node, nodeInfo, nodeWrapper);
-                        break;
-                    }
-                }
-            }
-            if (nodeInfo == null) {
-                throw ApiException.wrapMessage(ResultStat.RESOURCE_NOT_EXIST, "no such node");
-            }
-            return ResultStat.OK.wrap(nodeInfo);
+            return ResultStat.OK.wrap(nodeWrapper.getNodeInfo(name));
         } catch (Exception e) {
             throw ApiException.wrapUnknownException(e);
         }
@@ -282,31 +255,22 @@ public class ClusterServiceImpl implements ClusterService {
 
     @Override
     public HttpResponseTemp<?> getInstanceListByNodeName(int id, String name) {
-
         checkOperationPermission(id, OperationType.GET);
-
         // todo: instance
-        Map<String, List<Instance>> nodeInstances = getInstances(id);
-        return ResultStat.OK.wrap(nodeInstances.get(name));
+        try {
+            NodeWrapper nodeWrapper = new NodeWrapper().init(id, null);
+            return ResultStat.OK.wrap(nodeWrapper.getInstance(name));
+        } catch (Exception e) {
+            throw ApiException.wrapUnknownException(e);
+        }
     }
 
     @Override
     public HttpResponseTemp<?> getLabelsByClusterId(int id) {
-
         checkOperationPermission(id, OperationType.GET);
-
-        Map<String, String> labels = new HashMap<>();
         try {
             NodeWrapper nodeWrapper = new NodeWrapper().init(id, null);
-            NodeList nodeList = getClusterNodeList(nodeWrapper);
-            if (nodeList != null && nodeList.getItems() != null) {
-                for (Node node : nodeList.getItems()) {
-                    if (node.getMetadata() != null && node.getMetadata().getLabels() != null) {
-                        labels.putAll(node.getMetadata().getLabels());
-                    }
-                }
-            }
-            return ResultStat.OK.wrap(labels);
+            return ResultStat.OK.wrap(nodeWrapper.getClusterLabels());
         } catch (Exception e) {
             throw ApiException.wrapUnknownException(e);
         }
@@ -314,24 +278,12 @@ public class ClusterServiceImpl implements ClusterService {
 
     @Override
     public HttpResponseTemp<?> getNodeListByClusterIdWithLabels(int id, String labels) {
-
         checkOperationPermission(id, OperationType.GET);
-
-        ObjectMapper mapper = new ObjectMapper();
         try {
             Map<String, String> labelsMap = mapper.readValue(labels, new TypeReference<Map<String, String>>() {
             });
             NodeWrapper nodeWrapper = new NodeWrapper().init(id, null);
-            NodeList nodeList = getNodeListByClusterIdWithLabels(nodeWrapper, labelsMap);
-            List<NodeInfo> nodeInfos = new LinkedList<>();
-            if (nodeList != null && nodeList.getItems() != null) {
-                for (Node node : nodeList.getItems()) {
-                    NodeInfo nodeInfo = new NodeInfo();
-                    fillNodeInfo(node, nodeInfo, nodeWrapper);
-                    nodeInfos.add(nodeInfo);
-                }
-            }
-            return ResultStat.OK.wrap(nodeInfos);
+            return ResultStat.OK.wrap(nodeWrapper.getNodeListByLabel(labelsMap));
         } catch (Exception e) {
             throw ApiException.wrapUnknownException(e);
         }
@@ -393,210 +345,6 @@ public class ClusterServiceImpl implements ClusterService {
         return ResultStat.OK.wrap(null);
     }
 
-    public void fillNodeInfo(Node node, NodeInfo nodeInfo, NodeWrapper nodeWrapper) throws ParseException {
-        if (node.getMetadata() != null) {
-            nodeInfo.setLabels(node.getMetadata().getLabels());
-            nodeInfo.setName(node.getMetadata().getName());
-            nodeInfo.setRunningPods(getRunningPods(nodeWrapper, nodeInfo.getName()));
-            if (node.getMetadata().getAnnotations() != null) {
-                nodeInfo.setDiskInfo(node.getMetadata().getAnnotations().get(GlobalConstant.DISK_STR));
-            }
-            nodeInfo.setCreateTime(DateUtil.string2timestamp(node.getMetadata().getCreationTimestamp(), TimeZone.getTimeZone(GlobalConstant.UTC_TIME)));
-        }
-        if (node.getStatus() != null && node.getStatus().getAddresses() != null) {
-            for (NodeAddress nodeAddress : node.getStatus().getAddresses()) {
-                if (nodeAddress.getType().equalsIgnoreCase("internalip")) {
-                    nodeInfo.setIp(nodeAddress.getAddress());
-                }
-            }
-            Map<String, String> capacity = node.getStatus().getCapacity();
-            if (capacity != null) {
-                capacity.put("memory", CommonUtil.getMemory(capacity.get("memory")));
-            }
-            nodeInfo.setCapacity(capacity);
-        }
-        if (NodeUtils.isReady(node)) {
-            nodeInfo.setStatus("Ready");
-        } else {
-            nodeInfo.setStatus("NotReady");
-        }
-    }
-
-    public List<ClusterListInfo> getClusterListByUserId(int userId) {
-        List<Resource> resources = AuthUtil.getResourceList(userId, ResourceType.CLUSTER);
-        List<ClusterListInfo> clusterListInfo = new LinkedList<>();
-
-        if (resources != null && resources.size() > 0) {
-            List<Future<ClusterListInfo>> futures = new LinkedList<>();
-            for (Resource resource : resources) {
-                Future<ClusterListInfo> future = ClientConfigure.executorService.submit(new ClusterListInfoTask(resource.getResourceId()));
-                futures.add(future);
-            }
-            for (Future<ClusterListInfo> future : futures) {
-                try {
-                    ClusterListInfo info = future.get();
-                    if (info != null) {
-                        clusterListInfo.add(info);
-                    }
-                } catch (InterruptedException | ExecutionException e) {
-                    logger.warn("get cluster list error, message is " + e.getMessage());
-                }
-            }
-        }
-        return clusterListInfo;
-    }
-
-    public class ClusterListInfoTask implements Callable<ClusterListInfo> {
-        int clusterId;
-
-        public ClusterListInfoTask(int clusterId) {
-            this.clusterId = clusterId;
-        }
-
-        @Override
-        public ClusterListInfo call() throws Exception {
-            Cluster cluster = clusterBiz.getById(GlobalConstant.CLUSTER_TABLE_NAME, clusterId, Cluster.class);
-            if (cluster == null) {
-                return null;
-            }
-            int nodeNum = 0, podNum = 0;
-            try {
-                NodeWrapper nodeWrapper = new NodeWrapper().init(clusterId, null);
-                NodeList nodeList = nodeWrapper.getNodeList();
-                if (nodeList != null && nodeList.getItems() != null) {
-                    nodeNum = nodeList.getItems().length;
-                }
-                PodList podList = nodeWrapper.getAllPods();
-                if (podList != null && podList.getItems() != null) {
-                    podNum = nodeWrapper.getRunningPodNumbers(podList.getItems());
-                }
-            } catch (Exception e) {
-                logger.warn("get cluster info error, message is " + e.getMessage());
-            }
-
-            int buildConfig = 0;
-            CiCluster ciCluster = globalBiz.getCiCluster();
-            if (ciCluster != null && ciCluster.getClusterId() == cluster.getId()) {
-                buildConfig = 1;
-            }
-
-            return new ClusterListInfo(cluster.getId(), cluster.getName(), cluster.getApi(), cluster.getTag(),
-                    cluster.getDomain(), cluster.getLogConfig(), cluster.getOwnerName(), cluster.getCreateTime(), nodeNum, podNum, buildConfig);
-        }
-    }
-
-    public NodeList getClusterNodeList(NodeWrapper nodeWrapper) {
-        try {
-            return nodeWrapper.getNodeList();
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    public NodeList getNodeListByClusterIdWithLabels(NodeWrapper nodeWrapper, Map<String, String> labels) {
-        try {
-            return nodeWrapper.getNodeListByLabels(labels);
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    public int getRunningPods(NodeWrapper nodeWrapper, String nodeName) {
-        try {
-            List<Pod> pods = nodeWrapper.getPodListByNode(nodeName);
-            return nodeWrapper.getRunningPodNumbers(pods);
-        } catch (Exception e) {
-            return 0;
-        }
-    }
-
-    public Map<String, List<Instance>> getInstances(int clusterId) {
-        try {
-            NodeWrapper nodeWrapper = new NodeWrapper().init(clusterId, null);
-            PodList podList = nodeWrapper.getAllPods();
-            Map<String, List<Instance>> nodeInstances = new HashMap<>();
-            if (podList != null && podList.getItems() != null) {
-                for (Pod pod : podList.getItems()) {
-                    if (!PodUtils.isPodReady(pod)) {
-                        continue;
-                    }
-                    Instance instance = new Instance();
-                    if (pod.getMetadata() != null) {
-                        instance.setInstanceName(pod.getMetadata().getName());
-                        instance.setNamespace(pod.getMetadata().getNamespace());
-                        if (pod.getMetadata().getLabels() != null) {
-                            if (pod.getMetadata().getLabels().containsKey(GlobalConstant.DEPLOY_ID_STR) &&
-                                    pod.getMetadata().getLabels().containsKey(GlobalConstant.VERSION_STR)) {
-                                int deployId = Integer.valueOf(pod.getMetadata().getLabels().get(GlobalConstant.DEPLOY_ID_STR));
-                                int versionId = Integer.valueOf(pod.getMetadata().getLabels().get(GlobalConstant.VERSION_STR));
-                                // todo: deployment update
-                                Deployment deployment = deploymentBiz.getDeployment(deployId);
-                                if (deployment != null) {
-                                    instance.setDeloyId(deployId);
-                                    instance.setDeployName(deployment.getName());
-                                    instance.setVersionId(versionId);
-                                }
-                            }
-                        }
-                    }
-                    if (pod.getSpec() != null) {
-                        instance.setHostName(pod.getSpec().getNodeName());
-                    }
-                    if (pod.getStatus() != null) {
-                        instance.setStartTime(DateUtil.string2timestamp(pod.getStatus().getStartTime(), TimeZone.getTimeZone(GlobalConstant.UTC_TIME)));
-                        instance.setPodIp(pod.getStatus().getPodIP());
-                        instance.setHostIp(pod.getStatus().getHostIP());
-                        if (pod.getStatus().getContainerStatuses() != null) {
-                            for (ContainerStatus containerStatus : pod.getStatus().getContainerStatuses()) {
-                                String containerId = containerStatus.getContainerID().split("docker://")[1];
-                                instance.addContainer(new org.domeos.framework.api.model.deployment.related.Container(containerId,
-                                        containerStatus.getName(), containerStatus.getImage()));
-                            }
-                        }
-                    }
-                    if (nodeInstances.containsKey(instance.getHostName())) {
-                        List<Instance> instances = nodeInstances.get(instance.getHostName());
-                        if (instances == null) {
-                            instances = new LinkedList<>();
-                        }
-                        instances.add(instance);
-                    } else {
-                        List<Instance> instances = new LinkedList<>();
-                        instances.add(instance);
-                        nodeInstances.put(instance.getHostName(), instances);
-                    }
-                }
-            }
-            return nodeInstances;
-        } catch (Exception e) {
-            logger.error("get instance info error, " + e);
-            return null;
-        }
-    }
-
-    public class NodeInfoTask implements Callable<NodeInfo> {
-        Node node;
-        int clusterId;
-
-        public NodeInfoTask(Node node, int clusterId) {
-            this.node = node;
-            this.clusterId = clusterId;
-        }
-
-        @Override
-        public NodeInfo call() throws Exception {
-            NodeInfo nodeInfo = new NodeInfo();
-            NodeWrapper nodeWrapper = new NodeWrapper().init(clusterId, null);
-            fillNodeInfo(node, nodeInfo, nodeWrapper);
-            if (node != null && node.getMetadata() != null
-                    && node.getMetadata().getAnnotations() != null
-                    && node.getMetadata().getAnnotations().containsKey(GlobalConstant.DISK_STR)) {
-                nodeInfo.setDiskInfo(node.getMetadata().getAnnotations().get(GlobalConstant.DISK_STR));
-            }
-            return nodeInfo;
-        }
-    }
-
     // TODO should add a table in mysql to record disk for node info
     @Override
     public HttpResponseTemp<?> addDiskForNode(int id, String nodeName, String path) throws Exception {
@@ -620,7 +368,66 @@ public class ClusterServiceImpl implements ClusterService {
         return ResultStat.OK.wrap(null);
     }
 
-    public void checkOperationPermission(int id, org.domeos.framework.api.model.operation.OperationType operationType) {
+    private List<ClusterListInfo> getClusterListByUserId(int userId) {
+        List<Resource> resources = AuthUtil.getResourceList(userId, ResourceType.CLUSTER);
+        List<ClusterListInfo> clusterListInfo = new LinkedList<>();
+
+        if (resources != null && resources.size() > 0) {
+            List<Future<ClusterListInfo>> futures = new LinkedList<>();
+            CiCluster ciCluster = globalBiz.getCiCluster();
+            for (Resource resource : resources) {
+                Future<ClusterListInfo> future = ClientConfigure.executorService.submit(new ClusterListInfoTask(resource.getResourceId(), ciCluster));
+                futures.add(future);
+            }
+            for (Future<ClusterListInfo> future : futures) {
+                try {
+                    ClusterListInfo info = future.get();
+                    if (info != null) {
+                        clusterListInfo.add(info);
+                    }
+                } catch (InterruptedException | ExecutionException e) {
+                    logger.warn("get cluster list error, message is " + e.getMessage());
+                }
+            }
+        }
+        return clusterListInfo;
+    }
+
+    private class ClusterListInfoTask implements Callable<ClusterListInfo> {
+        private int clusterId;
+        private CiCluster ciCluster;
+
+        ClusterListInfoTask(int clusterId, CiCluster ciCluster) {
+            this.clusterId = clusterId;
+            this.ciCluster = ciCluster;
+        }
+
+        @Override
+        public ClusterListInfo call() throws Exception {
+            Cluster cluster = clusterBiz.getById(GlobalConstant.CLUSTER_TABLE_NAME, clusterId, Cluster.class);
+            if (cluster == null) {
+                return null;
+            }
+            int nodeNum = 0, podNum = 0;
+            try {
+                NodeWrapper nodeWrapper = new NodeWrapper().init(clusterId, null);
+                nodeNum = nodeWrapper.getNodeCount();
+                podNum = nodeWrapper.getPodCount();
+            } catch (Exception e) {
+                logger.warn("get cluster info error, message is " + e.getMessage());
+            }
+
+            int buildConfig = 0;
+            if (ciCluster != null && ciCluster.getClusterId() == cluster.getId()) {
+                buildConfig = 1;
+            }
+
+            return new ClusterListInfo(cluster.getId(), cluster.getName(), cluster.getApi(), cluster.getTag(),
+                    cluster.getDomain(), cluster.getLogConfig(), cluster.getOwnerName(), cluster.getCreateTime(), nodeNum, podNum, buildConfig);
+        }
+    }
+
+    private void checkOperationPermission(int id, org.domeos.framework.api.model.operation.OperationType operationType) {
         int userId = CurrentThreadInfo.getUserId();
         if (!AuthUtil.verify(userId, id, ResourceType.CLUSTER, operationType)) {
             throw new PermitException("userId:" + userId + ", resourceId:" + id);

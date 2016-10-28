@@ -1,6 +1,7 @@
 package org.domeos.framework.api.consolemodel.cluster;
 
 import org.apache.commons.lang3.StringUtils;
+import org.domeos.framework.api.model.cluster.Cluster;
 import org.domeos.framework.api.model.cluster.related.ClusterLog;
 import org.domeos.util.CommonUtil;
 
@@ -12,6 +13,9 @@ public class ClusterInfo {
     private int id;
     private String name;
     private String api;
+    private String username;
+    private String password;
+    private String oauthToken;
     private String tag;
     private String domain;
     private String dns;
@@ -23,23 +27,6 @@ public class ClusterInfo {
     private ClusterLog clusterLog;
 
     public ClusterInfo() {
-    }
-
-    public ClusterInfo(int id, String name, String api, String tag, String domain,
-                       String dns, String etcd, String ownerName, int logConfig,
-                       long createTime, int buildConfig, ClusterLog clusterLog) {
-        this.id = id;
-        this.name = name;
-        this.api = api;
-        this.tag = tag;
-        this.domain = domain;
-        this.dns = dns;
-        this.etcd = etcd;
-        this.ownerName = ownerName;
-        this.logConfig = logConfig;
-        this.createTime = createTime;
-        this.buildConfig = buildConfig;
-        this.clusterLog = clusterLog;
     }
 
     public int getId() {
@@ -64,6 +51,30 @@ public class ClusterInfo {
 
     public void setApi(String api) {
         this.api = api;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getOauthToken() {
+        return oauthToken;
+    }
+
+    public void setOauthToken(String oauthToken) {
+        this.oauthToken = oauthToken;
     }
 
     public String getTag() {
@@ -138,6 +149,25 @@ public class ClusterInfo {
         this.clusterLog = clusterLog;
     }
 
+    public static ClusterInfo fromCluster(Cluster cluster) {
+        ClusterInfo clusterInfo = new ClusterInfo();
+        clusterInfo.id = cluster.getId();
+        clusterInfo.name = cluster.getName();
+        clusterInfo.api = cluster.getApi();
+        clusterInfo.username = cluster.getUsername();
+        clusterInfo.password = cluster.getPassword();
+        clusterInfo.oauthToken = cluster.getOauthToken();
+        clusterInfo.tag = cluster.getTag();
+        clusterInfo.domain = cluster.getDomain();
+        clusterInfo.dns = cluster.getDns();
+        clusterInfo.etcd = cluster.getEtcd();
+        clusterInfo.ownerName = cluster.getOwnerName();
+        clusterInfo.logConfig = cluster.getLogConfig();
+        clusterInfo.createTime = cluster.getCreateTime();
+        clusterInfo.clusterLog = cluster.getClusterLog();
+        return clusterInfo;
+    }
+
     public String checkLegality() {
         if (StringUtils.isBlank(name)) {
             return "cluster name must be set";
@@ -162,7 +192,7 @@ public class ClusterInfo {
             return clusterLog.checkLegality();
         }
         domain = CommonUtil.domainUrl(domain);
-        api = CommonUtil.domainUrl(api);
+        // api = CommonUtil.domainUrl(api);
         return null;
     }
 }
