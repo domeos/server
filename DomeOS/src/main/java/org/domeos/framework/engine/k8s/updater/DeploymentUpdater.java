@@ -254,7 +254,6 @@ public class  DeploymentUpdater {
             throw new NullPointerException("get target rc=" + rcName + " is null");
         }
         Map<String, String> podSelector = rc.getSpec().getSelector();
-        int replicas = rc.getSpec().getReplicas();
         PodList podList = client.listPod(podSelector);
         if (podList == null || podList.getItems() == null) {
             throw new NullPointerException("get podList with selector=" + podSelector

@@ -298,8 +298,8 @@ CREATE UNIQUE INDEX `uniq_port_index_cluster_port` ON uniq_port_index(`port`, `c
 insert into users(username, password, salt, loginType, state) VALUES ('admin','5fdf2372d4f23bdecfd2b8e8d7aacce1','0ea3abcf42700bb1bbcca6c27c92a821','USER','NORMAL');
 insert into users(username, password, salt, loginType, state) VALUES ('test','060b125a2e2de865ccc0f06367bc3491','831d1215e1bcbe99419a3e8f88edb869','USER','NORMAL');
 insert into users(username, password, salt, loginType, state) VALUES ('csf','a190c9f28a28a1d7667f50830d8bf6d5','db5474a6e19613a7081506e2910f5dc4','USER','NORMAL');
-insert into global(type, value) VALUES ('LDAP_SERVER','ldap://ldap.sohu-inc.com:389');
-insert into global(type, value) VALUES ('LDAP_PREFIX','@sohu-inc.com');
+insert into global(type, value) VALUES ('LDAP_SERVER','ldap://test.sohu.com:389');
+insert into global(type, value) VALUES ('LDAP_PREFIX','@sohu.com');
 insert into global(type, value) VALUES ('SERVER','localhost:8080');
 INSERT INTO admin_roles(userId, role) VALUES ('1', 'admin');
 INSERT INTO cluster(name, state, removed, data) VALUES ('mycluster', 'RUNNING', '0', '{"api":"10.16.42.200:8080", "ver":1, "fqcn": "org.domeos.framework.api.model.cluster.Cluster"}');
