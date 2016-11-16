@@ -6,26 +6,30 @@
 		word-wrap: break-word;
 		word-break: break-all;
 	}
+	input.ui-radio + label, input.ui-check + label {
+		min-width: 85px;
+	}
 	.disabled-prompt{
 		padding: 40px 0 0 $wider-padding;
 		font-size: 16px;
 	}
 	.instance-con{
+		padding: 20px;
 		.instance-list{
 			thead{
 				background-color: #fff;
 			}
 			tbody{
-				background-color: dome-color(background,light);
+				// background-color: dome-color(background,light);
 			}
-			th,td{
-				&:first-child{
-					padding-left: $wider-padding;
-				}
-				&:last-child{
-					padding-right: $wider-padding;
-				}
-			}
+			// th,td{
+			// 	&:first-child{
+			// 		padding-left: $wider-padding;
+			// 	}
+			// 	&:last-child{
+			// 		padding-right: $wider-padding;
+			// 	}
+			// }
 		}
 	}
 	.events-con{
@@ -192,9 +196,9 @@
 						}
 					}
 				}
-				&:nth-child(2n+1){
-					background-color: dome-color(background,light);
-				}
+				// &:nth-child(2n+1){
+				// 	background-color: dome-color(background,light);
+				// }
 				&:last-child{
 					.dot-line{
 						display: none;
@@ -204,13 +208,28 @@
 		}
 	}
 	.deploy-info{
+		.yaml-container{
+			padding-left: 20px;
+			padding-right: 20px;
+		}
+		.com-bottom-option{
+			text-align: left;
+			padding-left: 168px;
+		}
 		.mod-title{
-			padding-left: 12px;
+			// padding-left: 12px;
+			margin: 20px;
+		}
+		.mod-title-name{
+			margin: 0 23px 0 0;
+			font-weight: bold;
+		}
+		.mod-add-image{
+			margin: 20px;
 		}
 		.add-mirror{
 			display: inline-block;
-			width: 30%;
-			margin-left: $wider-padding;
+			width: 60%;
 			text-align: left;
 			.icon-add{
 				margin-right: 6px;
@@ -218,16 +237,19 @@
 			.txt-prompt{
 				margin-right: 10px;
 			}
+			.input-image{
+				width: 100%;
+			}
 		}
 		.add-other{
-			margin-left: 16px;
+			margin-left: 10px;
 		}
 		.no-log{
 			margin-top: 4px;
 			margin-bottom: 0;
 		}
 		.deploy-rollback{
-			margin: 22px $wider-padding 0  $wider-padding;
+			margin: 20px;
 			.com-select-con{
 				display:inline-block;
 			}
@@ -242,17 +264,29 @@
 			float: right;
 			margin-right: 4px;
 		}
+		.image-container{
+			margin: 20px;
+		}
 		.com-list-info{
-			margin: 20px  $wider-padding 0  $wider-padding;
+			// margin: 20px  $wider-padding 0  $wider-padding;
+			padding: 0px;
 			li{
 				.info-name{
-					padding: 14px 0 12px 12px;
+					// padding: 14px 0 12px 12px;
+					text-align: right;
+					width: 128px
+				}
+				.info-name-content-for-label{
+					vertical-align: middle;
 				}
 				.info-content{
-					padding: 8px 0 14px 45px;
+					// padding: 8px 0 14px 45px;
 					.small-info{
 						display: inline-block;
 						width: 180px;
+					}
+					.line-long{
+						width: 70%;
 					}
 					.ui-table-logdir{
 						width: 100%;
@@ -272,17 +306,21 @@
 				}
 				.first-info{
 					display: inline-block;
-					margin-top: 4px;
+					// margin-top: 4px;
 				}
 				.log-item{
 					border: 1px solid #eee;
+					border-radius: 3px;
+				}
+				.log-item-none-top{
+					padding-top: 0 !important;
 				}
 			}
 			&.mirror-con{
 				position: relative;
-				margin-top: 20px;
+				margin: 20px;
 				height: auto;
-				border:1px solid #eee;
+				border: $deep-border;
 				border-radius: $default-radius;
 				.health-info{
 					margin-top: 10px;
@@ -310,13 +348,15 @@
 						}
 					}
 					.new-env-list{
-						margin-top:10px !important;
+						margin-bottom:12px !important;
+						margin-top: 0;
 						.line-element:not(:first-child){
 							margin-left: 10px;
 						}
 					}
 					.ui-input-sm{
-						margin-right: 40px;
+						width: 90px;
+						margin-right: 50px;
 					}
 					.txt-cell{
 						padding-left: 4px;
@@ -352,7 +392,10 @@
 
 	}
 	.health-con{
-		padding-top: 24px;
+		padding: 0 20px 20px 20px;
+		.tool-align-input{
+			margin-top: 20px;
+		}
 	}
 }
 .modal-item{

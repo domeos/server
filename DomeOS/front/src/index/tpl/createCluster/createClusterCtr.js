@@ -5,7 +5,7 @@
 (function (domeApp, undefined) {
 	'use strict';
 	if (typeof domeApp === 'undefined') return;
-	domeApp.controller('CreateClusterCtr', ['$scope', '$domeCluster', '$domePublic', '$state', function ($scope, $domeCluster, $domePublic, $state) {
+	domeApp.controller('CreateClusterCtr', ['$scope', '$domeUser', '$domeCluster', '$domePublic', '$state', function ($scope, $domeUser, $domeCluster, $domePublic, $state) {
 		'use strict';
 		$scope.$emit('pageTitle', {
 			title: '新建集群',
@@ -13,6 +13,15 @@
 			mod: 'cluster'
 		});
 		$scope.clusterIns = $domeCluster.getInstance('Cluster');
+		var userService = $domeUser.userService;
+		userService.getCurrentUser().then(function (res) {
+			var loginUser = res.data.result;
+			var user = {
+				Id: loginUser.id,
+				name: loginUser.username,
+			};
+			$scope.clusterIns.toggleUser(user);
+		});
 		$scope.config = $scope.clusterIns.config;
 		$scope.createCluster = true;
 		$scope.valid = {

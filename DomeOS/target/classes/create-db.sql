@@ -283,6 +283,30 @@ CREATE INDEX `k8s_events_deploy_index` ON k8s_events(`clusterId`, `namespace`, `
   `content` MEDIUMTEXT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+CREATE TABLE IF NOT EXISTS `project_collection` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `name` VARCHAR(255) NOT NULL,
+  `description` VARCHAR(1024) NULL DEFAULT NULL,
+  `state` VARCHAR(128) NOT NULL,
+  `createTime` BIGINT(20) NOT NULL DEFAULT '0',
+  `removeTime` BIGINT(20) NULL DEFAULT '0',
+  `removed` TINYINT(4) NOT NULL DEFAULT '0',
+  `data` MEDIUMTEXT NULL,
+  `projectCollectionState` VARCHAR(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `deploy_collection` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `description` varchar(1024) DEFAULT NULL,
+  `state` varchar(128) NOT NULL,
+  `createTime` bigint(20) DEFAULT NULL,
+  `removeTime` bigint(20) DEFAULT NULL,
+  `removed` tinyint(4) NOT NULL DEFAULT '0',
+  `data` mediumtext,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 -- alarm related tables: 11 in total
 -- 2016.04.14
 
@@ -396,3 +420,45 @@ CREATE TABLE IF NOT EXISTS `alarm_link_info` (
   `id` INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `content` MEDIUMTEXT NULL DEFAULT NULL
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- alarm user group info & user group bind
+CREATE TABLE IF NOT EXISTS `alarm_user_group_info` (
+  `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `userGroupName` varchar(128) DEFAULT NULL,
+  `creatorId` int(11) DEFAULT NULL,
+  `creatorName` varchar(128) DEFAULT NULL,
+  `createTime` bigint(20) DEFAULT NULL,
+  `updateTime` bigint(20) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+CREATE UNIQUE INDEX `alarm_user_group_info_userGroupName_pk_index` ON alarm_user_group_info(`userGroupName`);
+
+CREATE TABLE IF NOT EXISTS `alarm_user_group_user_bind` (
+  `userGroupId` int(11) NOT NULL,
+  `userId` int(11) NOT NULL,
+  `bindTime` bigint(20) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- add collection map
+CREATE TABLE IF NOT EXISTS `collection_authority_map` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `collectionId` INT(11) NOT NULL COMMENT 'projectCollectionId or deployCollectionId or clusterId',
+  `resourceType` VARCHAR(255) NOT NULL COMMENT 'PROJECT or DEPLOY or CLUSTER',
+  `userId` INT(11) NOT NULL COMMENT 'userId',
+  `role` VARCHAR(255) NOT NULL COMMENT 'role name',
+  `updateTime` BIGINT(20) NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+CREATE INDEX `collection_authority_map_resourceType_index` ON collection_authority_map(`resourceType`);
+CREATE INDEX `ollection_authority_map_collectionId_index` ON collection_authority_map(`collectionId`);
+CREATE INDEX `collection_authority_map_userId_index` ON collection_authority_map(`userId`);
+CREATE UNIQUE INDEX `collection_authority_map_uniq` ON collection_authority_map(`collectionId`, `resourceType`, `userId`);
+
+CREATE TABLE IF NOT EXISTS `collection_resource_map` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `resourceId` INT(11) NOT NULL COMMENT 'projectId or deployId',
+  `creatorId` INT(11) NOT NULL COMMENT 'userId',
+  `resourceType` VARCHAR(255) NOT NULL COMMENT 'PROJECT or DEPLOY or CLUSTER',
+  `collectionId` INT(11) NOT NULL COMMENT 'projectCollectionId or deployCollectionId',
+  `updateTime` BIGINT(20) NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+CREATE INDEX `collection_resource_map_resourceType_resourceId_index` ON collection_resource_map(`resourceType`, `resourceId`);
+CREATE INDEX `collection_resource_map_collection_index` ON collection_resource_map(`collectionId`, `resourceType`, `resourceId`);

@@ -3,13 +3,16 @@
 
 .mod-alarm{
 	.mod-option{
-		padding-left: $wider-padding;
+		padding: 20px;
 		.alarm-prompt{
 			padding-top: 16px;
 		}
 		.btn-newtemplate{
-			margin-top: 7px;
+			// margin-top: 7px;
 		}
+	}
+	.mod-list-alarm{
+		padding: 0 20px 0 20px;
 	}
 	.tab-hostsgroups{
 		padding: $page-padding;

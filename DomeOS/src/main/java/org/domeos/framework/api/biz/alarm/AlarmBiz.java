@@ -1,6 +1,7 @@
 package org.domeos.framework.api.biz.alarm;
 
 import org.domeos.framework.api.biz.base.BaseBiz;
+import org.domeos.framework.api.consolemodel.alarm.AlarmEventInfoDraft;
 import org.domeos.framework.api.model.alarm.*;
 import org.domeos.framework.api.model.alarm.assist.Link;
 import org.domeos.framework.api.model.deployment.Deployment;
@@ -43,6 +44,8 @@ public interface AlarmBiz extends BaseBiz {
     // template
 
     List<TemplateInfoBasic> getTemplateInfoBasicByHostGroupId(long hostGroupId);
+
+    List<TemplateInfoBasic> getTemplateInfoBasicByUserGroupId(long userGroupId);
 
     List<TemplateInfoBasic> listTemplateInfoBasic();
 
@@ -121,4 +124,34 @@ public interface AlarmBiz extends BaseBiz {
     void addLink(Link link);
 
     Link getLinkById(long id);
+
+    // user group
+
+    List<UserGroupBasic> listUserGroupInfoBasic();
+
+    UserGroupBasic getUserGroupInfoBasicById(long id);
+
+    UserGroupBasic getUserGroupInfoBasicByName(String userGroupName);
+
+    void addUserGroupInfoBasic(UserGroupBasic userGroupBasic);
+
+    void updateUserGroupInfoBasicById(UserGroupBasic userGroupBasic);
+
+    void deleteUserGroupInfoBasicById(long id);
+
+    List<UserGroupBasic> listUserGroupInfoBasicByTemplateId(long templateId);
+
+    // user group - user
+
+    Long getUserGroupUserBindTime(long userGroupId, long userId);
+
+    void addUserGroupUserBind(long userGroupId, long userId, long bindTime);
+
+    void updateUserGroupUserBind(long userGroupId, long userId, long bindTime);
+
+    void deleteUserGroupUserBindByUserGroupId(long userGroupId);
+
+    void deleteUserGroupUserBind(long userGroupId, long userId);
+
+    List<UserInfo> getUserInfoByUserGroupId(long hostGroupId);
 }

@@ -2,8 +2,10 @@
 	.pull-right.right-option
 		span(ng-cloak) 共{{templatesListFiltered.length}}个模板
 		input.ui-input-search.ui-input-fill(type="text" placeholder="输入模板名称查询" ng-model="vmTemplate.keywords")
-	a.ui-btn.ui-btn-md.ui-btn-link.ui-btn-primary.btn-newtemplate(ui-sref="createAlarmTemplate") 新建模板
-.mod-list
+	a.ui-btn.ui-btn-lg.ui-btn-link.ui-btn-bright.btn-newtemplate(ui-sref="createAlarmTemplate") 
+		span.btn-txt 新建模板
+		i.fa.fa-plus
+.mod-list-alarm
 	loading(ng-if="vmTemplate.isLoading")
 	table.ui-table-dome
 		thead
@@ -23,4 +25,4 @@
 				td(ng-bind="tpl.templateTypeName")
 				td(ng-bind="vmDome.parseDate(tpl.createTime)")
 				td(ng-if="vm.permission.role&&vm.permission.role!='REPORTER'")
-					a.icon-delete(ng-click="vmTemplate.deleteTpl(tpl.id)")
+					button.fa.fa-trash-o.ui-btn-none.icon-trash-color(ng-click="vmTemplate.deleteTpl(tpl.id)")

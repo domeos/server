@@ -5,7 +5,7 @@
 (function (domeApp, undefined) {
 	'use strict';
 	if (typeof domeApp === 'undefined') return;
-	domeApp.controller('InstanceLogModalCtr', ['$scope', 'instanceInfo', '$location', function ($scope, instanceInfo, $location) {
+	domeApp.controller('InstanceLogModalCtr', ['$scope', 'instanceInfo', '$location', '$modalInstance', function ($scope, instanceInfo, $location, $modalInstance) {
 		var requestUrl = 'ws://' + $location.host();
 		if ($location.port()) {
 			requestUrl += ':' + $location.port();
@@ -19,5 +19,8 @@
 			instanceInfo.containers[i].href = '/log/log.html?url=' + url;
 		}
 		$scope.instanceInfo = instanceInfo;
+		$scope.cancel = function () {
+			$modalInstance.dismiss('cancel');
+		};
 	}]);
 })(window.domeApp);

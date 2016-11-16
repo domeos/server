@@ -7,17 +7,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.domeos.basemodel.HttpResponseTemp;
 import org.domeos.basemodel.ResultStat;
 import org.domeos.exception.DeploymentEventException;
-import org.domeos.exception.K8sDriverException;
+import org.domeos.exception.DeploymentTerminatedException;
 import org.domeos.framework.api.biz.OperationHistory;
 import org.domeos.framework.api.biz.cluster.ClusterBiz;
-import org.domeos.framework.api.biz.deployment.DeployEventBiz;
-import org.domeos.framework.api.biz.deployment.DeploymentBiz;
-import org.domeos.framework.api.biz.deployment.DeploymentStatusBiz;
-import org.domeos.framework.api.biz.deployment.VersionBiz;
+import org.domeos.framework.api.biz.collection.CollectionBiz;
+import org.domeos.framework.api.biz.deployment.*;
 import org.domeos.framework.api.biz.event.K8SEventBiz;
 import org.domeos.framework.api.biz.loadBalancer.LoadBalancerBiz;
-import org.domeos.framework.api.biz.resource.ResourceBiz;
-import org.domeos.framework.api.consolemodel.CreatorDraft;
 import org.domeos.framework.api.consolemodel.deployment.*;
 import org.domeos.framework.api.consolemodel.event.EventInfo;
 import org.domeos.framework.api.controller.exception.ApiException;
@@ -29,29 +25,25 @@ import org.domeos.framework.api.model.LoadBalancer.related.LoadBalanceType;
 import org.domeos.framework.api.model.auth.User;
 import org.domeos.framework.api.model.auth.related.Role;
 import org.domeos.framework.api.model.cluster.Cluster;
-import org.domeos.framework.api.model.deployment.DeployEvent;
-import org.domeos.framework.api.model.deployment.Deployment;
-import org.domeos.framework.api.model.deployment.Policy;
-import org.domeos.framework.api.model.deployment.Version;
+import org.domeos.framework.api.model.collection.CollectionAuthorityMap;
+import org.domeos.framework.api.model.collection.CollectionResourceMap;
+import org.domeos.framework.api.model.collection.related.ResourceType;
+import org.domeos.framework.api.model.deployment.*;
 import org.domeos.framework.api.model.deployment.related.*;
 import org.domeos.framework.api.model.global.GlobalInfo;
 import org.domeos.framework.api.model.global.GlobalType;
 import org.domeos.framework.api.model.operation.OperationRecord;
 import org.domeos.framework.api.model.operation.OperationType;
-import org.domeos.framework.api.model.resource.Resource;
-import org.domeos.framework.api.model.resource.related.ResourceType;
 import org.domeos.framework.api.service.deployment.DeploymentService;
 import org.domeos.framework.api.service.deployment.DeploymentStatusManager;
 import org.domeos.framework.api.service.event.EventService;
 import org.domeos.framework.engine.AuthUtil;
 import org.domeos.framework.engine.ClusterRuntimeDriver;
 import org.domeos.framework.engine.RuntimeDriver;
+import org.domeos.framework.engine.event.AutoDeploy.AutoUpdateInfo;
 import org.domeos.framework.engine.exception.DaoException;
 import org.domeos.framework.engine.exception.DriverException;
-import org.domeos.framework.engine.k8s.K8sDriver;
 import org.domeos.framework.engine.k8s.RcBuilder;
-import org.domeos.framework.engine.k8s.util.Fabric8KubeUtils;
-import org.domeos.framework.engine.k8s.util.KubeUtils;
 import org.domeos.framework.engine.runtime.IResourceStatus;
 import org.domeos.global.ClientConfigure;
 import org.domeos.global.CurrentThreadInfo;
@@ -77,7 +69,7 @@ public class DeploymentServiceImpl implements DeploymentService {
     DeploymentBiz deploymentBiz;
 
     @Autowired
-    ResourceBiz resourceBiz;
+    CollectionBiz collectionBiz;
 
     @Autowired
     VersionBiz versionBiz;
@@ -113,6 +105,9 @@ public class DeploymentServiceImpl implements DeploymentService {
     @Autowired
     DeploymentStatusBiz deploymentStatusBiz;
 
+    @Autowired
+    DeployCollectionBiz deployCollectionBiz;
+
     private String domeosAddr = null;
 
     private static Logger logger = LoggerFactory.getLogger(DeploymentServiceImpl.class);
@@ -120,6 +115,17 @@ public class DeploymentServiceImpl implements DeploymentService {
     private void checkDeployPermit(int deployId, OperationType operationType) {
         int userId = CurrentThreadInfo.getUserId();
         AuthUtil.verify(userId, deployId, ResourceType.DEPLOY, operationType);
+    }
+
+    private void checkCreateDeployPermit(int collectionId) {
+        int userId = CurrentThreadInfo.getUserId();
+        AuthUtil.collectionVerify(userId, collectionId, ResourceType.DEPLOY_COLLECTION, OperationType.MODIFY, -1);
+    }
+
+    private void checkMigrateDeployPermit(int deployId, int collectionId) {
+        int userId = CurrentThreadInfo.getUserId();
+        AuthUtil.verify(userId, deployId, ResourceType.DEPLOY, OperationType.SET);
+        AuthUtil.collectionVerify(userId, collectionId, ResourceType.DEPLOY_COLLECTION, OperationType.SET, -1);
     }
 
     @Override
@@ -149,6 +155,13 @@ public class DeploymentServiceImpl implements DeploymentService {
 
         if (CurrentThreadInfo.getUser() == null) {
             throw new PermitException("no user logged in");
+        }
+        deploymentDraft.setCreatorId(CurrentThreadInfo.getUserId());
+        checkCreateDeployPermit(deploymentDraft.getCollectionId());
+        DeployCollection deployCollection = deployCollectionBiz.getDeployCollection(deploymentDraft.getCollectionId());
+        if (deployCollection == null) {
+            throw ApiException.wrapMessage(ResultStat.DEPLOY_COLLECTION_NOT_EXIST,
+                    "deploy collection " + deploymentDraft.getCollectionId() + " not exist");
         }
         List<LoadBalancer> lbs = deploymentDraft.toLoadBalancer();
         for (LoadBalancer loadBalancer : lbs) {
@@ -200,19 +213,17 @@ public class DeploymentServiceImpl implements DeploymentService {
             throw e;
         }
 
-        Resource resource = new Resource(deployment.getId(), ResourceType.DEPLOY);
-        CreatorDraft creatorDraft = deploymentDraft.getCreator();
-        resource.setOwnerId(creatorDraft.getCreatorId());
-        resource.setOwnerType(creatorDraft.getCreatorType());
-        resource.setUpdateTime(System.currentTimeMillis());
-        resource.setRole(Role.MASTER);
-        resourceBiz.addResource(resource);
-
+        CollectionResourceMap resourceMap = new CollectionResourceMap(deployment.getId(),
+                deploymentDraft.getCreatorId(),
+                ResourceType.DEPLOY,
+                deploymentDraft.getCollectionId(),
+                System.currentTimeMillis());
+        collectionBiz.addResource(resourceMap);
         // add operation record
         operationHistory.insertRecord(new OperationRecord(
-                resource.getResourceId(),
-                resource.getResourceType(),
-                OperationType.BUILD,
+                resourceMap.getResourceId(),
+                resourceMap.getResourceType(),
+                OperationType.SET,
                 CurrentThreadInfo.getUserId(),
                 CurrentThreadInfo.getUserName(),
                 "OK",
@@ -221,15 +232,15 @@ public class DeploymentServiceImpl implements DeploymentService {
         ));
 
         // TODO(sparkchen)
-        logger.info("create deploy succeed, deployId={}, ownerType={}, ownerId={}",
-                deployment.getId(), creatorDraft.getCreatorType(), creatorDraft.getCreatorId());
+        logger.info("create deploy succeed, deployId={}, creatorId={}, collectionId={}",
+                deployment.getId(), deploymentDraft.getCreatorId(), deploymentDraft.getCollectionId());
 
         return deployment.getId();
     }
 
-    private List<Resource> getResourceList() {
+    private List<CollectionAuthorityMap> getCollectionList() {
         int userId = CurrentThreadInfo.getUserId();
-        return AuthUtil.getResourceList(userId, ResourceType.DEPLOY);
+        return AuthUtil.getCollectionList(userId, ResourceType.DEPLOY_COLLECTION);
     }
 
     private User checkOpPermit(int deployId, int clusterId) {
@@ -261,7 +272,7 @@ public class DeploymentServiceImpl implements DeploymentService {
         deploymentBiz.removeById(GlobalConstant.DEPLOY_TABLE_NAME, deployId);
         eventService.deleteDeploymentEvent(deployment.getClusterId(), deployment);
 
-        resourceBiz.deleteResourceByIdAndType(deployId, ResourceType.DEPLOY);
+        collectionBiz.deleteResourceByResourceIdAndResourceType(deployId, ResourceType.DEPLOY);
         // add operation record
         operationHistory.insertRecord(new OperationRecord(
                 deployId,
@@ -314,17 +325,50 @@ public class DeploymentServiceImpl implements DeploymentService {
 
     @Override
     public List<DeploymentInfo> listDeployment() throws IOException {
+        List<CollectionAuthorityMap> authorityMaps = getCollectionList();
+        Map<Integer, Boolean> deletableMap = new HashMap<>();
+        int userId = CurrentThreadInfo.getUserId();
+        boolean isAdmin = AuthUtil.isAdmin(userId);
+        for (CollectionAuthorityMap authorityMap : authorityMaps) {
+            if (isAdmin || authorityMap.getRole() == Role.MASTER) {
+                deletableMap.put(authorityMap.getCollectionId(), true);
+            } else {
+                deletableMap.put(authorityMap.getCollectionId(), false);
+            }
+        }
+
+        List<CollectionResourceMap> resources = collectionBiz.getResourcesByAuthorityMaps(ResourceType.DEPLOY, authorityMaps);
+        return listDeployment(resources, deletableMap);
+    }
+
+    @Override
+    public List<DeploymentInfo> listDeployment(int collectionId) throws IOException {
+
+        int userId = CurrentThreadInfo.getUserId();
+        boolean deletable;
+        try {
+            AuthUtil.collectionVerify(userId, collectionId, ResourceType.DEPLOY_COLLECTION, OperationType.DELETE, -1);
+            deletable = true;
+        } catch (Exception ignore) {
+            deletable = false;
+        }
+        Map<Integer, Boolean> deletableMap = new HashMap<>();
+        deletableMap.put(collectionId, deletable);
+
+        List<CollectionResourceMap> resources = collectionBiz.getResourcesByCollectionIdAndResourceType(collectionId, ResourceType.DEPLOY);
+        return listDeployment(resources, deletableMap);
+
+    }
+
+    private List<DeploymentInfo> listDeployment(List<CollectionResourceMap> resources, Map<Integer, Boolean> deletableMap) throws IOException {
         List<DeploymentInfo> deploymentInfos = new ArrayList<>();
-        List<Resource> resources = getResourceList();
         if (resources == null || resources.size() == 0) {
             return deploymentInfos;
         }
-        List<Deployment> deployments = deploymentBiz.getListByReousrce(
-                GlobalConstant.DEPLOY_TABLE_NAME, resources, Deployment.class);
-
+        int userId = AuthUtil.getUserId();
         List<Future<DeploymentInfo>> futures = new LinkedList<>();
-        for (Deployment deployment : deployments) {
-            Future<DeploymentInfo> future = ClientConfigure.executorService.submit(new GetDeploymentInfoTask(deployment));
+        for (CollectionResourceMap resourceMap : resources) {
+            Future<DeploymentInfo> future = ClientConfigure.executorService.submit(new GetDeploymentInfoTask(resourceMap, deletableMap, userId));
             futures.add(future);
         }
         for (Future<DeploymentInfo> future : futures) {
@@ -350,17 +394,24 @@ public class DeploymentServiceImpl implements DeploymentService {
 
 
     private class GetDeploymentInfoTask implements Callable<DeploymentInfo> {
-        Deployment deployment;
+        CollectionResourceMap collectionResourceMap;
+        Map<Integer, Boolean> deletableMap;
+        int userId;
 
-        public GetDeploymentInfoTask(Deployment deployment) {
-            this.deployment = deployment;
+        private GetDeploymentInfoTask(CollectionResourceMap collectionResourceMap, Map<Integer, Boolean> deletableMap, int userId) {
+            this.collectionResourceMap = collectionResourceMap;
+            this.deletableMap = deletableMap;
+            this.userId = userId;
         }
 
         @Override
         public DeploymentInfo call() throws Exception {
+            Deployment deployment = deploymentBiz.getDeployment(collectionResourceMap.getResourceId());
             DeploymentInfo deploymentInfo = new DeploymentInfo(deployment);
             deploymentInfo.setDeploymentStatus(deploymentStatusBiz.getDeploymentStatus(deployment.getId()));
             DeployResourceStatus deployResourceStatus = resourceStatus.getDeployResourceStatusById(deployment.getId());
+            boolean deletable = deletableMap.get(collectionResourceMap.getCollectionId()) || userId == collectionResourceMap.getCreatorId();
+            deploymentInfo.setDeletable(deletable);
             if (deployResourceStatus != null) {
                 deploymentInfo.setCpuTotal(deployResourceStatus.getCpuTotal());
                 deploymentInfo.setCpuUsed(deployResourceStatus.getCpuUsed());
@@ -396,7 +447,7 @@ public class DeploymentServiceImpl implements DeploymentService {
     }
 
     @Override
-    public DeploymentDetail getDeployment(int deployId) throws IOException, DeploymentEventException {
+    public DeploymentDetail getDeployment(int deployId) throws IOException, DeploymentEventException, DeploymentTerminatedException {
         checkDeployPermit(deployId, OperationType.GET);
 
         Deployment deployment = deploymentBiz.getDeployment(deployId);
@@ -465,47 +516,75 @@ public class DeploymentServiceImpl implements DeploymentService {
 
         // set current replicas
         long currentReplicas;
-        KubeUtils client = null;
-        try {
-            client = Fabric8KubeUtils.buildKubeUtils(cluster, deployment.getNamespace());
-        } catch (K8sDriverException e) {
-            throw new DeploymentEventException(e);
-        }
         RuntimeDriver driver = ClusterRuntimeDriver.getClusterDriver(cluster.getId());
         if (driver == null) {
             throw ApiException.wrapMessage(ResultStat.CLUSTER_NOT_EXIST, " There is no RuntimeDriver for cluster(" + cluster.toString() + ").");
         }
-        List<DeploymentSnapshot> deploymentSnapshots = ((K8sDriver) driver).queryCurrentSnapshot(client, deployment);
-        currentReplicas = getTotalReplicas(deploymentSnapshots);
+        currentReplicas = driver.getTotalReplicasByDeployment(deployment);
         deploymentDetail.setCurrentReplicas(currentReplicas);
 
         // get current versions
-        if (deploymentSnapshots != null) {
-            List<VersionDetail> versionDetails = new ArrayList<>(deploymentSnapshots.size());
-            for (DeploymentSnapshot deploymentSnapshot : deploymentSnapshots) {
-                Version version = versionBiz.getVersion(deployId, (int) deploymentSnapshot.getVersion());
+        List<Version> versions = driver.getCurrnetVersionsByDeployment(deployment);
+        if (versions == null || versions.isEmpty()) {
+            deploymentDetail.setCurrentVersions(null);
+        } else {
+            List<VersionDetail> versionDetails = new ArrayList<>(versions.size());
+            for (Version version : versions) {
                 VersionDetail versionDetail = new VersionDetail(version, deployment);
                 ReplicationController replicationController =
-                        new RcBuilder(deployment, loadBalancers, version,  null, new Long(currentReplicas).intValue()).build();
+                        new RcBuilder(deployment, loadBalancers, version, null, new Long(currentReplicas).intValue()).build();
                 VersionString versionString = VersionString.getRCStr(replicationController, version.getVersionType());
                 if (versionString != null) {
                     versionString.setPodSpecStr(version.getPodSpecStr());
                 }
                 versionDetail.setVersionString(versionString);
                 versionDetails.add(versionDetail);
-
             }
             deploymentDetail.setCurrentVersions(versionDetails);
-        } else {
-            deploymentDetail.setCurrentVersions(null);
         }
         deploymentDetail.setHealthChecker(deployment.getHealthChecker());
+
+        boolean deletable;
+        try {
+            AuthUtil.verify(CurrentThreadInfo.getUserId(), deployId, ResourceType.DEPLOY, OperationType.DELETE);
+            deletable = true;
+        } catch (Exception ignore) {
+            deletable = false;
+        }
+        deploymentDetail.setDeletable(deletable);
         return deploymentDetail;
     }
 
     @Override
+    public void migrateDeployment(int deployId, int collectionId) throws IOException, DeploymentEventException {
+        checkMigrateDeployPermit(deployId, collectionId);
+        CollectionResourceMap oldDeployResource = collectionBiz.getResourceByResourceIdAndResourceType(deployId, ResourceType.DEPLOY);
+        if (oldDeployResource == null) {
+            throw ApiException.wrapResultStat(ResultStat.DEPLOY_COLLECTION_NOT_EXIST);
+        }
+        if (oldDeployResource.getCollectionId() == collectionId) {
+            throw ApiException.wrapResultStat(ResultStat.DEPLOY_IN_DEPLOY_COLLECTION);
+        }
+        oldDeployResource.setCollectionId(collectionId);
+        oldDeployResource.setUpdateTime(System.currentTimeMillis());
+        collectionBiz.modifyCollectionResourceMap(oldDeployResource);
+        // add operation record
+        operationHistory.insertRecord(new OperationRecord(
+                deployId,
+                ResourceType.DEPLOY,
+                OperationType.MODIFY,
+                CurrentThreadInfo.getUserId(),
+                CurrentThreadInfo.getUserName(),
+                "OK",
+                "",
+                System.currentTimeMillis()
+        ));
+
+    }
+
+    @Override
     public void stopDeployment(int deployId)
-            throws IOException, DeploymentEventException {
+            throws IOException, DeploymentEventException, DeploymentTerminatedException {
         Deployment deployment = deploymentBiz.getDeployment(deployId);
         if (deployment == null) {
             throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "no such deployment:" + deployId);
@@ -535,7 +614,7 @@ public class DeploymentServiceImpl implements DeploymentService {
 
     @Override
     public void startDeployment(int deployId, int versionId, int replicas)
-            throws IOException, DeploymentEventException, DaoException {
+            throws IOException, DeploymentEventException, DaoException, DeploymentTerminatedException {
         Deployment deployment = deploymentBiz.getDeployment(deployId);
         if (deployment == null) {
             throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "no such deployment:" + deployId);
@@ -583,14 +662,38 @@ public class DeploymentServiceImpl implements DeploymentService {
 
     @Override
     public HttpResponseTemp<?> startUpdate(int deployId, int versionId, int replicas, Policy policy)
-            throws IOException, DeploymentEventException, DaoException {
+            throws IOException, DeploymentEventException, DaoException, DeploymentTerminatedException {
+        AutoUpdateInfo autoUpdateInfo = new AutoUpdateInfo();
+        autoUpdateInfo.setDeployId(deployId);
+        autoUpdateInfo.setVersionId(versionId);
+        autoUpdateInfo.setReplicas(replicas);
+        autoUpdateInfo.setPolicy(policy);
 
+        startUpdate(autoUpdateInfo, true);
+
+        return ResultStat.OK.wrap(null);
+    }
+
+    public void startUpdate(AutoUpdateInfo autoUpdateInfo, boolean check)
+            throws IOException, DeploymentEventException, DaoException, DeploymentTerminatedException {
         // ** get deployment and version
+        int deployId = autoUpdateInfo.getDeployId();
+        int versionId = autoUpdateInfo.getVersionId();
+        int replicas = autoUpdateInfo.getReplicas();
+        Policy policy = autoUpdateInfo.getPolicy();
         Deployment deployment = deploymentBiz.getDeployment(deployId);
         if (deployment == null) {
             throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "no such deployment:" + deployId);
         }
-        checkOpPermit(deployId, deployment.getClusterId());
+        User user;
+        if (check) {
+            checkOpPermit(deployId, deployment.getClusterId());
+            user = CurrentThreadInfo.getUser();
+        } else {
+            user = new User();
+            user.setId(-1);
+            user.setUsername("DomeOS");
+        }
 
         Version version = versionBiz.getVersion(deployId, versionId);
         if (version == null) {
@@ -609,22 +712,20 @@ public class DeploymentServiceImpl implements DeploymentService {
         }
         try {
             List<EnvDraft> allExtraEnvs = buildExtraEnv(cluster);
-            driver.startUpdate(deployment, versionId, replicas, allExtraEnvs, CurrentThreadInfo.getUser(), policy);
+            driver.startUpdate(deployment, versionId, replicas, allExtraEnvs, user, policy);
         } catch (DeploymentEventException e) {
             deploymentStatusManager.failedEventForDeployment(deployId, null, e.getMessage());
-            return ResultStat.DEPLOYMENT_UPDATE_FAILED.wrap(null, e.getMessage());
+            throw ApiException.wrapMessage(ResultStat.DEPLOYMENT_UPDATE_FAILED, e.getMessage());
         }
 
         deployment.setLastUpdateTime(System.currentTimeMillis());
         deployment.setState(DeploymentStatus.UPDATING.name());
         deploymentBiz.update(deployment);
-
-        return ResultStat.OK.wrap(null);
     }
 
     @Override
     public HttpResponseTemp<?> startRollback(int deployId, int versionId, int replicas, Policy policy)
-            throws IOException, DeploymentEventException, DaoException {
+            throws IOException, DeploymentEventException, DaoException, DeploymentTerminatedException {
 
         // ** get deployment and version
         Deployment deployment = deploymentBiz.getDeployment(deployId);
@@ -684,7 +785,7 @@ public class DeploymentServiceImpl implements DeploymentService {
 
     @Override
     public HttpResponseTemp<?> scaleUpDeployment(int deployId, int versionId, int replicas)
-            throws IOException, DeploymentEventException, DaoException {
+            throws IOException, DeploymentEventException, DaoException, DeploymentTerminatedException {
 
         Deployment deployment = deploymentBiz.getDeployment(deployId);
         if (deployment == null) {
@@ -716,7 +817,7 @@ public class DeploymentServiceImpl implements DeploymentService {
 
     @Override
     public HttpResponseTemp<?> scaleDownDeployment(int deployId, int versionId, int replicas)
-            throws IOException, DeploymentEventException, DaoException {
+            throws IOException, DeploymentEventException, DaoException, DeploymentTerminatedException {
 
         Deployment deployment = deploymentBiz.getDeployment(deployId);
 
@@ -792,7 +893,7 @@ public class DeploymentServiceImpl implements DeploymentService {
 
     @Override
     public HttpResponseTemp<?> abortDeployOperation(int deployId)
-            throws IOException, DeploymentEventException, DaoException {
+            throws IOException, DeploymentEventException, DaoException, DeploymentTerminatedException {
         Deployment deployment = deploymentBiz.getDeployment(deployId);
         if (deployment == null) {
             throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "no such deployment:" + deployId);
@@ -863,16 +964,16 @@ public class DeploymentServiceImpl implements DeploymentService {
         return extraEnvs;
     }
 
-    private int getTotalReplicas(List<DeploymentSnapshot> snapshots) {
-        int replicas = 0;
-        if (snapshots == null || snapshots.size() == 0) {
-            return replicas;
-        }
-        for (DeploymentSnapshot snapshot : snapshots) {
-            replicas += snapshot.getReplicas();
-        }
-        return replicas;
-    }
+//    private int getTotalReplicas(List<DeploymentSnapshot> snapshots) {
+//        int replicas = 0;
+//        if (snapshots == null || snapshots.size() == 0) {
+//            return replicas;
+//        }
+//        for (DeploymentSnapshot snapshot : snapshots) {
+//            replicas += snapshot.getReplicas();
+//        }
+//        return replicas;
+//    }
 
     public VersionString getRCStr(DeploymentDraft deploymentDraft) {
         String rcName = GlobalConstant.RC_NAME_PREFIX + deploymentDraft.getDeployName();

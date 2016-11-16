@@ -4,17 +4,27 @@
  */
 
 $default-radius:3px;
-$nav-width:79px;
+$nav-width:225px;
+$thin-nav-width:70px;
+$nav-transition-duration:0.1s;
 $page-padding:20px;
-$wider-padding:52px;
+$wider-padding:0px;//52px
+$list-padding:8px;
+$table-height:45px;
+//active:#77bf4f,
+//safe:#4ed6b2,
+//bright:#188ae2,
 $dome-colors:(
     dome:(
-        active:#77bf4f,
-        warning:#ffab00,
-        error:#ec6d51,
-        safe:#4ed6b2,
+        active:#4bd396,
+        warning:#f9c851,
+        error:#f5707a,
+        safe:#4bd396,
         primary:#5dabf3,
-        bright:#2994e7
+        bright:#188ae2,
+        white:#fff,
+        active-font:#188ae2,
+        disabled:#aaa
         ),
     border:(
         deep:#999,
@@ -22,13 +32,16 @@ $dome-colors:(
         light:#eee
         ),
     font:(
-        prompt:#ccc,
+        prompt:#bbb,
         default:#888,
-        embed:#444
+        embed:#444,
+        light-blue:#7fc1fc
         ),
     background:(
-        light:#f5f5f5,
-        primary:#def0fe
+        light:#f0f2f5,
+        primary:#def0fe,
+        white:#fff,
+        table-hover-background: #f9f9f9
         )
     );
 $font-size:(
@@ -37,8 +50,8 @@ $font-size:(
     default:14px,
     prompt:12px
     );
-$light-border:1px solid #f5f5f5;
-$deep-border:1px solid #d4d7de;
+$light-border:1px solid #f0f2f5;
+$deep-border:1px solid #ddd;
 %dome-background{
     @include background(linear-gradient(left,#5dabf3, #4ed6b2)); 
 }

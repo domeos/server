@@ -23,6 +23,12 @@ public class UserPassword {
         this.password = password;
     }
 
+    public UserPassword(String username, String password, LoginType loginType) {
+        this.username = username;
+        this.password = password;
+        this.loginType = loginType;
+    }
+
     public String getUsername() {
         return username;
     }

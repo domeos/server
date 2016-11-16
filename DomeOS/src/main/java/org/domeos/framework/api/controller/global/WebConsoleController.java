@@ -3,7 +3,7 @@ package org.domeos.framework.api.controller.global;
 import org.domeos.basemodel.HttpResponseTemp;
 import org.domeos.framework.api.controller.ApiController;
 import org.domeos.framework.api.model.global.WebSsh;
-import org.domeos.framework.api.model.resource.related.ResourceType;
+import org.domeos.framework.api.model.collection.related.ResourceType;
 import org.domeos.framework.api.service.global.WebConsoleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;

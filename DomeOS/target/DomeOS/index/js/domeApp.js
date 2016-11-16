@@ -6,7 +6,7 @@
 (function (window, undefined) {
     'use strict';
     // var domeApp = angular.module('domeApp', ['ui.router', 'ncy-angular-breadcrumb', 'angular-loading-bar', 'oc.lazyLoad', 'ngAnimate', 'pasvaz.bindonce', 'ngLocale', 'ui.bootstrap', 'ngScrollbar', 'publicModule', 'domeModule', 'deployModule', 'imageModule', 'userModule', 'projectModule']);
-    window.domeApp = angular.module('domeApp', ['ui.router', 'ncy-angular-breadcrumb', 'oc.lazyLoad', 'ngAnimate', 'pasvaz.bindonce', 'ngLocale', 'ui.bootstrap', 'ngScrollbar', 'publicModule', 'domeModule', 'deployModule', 'imageModule', 'userModule', 'projectModule']);
+    window.domeApp = angular.module('domeApp', ['ui.router', 'ncy-angular-breadcrumb', 'oc.lazyLoad', 'ngAnimate', 'pasvaz.bindonce', 'ngLocale', 'ui.bootstrap', 'ngScrollbar', 'publicModule', 'domeModule', 'deployModule', 'imageModule', 'userModule', 'projectModule','ngclipboard', 'ngCookies']);
 
     domeApp.run(['$rootScope', '$document', function ($rootScope, $document) {
         // 修改页面title，采用ng-bind的方法会使页面闪烁
@@ -21,152 +21,255 @@
     }]);
 
     domeApp.config(['$stateProvider', '$urlRouterProvider', function ($stateProvider, $urlRouterProvider) {
-            $urlRouterProvider.when('', '/projectManage');
-            $stateProvider.state('projectManage', {
-                    url: '/projectManage',
+            $urlRouterProvider.when('', '/projectCollectionManage');
+            $stateProvider.state('projectCollectionManage', {
+            		url: '/projectCollectionManage',
+            		templateUrl: 'index/tpl/projectCollectionManage/projectCollectionManage.html',
+            		controller: 'ProjectCollectionManageCtr',
+            		ncyBreadcrumb: {
+                        label: '项目管理'
+                    }
+            	}).state('createProjectCollection', {
+            		url: 'createProjectCollection',
+            		templateUrl: 'index/tpl/createProjectCollection/createProjectCollection.html',
+            		controller: 'CreateProjectCollectionCtr',
+            		ncyBreadcrumb: {
+            			label: '新建项目',
+            			parent: 'projectCollectionManage'
+            		}
+            	}).state('projectManage', {
+                    url: '/projectManage/:id',
                     templateUrl: 'index/tpl/projectManage/projectManage.html',
                     controller: 'ProjectManageCtr',
                     ncyBreadcrumb: {
-                        label: '项目管理'
+                        label: '{{projectCollectionName}}',
+                        parent:'projectCollectionManage'
                     }
-                })
-                .state('createProject/1', {
-                    url: '/createProject/1',
+                }).state('projectManage.project', {
+                    url: '/project',
+                    templateUrl: 'index/tpl/projectManage/projectManage.html',
+                    ncyBreadcrumb: {
+                        label: '工程',
+                        parent: 'projectManage'
+                    }
+                }).state('projectManage.user', {
+                    url: '/user',
+                    templateUrl: 'index/tpl/projectManage/projectManage.html',
+                    controller: 'ProjectManageCtr',
+                    ncyBreadcrumb: {
+                        label: '成员',
+                        parent: 'projectManage'
+                    }
+                }).state('createProject/1', {
+                    url: '/createProject/1/:projectCollectionId',
                     templateUrl: 'index/tpl/createProject1/createProject1.html',
                     controller: 'CreateProjectCtr1',
                     ncyBreadcrumb: {
-                        label: '新建项目',
-                        parent: 'projectManage'
+                        label: '新建工程',
+                        parent: function($scope){
+                            return $scope.parentState;
+                        }
                     }
-                })
-                .state('createProject/2', {
-                    url: '/createProject/2',
+                }).state('createProject/2', {
+                    url: '/createProject/2/:projectCollectionId',
                     templateUrl: 'index/tpl/createProject2/createProject2.html',
                     controller: 'CreateProjectCtr2',
                     ncyBreadcrumb: {
-                        label: '新建项目',
-                        parent: 'projectManage'
+                        label: '新建工程',
+                         parent: function($scope){
+                            return $scope.parentState;
+                        }
                     }
-                })
-                .state('projectDetail', {
-                    url: '/projectDetail/:project',
+                }).state('projectDetail', {
+                    url: '/projectDetail/:projectCollectionId/:project',
                     templateUrl: 'index/tpl/projectDetail/projectDetail.html',
                     controller: 'ProjectDetailCtr',
                     ncyBreadcrumb: {
-                        label: '项目详情',
-                        parent: 'projectManage'
+                        label: '工程详情',
+                        parent: function ($scope) {
+                            return $scope.parentState;
+                        }
                     },
                     resolve: {
                         loadMyCtrl: ['$ocLazyLoad', function ($ocLazyLoad) {
                             return $ocLazyLoad.load('/lib/js/jquery.zclip.js');
                         }]
                     }
-                })
-                .state('projectDetail.info', {
+                }).state('projectDetail.info', {
                     url: '/info',
                     ncyBreadcrumb: {
-                        label: '项目详情',
-                        parent: 'projectManage'
+                        label: '工程详情',
+                        parent: function ($scope) {
+                            return $scope.parentState;
+                        }
                     }
                 }).state('projectDetail.config', {
                     url: '/config',
                     ncyBreadcrumb: {
-                        label: '项目详情',
-                        parent: 'projectManage'
+                        label: '工程详情',
+                        parent: function ($scope) {
+                            return $scope.parentState;
+                        }
                     }
                 }).state('projectDetail.autobuild', {
                     url: '/autobuild',
                     ncyBreadcrumb: {
-                        label: '项目详情',
-                        parent: 'projectManage'
+                        label: '工程详情',
+                       parent: function ($scope) {
+                            return $scope.parentState;
+                        }
                     }
                 }).state('projectDetail.buildlog', {
                     url: '/buildlog',
                     ncyBreadcrumb: {
-                        label: '项目详情',
-                        parent: 'projectManage'
+                        label: '工程详情',
+                        parent: function ($scope) {
+                            return $scope.parentState;
+                        }
                     }
                 }).state('projectDetail.user', {
                     url: '/user',
                     ncyBreadcrumb: {
-                        label: '项目详情',
-                        parent: 'projectManage'
+                        label: '工程详情',
+                        parent: function ($scope) {
+                            return $scope.parentState;
+                        }
                     }
-                })
-                .state('deployManage', {
-                    url: '/deployManage',
+                }).state('deployCollectionManage', {
+                    url: '/deployCollectionManage',
+                    templateUrl: 'index/tpl/deployCollectionManage/deployCollectionManage.html',
+                    controller: 'DeployCollectionManageCtr',
+                    ncyBreadcrumb: {
+                        label: '服务'
+                    }
+                }).state('createDeployCollection', {
+                    url: '/createDeployCollection',
+                    templateUrl: 'index/tpl/createDeployCollection/createDeployCollection.html',
+                    controller: 'CreateDeployCollectionCtr',
+                    ncyBreadcrumb: {
+                        label: '新建服务',
+                        parent: 'deployCollectionManage'
+                    }
+                }).state('deployAllManage', {
+                    url: '/deployAllManage/:id/:name',
+                    templateUrl: 'index/tpl/deployManage/deployManageAll.html',
+                    controller: 'DeployManageCtr',
+                    ncyBreadcrumb: {
+                        label: '所有部署',
+                        parent: 'deployCollectionManage'
+                    }
+                }).state('deployManage', {
+                    url: '/deployManage/:id/:name',
                     templateUrl: 'index/tpl/deployManage/deployManage.html',
                     controller: 'DeployManageCtr',
                     ncyBreadcrumb: {
-                        label: '部署'
+                        label: '{{collectionName}}',
+                        parent: 'deployCollectionManage',
+                    }
+                }).state('deployManage.deploy', {
+                    url: '/deploy',
+                    templateUrl: 'index/tpl/deployManage/deployManage.html',
+                    ncyBreadcrumb: {
+                        label: '{{collectionName}}',
+                        parent: 'deployCollectionManage'
+                    }
+                }).state('deployManage.user', {
+                    url: '/user',
+                    templateUrl: 'index/tpl/deployManage/deployManage.html',
+                    controller: 'DeployManageCtr',
+                    ncyBreadcrumb: {
+                        label: '{{collectionName}}',
+                        parent: 'deployCollectionManage'
                     }
                 }).state('createDeployCommon', {
-                    url: '/createDeployCommon',
+                    url: '/createDeployCommon/:collectionId/:collectionName',
                     templateUrl: 'index/tpl/createDeployCommon/createDeployCommon.html',
                     controller: 'CreateDeployCommonCtr',
                     ncyBreadcrumb: {
                         label: '新建部署',
-                        parent: 'deployManage'
-                    }
-                }).state('createDeployImage', {
-                    url: '/createDeployImage',
-                    templateUrl: 'index/tpl/createDeployImage/createDeployImage.html',
-                    controller: 'CreateDeployImageCtr',
-                    ncyBreadcrumb: {
-                        label: '新建部署',
-                        parent: 'deployManage'
+                        parent: function($scope){
+                            return $scope.parentState;
+                        }
                     }
                 }).state('createDeployRaw', {
-                  url: '/createDeployRaw',
-                  templateUrl: 'index/tpl/createDeployRaw/createDeployRaw.html',
-                  controller: 'CreateDeployRawCtr',
+                    url: '/createDeployRaw/:collectionId/:collectionName',
+                    templateUrl: 'index/tpl/createDeployRaw/createDeployRaw.html',
+                    controller: 'CreateDeployRawCtr',
+                    ncyBreadcrumb: {
+                        label: '新建部署',
+                        parent: function($scope){
+                            return $scope.parentState;
+                        }
+                    }
+                }).state('createDeployImage', {
+                  url: '/createDeployImage/:collectionId/:collectionName',
+                  templateUrl: 'index/tpl/createDeployImage/createDeployImage.html',
+                  controller: 'CreateDeployImageCtr',
                   ncyBreadcrumb: {
                     label: '新建部署',
-                    parent: 'deployManage'
+                    parent: function ($scope) {
+                      return $scope.parentState;
+                    }
                   }
+                }).state('createDeployDetail', {
+                    url: '/createDeployDetail/:collectionId/:collectionName',
+                    templateUrl: 'index/tpl/createDeployDetail/createDeployDetail.html',
+                    controller: 'CreateDeployDetailCtr',
+                    ncyBreadcrumb: {
+                        label: '新建部署',
+                        parent: function($scope){
+                            return $scope.parentState;
+                        }
+                    }
                 }).state('deployDetail', {
-                    url: '/deployDetail/:id',
+                    url: '/deployDetail/:id/:collectionId/:collectionName',
                     templateUrl: 'index/tpl/deployDetail/deployDetail.html',
                     controller: 'DeployDetailCtr',
                     ncyBreadcrumb: {
-                        label: '部署详情',
-                        parent: 'deployManage'
+                        label: '{{deployName}}',
+                        parent: function($scope){
+                            return $scope.parentState;
+                        }
                     }
                 }).state('deployDetail.detail', {
                     url: '/detail',
                     ncyBreadcrumb: {
-                        label: '部署详情',
-                        parent: 'deployManage'
+                        label: '{{deployName}}',
+                        parent: function($scope){
+                            return $scope.parentState;
+                        }
                     }
                 }).state('deployDetail.update', {
                     url: '/update',
                     ncyBreadcrumb: {
-                        label: '部署详情',
-                        parent: 'deployManage'
+                        label: '{{deployName}}',
+                        parent: function($scope){
+                            return $scope.parentState;
+                        }
                     }
                 }).state('deployDetail.event', {
                     url: '/event',
                     ncyBreadcrumb: {
-                        label: '部署详情',
-                        parent: 'deployManage'
+                        label: '{{deployName}}',
+                        parent: function($scope){
+                            return $scope.parentState;
+                        }
                     }
                 }).state('deployDetail.instance', {
                     url: '/instance',
                     ncyBreadcrumb: {
-                        label: '部署详情',
-                        parent: 'deployManage'
+                        label: '{{deployName}}',
+                        parent: function($scope){
+                            return $scope.parentState;
+                        }
                     }
                 }).state('deployDetail.network', {
                     url: '/network',
                     ncyBreadcrumb: {
-                        label: '部署详情',
-                        parent: 'deployManage'
-                    }
-                }).state('deployDetail.user', {
-                    url: '/user',
-                    ncyBreadcrumb: {
-                        label: '部署详情',
-                        parent: 'deployManage'
+                        label: '{{deployName}}',
+                        parent: function($scope){
+                            return $scope.parentState;
+                        }
                     }
                 }).state('groupManage', {
                     url: '/groupManage',
@@ -271,29 +374,47 @@
                     ncyBreadcrumb: {
                         label: '监控'
                     }
-                }).state('imageManage', {
-                    url: '/image',
-                    templateUrl: 'index/tpl/imageManage/imageManage.html',
-                    controller: 'ImageManageCtr',
+                }).state('imageCollectionManage', {
+                    url: '/imageCollectionManage',
+                    templateUrl: 'index/tpl/imageCollectionManage/imageCollectionManage.html',
+                    controller: 'ImageCollectionManageCtr',
                     ncyBreadcrumb: {
                         label: '镜像管理'
                     }
-                }).state('imageManage.baseimages', {
+                }).state('imageCollectionManage.baseimages', {
                     url: '/baseimages',
-                    templateUrl: 'index/tpl/imageManage/imageManage.html',
+                    templateUrl: 'index/tpl/imageCollectionManage/imageCollectionManage.html',
                     ncyBreadcrumb: {
                         label: '镜像管理'
                     }
-                }).state('imageManage.projectimages', {
-                    url: '/projectimages',
-                    templateUrl: 'index/tpl/imageManage/imageManage.html',
+                }).state('imageCollectionManage.proimages', {
+                    url: '/proimages',
+                    templateUrl: 'index/tpl/imageCollectionManage/imageCollectionManage.html',
                     ncyBreadcrumb: {
                         label: '镜像管理'
                     }
-                }).state('imageManage.otherimages', {
+                }).state('imageCollectionManage.otherimages', {
                     url: '/otherimages',
                     ncyBreadcrumb: {
                         label: '镜像管理'
+                    }
+                }).state('otherImagesManage', {
+                    url: '/otherImagesManage',
+                    templateUrl: 'index/tpl/imagesManage/imagesManage.html',
+                    controller: 'ImagesManageCtr',
+                    params:{args:{}},
+                    ncyBreadcrumb: {
+                        label: '其他镜像',
+                        parent: 'imageCollectionManage'
+                    }
+                }).state('projImagesManage', {
+                    url: '/projImagesManage',
+                    templateUrl: 'index/tpl/imagesManage/imagesManage.html',
+                    controller: 'ImagesManageCtr',
+                    params:{args:{}},
+                    ncyBreadcrumb: {
+                        label: '{{collectionName}}镜像',
+                        parent: 'imageCollectionManage'
                     }
                 }).state('mirrorCustom', {
                     url: '/mirrorCustom',
@@ -386,40 +507,42 @@
                     templateUrl: 'index/tpl/alarm/alarm.html',
                     controller: 'AlarmCtr as vm',
                     ncyBreadcrumb: {
-                        label: '报警',
-                        parent: 'monitor'
+                        label: '报警'
                     }
                 }).state('alarm.templates', {
                     url: '/templates',
                     templateUrl: 'index/tpl/alarm/tabTemplates/tabTemplates.html',
                     controller: 'TabAlarmTemplatesCtr as vmTemplate',
                     ncyBreadcrumb: {
-                        label: '报警',
-                        parent: 'monitor'
+                        label: '报警模板'
                     }
-                }).state('alarm.hostgroups', {
-                    url: '/hostgroups',
+                }).state('alarm.nodegroups', {
+                    url: '/nodegroups',
                     templateUrl: 'index/tpl/alarm/tabHostGroups/tabHostGroups.html',
                     controller: 'TabHostGroupsCtr as vmHostGroup',
                     ncyBreadcrumb: {
-                        label: '报警',
-                        parent: 'monitor'
+                        label: '主机组'
                     }
                 }).state('alarm.currentAlarms', {
                     url: '/currentAlarms',
                     templateUrl: 'index/tpl/alarm/tabCurrentAlarms/tabCurrentAlarms.html',
                     controller: 'TabAlarmCurrentAlarmsCtr as vmAlarm',
                     ncyBreadcrumb: {
-                        label: '报警',
-                        parent: 'monitor'
+                        label: '未恢复报警'
                     }
                 }).state('alarm.group', {
                     url: '/group',
                     templateUrl: 'index/tpl/alarm/tabGroup/tabGroup.html',
                     controller: 'TabGroupCtr as vmGroup',
                     ncyBreadcrumb: {
-                        label: '报警',
-                        parent: 'monitor'
+                        label: '报警组'
+                    }
+                }).state('alarm.usergroup', {
+                    url: '/usergroup',
+                    templateUrl: 'index/tpl/alarm/tabUserGroup/tabUserGroup.html',
+                    controller: 'TabUserGroupCtr',
+                    ncyBreadcrumb: {
+                        label: '用户组'                    
                     }
                 }).state('createAlarmTemplate', {
                     url: '/createAlarmTemplate',
@@ -429,8 +552,16 @@
                         label: '新建模板',
                         parent: 'alarm.templates'
                     }
+                }).state('alarmUserGroupDetail', {
+                    url: '/alarmUserGroupDetail/:id',
+                    templateUrl: 'index/tpl/tplAlarmUserGroupDetail/tplAlarmUserGroupDetail.html',
+                    controller: 'TplAlarmUserGroupDetailCtr',
+                    ncyBreadcrumb: {
+                        label: '用户组详情',
+                        parent: 'alarm.usergroup'
+                    }
                 }).state('alarmTemplateDetail', {
-                    url: '/template/:id',
+                    url: '/alarmTemplateDetail/:id',
                     templateUrl: 'index/tpl/alarmTemplateDetail/alarmTemplateDetail.html',
                     controller: 'AlarmTemplateDetailCtr',
                     ncyBreadcrumb: {

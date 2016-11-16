@@ -52,12 +52,6 @@ public class ProjectBizImpl extends BaseBizImpl implements ProjectBiz {
     }
 
     @Override
-    public boolean isAuthorited(int resourceId) {
-        Integer authority = projectMapper.getAuthoriy(resourceId);
-        return authority != null && authority > 0;
-    }
-
-    @Override
     public Project getProjectByName(String name) {
         return this.getByName(GlobalConstant.PROJECT_TABLE_NAME, name, Project.class);
     }
@@ -245,5 +239,20 @@ public class ProjectBizImpl extends BaseBizImpl implements ProjectBiz {
     @Override
     public String getBuildTaskNameById(int buildId) {
         return buildHistoryMapper.getBuildTaskNameById(buildId);
+    }
+
+    @Override
+    public BuildHistory getBuildHistoryById(int buildId) {
+        return getById(GlobalConstant.BUILDHISTORY_TABLE_NAME, buildId, BuildHistory.class);
+    }
+
+    @Override
+    public Project getProjectByBuildId(int buildId) {
+        BuildHistory buildHistory = getById(GlobalConstant.BUILDHISTORY_TABLE_NAME, buildId, BuildHistory.class);
+        if (buildHistory != null) {
+            Project project = getById(GlobalConstant.PROJECT_TABLE_NAME, buildHistory.getProjectId(), Project.class);
+            return project;
+        }
+        return null;
     }
 }

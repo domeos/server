@@ -3,6 +3,8 @@ package org.domeos.framework.engine.coderepo;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.lang3.StringUtils;
 import org.domeos.exception.WebHooksException;
+import org.domeos.framework.api.model.ci.related.CodeInfomation;
+import org.domeos.framework.api.model.ci.related.CommitInformation;
 import org.domeos.framework.engine.model.CustomObjectMapper;
 import org.domeos.util.DateUtil;
 
@@ -232,6 +234,25 @@ public class GitWebHook implements WebHook {
             return commit.getAuthor().getEmail();
         }
         return null;
+    }
+
+    @Override
+    public CodeInfomation generateCodeInfo() {
+        CodeInfomation codeInfo = new CodeInfomation();
+        codeInfo.setCodeBranch(branch);
+        codeInfo.setCodeTag(tag);
+        return codeInfo;
+    }
+
+    @Override
+    public CommitInformation generateCommitInfo() {
+        CommitInformation commitInfo = new CommitInformation();
+        commitInfo.setId(after);
+        commitInfo.setMessage(getCommitMessage());
+        commitInfo.setAuthorName(getCommitAuthorName());
+        commitInfo.setAuthorEmail(getCommitAuthorEmail());
+        commitInfo.setCreatedAt(getCommitTimestamp());
+        return commitInfo;
     }
 
     public void setUser_email(String user_email) {

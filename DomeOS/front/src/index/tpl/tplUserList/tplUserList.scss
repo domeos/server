@@ -4,9 +4,10 @@
 	padding-bottom: 200px;
 	text-align: left;
 	overflow: hidden;
+
 	.title-con{
-		padding:18px $wider-padding 18px $wider-padding;
-		border-bottom: $light-border;
+		padding:20px 0 20px 0;
+		// border-bottom: $light-border;
 		overflow: hidden;
 		.member-title{
 			display: inline-block;
@@ -15,35 +16,47 @@
 			vertical-align: top;
 		}
 		.ui-input-search{
-			margin-right:  $wider-padding;
+			// margin-right:  $wider-padding;
+			margin-left: 34px;
 		}
 	}
 	.member-select{
-		padding:18px $wider-padding 20px $wider-padding;
-			.select-type{
-				margin-right: 26px;
-				&.active{
-					color: dome-color(dome,bright);
-				}
+		padding:0px $wider-padding 16px $wider-padding;
+		.select-type{
+			margin-right: 26px;
+			&.active{
+				color: dome-color(dome,bright);
 			}
+		}
+		.member-way{
+			padding-left:12px;
+		}
 		.member-search{
-			padding-top: 18px;
+			padding-top: 10px;
 			.com-select-con{
 				display: inline-block;
 				width: 70%;
-				margin-right: 40px;
+				margin-right: 20px;
 				&+.com-select-con{
 					margin-top: 12px;
+				}
+				.line-element-sm{
+					width: calc(100% - 72px);
 				}
 			}
 		}
 	}
-	.member-list{
+	.mod-list,.member-list{
 		.ui-table-dome{
 			table-layout: fixed;
-			td,th{
-				&:first-child{
-					padding-left: $wider-padding ;
+			tbody{
+				tr{
+					td,th{
+						padding:0px 0px 0px 8px;
+						&:first-child{
+							// padding-left: $wider-padding ;
+						}
+					}
 				}
 			}
 			.edit-role{
@@ -52,6 +65,33 @@
 					margin-right: 10px;
 				}
 			}
+			.temp{
+				margin-left: -12px;
+			}
 		}
 	}
+	.isDisabledIcon{
+		color: #333;
+	}
+	.ui-btn-lg{
+		height: 34px;
+	    width: 100px;
+	    color: #fff;
+	    font-size: 14px;
+	    font-weight: normal;
+	    background-color: #188ae2;
+	}
+	.ui-btn-the-same-second{
+		margin-left: 0px;
+	}
+	.isDisabledButton{
+		background-color: #aaa;
+	}
+	.ui-btn-add{
+		position: absolute;
+		left: calc(100% - 72px);
+		top: 0;
+		margin-left: 7px;
+	}
+
 }

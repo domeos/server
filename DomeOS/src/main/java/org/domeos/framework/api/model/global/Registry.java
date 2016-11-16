@@ -1,6 +1,7 @@
 package org.domeos.framework.api.model.global;
 
 import org.apache.commons.lang3.StringUtils;
+import org.domeos.framework.api.model.token.related.RegistryTokenInfo;
 import org.domeos.util.CommonUtil;
 
 /**
@@ -15,6 +16,7 @@ public class Registry {
     private String certification;
     private long createTime;
     private long lastUpdate;
+    private RegistryTokenInfo tokenInfo;
 
     public Registry() {
     }
@@ -91,6 +93,14 @@ public class Registry {
 
     public String fullRegistry() {
         return CommonUtil.fullUrl(url);
+    }
+
+    public RegistryTokenInfo getTokenInfo() {
+        return tokenInfo;
+    }
+
+    public void setTokenInfo(RegistryTokenInfo tokenInfo) {
+        this.tokenInfo = tokenInfo;
     }
 
     public String checkLegality() {

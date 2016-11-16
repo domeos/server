@@ -53,9 +53,23 @@ public class DeploymentController extends ApiController {
     }
 
     @ResponseBody
+    @RequestMapping(value = "/migrate/{deployId}/{collectionId}", method = RequestMethod.GET)
+    public HttpResponseTemp<List<DeploymentInfo>> migrateDeployment(@PathVariable int deployId, @PathVariable int collectionId)
+            throws Exception {
+        deploymentService.migrateDeployment(deployId, collectionId);
+        return ResultStat.OK.wrap(null);
+    }
+
+    @ResponseBody
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public HttpResponseTemp<List<DeploymentInfo>> listDeployment() throws Exception {
         return ResultStat.OK.wrap(deploymentService.listDeployment());
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "/list/{collectionId}", method = RequestMethod.GET)
+    public HttpResponseTemp<List<DeploymentInfo>> listDeployment(@PathVariable int collectionId) throws Exception {
+        return ResultStat.OK.wrap(deploymentService.listDeployment(collectionId));
     }
 
     @ResponseBody

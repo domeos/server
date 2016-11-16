@@ -30,7 +30,7 @@
 								a 无相关用户信息
 							li.select-item(ng-repeat="user in userListFiltered=(userList| filter:{'username':userKey.key})")
 								a(ng-bind="user.username" ng-click="selectUser(user.id,user.username);")
-				.line-long
+				.line-long.line-member
 					.com-select-con.line-element(select-con)
 						button.ui-btn.ui-btn-select.ui-btn-white(ng-cloak)
 							i.icon-down
@@ -43,7 +43,7 @@
 							li.select-item
 								a(ng-click="toggleRole('REPORTER')") REPORTER
 					button.ui-btn.ui-btn-sm.ui-btn-primary.ui-btn-add(ng-click="addUser()") 添加
-				.line-long.line-member
+				.line-long
 					table.ui-table-primary
 						thead
 							tr

@@ -23,5 +23,8 @@
     "http-proxy-middleware": "^0.17.2",
     "through2": "^2.0.1"
   },
-  "repository": "git://github.com/gruntjs"
+  "repository": "git://github.com/gruntjs",
+  "dependencies": {
+    "clipboard": "^1.5.13"
+  }
 }

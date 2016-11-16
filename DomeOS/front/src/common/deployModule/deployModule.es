@@ -13,6 +13,7 @@
             const _url = '/api/deploy';
             const _versionUrl = '/api/version';
             this.getList = () => $http.get(`${_url}/list`);
+            this.getListByCollectionId = (collectionId) => $http.get(`${_url}/list/${collectionId}`);
             this.getSingle = (deployId) => $http.get(`${_url}/id/${deployId}`);
             this.getEvents = (deployId) => $http.get(`${_url}/event/list?deployId=${deployId}`);
             this.getInstances = (deployId) => $http.get(`${_url}/${deployId}/instance`);
@@ -46,6 +47,7 @@
 
         class Deploy {
             constructor(deployConfig) {
+                this.collectionId = '';
                 this.namespaceList = [];
                 // 是否是新建namespace
                 this.isNewNamespace = false;
@@ -216,10 +218,13 @@
                     }
                 }
 
-                console.log(this.config.containerDrafts);
+                //console.log(this.config.containerDrafts);
                 for (let image of this.config.containerDrafts) {
                     this.addLogDraft(image);
                 }
+            }
+            setCollectionId(collectionId) {
+              this.collectionId = collectionId;
             }
             initCluster() {
                     this.loadingIns.startLoading('cluster');
@@ -462,6 +467,7 @@
                                 type: 'NONE'
                             },
                             imagePullPolicy: 'Always',
+                            autoDeploy: false,
                             logItemDrafts: [{
                                logPath: '',
                                autoCollect: false,
@@ -617,13 +623,18 @@
 
                 deployConfig.clusterId = this.clusterListIns.cluster.id;
 
+                deployConfig.collectionId = this.collectionId;
+
+                /*
                 if (this.creator.id) {
-                    deployConfig.creator = {
+                    if (0) deployConfig.creator = {
                         creatorId: this.creator.id,
                         creatorName: this.creator.name,
                         creatorType: this.creator.type
                     };
+                    deployConfig.creatorId = this.creator.id;
                 }
+                */
 
                 if (deployConfig.versionType === 'CUSTOM') {
                     deployConfig.containerDrafts = (() => {
@@ -704,6 +715,7 @@
                                 envs: envConf,
                                 healthChecker: healthChecker,
                                 imagePullPolicy: containerDraft.imagePullPolicy,
+                                autoDeploy: containerDraft.autoDeploy
                             });
                         }
                         return containerDrafts;

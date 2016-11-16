@@ -1,7 +1,9 @@
 package org.domeos.framework.api.controller.project;
 
 import org.domeos.basemodel.HttpResponseTemp;
-import org.domeos.framework.api.consolemodel.project.ProjectCreate;
+import org.domeos.framework.api.consolemodel.project.ProjectCollectionConsole;
+import org.domeos.framework.api.consolemodel.project.ProjectConsole;
+import org.domeos.framework.api.consolemodel.project.ProjectInfoConsole;
 import org.domeos.framework.api.controller.ApiController;
 import org.domeos.framework.api.model.ci.BuildHistory;
 import org.domeos.framework.api.model.ci.related.BuildResult;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Created by feiliu206363 on 2015/11/12.
@@ -35,9 +38,45 @@ public class ProjectController extends ApiController {
     BuildService buildService;
 
     @ResponseBody
-    @RequestMapping(value = "/project", method = RequestMethod.POST)
-    public HttpResponseTemp<?> createProject(@RequestBody ProjectCreate projectCreate) {
-        return projectService.createProject(projectCreate);
+    @RequestMapping(value = "/projectcollection/{collectionId}/name", method = RequestMethod.GET)
+    public HttpResponseTemp<String> getProjectCollectionNameById(@PathVariable int collectionId) {
+        return projectService.getProjectCollectionNameById(collectionId);
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "/projectcollection", method = RequestMethod.GET)
+    public HttpResponseTemp<List<ProjectCollectionConsole>> listProjectCollection() {
+        return projectService.listProjectCollection();
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "/projectcollection", method = RequestMethod.POST)
+    public HttpResponseTemp<ProjectCollectionConsole> addProjectCollection(@RequestBody ProjectCollectionConsole projectCollectionConsole) {
+        return projectService.addProjectCollection(projectCollectionConsole);
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "/projectcollection", method = RequestMethod.PUT)
+    public HttpResponseTemp<ProjectCollectionConsole> updateProjectCollection(@RequestBody ProjectCollectionConsole projectCollectionConsole) {
+        return projectService.updateProjectCollection(projectCollectionConsole);
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "/projectcollection/{id}", method = RequestMethod.DELETE)
+    public HttpResponseTemp<?> deleteProjectCollection(@PathVariable int id) {
+        return projectService.deleteProjectCollection(id);
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "/projectcollection/{id}", method = RequestMethod.GET)
+    public HttpResponseTemp<ProjectCollectionConsole> getProjectCollection(@PathVariable int id) {
+        return projectService.getProjectCollection(id);
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "/projectcollection/{collectionId}/project", method = RequestMethod.POST)
+    public HttpResponseTemp<ProjectConsole> createProject(@PathVariable int collectionId, @RequestBody Project project) {
+        return projectService.createProject(collectionId, project);
     }
 
     @ResponseBody
@@ -48,20 +87,20 @@ public class ProjectController extends ApiController {
 
     @ResponseBody
     @RequestMapping(value = "/project", method = RequestMethod.PUT)
-    public HttpResponseTemp<?> modifyProject(@RequestBody Project project) {
+    public HttpResponseTemp<ProjectConsole> modifyProject(@RequestBody Project project) {
         return projectService.modifyProject(project);
     }
 
     @ResponseBody
-    @RequestMapping(value = "/project/{id}", method = RequestMethod.GET)
-    public HttpResponseTemp<Project> getProject(@PathVariable int id) {
-        return projectService.getProject(id);
+    @RequestMapping(value = "/project/{projectId}", method = RequestMethod.GET)
+    public HttpResponseTemp<ProjectConsole> getProject(@PathVariable int projectId) {
+        return projectService.getProject(projectId);
     }
 
     @ResponseBody
-    @RequestMapping(value = "/project", method = RequestMethod.GET)
-    public HttpResponseTemp<?> listProjectInfo() {
-            return projectService.listProjectInfo();
+    @RequestMapping(value = "/projectcollection/{collectionId}/project", method = RequestMethod.GET)
+    public HttpResponseTemp<List<ProjectInfoConsole>> listProjectInfo(@PathVariable int collectionId) {
+        return projectService.listProjectInfo(collectionId);
     }
 
     @ResponseBody
@@ -187,6 +226,13 @@ public class ProjectController extends ApiController {
     @RequestMapping(value = "/ci/build/download/{projectId}/{buildId}", method = RequestMethod.GET)
     public HttpResponseTemp<?> downloadLogFile(@PathVariable int projectId, @PathVariable int buildId) {
         return buildService.downloadLogFile(projectId, buildId);
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "/ci/build/download/{projectId}/{buildId}/uploadfile", method = RequestMethod.GET)
+    public String downloadUploadFile(@PathVariable int projectId, @PathVariable int buildId,
+                                     @RequestParam String filename, @RequestParam String secret) {
+        return buildService.downloadUploadFile(projectId, buildId, filename, secret);
     }
 
     @ResponseBody

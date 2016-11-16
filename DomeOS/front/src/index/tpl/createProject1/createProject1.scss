@@ -5,17 +5,21 @@
 	$first-line-width:127px;
 	min-height: 700px;
 	padding-bottom: 100px;
+	padding: 20px;
 	.opt-title{
 		display: inline-block;
 		width: $first-line-width;
 		font-weight: bold;
 		vertical-align: middle;
+		padding: 8px 10px;
 	}
 	.opt-content{
 		display: inline-block;
 		vertical-align: top;
+		padding-left: 10px;
 		.opt-descrip {
 			margin-bottom: 16px;
+			margin-top: 8px;
 		}
 		@media (max-width: 1300px){
 			.opt-descrip {
@@ -30,18 +34,17 @@
 		padding-top: 22px;
 	}
 	.chose-account{
-		padding-left: 180px;
+		padding-left: 0px;
 		border-bottom: $light-border;
-		margin: 22px 0  -6px 0;
+		margin: 0 0 -7px 0;
 		overflow: hidden;
 		.ui-input-search{
-			margin:17px 53px 6px 0;
+			margin:16px 0px 6px 0;
 		}
 		.related{
 			display: inline-block;
 			font-weight: bold;
-			margin-right: 10px;
-			margin-top: 14px;
+			margin:16px 20px 0 20px;
 			line-height: 35px;
 			vertical-align: top;
 			.icon-add-green{
@@ -54,6 +57,11 @@
 	}
 	ul.com-list-tab{
 		font-weight: bold;
+	}
+	.com-tabset-scroll{
+		.list-back{
+			padding-left: 10px;
+		}
 	}
 	.list-project{
 		// margin: 0 0-$page-padding 0 0-$page-padding;
@@ -69,10 +77,10 @@
 				&.project-name{
 					position: relative;
 					width: 40%;
-					padding-left: 180px;
+					padding-left: 125px;
 					.icon-check{
 						position: absolute;
-						left: 123px;
+						left: 85px;
 						top: 26px;
 					}
 				}
@@ -81,7 +89,7 @@
 				}
 			}
 			.no-result {
-				padding-left: 180px;
+				padding-left: 125px;
 				font-size: 14px;
 			}
 			&:hover{
@@ -98,10 +106,9 @@
 	.pro-item{
 		border-bottom: $light-border;
 		padding-left: $page-padding;
-		padding-top: 18px;
-		padding: 18px 0 18px $wider-padding;
+		// padding-top: 18px;
+		padding: 0 0 18px $wider-padding;
 		// min-height: 64px;
-		margin:7px 0;
 
 	}
 	.branch-setting{
@@ -126,6 +133,7 @@
 		}
 		.creator-info{
 			display: inline-block;
+			vertical-align: middle;
 		}
 		.creator-name{
 			margin-right: 15px;

@@ -6,4 +6,4 @@ ul.mod-appstore.app-store
 				.cover-con
 					p(ng-bind="app.description")
 					a.ui-btn.ui-btn-white.ui-btn-deploy.ui-btn-sm.ui-btn-link(ui-sref="createAppDeploy({'appName':app.appName})") 部署
-				img(src="{{app.appIcon}}")
+				img(ng-src="{{app.appIcon}}")

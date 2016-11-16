@@ -5,14 +5,38 @@
  @import "compass/css3";
  @import "common/css/common.scss";
 // page keyframe
-.page{
-	padding-left: $nav-width;
-	overflow: hidden;
-	.content{
-		.module{
-			padding:0;
-		}
-	}
+.page {
+    padding-left: $nav-width;
+    transition: padding-left $nav-transition-duration linear;
+    overflow: hidden;
+
+    .content {
+        .module {
+            padding: 0px;
+            margin: 0 20px 20px 20px;
+            background-color: #fff;
+            width: auto;
+            border-radius: $default-radius;
+        }
+    }
+}
+@media (max-height: 1300px) {
+    .module{
+        min-height: 1200px;
+    }
+}
+@media (max-height: 640px) {
+    .module{
+        min-height: 460px;
+    }
+}
+@media (max-height: 790px) {
+    .module{
+        min-height: 560px;
+    }
+}
+.thin-left-nav .page {
+    padding-left: $thin-nav-width;
 }
 .top-prompt{
 	height: 34px;
@@ -29,19 +53,29 @@
 // top header
 .header{
 	width: 100%;
-	padding: 6px 40px 0 $page-padding;
+	padding: 15px $page-padding 15px $page-padding;
 	color: #fff;
-	@extend %dome-background;
+	//@extend %dome-background;
 	.breadcrunmbs{
-		padding-top: 4px;
+		padding-top: 10px;
 		padding-bottom: 10px;
 		.breadcrumb{
 			display: inline-block;
 			background: none;
 			padding: 0;
 			margin: 0;
+			padding-left:14px;
+			border-radius: 0px;
 			a,span{
-				color:#fff;
+				color: dome-color(font,default);
+			}
+		}
+		.sidebar{
+			a{
+				color: dome-color(font,embed);
+			}
+			a:hover{
+				color: dome-color(dome,bright);
 			}
 		}
 	}
@@ -52,10 +86,10 @@
 			margin-left: 24px;
 			display: inline-block;
 			vertical-align:top;
-			line-height: 26px;
+			// line-height: 26px;
 			&.header-doc{
 				a{
-					color: #fff;
+					color: dome-color(font,default);
 				}
 				.icon-doc{
 					margin-right:$icon-distance;
@@ -74,8 +108,8 @@
 				.username{
 					display: block;
 					text-align: right;
-					color: #fff;
-					line-height: 26px;
+					color: dome-color(font,default);
+					// line-height: 26px;
 					.icon-down-white{
 						margin-left: 8px;
 					}
@@ -98,28 +132,27 @@
 }
 // content div --> common top option
 .mod-option{
-	height: 79px;
-	padding-top: 16px;
-	padding:16px $page-padding 16px;
+	// height: 79px;
+	padding:20px;
 	&.hasborder{
 		border-bottom: 10px solid dome-color(background,primary);
 	}
 	.ui-btn-lg{
-		height: 43px;
-		width: 158px;
+		height: 34px;
+		width: 100px;
 		color: #fff;
 		font-size:14px;
-		font-weight: bold;
-		// background-color:#2994e7;
+		font-weight: normal;
+		background-color: dome-color(dome,bright);
 		.icon-add-white{
 			margin-right: 4px;
 		}
 	}
 	.right-option{
-		padding-top: 10px;
+		// padding-top: 10px;
 		.ui-input-search{
 			margin-left: 34px;
-			margin-right: 10px;
+			// margin-right: 10px;
 		}
 		.icon-down-white{
 			margin-left: 4px;
@@ -130,10 +163,10 @@
 .mod-list{
 	.ui-table-dome{
 		&>tbody>tr>td:first-child,&>thead>tr>th:first-child{
-			padding-left: $wider-padding;
+			// padding-left: $wider-padding;
 		}
 		&>tbody>tr>td:last-child,&>thead>tr>th:last-child{
-			padding-right: $wider-padding;
+			// padding-right: $wider-padding;
 		}
 		.ui-btn:not(:first-child){
 			margin-left: 10px;
@@ -143,14 +176,14 @@
 
 // (eg: deploy detail header)
 .detail-header{
-	padding: 20px $page-padding 24px $page-padding;
-	border-bottom: 10px solid dome-color(background,primary);
+	padding: 20px $page-padding 20px 20px;//$page-padding->0
+	border-bottom: 20px solid dome-color(background,light);
 	overflow: hidden;
 	.detail-item{
 		float: left;
 		.item-name{
 			display: block;
-			font-size: 12px;
+			font-size: 14px;
 		}
 		.item-content{
 			display: inline-block;
@@ -181,7 +214,7 @@
 		display: inline-block;
 		width: 200px;
 		height: 100px;
-		margin-right: 20px;
+		margin-right: 14px;
 		padding: 12px 6px 12px;
 		border: 2px solid transparent;
 		background-color: dome-color(background,light);
@@ -216,17 +249,24 @@
 
 // list info display.(eg: create deploy、create cluster)
 .com-list-info{
+	padding: 20px;
 	&>li{
 		display: table;
 		width: 100%;
 		.info-name{
 			display: table-cell;
-			width: 148px;
-			padding: 22px 0 0 42px;
+			width: 162px;
+			padding: 26px 8px;
 			vertical-align: top;
 			font-weight: bold;
 			&.not-align-input{
 				padding-top: 16px;
+			}
+			&.info-name-sm{
+				padding-top: 23px;
+			}
+			&.info-name-lg{
+				padding-top: 38px;
 			}
 		}
 		.info-simple{
@@ -236,9 +276,12 @@
 		}
 		.info-content{
 			display: table-cell;
-			padding:16px 0 16px 45px;
+			padding: 20px;
 			&.nochild{
 				padding-top: 23px;
+			}
+			&.info-content-lg-height{
+				padding-top: 26px;
 			}
 			.com-check-con{
 				margin-right: 40px;
@@ -284,6 +327,11 @@
 				top: 7px;
 				margin-left: 10px;
 				width: 300px;
+			}
+			.txt-wrap-icon{
+				position: absolute;
+				left: 100%;
+				margin-left: 10px;
 			}
 			.line-long{
 				width: 60%;
@@ -358,7 +406,7 @@
 		position: relative;
 		width: 60%;
 		padding: 10px 30px 10px 10px;
-		margin-top: 12px;
+		margin-bottom: 12px;
 		border:$light-border;
 		.cancel-log{
 			position: absolute;
@@ -396,6 +444,15 @@
 			display: inline-block;
 			margin: 7px 0 0 10px;
 		}
+	}
+	.require-domian{
+		color:dome-color(dome,error);
+	}
+	.com-bottom-option-create {
+	    padding-top: 30px;
+	    padding-bottom: 30px;
+	    text-align: left;
+	    margin-left: 190px;
 	}
 }
 // cluster module stylesheet

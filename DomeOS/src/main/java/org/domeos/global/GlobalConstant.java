@@ -10,9 +10,11 @@ import org.domeos.util.DatabaseType;
 public class GlobalConstant {
     public static final String CLUSTER_TABLE_NAME = "cluster";
     public static final String DEPLOY_TABLE_NAME = "deployment";
+    public static final String DEPLOY_COLLETION_TABLE_NAME = "deploy_collection";
     public static final String LOADBALANCER_TABLE_NAME = "load_balancer";
     public static final String LOADBALANCERDEPLOYMAP_TABLE_NAME = "load_balancer_deploy_map";
     public static final String PROJECT_TABLE_NAME = "project";
+    public static final String PROJECT_COLLECTION_TABLE_NAME = "project_collection";
     public static final String RSAKEYPAIR_TABLE_NAME = "rsa_keypair";
     public static final String BUILDHISTORY_TABLE_NAME = "build_history";
     public static final String UNIQPORTINDEX_TABLE_NAME = "uniq_port_index";
@@ -48,4 +50,12 @@ public class GlobalConstant {
     public static String NODATA_CONFIG_NAME = "domeos.agent.alive";
     public static int alarmGroupId = 1000;
     public static final int K8S_POD_COUNTS = 100;
+    public static int PROJECT_LIST_SIZE = 20;
+
+    public static String DEFAULT_NAMESPACE = "default";
+    public static String SECRET_DOCKERCFG_TYPE = "kubernetes.io/dockerconfigjson";
+    public static String SECRET_DOCKERCFG_DATA_KEY = ".dockerconfigjson";
+    public static String REGISTRY_TOKEN = "ZG9tZW9zOmRvbWVvcw==";
+    public static String REGISTRY_EMAIL = "domeos@sohu-inc.com";
+    public static String SECRET_NAME_PREFIX = "domeos-";
 }

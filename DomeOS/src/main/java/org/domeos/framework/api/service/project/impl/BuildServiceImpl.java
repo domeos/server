@@ -1,8 +1,6 @@
 package org.domeos.framework.api.service.project.impl;
 
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.domeos.basemodel.HttpResponseTemp;
 import org.domeos.basemodel.ResultStat;
 import org.domeos.exception.JobNotFoundException;
@@ -16,6 +14,7 @@ import org.domeos.framework.api.controller.exception.PermitException;
 import org.domeos.framework.api.model.ci.BuildHistory;
 import org.domeos.framework.api.model.ci.CodeType;
 import org.domeos.framework.api.model.ci.related.*;
+import org.domeos.framework.api.model.collection.related.ResourceType;
 import org.domeos.framework.api.model.global.Registry;
 import org.domeos.framework.api.model.global.Server;
 import org.domeos.framework.api.model.image.BaseImage;
@@ -25,9 +24,9 @@ import org.domeos.framework.api.model.operation.OperationType;
 import org.domeos.framework.api.model.project.Project;
 import org.domeos.framework.api.model.project.SubversionUser;
 import org.domeos.framework.api.model.project.related.*;
-import org.domeos.framework.api.model.resource.related.ResourceType;
 import org.domeos.framework.api.service.image.impl.PrivateRegistry;
 import org.domeos.framework.api.service.project.BuildService;
+import org.domeos.framework.api.service.token.TokenService;
 import org.domeos.framework.engine.AuthUtil;
 import org.domeos.framework.engine.coderepo.CodeApiInterface;
 import org.domeos.framework.engine.coderepo.GitWebHook;
@@ -39,12 +38,17 @@ import org.domeos.global.CurrentThreadInfo;
 import org.domeos.global.GlobalConstant;
 import org.domeos.util.CommonUtil;
 import org.domeos.util.RSAKeyPairGenerator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * Created by feiliu206363 on 2015/7/29.
@@ -60,6 +64,10 @@ public class BuildServiceImpl implements BuildService {
     GlobalBiz globalBiz;
     @Autowired
     OperationHistory operationHistory;
+    @Autowired
+    TokenService tokenService;
+    @Autowired
+    CheckAutoDeploy checkAutoDeploy;
 
     private void checkGetable(int id) {
         AuthUtil.verify(CurrentThreadInfo.getUserId(), id, ResourceType.PROJECT, OperationType.GET);
@@ -82,32 +90,26 @@ public class BuildServiceImpl implements BuildService {
             checkGetable(project.getId());
         }
 
-        if (project.getDockerfileConfig() != null && project.getDockerfileInfo() == null && project.getExclusiveBuild() == null) {
-            if (!StringUtils.isBlank(project.getDockerfileConfig().checkLegality())) {
-                throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, project.getDockerfileConfig().checkLegality());
-            }
-            DockerfileContent dockerfile = project.getDockerfileConfig();
-            if (dockerfile == null) {
-                throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "docker file config is null");
-            }
-            String dockerfileStr = generateDockerfile(dockerfile, project.getConfFiles());
-            return ResultStat.OK.wrap(dockerfileStr);
-        } else if (project.getDockerfileConfig() == null && project.getDockerfileInfo() == null && project.getExclusiveBuild() != null) {
-            if (!StringUtils.isBlank(project.getExclusiveBuild().checkLegality())) {
-                throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, project.getExclusiveBuild().checkLegality());
-            }
-            ExclusiveBuild exclusiveBuild = project.getExclusiveBuild();
-            if (exclusiveBuild == null) {
-                throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "exclusive build config is null");
-            }
-            String dockerfileStr = generateDockerfile(exclusiveBuild, project.getConfFiles());
-            return ResultStat.OK.wrap(dockerfileStr);
-        } else if (project.getDockerfileConfig() == null && project.getDockerfileInfo() != null && project.getExclusiveBuild() == null) {
+        String error = project.checkLegality();
+        if (!StringUtils.isBlank(error)) {
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, error);
+        }
+
+        if (project.getDockerfileConfig() != null) {
+            return ResultStat.OK.wrap(generateDockerfile(project.getDockerfileConfig(), project.getConfFiles()));
+        }
+
+        if (project.getExclusiveBuild() != null) {
+            return ResultStat.OK.wrap(generateDockerfile(project.getExclusiveBuild(), project.getConfFiles()));
+        }
+
+        if (project.getCustomDockerfile() != null) {
+            return ResultStat.OK.wrap(project.getCustomDockerfile().getDockerfile());
+        }
+
+        if (project.getDockerfileInfo() != null) {
             UserDefinedDockerfile dockerfileInfo = project.getDockerfileInfo();
             CodeConfiguration codeInfo = project.getCodeInfo();
-            if (codeInfo == null) {
-                throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "code info is null");
-            }
             CodeApiInterface codeApiInterface = ReflectFactory.createCodeApiInterface(CodeType.getTypeByName(codeInfo.getCodeManager()),
                     codeInfo.getCodeManagerUserId());
             if (codeApiInterface == null) {
@@ -119,9 +121,11 @@ public class BuildServiceImpl implements BuildService {
             }
             CommitInformation branchOrTagInfo = null;
             if (dockerfileInfo.getTag() != null) {
-                branchOrTagInfo = codeApiInterface.getTagCommitInfo(codeInfo.getCodeId(), dockerfileInfo.getTag());
+                branchOrTagInfo = codeApiInterface.getCommitInfo(codeInfo.getCodeId(), dockerfileInfo.getTag());
             } else if (dockerfileInfo.getBranch() != null) {
-                branchOrTagInfo = codeApiInterface.getBranchCommitInfo(codeInfo.getCodeId(), dockerfileInfo.getBranch());
+                branchOrTagInfo = codeApiInterface.getCommitInfo(codeInfo.getCodeId(), dockerfileInfo.getBranch());
+            } else {
+                throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "no branch or tag information");
             }
             byte[] dockerfileStr = null;
             if (branchOrTagInfo != null) {
@@ -131,9 +135,9 @@ public class BuildServiceImpl implements BuildService {
                 throw ApiException.wrapResultStat(ResultStat.DOCKERFILE_NOT_EXIST);
             }
             return ResultStat.OK.wrap(new String(dockerfileStr));
-        } else {
-            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "docker config and docker info both exist");
         }
+
+        throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "docker config and docker info both exist");
     }
 
     @Override
@@ -149,6 +153,8 @@ public class BuildServiceImpl implements BuildService {
                 docker = generateDockerfile(project.getExclusiveBuild(), project.getConfFiles());
             } else if (project.getDockerfileConfig() != null) {
                 docker = generateDockerfile(project.getDockerfileConfig(), project.getConfFiles());
+            } else if (project.getCustomDockerfile() != null) {
+                docker = generateDockerfile(project.getCustomDockerfile());
             }
         }
         return docker;
@@ -186,7 +192,6 @@ public class BuildServiceImpl implements BuildService {
         }
         try {
             WebHook webHook = new GitWebHook(webHookStr);
-
             List<Project> projects = projectBiz.getAllProjects();
             if (projects == null) {
                 throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "no project info");
@@ -220,38 +225,21 @@ public class BuildServiceImpl implements BuildService {
                 }
 
                 Registry registry = globalBiz.getRegistry();
-                BuildHistory history = new BuildHistory();
-                history.setProjectId(project.getId());
-                CodeInfomation codeInfo = new CodeInfomation();
-                codeInfo.setCodeBranch(webHook.getBranch());
-                codeInfo.setCodeTag(webHook.getTag());
-                history.setCodeInfo(codeInfo);
-                history.setAutoBuild(1);
-                history.setCreateTime(System.currentTimeMillis());
-                CommitInformation commitInfo = new CommitInformation();
-                commitInfo.setId(webHook.getAfter());
-                commitInfo.setName(webHook.getRepositoryName());
-                commitInfo.setMessage(webHook.getCommitMessage());
-                commitInfo.setAuthoredDate(0);
-                commitInfo.setAuthorName(webHook.getUser_name());
-                commitInfo.setAuthorEmail(webHook.getUser_email());
-                commitInfo.setCommittedDate(webHook.getCommitTimestamp());
-                commitInfo.setCommitterName(webHook.getCommitAuthorName());
-                commitInfo.setCommitterEmail(webHook.getCommitAuthorEmail());
-                history.setCommitInfo(commitInfo);
                 ImageInformation imageInfo = new ImageInformation();
                 imageInfo.setImageName(project.getName());
                 imageInfo.setImageTag(imageTag);
                 imageInfo.setRegistry(registry.registryDomain());
+
+                BuildHistory history = new BuildHistory();
                 history.setImageInfo(imageInfo);
+                history.setProjectId(project.getId());
+                history.setCodeInfo(webHook.generateCodeInfo());
+                history.setAutoBuild(1);
+                history.setCreateTime(System.currentTimeMillis());
+                history.setCommitInfo(webHook.generateCommitInfo());
 
-                HttpResponseTemp<?> result = sendBuildJob(history, project);
-                if (result != null) {
-                    return result;
-                }
+                sendBuildJob(history, project);
             }
-
-
         } catch (WebHooksException e) {
             logger.warn("webhook error, message is " + e.getMessage());
             throw ApiException.wrapMessage(ResultStat.WEBHOOK_ERROR, e.getMessage());
@@ -266,7 +254,7 @@ public class BuildServiceImpl implements BuildService {
     }
 
     @Override
-    public HttpResponseTemp<?> startBuild(BuildHistory buildInfo) {
+    public HttpResponseTemp<BuildHistory> startBuild(BuildHistory buildInfo) {
         if (buildInfo == null) {
             throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "build information is null");
         }
@@ -279,7 +267,7 @@ public class BuildServiceImpl implements BuildService {
 
         Project project = projectBiz.getById(GlobalConstant.PROJECT_TABLE_NAME, buildInfo.getProjectId(), Project.class);
         CodeConfiguration codeConfig = project.getCodeInfo();
-        CodeApiInterface codeApiInterface;
+        CodeApiInterface codeApiInterface = null;
         if (codeConfig != null) {
             // if code config is not null, get git commit info
             codeApiInterface = ReflectFactory.createCodeApiInterface(CodeType.getTypeByName(codeConfig.getCodeManager()),
@@ -288,15 +276,15 @@ public class BuildServiceImpl implements BuildService {
                 throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "get code api error");
             }
             // get commit info
-            CommitInformation commitInfo = codeApiInterface.getCommitInfo(codeConfig.getCodeId(), "");
+            CommitInformation commitInfo = null;
             CodeInfomation codeInfo = buildInfo.getCodeInfo();
             if (codeInfo == null) {
                 throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "code information not set");
             }
             if (codeInfo.getCodeBranch() != null && !codeInfo.getCodeBranch().isEmpty()) {
-                commitInfo = codeApiInterface.getBranchCommitInfo(codeConfig.getCodeId(), codeInfo.getCodeBranch());
+                commitInfo = codeApiInterface.getCommitInfo(codeConfig.getCodeId(), codeInfo.getCodeBranch());
             } else if (codeInfo.getCodeTag() != null && !codeInfo.getCodeTag().isEmpty()) {
-                commitInfo = codeApiInterface.getTagCommitInfo(codeConfig.getCodeId(), codeInfo.getCodeTag());
+                commitInfo = codeApiInterface.getCommitInfo(codeConfig.getCodeId(), codeInfo.getCodeTag());
             }
             if (commitInfo == null) {
                 throw ApiException.wrapMessage(ResultStat.GITLAB_COMMIT_NOT_FOUND, "cannot found commit info in gitlab, url: " + codeConfig.getCodeSshUrl());
@@ -341,10 +329,7 @@ public class BuildServiceImpl implements BuildService {
         buildInfo.setImageInfo(imageInfo);
 
         try {
-            HttpResponseTemp<?> result = sendBuildJob(buildInfo, project);
-            if (result != null) {
-                return result;
-            }
+            sendBuildJob(buildInfo, project);
         } catch (DaoException e) {
             throw ApiException.wrapUnknownException(e);
         } catch (RSAKeypairException e) {
@@ -371,7 +356,7 @@ public class BuildServiceImpl implements BuildService {
             if (registry != null && BuildState.Success.name().equals(buildResult.getStatus())) {
                 BaseImage baseImage = new BaseImage(buildInfo.getImageInfo().getImageName(),
                         buildInfo.getImageInfo().getImageTag(), registry.fullRegistry(), null);
-                double imageSize = PrivateRegistry.getImageSize(baseImage);
+                double imageSize = PrivateRegistry.getImageSize(baseImage, tokenService.getAdminToken(baseImage.getImageName()));
                 if (imageSize > 0) {
                     buildInfo.getImageInfo().setImageSize(imageSize);
                 }
@@ -380,6 +365,10 @@ public class BuildServiceImpl implements BuildService {
             buildInfo.setState(buildResult.getStatus());
 
             projectBiz.updateBuildHistory(buildInfo);
+
+            if (BuildState.Success.name().equals(buildInfo.getState())) {
+                checkAutoDeploy.checkDeploy(buildInfo.getImageInfo());
+            }
         }
         return ResultStat.OK.wrap(null);
     }
@@ -432,6 +421,19 @@ public class BuildServiceImpl implements BuildService {
         }
     }
 
+    @Override
+    public String downloadUploadFile(int projectId, int buildId, String filename, String secret) {
+        if (!secret.equals(projectBiz.getSecretById(buildId))) {
+            throw ApiException.wrapResultStat(ResultStat.FORBIDDEN);
+        }
+
+        Project project = projectBiz.getById(GlobalConstant.PROJECT_TABLE_NAME, projectId, Project.class);
+        if (project.getCustomDockerfile() != null) {
+            return project.getCustomDockerfile().contentByName(filename);
+        }
+        return null;
+    }
+
     private String generateCompilefile(ExclusiveBuild exclusiveBuild, String jobName) {
         StringBuilder script = new StringBuilder();
 
@@ -449,20 +451,20 @@ public class BuildServiceImpl implements BuildService {
                     script.append("-e ").append(env).append(" ");
                 }
             }
-            String codePath = exclusiveBuild.getCodeStoragePath();
+            String codepath = exclusiveBuild.getCodeStoragePath();
 
 
             String command = exclusiveBuild.getCompileCmd();
             if (!exclusiveBuild.getCodeStoragePath().startsWith(GlobalConstant.BUILD_CODE_PATH)) {
                 command = "cp -r " + GlobalConstant.BUILD_CODE_PATH + "/* " + exclusiveBuild.getCodeStoragePath() + " \n " + command;
             }
-            script.append("-w ").append(codePath);
+            script.append("-w ").append(codepath);
             script.append(" --volumes-from ${dockervolume} ");
             script.append(compileImage).append(" ");
             command += " \n mkdir -p " + GlobalConstant.BUILD_CODE_PATH + "/domeos_created_file ";
-            for (String savePath : exclusiveBuild.getCreatedFileStoragePath()) {
-                String filename = StringUtils.substringAfterLast(savePath, "/");
-                command += "\n cp -r " + savePath + " " + GlobalConstant.BUILD_CODE_PATH + "/domeos_created_file/" + filename;
+            for (String savepath : exclusiveBuild.getCreatedFileStoragePath()) {
+                String filename = StringUtils.substringAfterLast(savepath, "/");
+                command += "\n cp -r " + savepath + " " + GlobalConstant.BUILD_CODE_PATH + "/domeos_created_file/" + filename;
             }
             command = command.replaceAll("\n", "&&");
             command = command.replaceAll("\"", "\\\"");
@@ -473,10 +475,29 @@ public class BuildServiceImpl implements BuildService {
         return null;
     }
 
+    private String generateDockerfile(CustomDockerfile customDockerfile) {
+        if (customDockerfile == null) {
+            return null;
+        }
+
+        StringBuilder dockerfile = new StringBuilder();
+        dockerfile.append(customDockerfile.getDockerfile()).append("\n");
+        if (customDockerfile.getUploadFileInfos() != null) {
+            String url = null;
+            for (UploadFileInfo uploadFileInfo : customDockerfile.getUploadFileInfos()) {
+                url = checkDownload(uploadFileInfo.getFilename());
+                dockerfile.append("ADD ").append(url).append(" ").append("\n");
+            }
+        }
+
+        return dockerfile.toString();
+    }
+
     private String generateDockerfile(DockerfileContent info, Map<String, String> configFiles) {
         if (info == null) {
             return null;
         }
+
         StringBuilder dockerfile = new StringBuilder();
         String dockerFrom = CommonUtil.domainUrl(info.getBaseImageRegistry());
         if (!StringUtils.isBlank(dockerFrom)) {
@@ -517,14 +538,7 @@ public class BuildServiceImpl implements BuildService {
         }
         String cmd = info.getStartCmd();
         if (!StringUtils.isBlank(cmd)) {
-            dockerfile.append("CMD");
-            if (configFiles != null && configFiles.size() > 0) {
-                dockerfile.append(" dockerize");
-                for (Map.Entry<String, String> entry : configFiles.entrySet()) {
-                    dockerfile.append(" -template ").append(entry.getKey()).append(":").append(entry.getValue());
-                }
-            }
-            dockerfile.append(" ").append(cmd).append("\n");
+            dockerfile.append("CMD").append(checkDockerize(configFiles)).append(" ").append(cmd).append("\n");
         }
         return dockerfile.toString();
     }
@@ -552,16 +566,20 @@ public class BuildServiceImpl implements BuildService {
         }
         String cmd = exclusiveBuild.getStartCmd();
         if (!StringUtils.isBlank(cmd)) {
-            dockerfile.append("CMD");
-            if (configFiles != null && configFiles.size() > 0) {
-                dockerfile.append(" dockerize");
-                for (Map.Entry<String, String> entry : configFiles.entrySet()) {
-                    dockerfile.append(" -template ").append(entry.getKey()).append(":").append(entry.getValue());
-                }
-            }
-            dockerfile.append(" ").append(cmd).append("\n");
+            dockerfile.append("CMD").append(checkDockerize(configFiles)).append(" ").append(cmd).append("\n");
         }
         return dockerfile.toString();
+    }
+
+    private String checkDownload(String filename) {
+        StringBuilder url = new StringBuilder();
+        if (globalBiz.getServer() == null) {
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "server not set, please check global configuration");
+        }
+        url.append(globalBiz.getServer().serverInfo()).append("/api/ci/build/download/{{ default .Env.PROJECT_ID \"UNKNOWN\" }}" +
+                "/{{ default .Env.BUILD_ID \"UNKNOWN\" }}/uploadfile?secret={{ default .Env.SECRET \"UNKNOWN\" }}&filename=")
+                .append(filename).append(" ").append(filename);
+        return url.toString();
     }
 
     private String checkEnv(String envs) {
@@ -589,6 +607,17 @@ public class BuildServiceImpl implements BuildService {
                     }
                     result.append(tmp);
                 }
+            }
+        }
+        return result.toString();
+    }
+
+    private String checkDockerize(Map<String, String> configFiles) {
+        StringBuilder result = new StringBuilder();
+        if (configFiles != null && configFiles.size() > 0) {
+            result.append(" dockerize");
+            for (Map.Entry<String, String> entry : configFiles.entrySet()) {
+                result.append(" -template ").append(entry.getKey()).append(":").append(entry.getValue());
             }
         }
         return result.toString();
@@ -679,6 +708,8 @@ public class BuildServiceImpl implements BuildService {
                 dockerfileContent = generateDockerfile(project.getDockerfileConfig(), project.getConfFiles());
             } else if (project.getExclusiveBuild() != null) {
                 dockerfileContent = generateDockerfile(project.getExclusiveBuild(), project.getConfFiles());
+            } else if (project.getCustomDockerfile() != null) {
+                dockerfileContent = generateDockerfile(project.getCustomDockerfile());
             }
         }
         if (StringUtils.isBlank(dockerfileContent)) {
@@ -702,9 +733,13 @@ public class BuildServiceImpl implements BuildService {
         if (project.getExclusiveBuild() != null) {
             buildType = project.getExclusiveBuild().getCustomType();
         }
-
+        Registry registry = globalBiz.getRegistry();
+        int userAuth = 0;
+        if (registry != null && registry.getTokenInfo() != null) {
+            userAuth = 1;
+        }
         Map<String, String> envMap = generateEnvs(codeType, server.serverInfo(), buildInfo, privateKey, codeUrl, hasDockerfile,
-                secret, buildPath, dockerfilePath, buildType);
+                secret, buildPath, dockerfilePath, buildType, userAuth);
         if (envMap == null || envMap.size() == 0) {
             throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "no env info for build kube job");
         }
@@ -752,31 +787,13 @@ public class BuildServiceImpl implements BuildService {
         return privateKey;
     }
 
-    private Map<String, String> generateEnvs(String codeType, String server, BuildHistory buildInfo, String privateKey, String codeUrl,
-                                      int hasDockerfile, String secret, String buildPath, String dockerfilePath, String buildType) {
+    private Map<String, String> generateEnvs(String codeType, String server, BuildHistory buildInfo, String privateKey,
+                                             String codeUrl, int hasDockerfile, String secret, String buildPath,
+                                             String dockerfilePath, String buildType, int useAuth) {
         String commitId = null;
         if (buildInfo.getCommitInfo() != null) {
             commitId = buildInfo.getCommitInfo().getId();
         }
-
-
-        /*return new EnvVar[]{
-                new EnvVar().putName("SERVER").putValue(server),
-                new EnvVar().putName("BUILD_ID").putValue(String.valueOf(buildInfo.getId())),
-                new EnvVar().putName("IDRSA").putValue(privateKey),
-                new EnvVar().putName("CODE_URL").putValue(codeUrl),
-                new EnvVar().putName("PROJECT_ID").putValue(String.valueOf(buildInfo.getProjectId())),
-                new EnvVar().putName("REGISTRY_URL").putValue(buildInfo.getImageInfo().getRegistry()),
-                new EnvVar().putName("IMAGE_NAME").putValue(buildInfo.getImageInfo().getImageName()),
-                new EnvVar().putName("IMAGE_TAG").putValue(buildInfo.getImageInfo().getImageTag()),
-                new EnvVar().putName("COMMIT_ID").putValue(commitId),
-                new EnvVar().putName("HAS_DOCKERFILE").putValue(String.valueOf(hasDockerfile)),
-                new EnvVar().putName("SECRET").putValue(secret),
-                new EnvVar().putName("BUILD_PATH").putValue(buildPath),
-                new EnvVar().putName("DOCKERFILE_PATH").putValue(dockerfilePath),
-                new EnvVar().putName("TYPE").putValue(codeType),
-                new EnvVar().putName("BUILD_TYPE").putValue(buildType)
-        };*/
 
         Map<String, String> retMap = new LinkedHashMap<>();
         retMap.put("SERVER", server);
@@ -794,6 +811,32 @@ public class BuildServiceImpl implements BuildService {
         retMap.put("DOCKERFILE_PATH", dockerfilePath);
         retMap.put("TYPE", codeType);
         retMap.put("BUILD_TYPE", buildType);
+        retMap.put("USE_AUTH", String.valueOf(useAuth));
         return retMap;
+    }
+
+    @Override
+    public Boolean secretAuthorization(String buildIdStr, String secretStr) {
+        if (StringUtils.isBlank(secretStr) || StringUtils.isBlank(secretStr)) {
+            return false;
+        }
+        try {
+            int buildId = Integer.valueOf(buildIdStr);
+            BuildHistory buildHistory = projectBiz.getBuildHistoryById(buildId);
+            String buildState = buildHistory.getState();
+            if (buildState.equals(BuildState.Success.name()) || buildState.equals(BuildState.Fail.name())
+                    || buildState.equals(BuildState.Success.name())) {
+                return false;
+            }
+            String secret = buildHistory.getSecret();
+
+            if (!StringUtils.isBlank(secret) && secret.equals(secretStr)) {
+                return true;
+            }
+
+        } catch (NumberFormatException e) {
+            return false;
+        }
+        return false;
     }
 }

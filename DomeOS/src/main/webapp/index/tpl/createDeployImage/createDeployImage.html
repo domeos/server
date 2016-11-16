@@ -1,29 +1,39 @@
 
 <div class="mod-deploy create-deploy-image" ng-form="ng-form" name="mirrorsListFrom" ng-class="{'need-valid':needValid.valid}" novalidate="novalidate">
   <loading ng-if="loadingsIns.isLoading||deployIns.loadingIns.isLoading"></loading>
-  <div class="mirror-con">
-    <div class="mirrror com-select-con" select-con="select-con" event-type="focus"><span class="mirror-label">选择镜像</span>
-      <input class="mirror-txt search-txt ui-btn-select" placeholder="搜索镜像" ng-model="mirKey"/><i class="icon-search"></i><span class="mirror-button"><a class="link-safe" ng-click="deployIns.addOtherImage()">其他镜像</a></span>
-      <div class="select-list">
-        <ul>
-          <li ng-if="imageFiltered.length===0"><a>无相关镜像信息</a></li>
-          <li class="select-item" ng-repeat="image in imageFiltered=(deployIns.imageList|filter:{'imageName':mirKey})"><a ng-click="deployIns.addImage(image)" ng-cloak="ng-cloak">{{image.imageName}}<span class="txt-prompt pull-right" ng-bind="image.registry"></span></a></li>
-        </ul>
-      </div>
-    </div>
+  <div class="mirror-info-con">
+    <ul class="com-list-info">
+      <li class="has-border"><span class="info-name">选择镜像 <span class="require-domian">*</span></span>
+        <div class="info-content">
+          <div class="line-long">
+            <div class="com-select-con deploy-select-image-input" select-con="select-con" event-type="focus">
+              <input class="ui-input-fill search-txt ui-btn-select" placeholder="搜索镜像" ng-model="mirKey"/>
+              <div class="select-list">
+                <ul>
+                  <li ng-if="imageFiltered.length===0"><a>无相关镜像信息</a></li>
+                  <li class="select-item" ng-repeat="image in imageFiltered=(deployIns.imageList|filter:{'imageName':mirKey})"><a ng-click="deployIns.addImage(image)" ng-cloak="ng-cloak">{{image.imageName}}<span class="txt-prompt pull-right" ng-bind="image.registry"></span></a></li>
+                </ul>
+              </div><span class="txt-wrap txt-prompt">可添加多个镜像</span>
+            </div>
+          </div>
+        </div>
+      </li>
+    </ul>
   </div>
   <p class="nomirror" ng-if="!config.containerDrafts||config.containerDrafts.length===0">您尚未选择任何镜像。</p>
   <div class="containerdrafts-con">
-    <ul list-scroll="list-scroll" width-offset="150">
+    <ul list-scroll="list-scroll" width-offset="400">
       <li class="nav-option" disabled="true"><span><a class="icon-last to-last"></a><a class="icon-next to-next"></a></span></li>
-      <li ng-repeat="image in config.containerDrafts" ng-class="{'active':currentContainerDraft.index===$index,'txt-error':needValid.valid&amp;&amp;mirrorsListFrom['Form'+$index].$invalid}"><a class="link-list" ng-click="currentContainerDraft.index=$index;" ng-bind="image.image"></a><a class="icon-cancel" ng-click="deleteImage($index);fresh()"></a></li>
+      <li ng-repeat="image in config.containerDrafts" ng-class="{'active':currentContainerDraft.index===$index,'txt-error':needValid.valid&amp;&amp;mirrorsListFrom['Form'+$index].$invalid}">
+        <div class="container-wrap"><a class="link-list" ng-click="currentContainerDraft.index=$index;" ng-bind="image.image"></a><a class="fa fa-times cancel-container" ng-click="deleteImage($index);fresh()"></a></div>
+      </li>
     </ul>
   </div>
   <div ng-repeat="image in config.containerDrafts" ng-init="formName='Form'+$index;imageindex=$index;" ng-show="currentContainerDraft.index===$index">
     <ng-form class="mirror-info-con" role="form" name="{{formName}}">
       <ul class="com-list-info">
-        <li class="has-border"><span class="info-name">镜像仓库</span>
-          <div class="info-content" ng-bind="image.registry"></div>
+        <li class="has-border"><span class="info-name info-name-content-for-label">镜像仓库</span>
+          <div class="info-content info-name-content-for-label" ng-bind="image.registry"></div>
         </li>
         <li class="has-border"><span class="info-name">镜像版本</span>
           <div class="info-content">
@@ -33,6 +43,11 @@
                 <li class="select-item" ng-repeat="tag in image.tagList"><a ng-click="deployIns.toggleImageTag($parent.$index,tag.tag)"><span ng-bind="tag.tag"></span><span class="txt-prompt" ng-bind="vmDome.parseDate(tag.createTime)"></span></a></li>
               </ul>
             </div>
+          </div>
+        </li>
+        <li class="has-border"><span class="info-name">自动部署</span>
+          <div class="info-content">
+            <dome-toggle ng-class="{'on':image.autoDeploy}" ng-click="image.autoDeploy=!image.autoDeploy" ng-model="image.autoDeploy"></dome-toggle><span class="txt-prompt">开启后，通过项目构建产生该镜像的新版本时，会自动触发该部署升级。该功能只对运行中的部署有效。</span>
           </div>
         </li>
         <li class="has-border"><span class="info-name">运行过程环境变量</span>
@@ -64,21 +79,21 @@
             </ul><span class="add-env line-long" ng-click="deployIns.addImageEnv($index)"><i class="icon-add"></i></span>
           </div>
         </li>
-        <li class="has-border"><span class="info-name tool-align-input">容器大小</span>
-          <div class="info-content">CPU(个)
+        <li class="has-border"><span class="info-name info-name-content-for-label">容器大小</span>
+          <div class="info-content info-name-content-for-label">CPU(个)
             <input class="ui-input-fill ui-input-sm" ng-model="image.cpu" name="cpu" ng-pattern="/^(\d*\.)?\d+$/" required="required"/>内存(MB)
             <input class="ui-input-fill ui-input-sm" ng-model="image.mem" name="mem" ng-pattern="/^(\d*\.)?\d+$/" required="required"/><span class="tool-inline-error" ng-if="(needValid.valid||mirrorsListFrom[formName].cpu.$dirty)&amp;&amp;mirrorsListFrom[formName].cpu.$invalid||(needValid.valid||mirrorsListFrom[formName].mem.$dirty)&amp;&amp;mirrorsListFrom[formName].mem.$invalid">请填写数字</span>
           </div>
         </li>
-        <li><span class="info-name tool-align-input">镜像拉取策略</span>
-          <div class="info-content">
+        <li class="has-border"><span class="info-name info-name-content-for-label">镜像拉取策略</span>
+          <div class="info-content info-name-content-for-label">
             <dome-radio class="com-check-con" d-id="{{'pullPolicyAlways_'+formName}}" d-value="'Always'" d-name="pullPolicyType{{formName}}" d-label="Always" d-model="image.imagePullPolicy"></dome-radio>
             <dome-radio class="com-check-con" d-id="{{'pullPolicyNever_'+formName}}" d-value="'Never'" d-name="pullPolicyType{{formName}}" d-label="Never" d-model="image.imagePullPolicy"></dome-radio>
             <dome-radio class="com-check-con" d-id="{{'pullPolicyIfNotPresent_'+formName}}" d-value="'IfNotPresent'" d-name="pullPolicyType{{formName}}" d-label="If Not Present" d-model="image.imagePullPolicy"></dome-radio>
           </div>
         </li>
-        <li><span class="info-name tool-align-input">健康检查</span>
-          <div class="info-content">
+        <li class="has-border"><span class="info-name tool-align-input">健康检查</span>
+          <div class="info-content info-content-lg-height">
             <dome-radio class="com-check-con" d-id="{{'checkNONE_'+formName}}" d-value="'NONE'" d-name="healthCheckerType{{formName}}" d-label="None" d-model="image.healthChecker.type"></dome-radio>
             <dome-radio class="com-check-con" d-id="{{'checkTCP_'+formName}}" d-value="'TCP'" d-name="healthCheckerType{{formName}}" d-disabled="{{config.networkMode=='HOST'}}" d-label="TCP检查" d-model="image.healthChecker.type"></dome-radio>
             <dome-radio class="com-check-con" d-id="{{'checkHTTP_'+formName}}" d-value="'HTTP'" d-name="healthCheckerType{{formName}}" d-disabled="{{config.networkMode=='HOST'}}" d-label="HTTP检查" d-model="image.healthChecker.type"></dome-radio>
@@ -98,10 +113,9 @@
             <div class="line-long" ng-if="image.healthChecker.type=='HTTP'"><span class="child-name">允许返回值</span><span class="child-txt"> 200-400(不包含400)</span></div>
           </div>
         </li>
-        <li class="has-border"><span class="info-name">日志</span>
+        <li><span class="info-name info-name-lg">日志</span>
           <div class="info-content">
             <p class="txt-prompt no-log" ng-if="deployIns.logConfig===0">所选集群没有开启日志自动收集。不能进行日志相关配置。</p>
-            <button class="ui-btn ui-btn-sm ui-btn-active add-log" ng-click="deployIns.addLogDraft(image)" ng-if="deployIns.logConfig">添加</button>
             <div class="log-item" ng-form="ng-form" ng-repeat="log in image.logItemDrafts" name="childForm" ng-if="deployIns.logConfig"><a class="icon-cancel cancel-log" ng-click="deployIns.deleteLogDraft(image, log)"></a>
               <input class="ui-input-fill element-full" placeholder="请输入日志路径，不能放在根目录下" ng-pattern="/^/.*[^/]$/" ng-model="log.logPath" name="logPath" is-required="is-required" param1="{{log.autoCollect&amp;&amp;log.logTopic}}" param2="{{log.autoCollect&amp;&amp;log.processCmd}}" param3="{{log.autoDelete&amp;&amp;log.logExpired}}"/><span class="txt-error" ng-if="(needValid||childForm.logPath.$dirty)&amp;&amp;childForm.logPath.$error.pattern">非法的格式</span>
               <div class="log-check">
@@ -125,6 +139,7 @@
               </div>
               <div class="txt-error log-error" ng-if="(needValid||deployForm.logExpired.$dirty)&amp;&amp;deployForm.logExpired.$invalid">请输入大于0的整数</div>
             </div>
+            <button class="ui-btn ui-btn-sm ui-btn-active add-log" ng-click="deployIns.addLogDraft(image)" ng-if="deployIns.logConfig">添加</button>
           </div>
         </li>
       </ul>

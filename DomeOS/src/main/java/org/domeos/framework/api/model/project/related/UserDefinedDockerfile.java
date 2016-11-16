@@ -1,5 +1,7 @@
 package org.domeos.framework.api.model.project.related;
 
+import org.apache.commons.lang.StringUtils;
+
 /**
  * Created by feiliu206363 on 2016/4/4.
  */
@@ -39,5 +41,14 @@ public class UserDefinedDockerfile {
 
     public void setDockerfilePath(String dockerfilePath) {
         this.dockerfilePath = dockerfilePath;
+    }
+
+    public String checkLegality() {
+        if (StringUtils.isBlank(buildPath)) {
+            setBuildPath("/");
+        } else if (StringUtils.isBlank(dockerfilePath)) {
+            return "dockerfile path is blank";
+        }
+        return null;
     }
 }

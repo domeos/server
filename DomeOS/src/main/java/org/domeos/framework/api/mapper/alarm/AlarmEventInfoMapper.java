@@ -2,7 +2,7 @@ package org.domeos.framework.api.mapper.alarm;
 
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
-import org.domeos.framework.api.model.alarm.AlarmEventInfoDraft;
+import org.domeos.framework.api.consolemodel.alarm.AlarmEventInfoDraft;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

@@ -1,5 +1,6 @@
 package org.domeos.framework.api.service.alarm.impl;
 
+import org.domeos.framework.api.model.collection.related.ResourceType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.domeos.basemodel.HttpResponseTemp;
@@ -7,7 +8,7 @@ import org.domeos.basemodel.ResultStat;
 import org.domeos.framework.api.biz.alarm.AlarmBiz;
 import org.domeos.framework.api.biz.alarm.PortalBiz;
 import org.domeos.framework.api.controller.exception.ApiException;
-import org.domeos.framework.api.model.alarm.HostGroupInfo;
+import org.domeos.framework.api.consolemodel.alarm.HostGroupInfo;
 import org.domeos.framework.api.model.alarm.HostGroupInfoBasic;
 import org.domeos.framework.api.model.alarm.HostInfo;
 import org.domeos.framework.api.model.alarm.TemplateInfoBasic;
@@ -35,6 +36,8 @@ public class HostGroupServiceImpl implements HostGroupService {
 
     private static Logger logger = LoggerFactory.getLogger(HostGroupServiceImpl.class);
 
+    private final ResourceType resourceType = ResourceType.ALARM;
+
     @Autowired
     AlarmBiz alarmBiz;
 
@@ -44,7 +47,7 @@ public class HostGroupServiceImpl implements HostGroupService {
     @Override
     public HttpResponseTemp<?> listHostGroupInfo() {
 
-        AuthUtil.groupVerify(CurrentThreadInfo.getUserId(), GlobalConstant.alarmGroupId, OperationType.GET, 0);
+        AuthUtil.collectionVerify(CurrentThreadInfo.getUserId(), GlobalConstant.alarmGroupId, resourceType, OperationType.GET, 0);
 
         List<HostGroupInfoBasic> hostGroupInfoBasics = alarmBiz.listHostGroupInfoBasic();
         if (hostGroupInfoBasics == null) {
@@ -74,7 +77,7 @@ public class HostGroupServiceImpl implements HostGroupService {
     @Override
     public HttpResponseTemp<?> createHostGroup(HostGroupInfoBasic hostGroupInfoBasic) {
 
-        AuthUtil.groupVerify(CurrentThreadInfo.getUserId(), GlobalConstant.alarmGroupId, OperationType.GET, 0);
+        AuthUtil.collectionVerify(CurrentThreadInfo.getUserId(), GlobalConstant.alarmGroupId, resourceType, OperationType.GET, 0);
 
         if (hostGroupInfoBasic == null) {
             throw ApiException.wrapMessage(ResultStat.HOSTGROUP_NOT_LEGAL, "host group info is null");
@@ -102,7 +105,7 @@ public class HostGroupServiceImpl implements HostGroupService {
     @Override
     public HttpResponseTemp<?> modifyHostGroup(HostGroupInfoBasic hostGroupInfoBasic) {
 
-        AuthUtil.groupVerify(CurrentThreadInfo.getUserId(), GlobalConstant.alarmGroupId, OperationType.MODIFY, 0);
+        AuthUtil.collectionVerify(CurrentThreadInfo.getUserId(), GlobalConstant.alarmGroupId, resourceType, OperationType.MODIFY, 0);
 
         if (hostGroupInfoBasic == null) {
             throw ApiException.wrapMessage(ResultStat.HOSTGROUP_NOT_LEGAL, "host group info is null");
@@ -129,7 +132,7 @@ public class HostGroupServiceImpl implements HostGroupService {
     @Override
     public HttpResponseTemp<?> deleteHostGroup(long id) {
 
-        AuthUtil.groupVerify(CurrentThreadInfo.getUserId(), GlobalConstant.alarmGroupId, OperationType.MODIFY, 0);
+        AuthUtil.collectionVerify(CurrentThreadInfo.getUserId(), GlobalConstant.alarmGroupId, resourceType, OperationType.MODIFY, 0);
 
         HostGroupInfoBasic hostGroupInfoBasic = alarmBiz.getHostGroupInfoBasicById(id);
         if (hostGroupInfoBasic == null) {
@@ -149,7 +152,7 @@ public class HostGroupServiceImpl implements HostGroupService {
     @Override
     public HttpResponseTemp<?> bindHostList(long id, List<HostInfo> hostInfoList) {
 
-        AuthUtil.groupVerify(CurrentThreadInfo.getUserId(), GlobalConstant.alarmGroupId, OperationType.MODIFY, 0);
+        AuthUtil.collectionVerify(CurrentThreadInfo.getUserId(), GlobalConstant.alarmGroupId, resourceType, OperationType.MODIFY, 0);
 
         if (hostInfoList == null) {
             throw ApiException.wrapMessage(ResultStat.HOST_NOT_LEGAL, "host info list is null");
@@ -189,7 +192,7 @@ public class HostGroupServiceImpl implements HostGroupService {
     @Override
     public HttpResponseTemp<?> unbindHost(long id, long hostId) {
 
-        AuthUtil.groupVerify(CurrentThreadInfo.getUserId(), GlobalConstant.alarmGroupId, OperationType.MODIFY, 0);
+        AuthUtil.collectionVerify(CurrentThreadInfo.getUserId(), GlobalConstant.alarmGroupId, resourceType, OperationType.MODIFY, 0);
 
         if (alarmBiz.getHostGroupInfoBasicById(id) == null) {
             throw ApiException.wrapResultStat(ResultStat.HOSTGROUP_NOT_EXISTED);
@@ -214,7 +217,7 @@ public class HostGroupServiceImpl implements HostGroupService {
         alarmBiz.addHostInfo(hostInfo);
     }
 
-    public class HostGroupInfoTask implements Callable<HostGroupInfo> {
+    private class HostGroupInfoTask implements Callable<HostGroupInfo> {
         HostGroupInfoBasic hostGroupInfoBasic;
 
         public HostGroupInfoTask(HostGroupInfoBasic hostGroupInfoBasic) {

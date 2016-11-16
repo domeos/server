@@ -1,54 +1,46 @@
 
 <div ng-form="ng-form" name="clusterForm" role="form" ng-class="{'need-valid':valid.needValid}">
   <ul class="com-list-info">
-    <li><span class="info-name">集群名称</span>
+    <li class="has-border"><span class="info-name">集群名称</span>
       <div class="info-content">
         <input class="ui-input-fill line-single" ng-model="config.name" is-cluster-exist="is-cluster-exist" cluster-list="clusterList" name="clusterName" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" required="required"/><span class="txt-error" ng-if="(valid.needValid||clusterForm.clusterName.$dirty)&amp;&amp;clusterForm.clusterName.$error.isClusterExist">集群已存在</span>
       </div>
     </li>
-    <li ng-if="config.id"><span class="info-name">创建者</span>
-      <div class="info-content" ng-bind="config.ownerName||'无'"></div>
-    </li>
-    <li ng-if="!config.id"><span class="info-name">创建者</span>
+    <li class="has-border"><span class="info-name">集群https访问</span>
       <div class="info-content">
-        <creator-selection change-event="clusterIns.toggleUser(user)"></creator-selection>
-      </div>
-    </li>
-    <li><span class="info-name">集群https访问</span>
-      <div class="info-content">
-        <dome-toggle ng-class="{true:'on'}[config.isHttps]" ng-click="config.isHttps=!config.isHttps"></dome-toggle>
+        <dome-toggle ng-class="{true:'on'}[config.isHttps]" ng-click="config.isHttps=!config.isHttps"></dome-toggle><span class="txt-prompt">启用https后需要输入用户名密码</span>
       </div>
     </li>
     <li ng-if="config.isHttps"><span class="info-name">用户名</span>
       <div class="info-content">
-        <input class="ui-input ui-input-fill line-single" placeholder="集群权限验证用户名" required="required" ng-model="config.username"/>
+        <input class="ui-input-fill line-single" placeholder="集群权限验证用户名" required="required" ng-model="config.username"/>
       </div>
     </li>
-    <li ng-if="config.isHttps"><span class="info-name">密码</span>
+    <li class="has-border" ng-if="config.isHttps"><span class="info-name">密码</span>
       <div class="info-content">
-        <input class="ui-input ui-input-fill line-single" type="password" required="required" placeholder="集群权限验证密码" ng-model="config.password"/>
+        <input class="ui-input-fill line-single" type="password" required="required" placeholder="集群权限验证密码" ng-model="config.password"/>
       </div>
     </li>
-    <li><span class="info-name">api server</span>
+    <li class="has-border"><span class="info-name">api server</span>
       <div class="info-content">
         <div class="line-single"><span class="protocol" ng-if="config.isHttps">https://</span>
           <input class="ui-input-fill line-element" ng-model="config.api" name="api" placeholder="请输入api server地址" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" is-api-server-exist="is-api-server-exist" current-cluster="{{config.name}}" cluster-list="clusterList" required="required"/><span class="txt-error" ng-if="(valid.needValid||clusterForm.api.$dirty)&amp;&amp;clusterForm.api.$error.isApiServerExist">api server已存在</span>
         </div>
       </div>
     </li>
-    <li><span class="info-name">dns服务器</span>
+    <li class="has-border"><span class="info-name">dns服务器</span>
       <div class="info-content">
         <input class="ui-input-fill line-single" ng-model="config.dns" name="dns" placeholder="请输入dns服务器地址，不加端口号" required="required"/>
       </div>
     </li>
-    <li><span class="info-name">etcd</span>
+    <li class="has-border"><span class="info-name">etcd</span>
       <div class="info-content" ng-form="ng-form" name="etcdTotalForm">
         <div class="line-single" ng-form="ng-form" role="form" name="etcdForm" ng-repeat="etcd in config.etcd">
           <input class="ui-input-fill single-element" ng-model="etcd.name" name="etcd" ng-focus="$last&amp;&amp;clusterIns.addEtcd()" ng-keyup="clusterIns.validItem('etcd')" ng-pattern="/^[^\s]*$/" placeholder="请输入etcd地址"/><a class="txt-wrap icon-delete" ng-show="config.etcd.length&gt;1" ng-click="clusterIns.deleteArrItem('etcd',$index)"></a>
         </div><span class="txt-error" ng-if="etcdTotalForm.$valid&amp;&amp;!clusterIns.etcdValid">至少填写一个</span>
       </div>
     </li>
-    <li><span class="info-name">domain</span>
+    <li class="has-border"><span class="info-name">domain</span>
       <div class="info-content">
         <input class="ui-input-fill line-single" ng-model="config.domain" name="domain" required="required"/>
       </div>

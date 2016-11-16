@@ -1,7 +1,7 @@
 .mod-alarm.alarm-tpl-detail(ng-form name="tplForm" ng-class="{'need-valid':needValid.valid}" )
 	loading(ng-if="variables.isLoading||isEdit&&alarmTemplateIns.loadingIns.isLoading")
-	button.ui-btn.ui-btn-sm.ui-btn-primary.btn-edit(ng-click="toggleEdit()" ng-if="!isEdit&&permission.role&&permission.role!='REPORTER'") 编辑
-	button.ui-btn.ui-btn-sm.ui-btn-primary.btn-edit(ng-click="toggleEdit()" ng-if="isEdit") 取消编辑
+	button.ui-btn.ui-btn-sm.ui-btn-bright.btn-edit-alarm(ng-click="toggleEdit()" ng-if="!isEdit&&permission.role&&permission.role!='REPORTER'") 编辑
+	button.ui-btn.ui-btn-sm.ui-btn-bright.btn-edit-alarm(ng-click="toggleEdit()" ng-if="isEdit") 取消编辑
 	ng-include(src="'index/tpl/tplAlarmTemplate/tplAlarmTemplateInfo.html'" ng-if="!isEdit")
 	ng-include(src="'index/tpl/tplAlarmTemplate/tplAlarmTemplateEdit.html'" ng-if="isEdit")
 	.com-bottom-option(ng-if="isEdit")

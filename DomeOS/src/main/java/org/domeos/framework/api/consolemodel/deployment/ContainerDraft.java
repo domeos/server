@@ -21,6 +21,7 @@ public class ContainerDraft {
     private List<EnvDraft> envCheckers;
     private HealthChecker healthChecker;
     private List<LogItemDraft> logItemDrafts;
+    private boolean autoDeploy = false;
 
     public String getRegistry() {
         return registry;
@@ -147,5 +148,33 @@ public class ContainerDraft {
             return this.image;
         }
         return CommonUtil.domainUrl(registry) + "/" + this.image;
+    }
+
+    public boolean isAutoDeploy() {
+        return autoDeploy;
+    }
+
+    public ContainerDraft setAutoDeploy(boolean autoDeploy) {
+        this.autoDeploy = autoDeploy;
+        return this;
+    }
+
+    public void buildNewDraft(ContainerDraft containerDraft) {
+        ContainerDraft newDraf = new ContainerDraft();
+        newDraf.setRegistry(this.registry);
+        newDraf.setImage(this.image);
+        newDraf.setTag(this.tag);
+        newDraf.setCpu(this.cpu);
+        newDraf.setMem(this.mem);
+        newDraf.setImagePullPolicy(this.imagePullPolicy);
+        newDraf.setEnvs(this.envs);
+        newDraf.setEnvCheckers(this.envCheckers);
+        newDraf.setHealthChecker(this.healthChecker);
+        newDraf.setEnvCheckers(this.envCheckers);
+        newDraf.setEnvCheckers(this.envCheckers);
+        this.envCheckers = containerDraft.getEnvCheckers();
+        this.healthChecker = containerDraft.getHealthChecker();
+        this.logItemDrafts = containerDraft.getLogItemDrafts();
+        this.autoDeploy = containerDraft.isAutoDeploy();
     }
 }

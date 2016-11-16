@@ -15,6 +15,17 @@
 
 		$scope.loadingsIns = $domePublic.getLoadingInstance();
 
+		if(!$state.params.collectionId || !$state.params.collectionName) {
+			$state.go('deployCollectionManage');
+		}
+		$scope.collectionInfo = {
+			collectionId: $state.params.collectionId,
+			collectionName: $state.params.collectionName
+		};
+		// 面包屑 父级名称和url
+		$scope.collectionName = $scope.collectionInfo.collectionName;
+        $scope.parentState = 'deployManage({id:"' + $scope.collectionInfo.collectionId + '",name:"'+ $scope.collectionInfo.collectionName +'"})';
+
 		var createDeployInfo = $domeData.getData('createDeployInfoCommon');
 		if (!createDeployInfo) {
 		  $state.go('createDeployCommon');
@@ -29,14 +40,12 @@
 			valid: false
 		};
 
-		this.jsonText = this.yamlText = '';
-
 		$scope.loadingsIns.startLoading('deploystr');
 		$scope.deployIns.getDeployStr().then(function (res) {
 		    var data = res.data.result;
 		    $scope.deploystr = data;
 		    $scope.config.versionString = data;
-		    console.log($scope.config);
+		    // console.log($scope.config);
 		}, function () {
 		    $scope.toLastStep();
 		}).finally(function () {
@@ -49,7 +58,7 @@
 		  $scope.config.versionString.podSpecStr = $scope.deployIns.defaultVersionString[$scope.config.versionType];
 		};
 		$scope.clearPodStrUndoText = function () {
-		  console.log('clear');
+		  // console.log('clear');
 		  $scope.podStrUndoText = null;
 		};
 		$scope.undoPodStrToDefault = function () {
@@ -59,10 +68,10 @@
 
 		$scope.toCreate = function () {
 			$scope.loadingsIns.startLoading('create');
-
+			$scope.deployIns.setCollectionId($scope.collectionInfo.collectionId);
 			$scope.deployIns.create().then(function () {
 				$domePublic.openPrompt('创建成功！');
-				$state.go('deployManage');
+				$state.go('deployManage', {'id':$scope.collectionInfo.collectionId,'name':$scope.collectionInfo.collectionName});
 			}, function (res) {
 				if (res.type == 'namespace') {
 					$domePublic.openWarning({
@@ -81,8 +90,9 @@
 		};
 
 		$scope.toLastStep = function () {
-		  $domeData.setData('createDeployInfoCommon', $scope.deployIns);
-			$state.go('createDeployCommon');
+		    var info = { 'collectionId': $scope.collectionInfo.collectionId, 'collectionName': $scope.collectionInfo.collectionName };
+		    $domeData.setData('createDeployInfoCommon', $scope.deployIns);
+			$state.go('createDeployCommon',info);
 		};
 
 	}]);

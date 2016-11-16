@@ -159,6 +159,7 @@
                 /api/ci/build/status = anon
                 /api/ci/build/upload/** = anon
                 /api/ci/build/log/** = anon
+                /api/ci/build/download/** = anon
                 /api/image/custom/download/** = anon
                 /api/image/custom/status = anon
                 /api/image/custom/upload/** = anon
@@ -173,6 +174,7 @@
                 /api/alarm/group/users/** = anon
                 /api/alarm/link/** = anon
                 /api/alarm/send/** = anon
+                /service/token/** = anon
 
                 /common/** = anon
                 /lib/** = anon

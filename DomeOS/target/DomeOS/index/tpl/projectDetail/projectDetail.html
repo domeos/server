@@ -1,34 +1,40 @@
 
 <div class="mod-project project-detail">
   <loading ng-if="isLoading"></loading>
-  <div class="project-options">
-    <button class="ui-btn ui-btn-md ui-btn-bright" ng-click="openBuild(config.projectId,!!config.codeInfo)">构建</button><a class="ui-btn-delete" ng-click="deleteProject()"><i class="icon-delete"></i></a>
+  <div class="detail-header">
+    <div class="detail-item"><em class="item-name">工程名称</em><b class="item-content" ng-bind="config.name"></b></div><i class="detail-sep"></i>
+    <div class="detail-item"><em class="item-name">更新时间</em><b class="item-content" ng-bind="config.lastModify || '无'"></b></div>
+    <div class="pull-right">
+      <button class="ui-btn ui-btn-sm ui-btn-bright" ng-click="openBuild(config.projectId,!!config.codeInfo)">构建</button>
+      <button class="ui-btn ui-btn-sm ui-btn-bright" ng-class="{'ui-btn-lg-disabled':!isDeleteProject}" ng-disabled="!isDeleteProject" ng-click="deleteProject()">删除</button>
+    </div>
   </div>
   <tabset>
     <tab heading="基本信息" active="tabActive[0].active" ui-sref="projectDetail.info">
-      <div class="code-origin">代码源：<a href="{{config.codeInfo.codeHttpUrl}}" target="_blank" ng-bind="config.codeInfo.codeHttpUrl"></a><span ng-if="!config.codeInfo">该项目没有关联代码仓库</span></div>
+      <div class="project-creator">创建者：{{creatorInfo.name}}</div>
+      <div class="code-origin">代码源：<a href="{{config.codeInfo.codeHttpUrl}}" target="_blank" ng-bind="config.codeInfo.codeHttpUrl"></a><span ng-if="!config.codeInfo">该工程没有关联代码仓库</span></div>
       <div class="markdown" markdown="markdown" projectid="projectId" branch="branch"></div>
     </tab>
-    <tab heading="项目配置" active="tabActive[1].active" ui-sref="projectDetail.config">
-      <div class="proInfo-form" name="projectForm" ng-form="ng-form" ng-class="{'need-valid':valid.needValid}">
-        <div class="dockerfile-options pull-right">
+    <tab heading="工程配置" active="tabActive[1].active" ui-sref="projectDetail.config">
+      <div name="projectForm" ng-form="ng-form" ng-class="{'need-valid':valid.needValid}">
+        <div class="dockerfile-options">
           <button class="ui-btn ui-btn-sm ui-btn-safe" ng-if="!edit" ng-click="getDockerfile()" ng-disabled="isLoading">查看Dockerfile</button>
-          <button class="ui-btn ui-btn-sm ui-btn-bright" ng-click="checkEdit()" ng-show="!edit" ng-disabled="isLoading">编辑</button>
-          <button class="ui-btn ui-btn-sm ui-btn-bright" ng-click="checkEdit()" ng-show="edit">取消编辑</button>
+          <button class="ui-btn ui-btn-sm ui-btn-bright" ng-class="{'ui-btn-lg-disabled':!isEditProject}" ng-disabled="!isEditProject" ng-click="checkEdit()" ng-show="!edit">编辑</button><span>
+            <button class="ui-btn ui-btn-lg ui-btn-bright" ng-click="checkEdit()" ng-show="edit">取消编辑</button></span>
         </div>
         <ng-include src="'index/tpl/tplProjectSetting/projectSettingInfoTpl.html'" ng-if="!edit"></ng-include>
         <ng-include src="'index/tpl/tplProjectSetting/projectSettingTpl.html'" ng-if="edit"></ng-include>
         <div class="com-bottom-option" ng-show="edit"><span class="com-bottom-option-con">
-            <button class="ui-btn ui-btn-md ui-btn-bright" ng-click="checkEdit();valid.needValid = false;">取消</button>
-            <button class="ui-btn ui-btn-md ui-btn-bright" ng-click="valid.needValid=true;validCreatedFileStoragePath();projectForm.$valid&amp;&amp;valid.createdFileStoragePath&amp;&amp;submitModify()" ng-disabled="isWaitingForModify">保存修改</button>
-            <button class="ui-btn ui-btn-md ui-btn-safe" ng-click="valid.needValid=true;validCreatedFileStoragePath();projectForm.$valid&amp;&amp;valid.createdFileStoragePath&amp;&amp;getDockerfile()">预览Dockerfile</button><span class="txt-error" ng-if="valid.needValid&amp;&amp;(!valid.createdFileStoragePath||projectForm.$invalid)">存在不合法数据，请修改后提交！</span></span></div>
+            <button class="ui-btn ui-btn-sm ui-btn-bright" ng-click="checkEdit();valid.needValid = false;">取消</button>
+            <button class="ui-btn ui-btn-sm ui-btn-bright" ng-click="valid.needValid=true;validCreatedFileStoragePath();projectForm.$valid&amp;&amp;valid.createdFileStoragePath&amp;&amp;submitModify()" ng-disabled="isWaitingForModify">保存</button>
+            <button class="ui-btn ui-btn-sm ui-btn-safe" ng-click="valid.needValid=true;validCreatedFileStoragePath();projectForm.$valid&amp;&amp;valid.createdFileStoragePath&amp;&amp;getDockerfile()">预览</button><span class="txt-error" ng-if="valid.needValid&amp;&amp;(!valid.createdFileStoragePath||projectForm.$invalid)">存在不合法数据，请修改后提交！</span></span></div>
       </div>
     </tab>
     <tab heading="持续集成" active="tabActive[2].active" ui-sref="projectDetail.autobuild">
-      <p class="tool-noinfo" ng-if="!config.codeInfo">该项目未关联代码仓库，无法持续集成</p>
+      <p class="tool-noinfo" ng-if="!config.codeInfo">该工程未关联代码仓库，无法持续集成</p>
       <div class="ci-con" ng-if="config.codeInfo"><span class="ci-title">自动构建</span>
         <div class="ci-content">
-          <p class="txt-prompt">当所选分支更新或出现新tag时，会自动触发构建，生成新的项目镜像。请不要在频繁push的分支上开启自动构建，以免频繁触发构建，造成资源浪费。</p><span class="branch-check">
+          <p class="txt-prompt">当所选分支更新或出现新tag时，会自动触发构建，生成新的工程镜像。请不要在频繁push的分支上开启自动构建，以免频繁触发构建，造成资源浪费。</p><span class="branch-check">
             <input class="ui-check" id="buildMaster" type="checkbox" name="buildBranch" ng-model="config.autoBuildInfo.master"/>
             <label for="buildMaster">master</label></span><span class="branch-check">
             <input class="ui-check" id="buildTag" type="checkbox" name="buildBranch" ng-true-value="1" ng-false-value="0" ng-model="config.autoBuildInfo.tag"/>
@@ -40,7 +46,7 @@
         </div>
       </div>
       <div class="com-bottom-option" ng-show="config.codeInfo">
-        <button class="ui-btn ui-btn-md ui-btn-bright" ng-click="modifyCI()" ng-disabled="isWaitingForModify">保存修改</button>
+        <button class="ui-btn ui-btn-lg ui-btn-bright" ng-click="modifyCI()" ng-disabled="isWaitingForModify">保存修改</button>
       </div>
     </tab>
     <tab heading="构建记录" ng-click="getBuildList()" active="tabActive[3].active" ui-sref="projectDetail.buildlog">
@@ -66,9 +72,6 @@
           </table>
         </loglist>
       </div>
-    </tab>
-    <tab heading="项目成员" ng-hide="!hasMemberPermisson" active="tabActive[4].active" ui-sref="projectDetail.user">
-      <div class="tab-member" ng-include="'index/tpl/tplUserList/tplUserList.html'"></div>
     </tab>
   </tabset>
 </div>

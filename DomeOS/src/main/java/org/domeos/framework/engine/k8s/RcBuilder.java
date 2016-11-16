@@ -1,18 +1,46 @@
 package org.domeos.framework.engine.k8s;
 
-import io.fabric8.kubernetes.api.model.*;
 import io.fabric8.kubernetes.api.model.Container;
+import io.fabric8.kubernetes.api.model.ContainerBuilder;
+import io.fabric8.kubernetes.api.model.EnvVar;
+import io.fabric8.kubernetes.api.model.EnvVarBuilder;
+import io.fabric8.kubernetes.api.model.HTTPGetAction;
+import io.fabric8.kubernetes.api.model.IntOrString;
+import io.fabric8.kubernetes.api.model.LocalObjectReference;
+import io.fabric8.kubernetes.api.model.PodSpec;
+import io.fabric8.kubernetes.api.model.Probe;
+import io.fabric8.kubernetes.api.model.Quantity;
+import io.fabric8.kubernetes.api.model.ReplicationController;
+import io.fabric8.kubernetes.api.model.ReplicationControllerBuilder;
+import io.fabric8.kubernetes.api.model.ReplicationControllerSpec;
+import io.fabric8.kubernetes.api.model.ReplicationControllerSpecBuilder;
+import io.fabric8.kubernetes.api.model.ResourceRequirements;
+import io.fabric8.kubernetes.api.model.TCPSocketAction;
+import io.fabric8.kubernetes.api.model.Volume;
+import io.fabric8.kubernetes.api.model.VolumeMount;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
+
 import org.domeos.framework.api.consolemodel.deployment.ContainerDraft;
 import org.domeos.framework.api.consolemodel.deployment.EnvDraft;
 import org.domeos.framework.api.model.LoadBalancer.LoadBalancer;
 import org.domeos.framework.api.model.deployment.Deployment;
 import org.domeos.framework.api.model.deployment.Version;
+import org.domeos.framework.api.model.deployment.related.HealthChecker;
+import org.domeos.framework.api.model.deployment.related.HealthCheckerType;
+import org.domeos.framework.api.model.deployment.related.LabelSelector;
+import org.domeos.framework.api.model.deployment.related.LogDraft;
+import org.domeos.framework.api.model.deployment.related.NetworkMode;
+import org.domeos.framework.engine.k8s.util.SecretUtils;
 import org.domeos.framework.api.model.deployment.related.*;
 import org.domeos.framework.engine.k8s.util.StringUtils;
 import org.domeos.global.GlobalConstant;
-
-import java.util.*;
-import java.util.regex.Pattern;
 
 /**
  * Created by sparkchen on 16/4/6.
@@ -29,7 +57,8 @@ public class RcBuilder {
     public RcBuilder() {
     }
 
-    public RcBuilder(Deployment deployment, List<LoadBalancer> loadBalancers, Version version, List<EnvDraft> extraEnvs, int replicas) {
+    public RcBuilder(Deployment deployment, List<LoadBalancer> loadBalancers, Version version,
+            List<EnvDraft> extraEnvs, int replicas) {
         this.deployment = deployment;
         this.loadBalancers = loadBalancers;
         this.version = version;
@@ -48,10 +77,8 @@ public class RcBuilder {
         }
         if (!deployment.isStateful()) {
             index = -1;
-        } else if (nodeIpList == null
-            || version.getHostList() == null
-            || index < 0
-            || index >= version.getHostList().size()) {
+        } else if (nodeIpList == null || version.getHostList() == null || index < 0
+                || index >= version.getHostList().size()) {
             return null;
         }
         // * init rc metadate
@@ -64,10 +91,9 @@ public class RcBuilder {
             addIndex(rcLabel, index);
         }
 
-        ReplicationController rc = new ReplicationControllerBuilder()
-                .withNewMetadata().withName(rcName.toLowerCase())
-                .withLabels(rcLabel)
-                .withNamespace(deployment.getNamespace()).endMetadata().build();
+        ReplicationController rc = new ReplicationControllerBuilder().withNewMetadata().withName(rcName.toLowerCase())
+                .withLabels(rcLabel).withNamespace(deployment.getNamespace()).endMetadata()
+                .build();
 
         // * init rc spec
         ReplicationControllerSpec rcSpec = new ReplicationControllerSpec();
@@ -81,30 +107,27 @@ public class RcBuilder {
         // ** init pod template
         Map<String, String> annotations = new HashMap<>();
         annotations.put("deployName", deployment.getName());
-//        DeploymentExtra extra = deployment.getDeploymentExtra();
-//        if (extra != null) {
-//            annotations.put("accessType", extra.getDeploymentAccessType().toString());
-//        }
+        // DeploymentExtra extra = deployment.getDeploymentExtra();
+        // if (extra != null) {
+        // annotations.put("accessType",
+        // extra.getDeploymentAccessType().toString());
+        // }
         // TODO (openxxs) tmp solution: for old load balancer
-        Map<String, String> podLabels = buildRCLabelWithSpecifyVersionAndLoadBalancer(deployment, version, loadBalancers);
+        Map<String, String> podLabels = buildRCLabelWithSpecifyVersionAndLoadBalancer(deployment, version,
+                loadBalancers);
 
-        rcSpec = new ReplicationControllerSpecBuilder(rcSpec)
-                .withNewTemplate()
-                .withNewMetadata()
-                .withLabels(podLabels)
-                .withAnnotations(annotations)
-                .withDeletionGracePeriodSeconds(0L)
-                .endMetadata()
+        rcSpec = new ReplicationControllerSpecBuilder(rcSpec).withNewTemplate().withNewMetadata().withLabels(podLabels)
+                .withAnnotations(annotations).withDeletionGracePeriodSeconds(0L).endMetadata()
                 .endTemplate().build();
-//        rcSpec.putTemplate(new PodTemplateSpec())
-//            .getTemplate()
-//            .putMetadata(new ObjectMeta())
-//            .getMetadata()
-//            // TODO (openxxs) tmp solution: for old load balancer
-//            .putLabels(podLabels)
-////            .putLabels(rcSelector)
-//            .putAnnotations(annotations)
-//            .putDeletionGracePeriodSeconds(0);
+        // rcSpec.putTemplate(new PodTemplateSpec())
+        // .getTemplate()
+        // .putMetadata(new ObjectMeta())
+        // .getMetadata()
+        // // TODO (openxxs) tmp solution: for old load balancer
+        // .putLabels(podLabels)
+        // // .putLabels(rcSelector)
+        // .putAnnotations(annotations)
+        // .putDeletionGracePeriodSeconds(0);
         // *** create node selector
 
 
@@ -132,6 +155,12 @@ public class RcBuilder {
             podSpec.setNodeSelector(nodeSelector);
             rcSpec.getTemplate().setSpec(podSpec);
         } else {
+            if (SecretUtils.haveDomeOSRegistry(version.getContainerDrafts())) {// domeos
+                // registry
+                List<LocalObjectReference> secretList = Arrays.asList(new LocalObjectReference(
+                        GlobalConstant.SECRET_NAME_PREFIX + deployment.getNamespace()));
+                podSpec.setImagePullSecrets(secretList);
+            }
             podSpec.setHostNetwork(deployment.getNetworkMode() == NetworkMode.HOST);
             rcSpec.getTemplate().setSpec(podSpec);
             if (index < 0) {
@@ -157,23 +186,19 @@ public class RcBuilder {
                 return null;
             }
         /*
-        if (deployment.getHostEnv() != null) {
-            nodeSelector.put("hostEnv", deployment.getHostEnv().toString());
-        }
-        */
+         * if (deployment.getHostEnv() != null) { nodeSelector.put("hostEnv",
+         * deployment.getHostEnv().toString()); }
+         */
             // *** init container and node selector
         /*
-        if (index >= 0 && index < version.getHostList().size()) {
-            addHostNetworkEnvs(deployment, version);
-        }
-        */
+         * if (index >= 0 && index < version.getHostList().size()) {
+         * addHostNetworkEnvs(deployment, version); }
+         */
             List<Container> containers = buildContainer(deployment, version, index, nodeIpList, extraEnvs);
             if (containers == null) {
                 return null;
             }
-            rcSpec.getTemplate()
-                    .getSpec()
-                    .setContainers(containers);
+            rcSpec.getTemplate().getSpec().setContainers(containers);
             // if configure to autoCollect or autoDelete log, need to set volumes
             // so that data can be shared accross different containers in a Pod
             if (version.getLogDraft() != null) {
@@ -192,6 +217,7 @@ public class RcBuilder {
         rc.setSpec(rcSpec);
         return rc;
     }
+
     // buildRCSelector will decide which pods will be selected
     public Map<String, String> buildRCSelectorWithSpecifyVersion() {
         Map<String, String> selector = buildRCSelector(deployment);
@@ -220,8 +246,7 @@ public class RcBuilder {
     }
 
     // TODO (openxxs) tmp solution: for old load balancer
-    public static Map<String, String> buildRCLabelWithSpecifyVersionAndLoadBalancer(
-            Deployment deployment, Version version, List<LoadBalancer> loadBalancers) {
+    public static Map<String, String> buildRCLabelWithSpecifyVersionAndLoadBalancer(Deployment deployment, Version version, List<LoadBalancer> loadBalancers) {
         Map<String, String> label = buildRCLabel(deployment);
         label.put(GlobalConstant.VERSION_STR, String.valueOf(version.getVersion()));
         if (loadBalancers != null) {
@@ -238,10 +263,8 @@ public class RcBuilder {
         return label;
     }
 
-    public static List<Container> buildContainer(Deployment deployment, Version version, int index,
-                                             List<String> nodeIpList, List<EnvDraft> extraEnvs) {
-        if (version == null || version.getContainerDrafts() == null
-            || version.getContainerDrafts().size() == 0) {
+    public static List<Container> buildContainer(Deployment deployment, Version version, int index, List<String> nodeIpList, List<EnvDraft> extraEnvs) {
+        if (version == null || version.getContainerDrafts() == null || version.getContainerDrafts().size() == 0) {
             return null;
         }
         int size = version.getContainerDrafts().size();
@@ -268,8 +291,7 @@ public class RcBuilder {
             Container container = new ContainerBuilder()
                     .withImage(containerDraft.formatImage() + ":" + containerDraft.getTag())
                     .withName(deployment.getName() + "-" + idx)
-                    .withResources(formatResource(containerDraft))
-                    .build();
+                    .withResources(formatResource(containerDraft)).build();
             // ** ** add env
             List<EnvDraft> containerEnvs = new LinkedList<>();
             if (allExtraEnvs.size() > 0) {
@@ -365,19 +387,19 @@ public class RcBuilder {
         probe.setTimeoutSeconds(healthChecker.getTimeout());
         probe.setInitialDelaySeconds(healthChecker.getDelay());
         switch (healthChecker.getType()) {
-            case HTTP:
-                HTTPGetAction httpGetAction = new HTTPGetAction();
-                httpGetAction.setPath(healthChecker.getUrl());
-                httpGetAction.setPort(new IntOrString(healthChecker.getPort()));
-                probe.setHttpGet(httpGetAction);
-                break;
-            case TCP:
-                TCPSocketAction tcpSocketAction = new TCPSocketAction();
-                tcpSocketAction.setPort(new IntOrString(healthChecker.getPort()));
-                probe.setTcpSocket(tcpSocketAction);
-                break;
-            default:
-                return null;
+        case HTTP:
+            HTTPGetAction httpGetAction = new HTTPGetAction();
+            httpGetAction.setPath(healthChecker.getUrl());
+            httpGetAction.setPort(new IntOrString(healthChecker.getPort()));
+            probe.setHttpGet(httpGetAction);
+            break;
+        case TCP:
+            TCPSocketAction tcpSocketAction = new TCPSocketAction();
+            tcpSocketAction.setPort(new IntOrString(healthChecker.getPort()));
+            probe.setTcpSocket(tcpSocketAction);
+            break;
+        default:
+            return null;
         }
         return probe;
     }
@@ -388,10 +410,7 @@ public class RcBuilder {
         }
         List<EnvVar> envs = new LinkedList<>();
         for (EnvDraft envDraft : envDrafts) {
-            EnvVar tmpEnv = new EnvVarBuilder()
-                    .withName(envDraft.getKey())
-                    .withValue(envDraft.getValue())
-                    .build();
+            EnvVar tmpEnv = new EnvVarBuilder().withName(envDraft.getKey()).withValue(envDraft.getValue()).build();
             envs.add(tmpEnv);
         }
         return envs;
@@ -420,16 +439,17 @@ public class RcBuilder {
             if (isHostMode) {
                 hostNetworkEnvs.add(new EnvDraft(svcName + "_SERVICE_HOST", nodeIpList.get(i)));
             }
-//            for (LoadBalanceDraft loadBalanceDraft : deployment.) {
-//                if (isHostMode) {
-//                    hostNetworkEnvs.add(new EnvDraft(svcName + "_SERVICE_PORT_"
-//                            + formatEnvInPod(loadBalanceDraft.getName()),
-//                            String.valueOf(loadBalanceDraft.getTargetPort())));
-//                }
-//                hostNetworkEnvs.add(new EnvDraft(svcName + "_SERVICE_TARGET_PORT_"
-//                            + formatEnvInPod(loadBalanceDraft.getName()),
-//                            String.valueOf(loadBalanceDraft.getTargetPort())));
-//            }
+            // for (LoadBalanceDraft loadBalanceDraft : deployment.) {
+            // if (isHostMode) {
+            // hostNetworkEnvs.add(new EnvDraft(svcName + "_SERVICE_PORT_"
+            // + formatEnvInPod(loadBalanceDraft.getName()),
+            // String.valueOf(loadBalanceDraft.getTargetPort())));
+            // }
+            // hostNetworkEnvs.add(new EnvDraft(svcName +
+            // "_SERVICE_TARGET_PORT_"
+            // + formatEnvInPod(loadBalanceDraft.getName()),
+            // String.valueOf(loadBalanceDraft.getTargetPort())));
+            // }
         }
         return hostNetworkEnvs;
     }
@@ -438,7 +458,6 @@ public class RcBuilder {
         String result = originEnvName.toUpperCase();
         return result.replaceAll("[.-]", "_");
     }
-
 
     public static boolean checkEnv(List<EnvDraft> envs, List<EnvDraft> checker) {
         if (checker == null) {
@@ -459,6 +478,7 @@ public class RcBuilder {
         }
         return true;
     }
+
     public static String buildStatefulServiceName(Deployment deployment, int index) {
         return buildStatefulServiceName(deployment) + "-" + index;
     }

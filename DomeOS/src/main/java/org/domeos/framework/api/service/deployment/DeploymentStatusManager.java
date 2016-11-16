@@ -1,6 +1,7 @@
 package org.domeos.framework.api.service.deployment;
 
 import org.domeos.exception.DeploymentEventException;
+import org.domeos.exception.DeploymentTerminatedException;
 import org.domeos.framework.api.model.auth.User;
 import org.domeos.framework.api.model.deployment.related.DeployOperation;
 import org.domeos.framework.api.model.deployment.related.DeploymentSnapshot;
@@ -50,7 +51,7 @@ public interface DeploymentStatusManager {
      * @throws DeploymentEventException
      */
     void succeedEvent(long eid, List<DeploymentSnapshot> currentSnapshot)
-            throws IOException, DeploymentEventException;
+            throws IOException, DeploymentEventException, DeploymentTerminatedException;
 
     /**
      * @param eid
@@ -60,7 +61,7 @@ public interface DeploymentStatusManager {
      * @throws DeploymentEventException
      */
     void failedEvent(long eid, List<DeploymentSnapshot> currentSnapshot, String message)
-            throws IOException, DeploymentEventException;
+            throws IOException, DeploymentEventException, DeploymentTerminatedException;
 
     /**
      * @param deploymentId
@@ -70,7 +71,7 @@ public interface DeploymentStatusManager {
      * @throws DeploymentEventException
      */
     void failedEventForDeployment(int deploymentId, List<DeploymentSnapshot> currentSnapshot, String message)
-            throws IOException, DeploymentEventException;
+            throws IOException, DeploymentEventException, DeploymentTerminatedException;
 
     /**
      * check available deployment state from current state

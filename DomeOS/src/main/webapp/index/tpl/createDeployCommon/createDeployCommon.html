@@ -2,24 +2,18 @@
 <div class="mod-deploy create-deploy-common" ng-form="ng-form" role="form" name="deployForm" ng-class="{'need-valid':needValid}" novalidate="novalidate">
   <loading ng-if="loadingsIns.isLoading||deployIns.loadingIns.isLoading"></loading>
   <ul class="com-list-info">
-    <li class="has-border"><span class="info-name">部署名称</span>
+    <li class="has-border"><span class="info-name">部署名称 <span class="require-domain">*</span></span>
       <div class="info-content">
         <div class="line-long">
-          <input class="ui-input-fill line-element" ng-model="config.deployName" name="deployName" required="required" is-deploy-exist="is-deploy-exist" namespace="{{config.namespace}}" ng-maxlength="20" clustername="{{deployIns.clusterListIns.cluster.name}}" ng-pattern="/^[0-9a-z](-*[0-9a-z]+)*$/" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}"/>
+          <input class="ui-input-fill line-element" ng-model="config.deployName" name="deployName" required="required" is-deploy-exist="is-deploy-exist" collection="collectionInfo.collectionId" namespace="{{config.namespace}}" ng-maxlength="20" clustername="{{deployIns.clusterListIns.cluster.name}}" ng-pattern="/^[0-9a-z](-*[0-9a-z]+)*$/" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}"/>
         </div>
         <div class="txt-error" ng-if="(needValid||deployForm.deployName.$dirty)&amp;&amp;deployForm.deployName.$error.required">必填</div>
         <div class="txt-error" ng-if="(needValid||deployForm.deployName.$dirty)&amp;&amp;!deployForm.deployName.$error.required&amp;&amp;deployForm.deployName.$error.isDeployExist">部署名已存在</div>
         <div class="txt-error" ng-if="(needValid||deployForm.deployName.$dirty)&amp;&amp;!deployForm.deployName.$error.required&amp;&amp;deployForm.deployName.$error.pattern">非法的名称</div><span class="txt-error" ng-if="(needValid||deployForm.deployName.$dirty)&amp;&amp;!deployForm.deployName.$error.required&amp;&amp;deployForm.deployName.$error.maxlength">长度超出限制</span>
       </div>
     </li>
-    <li class="has-border"><span class="info-name">创建者</span>
-      <div class="info-content">
-        <creator-selection change-event="deployIns.toggleCreator(user)" default-user-id="deployIns.creator.id" default-user-type="{{deployIns.creator.type}}"></creator-selection>
-        <input type="hidden" name="creatorName" ng-model="deployIns.creator.id" required="required"/><span class="txt-error" ng-show="needValid&amp;&amp;deployForm.creatorName.$invalid">请选择创建者</span>
-      </div>
-    </li>
-    <li class="has-border"><span class="info-name">配置类型</span>
-      <div class="info-content"><span class="com-check-con">
+    <li class="has-border"><span class="info-name info-name-content-for-label">配置类型</span>
+      <div class="info-content info-name-content-for-label"><span class="com-check-con">
           <input class="ui-radio" id="defaultType" type="radio" value="CUSTOM" name="versionType" ng-model="config.versionType"/>
           <label for="defaultType">默认类型</label></span><span class="com-check-con">
           <input class="ui-radio" id="yamlType" type="radio" value="YAML" name="versionType" ng-model="config.versionType"/>
@@ -30,7 +24,7 @@
     <li class="has-border"><span class="info-name">实例个数</span>
       <div class="info-content container-info">
         <div class="line-short">
-          <input class="ui-input-fill ui-input-sm container-txt" ng-model="config.replicas" name="replicas" ng-pattern="/^[1-9]\d*$/" is-over="is-over" max="999" min="1"/><span class="container-unit">个</span>
+          <input class="ui-input-fill ui-input-sm container-txt" ng-model="config.replicas" name="replicas" ng-pattern="/^[1-9]\d*$/" is-over="is-over" max="999" min="1"/><span class="container-unit">&nbsp;个</span>
         </div><span class="txt-error" ng-if="(needValid||deployForm.replicas.$dirty)&amp;&amp;deployForm.replicas.$invalid">请填写0~999范围内的数字</span>
       </div>
     </li>
@@ -48,8 +42,8 @@
         </div>
       </div>
     </li>
-    <li class="has-border"><span class="info-name">工作场景</span>
-      <div class="info-content"><span class="com-check-con" ng-repeat="env in deployIns.envList">
+    <li class="has-border"><span class="info-name info-name-content-for-label">工作场景</span>
+      <div class="info-content info-name-content-for-label"><span class="com-check-con" ng-repeat="env in deployIns.envList">
           <input class="ui-radio" id="{{env.value}}EnvType" type="radio" value="{{env.value}}" name="hostEnv" ng-model="deployIns.hostEnv" ng-change="deployIns.toggleEnv(env)"/>
           <label for="{{env.value}}EnvType" ng-bind="env.text"></label></span></div>
     </li>
@@ -88,17 +82,15 @@
         </div><span class="txt-error" ng-if="needValid&amp;&amp;deployForm.selectNamespace.$invalid">请选择namespace</span><span class="txt-error" ng-if="(needValid||deployForm.namespace.$dirty)&amp;&amp;deployForm.namespace.$error.required">请填写namespace</span><span class="txt-error" ng-if="(needValid||deployForm.namespace.$dirty)&amp;&amp;!deployForm.namespace.$error.required&amp;&amp;deployForm.namespace.$error.pattern">非法的namespace</span><span class="txt-error" ng-if="(needValid||deployForm.namespace.$dirty)&amp;&amp;!deployForm.namespace.$error.required&amp;&amp;deployForm.namespace.$error.isNamespaceExist">namespace已存在</span>
       </div>
     </li>
-    <li class="has-border" ng-if="config.versionType === 'CUSTOM'"><span class="info-name">网络模式</span>
-      <div class="info-content"><span class="com-check-con" ng-click="deployIns.visitMode='noAccess'">
+    <li class="has-border" ng-if="config.versionType === 'CUSTOM'"><span class="info-name info-name-content-for-label">网络模式</span>
+      <div class="info-content info-name-content-for-label"><span class="com-check-con" ng-click="deployIns.visitMode='noAccess'">
           <input class="ui-radio" id="checkOverlay" type="radio" value="DEFAULT" name="netWork" ng-model="config.networkMode"/>
           <label for="checkOverlay">Overlay</label></span><span class="com-check-con" ng-click="deployIns.visitMode='noAccess';config.healthCheckerDraft.type='NONE'">
           <input class="ui-radio" id="checkHost" type="radio" value="HOST" name="netWork" ng-model="config.networkMode" ng-change="deployIns.validIps();"/>
-          <label for="checkHost">Host</label></span>
-        <p class="txt-prompt" ng-if="config.networkMode=='HOST'">Host网络模式下不能使用健康检查</p>
-      </div>
+          <label for="checkHost">Host</label><span class="txt-prompt" ng-if="config.networkMode=='HOST'">Host网络模式下不能使用健康检查</span></span></div>
     </li>
-    <li class="has-border"><span class="info-name">访问设置</span>
-      <div class="info-content"><span class="com-check-con">
+    <li><span class="info-name info-name-content-for-label">访问设置</span>
+      <div class="info-content info-name-content-for-label"><span class="com-check-con">
           <input class="ui-radio" id="noAccess" type="radio" value="noAccess" name="visitMode" ng-model="deployIns.visitMode" ng-change="deployIns.validIps();"/>
           <label for="noAccess">禁止访问</label></span><span class="com-check-con" ng-if="config.networkMode=='HOST'">
           <input class="ui-radio" id="access" type="radio" value="access" name="visitMode" ng-model="deployIns.visitMode" ng-change="deployIns.validIps();"/>
@@ -108,7 +100,7 @@
           <input class="ui-radio" id="foreign" type="radio" value="foreign" name="visitMode" ng-model="deployIns.visitMode" ng-change="deployIns.validIps();"/>
           <label for="foreign">对外服务</label></span></div>
     </li>
-    <li class="has-border" ng-if="deployIns.visitMode!='noAccess'"><span class="info-name"></span>
+    <li ng-if="deployIns.visitMode!='noAccess'"><span class="info-name"></span>
       <div class="info-content">
         <div class="log-item" ng-form="ng-form" name="childForm" ng-if="config.networkMode=='DEFAULT'">
           <div ng-if="deployIns.visitMode=='foreign'" ng-repeat="loadbalance in config.loadBalanceDrafts">
@@ -139,5 +131,6 @@
     </li>
   </ul>
   <div class="com-bottom-option"><span class="com-bottom-option-con">
-      <button class="ui-btn ui-btn-md ui-btn-bright" ng-disabled="loadingsIns.isLoading||deployIns.loadingIns.isLoading" ng-click="needValid=true;deployIns.validIps();deployForm.$valid&amp;&amp;deployIns.valid.ips&amp;&amp;toNext()">下一步</button><span class="txt-error" ng-if="needValid&amp;&amp;(!deployIns.valid.ips||deployForm.$invalid)">存在不合法数据，请修改后提交！</span></span></div>
+      <button class="ui-btn ui-btn-sm ui-btn-bright" ui-sref="deployManage({'id':collectionInfo.collectionId,'name':collectionInfo.collectionName})">取消</button>
+      <button class="ui-btn ui-btn-lg ui-btn-bright" ng-disabled="loadingsIns.isLoading||deployIns.loadingIns.isLoading" ng-click="needValid=true;deployIns.validIps();deployForm.$valid&amp;&amp;deployIns.valid.ips&amp;&amp;toNext()">下一步</button><span class="txt-error" ng-if="needValid&amp;&amp;(!deployIns.valid.ips||deployForm.$invalid)">存在不合法数据，请修改后提交！</span></span></div>
 </div>

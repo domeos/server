@@ -1,5 +1,9 @@
 package org.domeos.framework.api.service.alarm.impl;
 
+import org.domeos.framework.api.consolemodel.alarm.DeploymentInfo;
+import org.domeos.framework.api.consolemodel.alarm.TemplateInfo;
+import org.domeos.framework.api.consolemodel.alarm.UserGroupInfo;
+import org.domeos.framework.api.model.collection.related.ResourceType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.domeos.basemodel.HttpResponseTemp;
@@ -33,6 +37,8 @@ public class TemplateServiceImpl implements TemplateService {
 
     private static Logger logger = LoggerFactory.getLogger(TemplateServiceImpl.class);
 
+    private final ResourceType resourceType = ResourceType.ALARM;
+
     @Autowired
     AlarmBiz alarmBiz;
 
@@ -51,7 +57,7 @@ public class TemplateServiceImpl implements TemplateService {
     @Override
     public HttpResponseTemp<?> listTemplateInfo() {
 
-        AuthUtil.groupVerify(CurrentThreadInfo.getUserId(), GlobalConstant.alarmGroupId, OperationType.GET, 0);
+        AuthUtil.collectionVerify(CurrentThreadInfo.getUserId(), GlobalConstant.alarmGroupId, resourceType, OperationType.GET, 0);
 
         return ResultStat.OK.wrap(alarmBiz.listTemplateInfoBasic());
     }
@@ -59,7 +65,7 @@ public class TemplateServiceImpl implements TemplateService {
     @Override
     public HttpResponseTemp<?> createTemplate(TemplateInfo templateInfo) {
 
-        AuthUtil.groupVerify(CurrentThreadInfo.getUserId(), GlobalConstant.alarmGroupId, OperationType.GET, 0);
+        AuthUtil.collectionVerify(CurrentThreadInfo.getUserId(), GlobalConstant.alarmGroupId, resourceType, OperationType.GET, 0);
 
         if (templateInfo == null) {
             throw ApiException.wrapMessage(ResultStat.TEMPLATE_NOT_LEGAL, "template info is null");
@@ -94,7 +100,7 @@ public class TemplateServiceImpl implements TemplateService {
     @Override
     public HttpResponseTemp<?> modifyTemplate(TemplateInfo templateInfo) {
 
-        AuthUtil.groupVerify(CurrentThreadInfo.getUserId(), GlobalConstant.alarmGroupId, OperationType.MODIFY, 0);
+        AuthUtil.collectionVerify(CurrentThreadInfo.getUserId(), GlobalConstant.alarmGroupId, resourceType, OperationType.MODIFY, 0);
 
         if (templateInfo == null) {
             throw ApiException.wrapMessage(ResultStat.TEMPLATE_NOT_LEGAL, "template info is null");
@@ -126,7 +132,7 @@ public class TemplateServiceImpl implements TemplateService {
     @Override
     public HttpResponseTemp<?> getTemplateInfo(long id) {
 
-        AuthUtil.groupVerify(CurrentThreadInfo.getUserId(), GlobalConstant.alarmGroupId, OperationType.GET, 0);
+        AuthUtil.collectionVerify(CurrentThreadInfo.getUserId(), GlobalConstant.alarmGroupId, resourceType, OperationType.GET, 0);
 
         TemplateInfoBasic templateInfoBasic = alarmBiz.getTemplateInfoBasicById(id);
         if (templateInfoBasic == null) {
@@ -157,10 +163,11 @@ public class TemplateServiceImpl implements TemplateService {
             if (userGroupId == null) {
                 continue;
             }
-            String userGroupName = authBiz.getGroupById(userGroupId.intValue()).getName();
-            if (userGroupName == null) {
+            UserGroupBasic userGroupBasic = alarmBiz.getUserGroupInfoBasicById(userGroupId);
+            if (userGroupBasic == null || userGroupBasic.getUserGroupName() == null) {
                 continue;
             }
+            String userGroupName = userGroupBasic.getUserGroupName();
             userGroupInfos.add(new UserGroupInfo(userGroupId, userGroupName));
         }
         templateInfo.setUserGroupList(userGroupInfos);
@@ -172,7 +179,7 @@ public class TemplateServiceImpl implements TemplateService {
     @Override
     public HttpResponseTemp<?> deleteTemplate(long id) {
 
-        AuthUtil.groupVerify(CurrentThreadInfo.getUserId(), GlobalConstant.alarmGroupId, OperationType.MODIFY, 0);
+        AuthUtil.collectionVerify(CurrentThreadInfo.getUserId(), GlobalConstant.alarmGroupId, resourceType, OperationType.MODIFY, 0);
 
         TemplateInfoBasic templateInfoBasic = alarmBiz.getTemplateInfoBasicById(id);
         if (templateInfoBasic == null) {

@@ -1,7 +1,7 @@
 .tab-hostsgroups
 	.com-btn-group
 		input.ui-input.ui-input-white(placeholder="请输入主机组名称" ng-model="vmHostGroup.newHostGroup")
-		button.ui-btn.ui-btn-primary.ui-btn-sm(ng-disabled="!vmHostGroup.newHostGroup" ng-click="vmHostGroup.addHostGroup()") 添加主机组
+		button.ui-btn.ui-btn-bright.ui-btn-lg(ng-disabled="!vmHostGroup.newHostGroup" ng-click="vmHostGroup.addHostGroup()") 添加主机组
 	ul.list-hostgroups
 		li.hostgroup-wrap(ng-repeat="hostgroup in vmHostGroup.hostGroupList")
 			.hostgroup

@@ -1,6 +1,14 @@
 package org.domeos.framework.api.biz.global;
 
-import org.domeos.framework.api.model.global.*;
+import org.domeos.framework.api.model.global.CiCluster;
+import org.domeos.framework.api.model.global.ClusterMonitor;
+import org.domeos.framework.api.model.global.GitConfig;
+import org.domeos.framework.api.model.global.GlobalInfo;
+import org.domeos.framework.api.model.global.GlobalType;
+import org.domeos.framework.api.model.global.LdapInfo;
+import org.domeos.framework.api.model.global.Registry;
+import org.domeos.framework.api.model.global.Server;
+import org.domeos.framework.api.model.global.WebSsh;
 import org.domeos.framework.api.model.image.BuildImage;
 
 /**

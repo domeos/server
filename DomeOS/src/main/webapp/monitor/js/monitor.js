@@ -153,7 +153,7 @@
 				});
 				scope.getFullChartStyle = function () {
 					return {
-						'height': scope.chartWraperHeight + 'px'
+						'height': scope.chartWraperHeight + 20 + 'px'
 					};
 				};
 				scope.getShortChatStyle = function () {

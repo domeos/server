@@ -16,6 +16,16 @@
             this.addHost = (id, hostInfo) => $http.post(`/api/alarm/hostgroup/bind/${id}`, angular.toJson(hostInfo));
             this.deleteHost = (id, nodeId) => $http.delete(`/api/alarm/hostgroup/bind/${id}/${nodeId}`);
         };
+        //用户组
+        const UserGroupService = function () {
+            $domeModel.ServiceModel.call(this, '/api/alarm/usergroup');
+            this.getUserGroup = () => $http.get('/api/alarm/usergroup');
+            this.createUserGroup = (userGroupDraft) => $http.post('/api/alarm/usergroup', angular.toJson(userGroupDraft));
+            this.bindUser = (userGroupId, userInfo) => $http.post(`/api/alarm/usergroup/bind/${userGroupId}`, angular.toJson(userInfo));
+            this.deleteUserGroup = (userGroupId) => $http.delete(`/api/alarm/usergroup/${userGroupId}`);
+            this.updateUserGroup = (userGroupDraft) => $http.put('/api/alarm/usergroup', angular.toJson(userGroupDraft));
+            this.deleteSingleUser = (userGroupId, userId) => $http.delete(`/api/alarm/usergroup/bind/${userGroupId}/${userId}`);
+        };
         const clusterService = $domeCluster.getInstance('ClusterService');
         const _alarmService = new AlarmService();
         const keyMaps = {
@@ -188,7 +198,8 @@
                 };
                 if (this.groupList.length === 0) {
                     this.loadingIns.startLoading('groupList');
-                    $domeUser.userService.getGroup().then((res) => {
+                    // $domeUser.userService.getGroup().then((res) => {
+                    $http.get('/api/alarm/usergroup').then((res) => {
                         this.groupList = res.data.result || [];
                         init();
                     }, () => {
@@ -471,7 +482,8 @@
             NodeList: NodeList,
             AlarmService: AlarmService,
             HostGroupService: HostGroupService,
-            AlarmTemplate: AlarmTemplate
+            AlarmTemplate: AlarmTemplate,
+            UserGroupService: UserGroupService
         });
 
         const alarmEventService = {

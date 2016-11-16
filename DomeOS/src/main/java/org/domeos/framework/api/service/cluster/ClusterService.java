@@ -1,11 +1,10 @@
 package org.domeos.framework.api.service.cluster;
 
-import org.domeos.framework.api.consolemodel.cluster.ClusterCreate;
+import java.util.List;
+
+import org.domeos.basemodel.HttpResponseTemp;
 import org.domeos.framework.api.consolemodel.cluster.ClusterInfo;
 import org.domeos.framework.api.model.cluster.related.NodeLabel;
-import org.domeos.basemodel.HttpResponseTemp;
-
-import java.util.List;
 
 /**
  * Created by feiliu206363 on 2015/12/15.
@@ -16,7 +15,7 @@ public interface ClusterService {
      * @param clusterCreate
      * @return
      */
-    HttpResponseTemp<?> setCluster(ClusterCreate clusterCreate);
+    HttpResponseTemp<?> setCluster(ClusterInfo clusterInfo);
 
     /**
      *
@@ -105,7 +104,7 @@ public interface ClusterService {
      * @return
      */
     HttpResponseTemp<?> getNodeByClusterIdAndName(int id, String name);
-
+    
     /**
      *
      * @param id

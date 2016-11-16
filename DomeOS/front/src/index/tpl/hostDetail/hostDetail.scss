@@ -3,12 +3,25 @@
 .host-detail{
 	.host-info{
 		.info-options{
-			padding :16px $page-padding 16px $wider-padding;
+			padding : $wider-padding;
 			overflow: hidden;
+			.info-count{
+				text-align: left;
+			}
 		}
 	}
+	.detail-header{
+		.detail-item{
+			.item-name{
+				font-size: 14px;
+			}
+		}
+	} 
 	.add-label{
 		margin-left: 16px;
+	}
+	.save-label{
+		margin-left: 21px;
 	}
 	.com-check-con{
 		margin-right: 40px;
@@ -20,5 +33,25 @@
 	.com-label-list li{
 		margin-bottom: 0;
 		margin-top: 18px;
+	}
+	.table-warp{
+		padding: 0 20px 20px 20px;
+		td,th:first-child{
+			padding-left: 8px !important;
+		}
+		td,th:last-child{
+			padding-right: 8px;
+		}
+	}
+	.com-list-info{
+		&>li{
+			display: table;
+			.info-name{
+				padding: 20px 20px 20px 8px;
+				height: 74px;
+				text-align: right;
+				width: 112px;
+			}
+		}
 	}
 }

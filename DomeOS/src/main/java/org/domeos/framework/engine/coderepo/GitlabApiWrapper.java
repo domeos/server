@@ -25,9 +25,11 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.Callable;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -65,16 +67,45 @@ public class GitlabApiWrapper implements CodeApiInterface {
     }
 
     public List<CodeSourceInfo> listCodeInfo(int userId) {
-        List<CodeSourceInfo> codeSourceInfos = new LinkedList<>();
         List<org.domeos.framework.api.model.project.GitlabUser> gitlabs = GitlabInfo.getGitlabsByUserId(userId);
         if (gitlabs == null) {
-            return codeSourceInfos;
+            return new ArrayList<>();
         }
+        Set<CodeSourceInfo> codeSourceInfos = new CopyOnWriteArraySet<>();
+        List<Future> futures = new ArrayList<>();
         for (org.domeos.framework.api.model.project.GitlabUser gitlab : gitlabs) {
-            GitlabApiWrapper gitlabApiWrapper = new GitlabApiWrapper(url, gitlab.getToken());
-            codeSourceInfos.add(new CodeSourceInfo(gitlab.getId(), gitlab.getName(), gitlabApiWrapper.getGitlabProjectInfos()));
+            Future future = ClientConfigure.executorService.submit(new CodeSourceTask(codeSourceInfos, gitlab.getId(),
+                    gitlab.getName(), gitlab.getToken()));
+            futures.add(future);
         }
-        return codeSourceInfos;
+        for (Future future : futures) {
+            try {
+                future.get();
+            } catch (InterruptedException | ExecutionException e) {
+                logger.warn("get code info of user from gitlab interrupted, message: " + e.getMessage());
+            }
+        }
+        return new ArrayList<>(codeSourceInfos);
+    }
+
+    private class CodeSourceTask implements Runnable {
+        private Set<CodeSourceInfo> set;
+        private int id;
+        private String userName;
+        private String token;
+
+        public CodeSourceTask(Set<CodeSourceInfo> set, int id, String userName, String token) {
+            this.set = set;
+            this.id = id;
+            this.userName = userName;
+            this.token = token;
+        }
+
+        @Override
+        public void run() {
+            GitlabApiWrapper wrapper = new GitlabApiWrapper(url, token);
+            set.add(new CodeSourceInfo(id, userName, wrapper.getGitlabProjectInfos()));
+        }
     }
 
     public boolean setProjectHook(int projectId, String hookUrl, boolean pushEvents, boolean tagPushEvents) {
@@ -100,24 +131,21 @@ public class GitlabApiWrapper implements CodeApiInterface {
     }
 
     public List<CodeSourceInfo.ProjectInfo> getGitlabProjectInfos() {
-        List<CodeSourceInfo.ProjectInfo> projectInfos = new LinkedList<>();
+        Set<CodeSourceInfo.ProjectInfo> projectInfos = new CopyOnWriteArraySet<>();
         try {
             List<GitlabProject> projects = api.getProjects();
-            List<Future<CodeSourceInfo.ProjectInfo>> futures = new LinkedList<>();
             if (projects != null) {
+                List<Future> futures = new ArrayList<>();
                 for (GitlabProject project : projects) {
-                    Future<CodeSourceInfo.ProjectInfo> future = ClientConfigure.executorService.submit(new ProjectInfoTask(project, 30));
+                    Future future = ClientConfigure.executorService.submit(new ProjectInfoTask(projectInfos, project, 30));
                     futures.add(future);
                 }
-            }
-            for (Future<CodeSourceInfo.ProjectInfo> future : futures) {
-                try {
-                    CodeSourceInfo.ProjectInfo info = future.get();
-                    if (info != null) {
-                        projectInfos.add(info);
+                for (Future future : futures) {
+                    try {
+                        future.get();
+                    } catch (InterruptedException | ExecutionException e) {
+                        logger.warn("wait for gitlab project info task error, message is " + e.getMessage());
                     }
-                } catch (InterruptedException | ExecutionException ignored) {
-                    logger.warn("get code info for gitlab error, " + ignored.getMessage());
                 }
             }
         } catch (IOException ignored) {
@@ -125,8 +153,7 @@ public class GitlabApiWrapper implements CodeApiInterface {
         } catch (Error error) {
             logger.error("get code info for gitlab error, " + error.getMessage());
         }
-
-        return projectInfos;
+        return new ArrayList<>(projectInfos);
     }
 
     public CodeSourceInfo.ProjectInfo getSubversionProjectInfo(int svnId) {
@@ -148,37 +175,53 @@ public class GitlabApiWrapper implements CodeApiInterface {
     }
 
     @Override
-    public CommitInformation getCommitInfo(int projectId, String path) {
-        return null;
-    }
-
-    public CommitInformation getBranchCommitInfo(int projectId, String branch) {
+    public CommitInformation getCommitInfo(int projectId, String path) { // path can be tag or branch name, if tag is same with branch, tag first.
         try {
-            GitlabBranch info = api.getBranch(projectId, branch);
-            if (info != null && info.getCommit() != null) {
-                return generateCommitInfo(info.getName(), info.getCommit());
+            List<GitlabCommit> commits = api.getLastCommits(projectId, path);
+            if (commits == null || commits.size() == 0) {
+                return null;
             }
-        } catch (IOException ignored) {
-            logger.warn("get project " + projectId + " branch commit info from gitlab error, " + ignored.getMessage());
+            GitlabCommit commit = commits.get(0);
+            CommitInformation commitInformation = new CommitInformation();
+            commitInformation.setId(commit.getId());
+            commitInformation.setMessage(commit.getMessage());
+            commitInformation.setAuthorName(commit.getAuthorName());
+            commitInformation.setAuthorEmail(commit.getAuthorEmail());
+            commitInformation.setCreatedAt(commit.getCreatedAt().getTime());
+            return commitInformation;
+        } catch (IOException e) {
+            logger.warn("get project " + projectId + " commit info from gitlab error, message is " + e.getMessage());
         }
         return null;
     }
 
-    public CommitInformation getTagCommitInfo(int projectId, String tag) {
-        try {
-            List<GitlabTag> tags = api.getTags(projectId);
-            if (tags != null) {
-                for (GitlabTag gitlabTag : tags) {
-                    if (gitlabTag.getName().equals(tag) && gitlabTag.getCommit() != null) {
-                        return generateCommitInfo(gitlabTag.getName(), gitlabTag.getCommit());
-                    }
-                }
-            }
-        } catch (IOException ignored) {
-            logger.warn("get project " + projectId + " tag commit info from gitlab error, " + ignored.getMessage());
-        }
-        return null;
-    }
+//    public CommitInformation getBranchCommitInfo(int projectId, String branch) {
+//        try {
+//            GitlabBranch info = api.getBranch(projectId, branch);
+//            if (info != null && info.getCommit() != null) {
+//                return generateCommitInfo(info.getName(), info.getCommit());
+//            }
+//        } catch (IOException ignored) {
+//            logger.warn("get project " + projectId + " branch commit info from gitlab error, " + ignored.getMessage());
+//        }
+//        return null;
+//    }
+//
+//    public CommitInformation getTagCommitInfo(int projectId, String tag) {
+//        try {
+//            List<GitlabTag> tags = api.getTags(projectId);
+//            if (tags != null) {
+//                for (GitlabTag gitlabTag : tags) {
+//                    if (gitlabTag.getName().equals(tag) && gitlabTag.getCommit() != null) {
+//                        return generateCommitInfo(gitlabTag.getName(), gitlabTag.getCommit());
+//                    }
+//                }
+//            }
+//        } catch (IOException ignored) {
+//            logger.warn("get project " + projectId + " tag commit info from gitlab error, " + ignored.getMessage());
+//        }
+//        return null;
+//    }
 
     public boolean checkDeployKey(int projectId, int deployKeyId) {
         try {
@@ -199,8 +242,8 @@ public class GitlabApiWrapper implements CodeApiInterface {
     @Override
     public void deleteDeployKeys(int projectId) {
         try {
-            List<GitlabSSHKey> deployKeys =  api.getDeployKeys(projectId);
-            if (deployKeys != null){
+            List<GitlabSSHKey> deployKeys = api.getDeployKeys(projectId);
+            if (deployKeys != null) {
                 for (GitlabSSHKey sshKey : deployKeys) {
                     if ("DomeOS".equals(sshKey.getTitle())) {
                         api.deleteDeployKey(projectId, sshKey.getId());
@@ -316,39 +359,45 @@ public class GitlabApiWrapper implements CodeApiInterface {
         return null;
     }
 
-    public class ProjectInfoTask implements Callable<CodeSourceInfo.ProjectInfo> {
-        GitlabProject project;
-        int accessValue;
+    private class ProjectInfoTask implements Runnable {
+        private Set<CodeSourceInfo.ProjectInfo> set;
+        private GitlabProject project;
+        private int accessValue;
 
-        public ProjectInfoTask(GitlabProject project, int accessValue) {
+        public ProjectInfoTask(Set<CodeSourceInfo.ProjectInfo> set, GitlabProject project, int accessValue) {
+            this.set = set;
             this.project = project;
             this.accessValue = accessValue;
         }
 
         @Override
-        public CodeSourceInfo.ProjectInfo call() throws Exception {
-            GitlabProject fullInfo = api.getProject(project.getId());
-            GitlabAccessLevel accessLevel = null;
-            if (fullInfo.getPermissions() != null) {
-                if (fullInfo.getPermissions().getProjectAccess() != null) {
-                    GitlabAccessLevel projectLevel = fullInfo.getPermissions().getProjectAccess().getAccessLevel();
-                    if (projectLevel != null) {
-                        accessLevel = projectLevel;
+        public void run() {
+            try {
+                GitlabProject fullInfo = api.getProject(project.getId());
+                GitlabAccessLevel accessLevel = null;
+                if (fullInfo.getPermissions() != null) {
+                    if (fullInfo.getPermissions().getProjectAccess() != null) {
+                        GitlabAccessLevel projectLevel = fullInfo.getPermissions().getProjectAccess().getAccessLevel();
+                        if (projectLevel != null) {
+                            accessLevel = projectLevel;
+                        }
+                    }
+                    if (fullInfo.getPermissions().getProjectGroupAccess() != null) {
+                        GitlabAccessLevel groupLevel = fullInfo.getPermissions().getProjectGroupAccess().getAccessLevel();
+                        if (groupLevel != null
+                                && (accessLevel == null || groupLevel.accessValue > accessLevel.accessValue)) {
+                            accessLevel = groupLevel;
+                        }
                     }
                 }
-                if (fullInfo.getPermissions().getProjectGroupAccess() != null) {
-                    GitlabAccessLevel groupLevel = fullInfo.getPermissions().getProjectGroupAccess().getAccessLevel();
-                    if (groupLevel != null
-                            && (accessLevel == null || groupLevel.accessValue > accessLevel.accessValue)) {
-                        accessLevel = groupLevel;
-                    }
+                if (accessLevel != null && accessLevel.accessValue > this.accessValue) {
+                    set.add(new CodeSourceInfo.ProjectInfo(project.getId(), project.getNameWithNamespace(), project.getSshUrl(),
+                            project.getWebUrl(), project.getDescription(), accessLevel.name(), project.getCreatedAt().getTime()));
                 }
+
+            } catch (IOException e) {
+                logger.warn("get project info from gitlab error, message is " + e.getMessage());
             }
-            if (accessLevel != null && accessLevel.accessValue > this.accessValue) {
-                return new CodeSourceInfo.ProjectInfo(project.getId(), project.getNameWithNamespace(), project.getSshUrl(),
-                        project.getWebUrl(), project.getDescription(), accessLevel.name(), project.getCreatedAt().getTime());
-            }
-            return null;
         }
     }
 
@@ -392,7 +441,7 @@ public class GitlabApiWrapper implements CodeApiInterface {
         return null;
     }
 
-    public class UserInfo {
+    private class UserInfo {
         String login;
         String password;
 
@@ -422,23 +471,5 @@ public class GitlabApiWrapper implements CodeApiInterface {
         public void setPassword(String password) {
             this.password = password;
         }
-    }
-
-    private CommitInformation generateCommitInfo(String name, GitlabBranchCommit commit) {
-        CommitInformation commitInformation = new CommitInformation();
-        commitInformation.setName(name);
-        commitInformation.setId(commit.getId());
-        commitInformation.setMessage(commit.getMessage());
-        commitInformation.setAuthoredDate(commit.getAuthoredDate().getTime());
-        if (commit.getAuthor() != null) {
-            commitInformation.setAuthorName(commit.getAuthor().getName());
-            commitInformation.setAuthorEmail(commit.getAuthor().getEmail());
-        }
-        commitInformation.setCommittedDate(commit.getCommittedDate().getTime());
-        if (commit.getCommitter() != null) {
-            commitInformation.setCommitterName(commit.getCommitter().getName());
-            commitInformation.setCommitterEmail(commit.getCommitter().getEmail());
-        }
-        return commitInformation;
     }
 }

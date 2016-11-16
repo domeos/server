@@ -2,6 +2,7 @@ package org.domeos.framework.engine;
 
 import org.domeos.exception.DataBaseContentException;
 import org.domeos.exception.DeploymentEventException;
+import org.domeos.exception.DeploymentTerminatedException;
 import org.domeos.framework.api.consolemodel.deployment.EnvDraft;
 import org.domeos.framework.api.model.LoadBalancer.LoadBalancer;
 import org.domeos.framework.api.model.auth.User;
@@ -32,32 +33,35 @@ public interface RuntimeDriver {
     void stopDeploy(Deployment deployment, User user) throws DeploymentEventException, IOException;
 
     void rollbackDeploy(Deployment deployment, int versionId, int replicas, List<EnvDraft> allExtraEnvs, User user, Policy policy)
-            throws IOException, DeploymentEventException;
+            throws IOException, DeploymentEventException, DeploymentTerminatedException;
 
     void startUpdate(Deployment deployment, int version, int replicas, List<EnvDraft> allExtraEnvs, User user, Policy policy)
-            throws IOException, DeploymentEventException;
+            throws IOException, DeploymentEventException, DeploymentTerminatedException;
 
     void abortDeployOperation(Deployment deployment, User user)
-            throws DeploymentEventException, IOException;
+            throws DeploymentEventException, IOException, DeploymentTerminatedException;
 
     void scaleUpDeployment(Deployment deployment, int version, int replicas, List<EnvDraft> allExtraEnvs, User user)
-            throws IOException, DeploymentEventException;
+            throws IOException, DeploymentEventException, DeploymentTerminatedException;
 
     void scaleDownDeployment(Deployment deployment, int version, int replicas, List<EnvDraft> allExtraEnvs, User user)
-            throws DeploymentEventException, IOException;
+            throws DeploymentEventException, IOException, DeploymentTerminatedException;
 
     void checkUpdateEvent(Deployment deployment, DeployEvent event)
-            throws IOException, DeploymentEventException;
+            throws IOException, DeploymentEventException, DeploymentTerminatedException;
 
     void checkBasicEvent(Deployment deployment, DeployEvent event)
-            throws DeploymentEventException, IOException, DataBaseContentException, ParseException;
+            throws DeploymentEventException, IOException, DataBaseContentException, ParseException, DeploymentTerminatedException;
 
     void checkAbortEvent(Deployment deployment, DeployEvent event)
-            throws  DeploymentEventException, IOException;
+            throws DeploymentEventException, IOException, DeploymentTerminatedException;
 
     void checkStopEvent(Deployment deployment, DeployEvent event)
-            throws DeploymentEventException, IOException;
+            throws DeploymentEventException, IOException, DeploymentTerminatedException;
 
-    void expiredEvent(Deployment deployment, DeployEvent event)
-            throws DeploymentEventException, IOException;
+    void expiredEvent(Deployment deployment, DeployEvent event) throws DeploymentEventException, IOException, DeploymentTerminatedException;
+
+    List<Version> getCurrnetVersionsByDeployment(Deployment deployment) throws IOException, DeploymentEventException;
+
+    long getTotalReplicasByDeployment(Deployment deployment) throws DeploymentEventException, IOException, DeploymentTerminatedException;
 }

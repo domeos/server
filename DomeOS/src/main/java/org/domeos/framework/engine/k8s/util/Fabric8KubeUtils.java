@@ -54,6 +54,9 @@ public class Fabric8KubeUtils implements KubeUtils<KubernetesClient> {
             throw new K8sDriverException("cluster is null");
         }
         try {
+            if (KUBEUTILSMAP.containsKey(Integer.toString(cluster.getId()))) {
+                KUBEUTILSMAP.remove(Integer.toString(cluster.getId()));
+            }
             NamespaceList namespaceList = listAllNamespace();
             for (Namespace namespace : namespaceList.getItems()) {
                 String key = cluster.getId() + namespace.getMetadata().getName();
@@ -68,7 +71,7 @@ public class Fabric8KubeUtils implements KubeUtils<KubernetesClient> {
         if (cluster == null) {
             throw new K8sDriverException("cluster is null");
         }
-        String key = cluster.getId() + namespace;
+        String key = (namespace == null) ? Integer.toString(cluster.getId()) : cluster.getId() + namespace;
         if (KUBEUTILSMAP.containsKey(key)) {
             return KUBEUTILSMAP.get(key);
         }

@@ -5,12 +5,18 @@
 (function (domeApp, undefined) {
 	'use strict';
 	if (typeof domeApp === 'undefined') return;
-	domeApp.controller('ProjectDetailCtr', ['$scope', '$state', '$stateParams', '$domeProject', '$domePublic', '$domeImage', '$timeout', '$location', '$util', function ($scope, $state, $stateParams, $domeProject, $domePublic, $domeImage, $timeout, $location, $util) {
+	domeApp.controller('ProjectDetailCtr', ['$scope', '$state', '$stateParams', '$domeProject', '$domePublic', '$domeImage', '$timeout', '$location', '$util', '$domeUser', function ($scope, $state, $stateParams, $domeProject, $domePublic, $domeImage, $timeout, $location, $util, $domeUser) {
 		$scope.projectId = $state.params.project;
+		$scope.projectCollectionId = $state.params.projectCollectionId;
+		$domeProject.projectService.getProjectCollectionNameById($scope.projectCollectionId).then(function (res) {
+			$scope.projectCollectionName = res.data.result || '';
+		});
 		if (!$scope.projectId) {
 			$state.go('projectManage');
 			return;
 		}
+		// 面包屑 父级url
+        $scope.parentState = 'projectManage({id:"' + $scope.projectCollectionId +'"})';
 		$scope.branch = 'master';
 		$scope.valid = {
 			needValid: false,
@@ -57,13 +63,17 @@
 			$scope.config = $scope.project.config;
 		};
 		var initProjectImages = function (type) {
+			$scope.project.projectImagesIns.getProjectImageAsPrivateImageList('all');
 			$scope.project.projectImagesIns.toggleSpecifiedImage('compile', $scope.project.customConfig.compileImage);
 			$scope.project.projectImagesIns.toggleSpecifiedImage('run', $scope.project.customConfig.runImage);
+
 			$domeImage.imageService.getExclusiveImages(type).then(function (res) {
 				$scope.project.projectImagesIns.init(res.data.result);
 				$scope.project.projectImagesIns.toggleSpecifiedImage('compile', $scope.project.customConfig.compileImage);
 				$scope.project.projectImagesIns.toggleSpecifiedImage('run', $scope.project.customConfig.runImage);
 			});
+
+
 		};
 
 		$scope.$on('memberPermisson', function (event, hasPermisson) {
@@ -73,16 +83,44 @@
 				$scope.tabActive[0].active = true;
 			}
 		});
+		//获取用户角色
+		var initUserProjectRole = function () {
+			$domeUser.userService.getResourceUserRole($scope.resourceType, $scope.resourceId).then(function (res) {
+				var userRole = res.data.result;
+				if(userRole === 'MASTER') {
+					$scope.isDeleteProject = true;
+				}else {
+					$scope.isDeleteProject = false;
+				}
+				if (userRole === 'MASTER' || userRole === 'DEVELOPER') {
+					$scope.isEditProject = true;
+				}else {
+					$scope.isEditProject = false;
+				}
+			}, function () {
+				$scope.isDeleteProject = false;
+				$scope.isEditProject = false;
+			});
+		};
+		initUserProjectRole();
 		var initProjectInfo = function () {
 			$domeProject.projectService.getData($scope.projectId).then(function (res) {
-				project = $domeProject.getInstance('Project', res.data.result);
+				project = $domeProject.getInstance('Project', res.data.result.project);
+				$scope.creatorInfo = res.data.result.creatorInfo
 				$scope.project = angular.copy(project);
 				initConig();
 				$scope.$emit('pageTitle', {
 					title: $scope.config.name,
-					descrition: '更新于' + $util.getPageDate($scope.config.lastModify),
+					description: '更新于' + $util.getPageDate($scope.config.lastModify),
 					mod: 'projectManage'
 				});
+				$scope.hasuploadFileInfos = true;
+				if($scope.project.customConfig.uploadFileInfos.length == 1){
+					if($scope.project.customConfig.uploadFileInfos[0].filename === ''
+						&& $scope.project.customConfig.uploadFileInfos[0].content === '' ){
+						$scope.hasuploadFileInfos = false;
+					}
+				}
 			}).finally(function () {
 				$scope.isLoading = false;
 			});
@@ -181,25 +219,37 @@
 		// @param type: 'allType'(通用配置)/'java'
 		$scope.toggleProjectType = function (type) {
 			// 如果没有改变
-			if (!$scope.config.userDefineDockerfile && (type == 'allType' && !$scope.project.isUseCustom || type === $scope.project.isUseCustom && $scope.project.customConfig.customType)) return;
-			$scope.config.userDefineDockerfile = false;
-			// 如果是切换到项目原来的配置(通用或者专属)，初始化配置
-			if (!project.config.userDefineDockerfile && (type == 'allType' && !project.isUseCustom || project.isUseCustom && type === project.customConfig.customType)) {
-				// editProject = angular.copy(project);
-				$scope.project = angular.copy(project);
-				initConig();
-			} else {
-				// 初始化新选择的类型的配置
-				$scope.project.resetConfig();
-				initConig();
+			if (!$scope.config.userDefineDockerfile) {
+				if (type == 'allType' && !$scope.project.isUseCustom && !$scope.project.isDefDockerfile) return;
+				if ($scope.project.isUseCustom && type === $scope.project.customConfig.customType) return;
+				if ($scope.project.isDefDockerfile && type === 'defdockerfile') return;
 			}
+			if (function () {
+					if (!project.config.userDefineDockerfile) {
+						if (type == 'allType' && !project.isUseCustom && !project.isDefDockerfile) return true;
+						if (project.isUseCustom && type === project.customConfig.customType) return true;
+						if (project.isDefDockerfile && type === 'defdockerfile') return true;
+					}
+					return false;
+				}()) {
+				$scope.project = angular.copy(project);
+			} else {
+				$scope.project.resetConfig();
+			}
+			initConig();
 			if (type == 'allType') {
 				$scope.project.isUseCustom = false;
+				$scope.project.isDefDockerfile = false;
+			} else if (type === 'defdockerfile') {
+				$scope.project.isUseCustom = false;
+				$scope.project.isDefDockerfile = true;
 			} else {
 				$scope.project.isUseCustom = true;
+				$scope.project.isDefDockerfile = false;
 				$scope.project.customConfig.customType = type;
-				initProjectImages(type);
 			}
+			$scope.config.userDefineDockerfile = false;
+			// console.log($scope);
 		};
 		$scope.toggleUseDockerfile = function () {
 			if ($scope.config.userDefineDockerfile) {
@@ -264,7 +314,7 @@
 		};
 		$scope.deleteProject = function () {
 			$scope.project.delete().then(function () {
-				$state.go('projectManage');
+				$state.go('projectManage',{id:$scope.projectCollectionId});
 			});
 		};
 		$scope.toggleStatus = function (status) {
@@ -311,5 +361,6 @@
 		} else {
 			$scope.tabActive[0].active = true;
 		}
+
 	}]);
 })(window.domeApp);

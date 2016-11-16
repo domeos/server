@@ -1,0 +1,18 @@
+@import "compass/css3";
+@import "common/css/common.scss";
+$position-line-member-element: 89%;
+$position-info-name: 86px;
+.alarm-user-group-detail{
+	.mod-list{
+		padding: 0 20px;
+	}
+	.list-info{
+		.line-long{
+			padding-left: 20px;
+			width: 70%; 
+		}
+		.input-size{
+			width: 85%;
+		}
+	}
+}

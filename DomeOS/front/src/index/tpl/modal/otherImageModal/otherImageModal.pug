@@ -11,5 +11,6 @@
 		li
 			span.info-name 镜像仓库地址
 			input.ui-input-white.info-txt(name="imageRegistry" ng-model="imageInfo.registry" required ng-pattern="/^[^\\s]*$/" )
-	.com-bottom-option
-		button.ui-btn.ui-btn-safe.ui-btn-sm(ng-click="needValid=true;otherImageFrom.$valid&&submitImage()") 添加
+.modal-footer
+	button.ui-btn.ui-btn-sm.ui-btn-white(ng-click="cancel()") 取消
+	button.ui-btn.ui-btn-bright.ui-btn-sm(ng-click="needValid=true;otherImageFrom.$valid&&submitImage()") 添加

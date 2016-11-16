@@ -23,6 +23,7 @@ import org.domeos.framework.api.model.project.Project;
 import org.domeos.framework.api.model.project.related.EnvSetting;
 import org.domeos.framework.api.service.image.BaseImageCustomService;
 import org.domeos.framework.api.service.project.impl.UpdateBuildStatusInfo;
+import org.domeos.framework.api.service.token.TokenService;
 import org.domeos.framework.engine.exception.DaoException;
 import org.domeos.framework.engine.k8s.JobWrapper;
 import org.domeos.framework.engine.model.JobType;
@@ -61,6 +62,9 @@ public class BaseImageCustomServiceImpl implements BaseImageCustomService {
     @Autowired
     FileContentBiz fileContentBiz;
 
+    @Autowired
+    TokenService tokenService;
+
     @Override
     public HttpResponseTemp<?> addBaseImageCustom(BaseImageCustom baseImageCustom) {
         String username = CurrentThreadInfo.getUserName();
@@ -98,7 +102,7 @@ public class BaseImageCustomServiceImpl implements BaseImageCustomService {
             throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "registry in global configuation must be set");
         }
         if (imageTag != null) {
-            List<DockerImage> images = PrivateRegistry.getDockerImageInfo(imageName, registry.fullRegistry());
+            List<DockerImage> images = PrivateRegistry.getDockerImageInfo(imageName, registry.fullRegistry(), tokenService.getAdminToken(imageName));
             if (images != null) {
                 for (DockerImage image : images) {
                     if (imageTag.equals(image.getTag())) {
@@ -404,7 +408,11 @@ public class BaseImageCustomServiceImpl implements BaseImageCustomService {
                 baseImageCustom.setState(BuildState.Success.name());
                 BaseImage baseImage = new BaseImage(baseImageCustom.getImageName(), baseImageCustom.getImageTag(),
                         registry.fullRegistry(), baseImageCustom.getDescription());
-                double imageSize = PrivateRegistry.getImageSize(baseImage);
+                String token = null;
+                if (baseImage.getRegistry().equals(registry.fullRegistry())) {
+                    token = tokenService.getAdminToken(baseImage.getImageName());
+                }
+                double imageSize = PrivateRegistry.getImageSize(baseImage, token);
                 if (imageSize > 0) {
                     baseImageCustom.setImageSize(imageSize);
                 }

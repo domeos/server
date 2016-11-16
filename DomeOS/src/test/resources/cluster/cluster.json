@@ -1,13 +1,12 @@
 {
   "id": 2,
   "name": "mycluster",
-  "api": "10.16.42.200:8080",
+  "api": "192.168.65.65:8080",
   "tag": null,
   "ownerName": "test",
-  "ownerType": "USER",
   "domain": null,
   "dns": null,
-  "etcd": "http://10.16.42.200:4012",
+  "etcd": "http://192.168.65.64:4012",
   "logConfig": 1,
   "clusterLog": {
     "kafka": "10.16.42.221:9292,10.16.42.222:9292",

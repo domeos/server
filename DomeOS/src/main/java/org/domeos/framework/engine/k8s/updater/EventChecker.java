@@ -2,6 +2,7 @@ package org.domeos.framework.engine.k8s.updater;
 
 import org.domeos.exception.DataBaseContentException;
 import org.domeos.exception.DeploymentEventException;
+import org.domeos.exception.DeploymentTerminatedException;
 import org.domeos.framework.api.model.deployment.DeployEvent;
 import org.domeos.framework.api.model.deployment.Deployment;
 import org.domeos.framework.engine.ClusterRuntimeDriver;
@@ -60,6 +61,8 @@ public class EventChecker {
             logger.error("Check deploy event status error: " + e.getMessage());
         } catch (DataBaseContentException e) {
             logger.error("Data base content error:" + e.getMessage());
+        } catch (DeploymentTerminatedException e) {
+            logger.debug("catch event terminal error, message = " + e.getMessage());
         } catch (Exception e) {
             logger.error(e.getMessage());
         }

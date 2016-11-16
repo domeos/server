@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import org.apache.shiro.util.ThreadContext;
 import org.domeos.base.BaseTestCase;
 import org.domeos.basemodel.ResultStat;
+import org.domeos.framework.api.consolemodel.image.ImageNameDetailRequest;
+import org.domeos.framework.api.consolemodel.image.ImageTagDetailRequest;
 import org.domeos.framework.api.model.image.BaseImage;
 import org.domeos.framework.api.model.image.BuildImage;
 import org.junit.Before;
@@ -33,11 +35,23 @@ public class ImageControllerTest extends BaseTestCase {
     BuildImage buildImage;
     String buildImageStr;
 
+    ImageNameDetailRequest imageNameDetailRequest;
+    String imageNameDetailRequestStr;
+
+    ImageTagDetailRequest imageTagDetailRequest;
+    String imageTagDetailRequestStr;
+
     @Before
     public void setup() throws IOException {
 
         ThreadContext.bind(securityManager);
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        FileInputStream imageTagDetailRequestStream = new FileInputStream("./src/test/resources/image/imageTagDetailRequest.json");
+        byte[] imageTagDetailRequestBuff = new byte[imageTagDetailRequestStream.available()];
+        imageTagDetailRequestStream.read(imageTagDetailRequestBuff);
+        imageTagDetailRequest = objectMapper.readValue(imageTagDetailRequestBuff, ImageTagDetailRequest.class);
+        imageTagDetailRequestStr = new String(imageTagDetailRequestBuff);
 
         FileInputStream fileInputStream = new FileInputStream("./src/test/resources/ci/baseImage.json");
         byte[] buff = new byte[fileInputStream.available()];
@@ -50,6 +64,12 @@ public class ImageControllerTest extends BaseTestCase {
         buildImageStream.read(buildImageBuff);
         buildImage = objectMapper.readValue(buildImageBuff, BuildImage.class);
         buildImageStr = new String(buildImageBuff);
+
+        FileInputStream imageNameDetailRequestStream = new FileInputStream("./src/test/resources/image/imageNameDetailRequest.json");
+        byte[] imageNameDetailRequestBuff = new byte[imageNameDetailRequestStream.available()];
+        imageNameDetailRequestStream.read(imageNameDetailRequestBuff);
+        imageNameDetailRequest = objectMapper.readValue(imageNameDetailRequestBuff, ImageNameDetailRequest.class);
+        imageNameDetailRequestStr = new String(imageNameDetailRequestBuff);
 
         this.mockMvc = webAppContextSetup(this.wac).build();
         login("admin", "admin");
@@ -123,13 +143,13 @@ public class ImageControllerTest extends BaseTestCase {
     public void T090GetAllDockerImages() throws Exception {
         mockMvc.perform(get("/api/image/all"))
                 .andDo(print())
-                //.andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value(ResultStat.OK.responseCode))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value(ResultStat.OK.responseCode))
                 .andExpect(status().isOk());
     }
 
     @Test
     public void T100GetAllDockerImageDetail() throws Exception {
-        mockMvc.perform(get("/api/image/all/detail").param("name","domeos").param("registry", "10.11.150.76:5000"))
+        mockMvc.perform(get("/api/image/all/detail").param("name","mytest").param("registry", "http://10.11.150.76:5000"))
                 .andDo(print())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value(ResultStat.OK.responseCode))
                 .andExpect(status().isOk());
@@ -138,6 +158,22 @@ public class ImageControllerTest extends BaseTestCase {
     @Test
     public void T110GetAllExclusiveImages() throws Exception {
         mockMvc.perform(get("/api/image/exclusive/java"))
+                .andDo(print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value(ResultStat.OK.responseCode))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void T120DockerImageNameDetail() throws Exception {
+        mockMvc.perform(post("/api/image/all/detail").contentType(MediaType.APPLICATION_JSON).content(imageNameDetailRequestStr))
+                .andDo(print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value(ResultStat.OK.responseCode))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void T130GetImageTagDetail() throws Exception {
+        mockMvc.perform(post("/api/image/all/detail/tag").contentType(MediaType.APPLICATION_JSON).content(imageTagDetailRequestStr))
                 .andDo(print())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value(ResultStat.OK.responseCode))
                 .andExpect(status().isOk());

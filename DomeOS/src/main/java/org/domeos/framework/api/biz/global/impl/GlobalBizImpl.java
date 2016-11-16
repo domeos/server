@@ -5,8 +5,17 @@ import org.domeos.framework.api.biz.cluster.ClusterBiz;
 import org.domeos.framework.api.biz.global.GlobalBiz;
 import org.domeos.framework.api.mapper.global.GlobalMapper;
 import org.domeos.framework.api.model.cluster.Cluster;
-import org.domeos.framework.api.model.global.*;
+import org.domeos.framework.api.model.global.CiCluster;
+import org.domeos.framework.api.model.global.ClusterMonitor;
+import org.domeos.framework.api.model.global.GitConfig;
+import org.domeos.framework.api.model.global.GlobalInfo;
+import org.domeos.framework.api.model.global.GlobalType;
+import org.domeos.framework.api.model.global.LdapInfo;
+import org.domeos.framework.api.model.global.Registry;
+import org.domeos.framework.api.model.global.Server;
+import org.domeos.framework.api.model.global.WebSsh;
 import org.domeos.framework.api.model.image.BuildImage;
+import org.domeos.framework.api.model.token.related.RegistryTokenInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,38 +30,46 @@ public class GlobalBizImpl implements GlobalBiz {
     @Autowired
     ClusterBiz clusterBiz;
 
+    @Override
     public int addGlobalInfo(GlobalInfo globalInfo) {
         globalInfo.setCreateTime(System.currentTimeMillis());
         globalInfo.setLastUpdate(System.currentTimeMillis());
         return globalMapper.addGlobalInfo(globalInfo);
     }
 
+    @Override
     public GlobalInfo getGlobalInfoByType(GlobalType globalType) {
         return globalMapper.getGlobalInfoByType(globalType);
     }
 
+    @Override
     public GlobalInfo getGlobalInfoById(int id) {
         return globalMapper.getGlobalInfoById(id);
     }
 
+    @Override
     public int deleteGlobalInfoByType(GlobalType globalType) {
         return globalMapper.deleteGlobalInfoByType(globalType);
     }
 
+    @Override
     public int deleteGlobalInfoById(int id) {
         return globalMapper.deleteGlobalInfoById(id);
     }
 
+    @Override
     public int updateGlobalInfoById(GlobalInfo globalInfo) {
         globalInfo.setLastUpdate(System.currentTimeMillis());
         return globalMapper.updateGlobalInfoById(globalInfo);
     }
 
+    @Override
     public int updateGlobalInfoByType(GlobalInfo globalInfo) {
         globalInfo.setLastUpdate(System.currentTimeMillis());
         return globalMapper.updateGlobalInfoByType(globalInfo);
     }
 
+    @Override
     public Server getServer() {
         GlobalInfo globalInfo = globalMapper.getGlobalInfoByType(GlobalType.SERVER);
         if (globalInfo != null) {
@@ -61,6 +78,7 @@ public class GlobalBizImpl implements GlobalBiz {
         return null;
     }
 
+    @Override
     public void setServer(Server server) {
         long time = System.currentTimeMillis();
         server.setCreateTime(time);
@@ -70,6 +88,7 @@ public class GlobalBizImpl implements GlobalBiz {
         server.setId(globalServer.getId());
     }
 
+    @Override
     public void updateServer(Server server) {
         long time = System.currentTimeMillis();
         server.setLastUpdate(time);
@@ -77,10 +96,12 @@ public class GlobalBizImpl implements GlobalBiz {
         globalMapper.updateGlobalInfoById(globalInfo);
     }
 
+    @Override
     public void deleteServer() {
         globalMapper.deleteGlobalInfoByType(GlobalType.SERVER);
     }
 
+    @Override
     public Registry getPublicRegistry() {
         GlobalInfo url = globalMapper.getGlobalInfoByType(GlobalType.PUBLIC_REGISTRY_URL);
         Registry registry = null;
@@ -91,11 +112,15 @@ public class GlobalBizImpl implements GlobalBiz {
         return registry;
     }
 
+    @Override
     public Registry getRegistry() {
         GlobalInfo url = globalMapper.getGlobalInfoByType(GlobalType.REGISTRY_URL);
         GlobalInfo description = globalMapper.getGlobalInfoByType(GlobalType.REGISTRY_DESCRIPTION);
         GlobalInfo status = globalMapper.getGlobalInfoByType(GlobalType.REGISTRY_STATUS);
         GlobalInfo certification = globalMapper.getGlobalInfoByType(GlobalType.REGISTRY_CERTIFICATION);
+        GlobalInfo issuer = globalMapper.getGlobalInfoByType(GlobalType.REGISTRY_ISSUER);
+        GlobalInfo service = globalMapper.getGlobalInfoByType(GlobalType.REGISTRY_SERVICE);
+        GlobalInfo private_key = globalMapper.getGlobalInfoByType(GlobalType.REGISTRY_AUTH_PRIVATE_KEY);
 
         Registry registry = null;
         if (url != null) {
@@ -112,17 +137,26 @@ public class GlobalBizImpl implements GlobalBiz {
             if (certification != null) {
                 registry.setCertification(certification.getValue());
             }
+            if (issuer != null && service != null && private_key != null) {
+                RegistryTokenInfo tokenInfo = new RegistryTokenInfo(issuer.getValue(), service.getValue(), private_key.getValue());
+                registry.setTokenInfo(tokenInfo);
+            }
         }
         return registry;
     }
 
+    @Override
     public void deleteRegistry() {
         globalMapper.deleteGlobalInfoByType(GlobalType.REGISTRY_URL);
         globalMapper.deleteGlobalInfoByType(GlobalType.REGISTRY_DESCRIPTION);
         globalMapper.deleteGlobalInfoByType(GlobalType.REGISTRY_STATUS);
         globalMapper.deleteGlobalInfoByType(GlobalType.REGISTRY_CERTIFICATION);
+        globalMapper.deleteGlobalInfoByType(GlobalType.REGISTRY_AUTH_PRIVATE_KEY);
+        globalMapper.deleteGlobalInfoByType(GlobalType.REGISTRY_ISSUER);
+        globalMapper.deleteGlobalInfoByType(GlobalType.REGISTRY_SERVICE);
     }
 
+    @Override
     public void setRegistry(Registry registry) {
         long create = System.currentTimeMillis();
         long update = System.currentTimeMillis();
@@ -141,8 +175,18 @@ public class GlobalBizImpl implements GlobalBiz {
             GlobalInfo certification = new GlobalInfo(GlobalType.REGISTRY_CERTIFICATION, registry.getCertification(), create, update);
             globalMapper.addGlobalInfo(certification);
         }
+        if (registry.getTokenInfo() != null) {
+            RegistryTokenInfo tokenInfo = registry.getTokenInfo();
+            GlobalInfo issuer = new GlobalInfo(GlobalType.REGISTRY_ISSUER, tokenInfo.getIssuer(), create, update);
+            globalMapper.addGlobalInfo(issuer);
+            GlobalInfo service = new GlobalInfo(GlobalType.REGISTRY_SERVICE, tokenInfo.getService(), create, update);
+            globalMapper.addGlobalInfo(service);
+            GlobalInfo private_key = new GlobalInfo(GlobalType.REGISTRY_AUTH_PRIVATE_KEY, tokenInfo.getPrivate_key(), create, update);
+            globalMapper.addGlobalInfo(private_key);
+        }
     }
 
+    @Override
     public String getCertification() {
         GlobalInfo globalInfo = globalMapper.getGlobalInfoByType(GlobalType.REGISTRY_CERTIFICATION);
         if (globalInfo != null) {
@@ -151,6 +195,7 @@ public class GlobalBizImpl implements GlobalBiz {
         return null;
     }
 
+    @Override
     public WebSsh getWebSsh() {
         GlobalInfo globalInfo = globalMapper.getGlobalInfoByType(GlobalType.WEBSSH);
         if (globalInfo != null) {
@@ -159,10 +204,12 @@ public class GlobalBizImpl implements GlobalBiz {
         return null;
     }
 
+    @Override
     public void deleteWebSsh() {
         globalMapper.deleteGlobalInfoByType(GlobalType.WEBSSH);
     }
 
+    @Override
     public void setWebSsh(WebSsh webSsh) {
         long time = System.currentTimeMillis();
         GlobalInfo globalInfo = new GlobalInfo(GlobalType.WEBSSH, webSsh.getUrl(), time, time);
@@ -170,6 +217,7 @@ public class GlobalBizImpl implements GlobalBiz {
         webSsh.setId(globalInfo.getId());
     }
 
+    @Override
     public void updateWebSsh(WebSsh webSsh) {
         long time = System.currentTimeMillis();
         GlobalInfo globalInfo = new GlobalInfo(webSsh.getId(), GlobalType.WEBSSH, webSsh.getUrl(), webSsh.getCreateTime(), time);
@@ -177,6 +225,7 @@ public class GlobalBizImpl implements GlobalBiz {
         webSsh.setLastUpdate(time);
     }
 
+    @Override
     public ClusterMonitor getMonitor() {
         ClusterMonitor clusterMonitor = null;
         clusterMonitor = new ClusterMonitor();
@@ -227,6 +276,7 @@ public class GlobalBizImpl implements GlobalBiz {
         return clusterMonitor;
     }
 
+    @Override
     public void deleteMonitor() {
         globalMapper.deleteGlobalInfoByType(GlobalType.MONITOR_TRANSFER);
         globalMapper.deleteGlobalInfoByType(GlobalType.MONITOR_GRAPH);
@@ -241,6 +291,7 @@ public class GlobalBizImpl implements GlobalBiz {
         globalMapper.deleteGlobalInfoByType(GlobalType.MONITOR_API_MAIL);
     }
 
+    @Override
     public void addMonitor(ClusterMonitor clusterMonitor) {
         long time = System.currentTimeMillis();
         if (!StringUtils.isBlank(clusterMonitor.getTransfer())) {
@@ -289,6 +340,7 @@ public class GlobalBizImpl implements GlobalBiz {
         }
     }
 
+    @Override
     public void updateMonitor(ClusterMonitor clusterMonitor) {
         long time = System.currentTimeMillis();
         globalMapper.deleteGlobalInfoByType(GlobalType.MONITOR_TRANSFER);
@@ -348,6 +400,7 @@ public class GlobalBizImpl implements GlobalBiz {
         }
     }
 
+    @Override
     public GitConfig getGitConfigById(int id) {
         GlobalInfo globalInfo = globalMapper.getGlobalInfoById(id);
         if (globalInfo != null) {
@@ -356,6 +409,7 @@ public class GlobalBizImpl implements GlobalBiz {
         return null;
     }
 
+    @Override
     public LdapInfo getLdapInfo() {
         GlobalInfo ldapServer = globalMapper.getGlobalInfoByType(GlobalType.LDAP_SERVER);
         GlobalInfo ldapPrefix = globalMapper.getGlobalInfoByType(GlobalType.LDAP_PREFIX);
@@ -373,11 +427,13 @@ public class GlobalBizImpl implements GlobalBiz {
         return ldapInfo;
     }
 
+    @Override
     public void deleteLdapInfo() {
         globalMapper.deleteGlobalInfoByType(GlobalType.LDAP_SERVER);
         globalMapper.deleteGlobalInfoByType(GlobalType.LDAP_PREFIX);
     }
 
+    @Override
     public void addLdapInfo(LdapInfo ldapInfo) {
         long time = System.currentTimeMillis();
         ldapInfo.setCreateTime(time);
@@ -392,6 +448,7 @@ public class GlobalBizImpl implements GlobalBiz {
         globalMapper.addGlobalInfo(ldapPrefix);
     }
 
+    @Override
     public void updateLdapInfo(LdapInfo ldapInfo) {
         GlobalInfo ldapServer = new GlobalInfo(GlobalType.LDAP_SERVER, ldapInfo.getServer(), ldapInfo.getCreateTime(), System.currentTimeMillis());
         globalMapper.updateGlobalInfoByType(ldapServer);
@@ -402,6 +459,8 @@ public class GlobalBizImpl implements GlobalBiz {
         globalMapper.updateGlobalInfoByType(ldapPrefix);
     }
 
+
+    @Override
     public CiCluster getCiCluster() {
 //        GlobalInfo host = globalMapper.getGlobalInfoByType(GlobalType.CI_CLUSTER_HOST);
         GlobalInfo namespace = globalMapper.getGlobalInfoByType(GlobalType.CI_CLUSTER_NAMESPACE);
@@ -443,6 +502,7 @@ public class GlobalBizImpl implements GlobalBiz {
         return null;
     }
 
+    @Override
     public void setCiCluster(CiCluster ciCluster) {
         long time = System.currentTimeMillis();
 //        ciCluster.setCreateTime(time);
@@ -464,6 +524,7 @@ public class GlobalBizImpl implements GlobalBiz {
 //        globalMapper.addGlobalInfo(oauthToken);
     }
 
+    @Override
     public void deleteCiCluster() {
         globalMapper.deleteGlobalInfoByType(GlobalType.CI_CLUSTER_HOST);
         globalMapper.deleteGlobalInfoByType(GlobalType.CI_CLUSTER_NAMESPACE);
@@ -471,6 +532,7 @@ public class GlobalBizImpl implements GlobalBiz {
         globalMapper.deleteGlobalInfoByType(GlobalType.CI_CLUSTER_NAME);
     }
 
+    @Override
     public void updateCiCluster(CiCluster ciCluster) {
         long time = System.currentTimeMillis();
         GlobalInfo host = new GlobalInfo(GlobalType.CI_CLUSTER_HOST, ciCluster.getHost(), ciCluster.getCreateTime(), time);
@@ -483,6 +545,7 @@ public class GlobalBizImpl implements GlobalBiz {
         globalMapper.updateGlobalInfoByType(clusterName);
     }
 
+    @Override
     public BuildImage getBuildImage() {
         GlobalInfo globalInfo = globalMapper.getGlobalInfoByType(GlobalType.BUILD_IMAGE);
         if (globalInfo != null) {
@@ -491,10 +554,12 @@ public class GlobalBizImpl implements GlobalBiz {
         return null;
     }
 
+    @Override
     public void deleteBuildImage() {
         globalMapper.deleteGlobalInfoByType(GlobalType.BUILD_IMAGE);
     }
 
+    @Override
     public void setBuildImage(BuildImage buildImage) {
         long time = System.currentTimeMillis();
         buildImage.setCreateTime(time);
@@ -503,4 +568,5 @@ public class GlobalBizImpl implements GlobalBiz {
         globalMapper.addGlobalInfo(globalInfo);
         buildImage.setId(globalInfo.getId());
     }
+
 }

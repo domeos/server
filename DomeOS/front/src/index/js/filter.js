@@ -94,5 +94,18 @@
             }
             return newArr;
         };
-    }]);
+    }]).filter('urlProtocolFilter', function () { // 过滤url协议头
+        return function (value) {
+            if (!value) {
+                return '';
+            }
+            if(value.indexOf('http://') !== -1) {
+                return value.substring(7);
+            }else if (value.indexOf('https://') !== -1) {
+                return value.substring(8);
+            }else {
+                return '';
+            }
+        };
+    });
 })(window.domeApp);

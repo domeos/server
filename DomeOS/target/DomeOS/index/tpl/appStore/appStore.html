@@ -6,7 +6,7 @@
       <div class="app-img-on" app-img-con="app-img-con">
         <div class="cover-con">
           <p ng-bind="app.description"></p><a class="ui-btn ui-btn-white ui-btn-deploy ui-btn-sm ui-btn-link" ui-sref="createAppDeploy({'appName':app.appName})">部署</a>
-        </div><img src="{{app.appIcon}}"/>
+        </div><img ng-src="{{app.appIcon}}"/>
       </div>
     </div>
   </li>

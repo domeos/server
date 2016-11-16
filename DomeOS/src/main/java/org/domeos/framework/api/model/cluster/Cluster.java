@@ -2,7 +2,6 @@ package org.domeos.framework.api.model.cluster;
 
 import org.domeos.framework.api.consolemodel.cluster.ClusterInfo;
 import org.domeos.framework.api.model.cluster.related.ClusterLog;
-import org.domeos.framework.api.model.resource.related.ResourceOwnerType;
 import org.domeos.framework.engine.model.RowModelBase;
 import org.domeos.util.CommonUtil;
 
@@ -21,7 +20,6 @@ public class Cluster extends RowModelBase {
     private String etcd;
     private String ownerName;
     private int ownerId;
-    private ResourceOwnerType ownerType;
     private int logConfig;
     private ClusterLog clusterLog;
 
@@ -123,14 +121,6 @@ public class Cluster extends RowModelBase {
 
     public void setOwnerId(int ownerId) {
         this.ownerId = ownerId;
-    }
-
-    public ResourceOwnerType getOwnerType() {
-        return ownerType;
-    }
-
-    public void setOwnerType(ResourceOwnerType ownerType) {
-        this.ownerType = ownerType;
     }
 
     public int getLogConfig() {

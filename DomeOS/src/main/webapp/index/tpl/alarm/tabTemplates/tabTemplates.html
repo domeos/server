@@ -2,9 +2,9 @@
 <div class="mod-option">
   <div class="pull-right right-option"><span ng-cloak="ng-cloak">共{{templatesListFiltered.length}}个模板</span>
     <input class="ui-input-search ui-input-fill" type="text" placeholder="输入模板名称查询" ng-model="vmTemplate.keywords"/>
-  </div><a class="ui-btn ui-btn-md ui-btn-link ui-btn-primary btn-newtemplate" ui-sref="createAlarmTemplate">新建模板</a>
+  </div><a class="ui-btn ui-btn-lg ui-btn-link ui-btn-bright btn-newtemplate" ui-sref="createAlarmTemplate"> <span class="btn-txt">新建模板</span><i class="fa fa-plus"></i></a>
 </div>
-<div class="mod-list">
+<div class="mod-list-alarm">
   <loading ng-if="vmTemplate.isLoading"></loading>
   <table class="ui-table-dome">
     <thead>
@@ -25,7 +25,9 @@
         <td ng-bind="tpl.creatorName"></td>
         <td ng-bind="tpl.templateTypeName"></td>
         <td ng-bind="vmDome.parseDate(tpl.createTime)"></td>
-        <td ng-if="vm.permission.role&amp;&amp;vm.permission.role!='REPORTER'"><a class="icon-delete" ng-click="vmTemplate.deleteTpl(tpl.id)"></a></td>
+        <td ng-if="vm.permission.role&amp;&amp;vm.permission.role!='REPORTER'">
+          <button class="fa fa-trash-o ui-btn-none icon-trash-color" ng-click="vmTemplate.deleteTpl(tpl.id)"></button>
+        </td>
       </tr>
     </tbody>
   </table>

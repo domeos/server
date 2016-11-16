@@ -1,19 +1,21 @@
 .mod-monitor.monitor-manage
 	loading(ng-if="loadingsIns.isLoading")
-	.detail-header(ng-if="alarmPermission.name")
-		a.ui-btn.ui-btn-link.ui-btn-safe.ui-btn-lg(ui-sref="alarm.templates")
-			i.icon-alarm
-			| 报警管理
-	//- .link-alarm
-		a.ui-btn.ui-btn-link.ui-btn-safe.ui-btn-md(ui-sref="alarm.templates")
-			i.icon-alarm
-			| 报警
-	//- .monitor-top
+	//- .detail-header(ng-if="alarmPermission.name")
+
+	//- 	a.ui-btn.ui-btn-link.ui-btn-safe.ui-btn-lg(ui-sref="alarm.templates")
+	//- 		| 报警管理
+	//- 		i.icon-alarm
+
+	//- //- .link-alarm
+	//- 	a.ui-btn.ui-btn-link.ui-btn-safe.ui-btn-md(ui-sref="alarm.templates")
+	//- 		i.icon-alarm
+	//- 		| 报警
+	//- //- .monitor-top
 	.monitor-options
 		.monitor-option
 			span.option-title 集群
 			.com-select-con(select-con)
-				button.ui-btn.ui-btn-white.ui-btn-select(ng-cloak) {{clusterListIns.cluster.name||'选择集群'}}
+				button.ui-btn.ui-btn-white.ui-btn-select(sg-cloak) {{clusterListIns.cluster.name||'选择集群'}}
 					i.icon-down
 				ul.select-list
 					li.select-item(ng-repeat="cluster in clusterListIns.clusterList")
@@ -41,7 +43,7 @@
 		.monitor-line(ng-if="monitorType=='实例'")
 			span.option-title 部署
 			.com-select-con.host-label(select-con)
-				input.ui-input-search.ui-input-fill.ui-btn-select(placeholder="{{deployListIns.deploy.name?'当前选择：'+deployListIns.deploy.name:'搜索部署'}}" ng-model="keywords.deployName")
+				input.ui-input-search.ui-input-fill.ui-btn-select.input-btn-size(placeholder="{{deployListIns.deploy.name?'当前选择：'+deployListIns.deploy.name:'搜索部署'}}" ng-model="keywords.deployName")
 				//- button.ui-btn.ui-btn-white.ui-btn-select(ng-cloak)
 					span {{deployListIns.deploy.name||'选择部署'}}
 					span.tool-item-next.txt-prompt(ng-show="deployListIns.deploy.namespace") (namespace:{{deployListIns.deploy.namespace}})
@@ -71,17 +73,21 @@
 			a.ui-btn.ui-btn-link.ui-btn-safe.ui-btn-md(ui-sref="alarm.templates")
 				i.icon-alarm
 				| 报警
-	.monitor-info(ng-if="monitorType=='主机'")
-		span.selected-count 已选中{{nodeListIns.selectedCount}}个
-		a.ui-btn.ui-btn-primary.ui-btn-link.ui-btn-sm(target="_blank" ng-click="toMonitorDetail('node')") 查看监控详情
-		.pull-right
-			| 共{{nodeListIns.nodeList.length||0}}台主机
+	.monitor-info.mod-option(ng-if="monitorType=='主机'")
+
+		a.ui-btn.ui-btn-bright.ui-btn-link.ui-btn-lg(target="_blank" ng-click="toMonitorDetail('node')") 查看详情 
+		|&nbsp;
+		span.selected-count(ng-cloak) 已选中{{nodeListIns.selectedCount}}个
+
+		.pull-right.right-option
+			span(ng-cloak) 共{{nodeListIns.nodeList.length||0}}台主机
 			input.ui-input-fill.ui-input-search(placeholder="输入主机名称查询" ng-model="keywords.node" ng-change="nodeListIns.filterWithKey(keywords.node)")
-	.monitor-info(ng-if="monitorType=='实例'")
-		span.selected-count 已选中{{deployListIns.deployInstanceListIns.selectedCount}}个
-		a.ui-btn.ui-btn-primary.ui-btn-link.ui-btn-sm(target="_blank" ng-click="toMonitorDetail('pod')") 查看监控详情
-		.pull-right
-			| 共{{deployListIns.deployInstanceListIns.instanceList.length||0}}个实例
+	.monitor-info.mod-option(ng-if="monitorType=='实例'")
+		a.ui-btn.ui-btn-bright.ui-btn-link.ui-btn-lg(target="_blank" ng-click="toMonitorDetail('pod')") 查看详情
+		|&nbsp;
+		span.selected-count(ng-cloak) 已选中{{deployListIns.deployInstanceListIns.selectedCount}}个
+		.pull-right.right-option
+			span(ng-cloak) 共{{deployListIns.deployInstanceListIns.instanceList.length||0}}个实例
 			input.ui-input-fill.ui-input-search(placeholder="输入实例名称查询" ng-model="keywords.instance" ng-change="deployListIns.deployInstanceListIns.filterWithKey(keywords.instance)")
 	.mod-list
 		table.ui-table-dome(ng-if="monitorType=='主机'")
@@ -99,7 +105,7 @@
 					th.tool-enable-click(ng-click="toggleOrderBy('node','memPercentCount')" ng-class="{'active':orderBy.node=='memPercentCount'}") 内存占用
 						i.icon-order(ng-show="orderBy.node!='memPercentCount'")
 						i.icon-down(ng-show="orderBy.node=='memPercentCount'" ng-class="{'up':!orderBy.isReverse}")
-					th.tool-enable-click(ng-click="toggleOrderBy('node','diskUsedCount')" ng-class="{'active':orderBy.node=='diskUsedCount'}") 磁盘最大占用
+					th.tool-enable-click(ng-click="toggleOrderBy('node','diskUsedCount')" ng-class="{'active':orderBy.node=='diskUsedCount'}") 磁盘占用
 						i.icon-order(ng-show="orderBy.node!='diskUsedCount'")
 						i.icon-down(ng-show="orderBy.node=='diskUsedCount'" ng-class="{'up':!orderBy.isReverse}")
 					th.tool-enable-click(ng-click="toggleOrderBy('node','diskReadCount')" ng-class="{'active':orderBy.node=='diskReadCount'}") 磁盘读总量(KB/s)
@@ -210,4 +216,4 @@ script(type="text/ng-template" id="containersModal.html")
 					td(ng-bind="container.netInCount")
 					td(ng-bind="container.netOutCount")
 	.d-modal-footer
-		a.ui-btn.ui-btn-primary.ui-btn-sm.ui-btn-link.pull-right(href="" target="_blank" ng-click="toMonitorDetail()") 查看监控详情
+		a.ui-btn.ui-btn-bright.ui-btn-sm.ui-btn-link.pull-right(href="" target="_blank" ng-click="toMonitorDetail()") 查看监控详情

@@ -1,7 +1,7 @@
 package org.domeos.framework.api.service.alarm;
 
 import org.domeos.basemodel.HttpResponseTemp;
-import org.domeos.framework.api.model.alarm.TemplateInfo;
+import org.domeos.framework.api.consolemodel.alarm.TemplateInfo;
 
 /**
  * Created by baokangwang on 2016/4/13.

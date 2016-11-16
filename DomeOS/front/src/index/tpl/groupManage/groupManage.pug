@@ -1,8 +1,8 @@
 .mod-group.group-manage
 	.mod-option
 		button.ui-btn.ui-btn-lg.ui-btn-bright(ui-sref="createGroup")
-			i.icon-add-white
-			| 创建组
+			| 创建组 &nbsp;
+			i.fa.fa-plus
 		.pull-right.right-option
 			span(ng-cloak) 共{{groupListFiltered.length}}个组
 			input.ui-input-search.ui-input-fill(type="text" placeholder="输入组名称查询" ng-model="groupKey")

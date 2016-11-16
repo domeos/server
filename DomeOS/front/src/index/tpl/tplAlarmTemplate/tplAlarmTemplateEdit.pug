@@ -1,5 +1,5 @@
 ul.com-list-info.alarmtpl-info(role="form" ng-form name="alarmForm" ng-init="oldName=config.templateName;")
-	li
+	li.has-top-border
 		span.info-name 选择报警类型
 		.info-content
 			p.txt-prompt.setting-description 报警模板一经创建，无法修改报警类型。
@@ -53,7 +53,7 @@ ul.com-list-info.alarmtpl-info(role="form" ng-form name="alarmForm" ng-init="old
 	li
 		span.info-name 添加报警逻辑
 		.info-content
-			button.ui-btn.ui-btn-primary.ui-btn-sm(ng-click="alarmTemplateIns.addStrategy()") 添加
+			button.ui-btn.ui-btn-bright.ui-btn-sm(ng-click="alarmTemplateIns.addStrategy()") 添加
 			.line-single.alarm-rule(ng-repeat="strategy in config.strategyList")
 				ul
 					li.rule-cancel
@@ -126,8 +126,8 @@ ul.com-list-info.alarmtpl-info(role="form" ng-form name="alarmForm" ng-init="old
 		span.info-name 指定报警用户组
 		.info-content
 			p.txt-prompt.setting-description 可以选择您在“组管理”中所在的用户组
-			select-input.line-single.select-input-wrap(d-placeholder="搜索组" option-list="alarmTemplateIns.groupList" show-key="name")
-				| {{item.name}}
+			select-input.line-single.select-input-wrap(d-placeholder="搜索组" option-list="alarmTemplateIns.groupList" show-key="userGroupName")
+				| {{item.userGroupName}}
 	//- li
 		span.info-name 指定报警回调
 		.info-content

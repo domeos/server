@@ -84,6 +84,11 @@
         vm.stopPropagation = function (event) {
             return event.stopPropagation();
         };
+        vm.thinLeftNav = Boolean(Number(localStorage.getItem('thinLeftNav')));
+        vm.toggleThinLeftNav = function () {
+          vm.thinLeftNav = !vm.thinLeftNav;
+          localStorage.setItem('thinLeftNav', String(Number(vm.thinLeftNav)));
+        };
     }
     DomeCtr.$inject = ['$scope', '$modal', '$util', '$domeUser', '$publicApi', '$q'];
 

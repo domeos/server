@@ -284,17 +284,26 @@
                     branch: '='
                 },
                 link: function (scope, element) {
-                    $util.loadJs('/lib/js/showdown.min.js').then(function () {
+                    var showReadme = function () {
                         $domeProject.projectService.getReadMe(scope.projectid, scope.branch).then(function (res) {
                             var converter = new showdown.Converter(),
-                                html = res.data.result;
-                            if (!html) {
+                                markdown = res.data.result;
+                            if (!markdown) {
                                 element.html('该项目没有简介');
                             } else {
-                                element.html(converter.makeHtml(html));
+                                element.html(converter.makeHtml(markdown.trim())); // use trim to remove bom
                             }
                         });
-                    });
+                    };
+                    if (!window.showdown) {
+                      $util.loadJs('/lib/js/showdown.min.js').then(function () {
+                        showdown.setOption('strikethrough', 'true');
+                        showdown.setOption('tables', 'true');
+                        showdown.setOption('tasklists', 'true');
+                        showdown.setOption('simplifiedAutoLink', 'true');
+                        showReadme()
+                      });
+                    } else showReadme();
                 }
             };
         }])
@@ -321,7 +330,7 @@
                             tplArr.push('               <span class="detail-title">拉取命令</span>');
                             tplArr.push('               <span class="detail-content">');
                             // tplArr.push('                    <input class="cmd-txt ui-input-white" disabled="true" value="docker pull {#registry}/{#imageName}:{#imageTag}"/><a class="link-safe link-copy" data-text="docker pull {#registry}/{#imageName}:{#imageTag}">复制</a>');
-                            tplArr.push('                   <input class="cmd-txt ui-input-white" disabled="true" value="docker pull ' + buildInfo.imageInfo.registry + '/' + buildInfo.imageInfo.imageName + ':' + buildInfo.imageInfo.imageTag + '"/><a class="link-safe link-copy" data-text="docker pull ' + buildInfo.imageInfo.registry + '/' + buildInfo.imageInfo.imageName + ':' + buildInfo.imageInfo.imageTag + '">复制</a>');
+                            tplArr.push('                   <input id="input'+ index +'" class="cmd-txt ui-input-white" readonly="true" value="docker pull ' + buildInfo.imageInfo.registry + '/' + buildInfo.imageInfo.imageName + ':' + buildInfo.imageInfo.imageTag + '"/><a class="link-safe link-copy" id="btn'+ index +'" data-clipboard-target="#input'+ index +'" data-text="docker pull ' + buildInfo.imageInfo.registry + '/' + buildInfo.imageInfo.imageName + ':' + buildInfo.imageInfo.imageTag + '">复制</a>');
                             tplArr.push('                   <p class="cmd-prompt"> 拉取镜像前请登录：docker login domeos.io</p>');
                             tplArr.push('               </span>');
                             tplArr.push('           </li>');
@@ -353,15 +362,28 @@
                         tplArr.push('</tr>');
                         return $util.parseTpl(tplArr.join(''), scope.buildList[index]);
                     };
+                    var clipboard = null;
                     scope.showDetail = function (index) {
+                        if (clipboard != null) {
+                            clipboard.destroy();
+                        }
+                        clipboard = new Clipboard('.link-copy');
                         if (index != scope.currentIndex) {
                             element.find('.log-detail').remove();
                             element.find('tr:eq(' + index + ')').after(getLogDetailTpl(index));
-                            element.find('.link-copy').zclip({
-                                path: '/lib/media/ZeroClipboard.swf',
-                                copy: function () {
-                                    return angular.element(this).data('text');
-                                }
+                            // element.find('.link-copy').zclip({
+                            //     path: '/lib/media/ZeroClipboard.swf',
+                            //     copy: function () {
+                            //         return angular.element(this).data('text');
+                            //     }
+                            // });
+                           
+                            // clipboard.on('success', function(e) {
+                            //     alert("已复制到粘贴板:\n" + e.text);
+                            // });
+                            clipboard.on('error', function(e) {
+                                console.error('Action:', e.action);
+                                console.error('Trigger:', e.trigger);
                             });
                             $domeProject.projectService.getBuildDockerfile(scope.buildList[index].projectId, scope.buildList[index].id).then(function (res) {
                                 var dockerfile = res.data.result;
@@ -379,6 +401,7 @@
                             }
                             scope.currentIndex = -1;
                         }
+                        
                     };
                     scope.isNull = function (str) {
                         var resTxt = str;
@@ -657,5 +680,74 @@
                     };
                 }
             };
-        }]);
+        }])
+		//左侧菜单
+	.directive('leftSidebar',['$location',function() {
+	    return {
+		    templateUrl:'index/tpl/nav/sidebar.html',
+		    restrict: 'AE',
+		    //replace: true,
+		    transclude: true,
+		    scope: {
+                currentMod: '=',
+                loginUser: '='
+		    },
+		    controller:function($scope,$location,$state) {
+		      	$scope.$state = $state;
+		      	$scope.$stateUrl = '';
+		        $scope.collapseVar = 0;
+		        $scope.multiCollapseVar = 0;
+		        $scope.currentUrl = $location.url().toLowerCase();
+                //console.log($scope.currentUrl.indexOf("alarm"));
+		        if($scope.currentUrl.indexOf("project")!==-1) {
+		        	$scope.collapseVar = 1;
+                    $scope.$stateUrl = 'project';
+		        }else if($scope.currentUrl.indexOf("image")!==-1) {
+		        	$scope.collapseVar = 1;
+                    $scope.$stateUrl = 'image';
+		        }else if($scope.currentUrl.indexOf("deploy")!==-1) {
+                    $scope.collapseVar = 2;
+                    $scope.$stateUrl = 'deploy';
+                }else if($scope.currentUrl.indexOf("service")!==-1) {
+                    $scope.collapseVar = 2;
+                    $scope.$stateUrl = 'image';
+                }else if($scope.currentUrl.indexOf("cluster")!==-1) {
+                    $scope.collapseVar = 2;
+                    $scope.$stateUrl = 'cluster';
+                }else if($scope.currentUrl.indexOf("host")!==-1) {
+                    $scope.collapseVar = 2;
+                    $scope.$stateUrl = 'cluster';
+                }else if($scope.currentUrl.indexOf("appStore")!==-1) {
+                    $scope.collapseVar = 2;
+                    $scope.$stateUrl = 'appStore';
+                }else if($scope.currentUrl.indexOf("monitor")!==-1) {
+                    $scope.collapseVar = 3;
+                    $scope.$stateUrl = 'monitor';
+                }else if($scope.currentUrl.indexOf("alarm")!==-1) {
+                    $scope.collapseVar = 3;
+                    $scope.$stateUrl = 'alarm';
+                }else if($scope.currentUrl.indexOf("setting")!==-1) {
+                    $scope.collapseVar = 4;
+                    $scope.$stateUrl = 'setting';
+                }else{
+		        	$scope.collapseVar = 0;
+                    $scope.$stateUrl = '';
+		        }
+
+		        $scope.check = function(x) {
+		          if(x==$scope.collapseVar)
+		            $scope.collapseVar = 0;
+		          else
+		            $scope.collapseVar = x;
+		        };
+		        
+		        $scope.multiCheck = function(y) {
+		          if(y==$scope.multiCollapseVar)
+		            $scope.multiCollapseVar = 0;
+		          else
+		            $scope.multiCollapseVar = y;
+		        };
+		    }
+	    };
+	}]);
 })(window.domeApp);

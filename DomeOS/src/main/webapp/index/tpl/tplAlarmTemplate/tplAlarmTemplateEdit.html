@@ -1,6 +1,6 @@
 
 <ul class="com-list-info alarmtpl-info" role="form" ng-form="ng-form" name="alarmForm" ng-init="oldName=config.templateName;">
-  <li><span class="info-name">选择报警类型</span>
+  <li class="has-top-border"><span class="info-name">选择报警类型</span>
     <div class="info-content">
       <p class="txt-prompt setting-description">报警模板一经创建，无法修改报警类型。</p>
       <div class="com-select-con first-input" select-con="select-con">
@@ -47,7 +47,7 @@
   </li>
   <li><span class="info-name">添加报警逻辑</span>
     <div class="info-content">
-      <button class="ui-btn ui-btn-primary ui-btn-sm" ng-click="alarmTemplateIns.addStrategy()">添加</button>
+      <button class="ui-btn ui-btn-bright ui-btn-sm" ng-click="alarmTemplateIns.addStrategy()">添加</button>
       <div class="line-single alarm-rule" ng-repeat="strategy in config.strategyList">
         <ul>
           <li class="rule-cancel"><a class="icon-cancel" ng-click="alarmTemplateIns.deleteStrategy($index)"></a></li>
@@ -108,7 +108,7 @@
   <li><span class="info-name">指定报警用户组</span>
     <div class="info-content">
       <p class="txt-prompt setting-description">可以选择您在“组管理”中所在的用户组</p>
-      <select-input class="line-single select-input-wrap" d-placeholder="搜索组" option-list="alarmTemplateIns.groupList" show-key="name">{{item.name}}</select-input>
+      <select-input class="line-single select-input-wrap" d-placeholder="搜索组" option-list="alarmTemplateIns.groupList" show-key="userGroupName">{{item.userGroupName}}</select-input>
     </div>
   </li>
 </ul>

@@ -43,9 +43,12 @@
         .directive('isProjectExist', ['$domeProject', function ($domeProject) {
             return {
                 require: 'ngModel',
+                scope: {
+                    collection: '='
+                },
                 link: function (scope, iElm, iAttrs, controller) {
                     var projects = {};
-                    $domeProject.projectService.getData().then(function (res) {
+                    $domeProject.projectService.getProject(scope.collection).then(function (res) {
                         var data = res.data.result || [],
                             groupName = iAttrs.groupName;
                         for (var i = 0, l = data.length; i < l; i++) {
@@ -148,11 +151,14 @@
         .directive('isDeployExist', ['$domeDeploy', function ($domeDeploy) {
             return {
                 require: 'ngModel',
+                scope: {
+                    collection: "="
+                },
                 link: function (scope, iElm, iAttrs, controller) {
                     var deployList = [],
                         namespace = iAttrs.namespace,
                         clustername = iAttrs.clustername;
-                    $domeDeploy.deployService.getList().then(function (res) {
+                    $domeDeploy.deployService.getListByCollectionId(scope.collection).then(function (res) {
                         deployList = res.data.result || [];
                     });
                     scope.$watch(function () {
@@ -381,6 +387,50 @@
                             controller.$setValidity('isRequired', false);
                         }
                     }, true);
+                }
+            };
+        }])
+        .directive('isProjectCollectionExist',['$domeProjectCollection', function ($domeProjectCollection) {
+            return {
+                require: 'ngModel',
+                link: function (scope, iElm, iAttrs, controller) {
+                   var collectionMap = {};
+                    $domeProjectCollection.projectCollectionService.getProjectCollection().then(function (res) {
+                        var collectionList = res.data.result || [];
+                        for (var i = 0, l = collectionList.length; i < l; i++) {
+                            collectionMap[collectionList[i].name] = 1;
+                        }
+                    });
+                    controller.$parsers.unshift(function (viewValue) {
+                        if (collectionMap[viewValue]) {
+                            controller.$setValidity('isProjectCollectionExist', false);
+                        } else {
+                            controller.$setValidity('isProjectCollectionExist', true);
+                        }
+                        return viewValue;
+                    });
+                }
+            };
+        }])
+        .directive('isDeployCollectionExist',['$domeDeployCollection', function ($domeDeployCollection) {
+            return {
+                require: 'ngModel',
+                link: function (scope, iElm, iAttrs, controller) {
+                   var collectionMap = {};
+                    $domeDeployCollection.deployCollectionService.getDeployCollection().then(function (res) {
+                        var collectionList = res.data.result || [];
+                        for (var i = 0, l = collectionList.length; i < l; i++) {
+                            collectionMap[collectionList[i].name] = 1;
+                        }
+                    });
+                    controller.$parsers.unshift(function (viewValue) {
+                        if (collectionMap[viewValue]) {
+                            controller.$setValidity('isDeployCollectionExist', false);
+                        } else {
+                            controller.$setValidity('isDeployCollectionExist', true);
+                        }
+                        return viewValue;
+                    });
                 }
             };
         }]);

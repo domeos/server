@@ -1,36 +1,40 @@
 .mod-deploy.create-deploy-image(ng-form name="mirrorsListFrom" ng-class="{'need-valid':needValid.valid}" novalidate)
     loading(ng-if="loadingsIns.isLoading||deployIns.loadingIns.isLoading")
-    .mirror-con
-        .mirrror.com-select-con(select-con event-type="focus")
-            span.mirror-label 选择镜像
-            input.mirror-txt.search-txt.ui-btn-select(placeholder="搜索镜像" ng-model="mirKey")
-            i.icon-search
-            span.mirror-button
-                a.link-safe(ng-click="deployIns.addOtherImage()") 其他镜像
-            .select-list
-                ul
-                    li(ng-if="imageFiltered.length===0")
-                        a 无相关镜像信息
-                    li.select-item(ng-repeat="image in imageFiltered=(deployIns.imageList|filter:{'imageName':mirKey})")
-                        a(ng-click="deployIns.addImage(image)" ng-cloak)
-                            | {{image.imageName}}
-                            span.txt-prompt.pull-right(ng-bind="image.registry")
+    .mirror-info-con
+        ul.com-list-info
+            li.has-border
+                span.info-name 选择镜像 
+                    span.require-domian *
+                .info-content
+                    .line-long
+                        .com-select-con.deploy-select-image-input(select-con event-type="focus")
+                            input.ui-input-fill.search-txt.ui-btn-select(placeholder="搜索镜像" ng-model="mirKey")
+                            .select-list
+                                ul
+                                    li(ng-if="imageFiltered.length===0")
+                                        a 无相关镜像信息
+                                    li.select-item(ng-repeat="image in imageFiltered=(deployIns.imageList|filter:{'imageName':mirKey})")
+                                        a(ng-click="deployIns.addImage(image)" ng-cloak)
+                                            | {{image.imageName}}
+                                            span.txt-prompt.pull-right(ng-bind="image.registry")
+                            span.txt-wrap.txt-prompt 可添加多个镜像
     p.nomirror(ng-if="!config.containerDrafts||config.containerDrafts.length===0") 您尚未选择任何镜像。
     .containerdrafts-con
-        ul(list-scroll width-offset="150")
+        ul(list-scroll width-offset="400")
             li.nav-option(disabled="true")
                 span
                     a.icon-last.to-last
                     a.icon-next.to-next
             li(ng-repeat="image in config.containerDrafts" ng-class="{'active':currentContainerDraft.index===$index,'txt-error':needValid.valid&&mirrorsListFrom['Form'+$index].$invalid}")
-                a.link-list(ng-click="currentContainerDraft.index=$index;" ng-bind="image.image")
-                a.icon-cancel(ng-click="deleteImage($index);fresh()")
+                .container-wrap
+                    a.link-list(ng-click="currentContainerDraft.index=$index;" ng-bind="image.image")
+                    a.fa.fa-times.cancel-container(ng-click="deleteImage($index);fresh()")
     div(ng-repeat="image in config.containerDrafts" ng-init="formName='Form'+$index;imageindex=$index;" ng-show="currentContainerDraft.index===$index")
         ng-form.mirror-info-con(role="form" name="{{formName}}")
             ul.com-list-info
                 li.has-border
-                    span.info-name 镜像仓库
-                    .info-content(ng-bind="image.registry")
+                    span.info-name.info-name-content-for-label 镜像仓库
+                    .info-content.info-name-content-for-label(ng-bind="image.registry")
                 li.has-border
                     span.info-name 镜像版本
                     .info-content
@@ -43,6 +47,11 @@
                                     a(ng-click="deployIns.toggleImageTag($parent.$index,tag.tag)")
                                         span(ng-bind="tag.tag")
                                         span.txt-prompt(ng-bind="vmDome.parseDate(tag.createTime)")
+                li.has-border
+                    span.info-name 自动部署
+                    .info-content
+                        dome-toggle(ng-class="{'on':image.autoDeploy}" ng-click="image.autoDeploy=!image.autoDeploy" ng-model="image.autoDeploy")
+                        span.txt-prompt 开启后，通过项目构建产生该镜像的新版本时，会自动触发该部署升级。该功能只对运行中的部署有效。
                 li.has-border
                     span.info-name 运行过程环境变量
                     .info-content
@@ -67,22 +76,22 @@
                         span.add-env.line-long(ng-click="deployIns.addImageEnv($index)")
                             i.icon-add
                 li.has-border
-                    span.info-name.tool-align-input 容器大小
-                    .info-content
+                    span.info-name.info-name-content-for-label 容器大小
+                    .info-content.info-name-content-for-label
                         | CPU(个)
                         input.ui-input-fill.ui-input-sm(ng-model="image.cpu" name="cpu" ng-pattern="/^(\\d*\\.)?\\d+$/" required)
                         | 内存(MB)
                         input.ui-input-fill.ui-input-sm(ng-model="image.mem" name="mem" ng-pattern="/^(\\d*\\.)?\\d+$/" required)
                         span.tool-inline-error(ng-if="(needValid.valid||mirrorsListFrom[formName].cpu.$dirty)&&mirrorsListFrom[formName].cpu.$invalid||(needValid.valid||mirrorsListFrom[formName].mem.$dirty)&&mirrorsListFrom[formName].mem.$invalid") 请填写数字
-                li
-                    span.info-name.tool-align-input 镜像拉取策略
-                    .info-content
+                li.has-border
+                    span.info-name.info-name-content-for-label 镜像拉取策略
+                    .info-content.info-name-content-for-label
                         dome-radio.com-check-con(d-id="{{'pullPolicyAlways_'+formName}}" d-value="'Always'" d-name="pullPolicyType{{formName}}" d-label="Always" d-model="image.imagePullPolicy")
                         dome-radio.com-check-con(d-id="{{'pullPolicyNever_'+formName}}" d-value="'Never'" d-name="pullPolicyType{{formName}}" d-label="Never" d-model="image.imagePullPolicy")
                         dome-radio.com-check-con(d-id="{{'pullPolicyIfNotPresent_'+formName}}" d-value="'IfNotPresent'" d-name="pullPolicyType{{formName}}" d-label="If Not Present" d-model="image.imagePullPolicy")
-                li
+                li.has-border
                     span.info-name.tool-align-input 健康检查
-                    .info-content
+                    .info-content.info-content-lg-height
                         dome-radio.com-check-con(d-id="{{'checkNONE_'+formName}}" d-value="'NONE'" d-name="healthCheckerType{{formName}}" d-label="None" d-model="image.healthChecker.type")
                         dome-radio.com-check-con(d-id="{{'checkTCP_'+formName}}" d-value="'TCP'" d-name="healthCheckerType{{formName}}" d-disabled="{{config.networkMode=='HOST'}}" d-label="TCP检查" d-model="image.healthChecker.type")
                         dome-radio.com-check-con(d-id="{{'checkHTTP_'+formName}}" d-value="'HTTP'" d-name="healthCheckerType{{formName}}" d-disabled="{{config.networkMode=='HOST'}}" d-label="HTTP检查" d-model="image.healthChecker.type")
@@ -106,11 +115,11 @@
                         .line-long(ng-if="image.healthChecker.type=='HTTP'")
                             span.child-name 允许返回值
                             span.child-txt  200-400(不包含400)
-                li.has-border
-                   span.info-name 日志
+                li
+                   span.info-name.info-name-lg 日志
                    .info-content
                        p.txt-prompt.no-log(ng-if="deployIns.logConfig===0") 所选集群没有开启日志自动收集。不能进行日志相关配置。
-                       button.ui-btn.ui-btn-sm.ui-btn-active.add-log(ng-click="deployIns.addLogDraft(image)" ng-if="deployIns.logConfig") 添加
+                       
                        div.log-item(ng-form ng-repeat="log in image.logItemDrafts" name="childForm" ng-if="deployIns.logConfig")
                            a.icon-cancel.cancel-log(ng-click="deployIns.deleteLogDraft(image, log)")
                            input.ui-input-fill.element-full(placeholder="请输入日志路径，不能放在根目录下" ng-pattern="/^\/.*[^\/]$/" ng-model="log.logPath" name="logPath" is-required param1="{{log.autoCollect&&log.logTopic}}" param2="{{log.autoCollect&&log.processCmd}}" param3="{{log.autoDelete&&log.logExpired}}")
@@ -135,6 +144,7 @@
                                input.ui-input-fill(placeholder="过期则自动删除" name="logExpired" ng-model="log.logExpired" required ng-pattern="/^[1-9]\\d*$/" )
                                span.unit 小时
                            .txt-error.log-error(ng-if="(needValid||deployForm.logExpired.$dirty)&&deployForm.logExpired.$invalid") 请输入大于0的整数
+                       button.ui-btn.ui-btn-sm.ui-btn-active.add-log(ng-click="deployIns.addLogDraft(image)" ng-if="deployIns.logConfig") 添加
     .com-bottom-option.text-center
         span.com-bottom-option-con
             button.ui-btn.ui-btn-md.ui-btn-bright(ng-disabled="loadingsIns.isLoading||deployIns.loadingIns.isLoading" ng-click="toLastStep()") 上一步

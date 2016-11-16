@@ -103,9 +103,12 @@
             userModifyPw: userInfo => $http.post('/api/user/changePassword', angular.toJson(userInfo)),
             deleteUser: userId => $http.delete(`/api/user/delete/${userId}`),
             createUser: userInfo => $http.post('/api/user/create', angular.toJson(userInfo)),
+            //获取登录用户对应资源的角色
+            getResourceUserRole: (resourceType, id) => $http.get(`/api/user/resource/${resourceType}/${id}`),
             // 获取单个资源用户信息
             getSigResourceUser: (resourceType, id) => $http.get(`/api/resource/${resourceType}/${id}`),
-            // 获取某类资源用户信息
+            getResourceList: (resourceType) => $http.get(`/api/collections/${resourceType}`),
+            // 获取某类资源用户信息 has deleted 2016-10-27
             getResourceUser: resourceType => $http.get(`/api/resource/${resourceType}/useronly`),
             modifyResourceUser: resourceInfo => $http.put('/api/resource', angular.toJson(resourceInfo)),
             deleteResourceUser: (resourceType, resourceId, ownerType, ownerId) => $http.delete(`/api/resource/${resourceType}/${resourceId}/${ownerType}/${ownerId}`),
@@ -119,8 +122,23 @@
             modifyGroupUsers: (groupId, users) => $http.post(`/api/group_members/${groupId}`, angular.toJson(users)),
             deleteGroupUser: (groupId, userId) => $http.delete(`/api/group_members/${groupId}/${userId}`),
             getGroupUser: groupId => $http.get(`/api/group_members/${groupId}`),
-            logout: () => $http.get('/api/user/logout')
+            logout: () => $http.get('/api/user/logout'),
+
+            //collection 用户行为
+             
+            deleteCollectionUser: (collectionId, userId, resourceType) => $http.delete(`/api/collection_members/${collectionId}/${userId}/${ resourceType}`),
+            
+            modifyUserRole: collectionMember => $http.post('/api/collection_members/single',angular.toJson(collectionMember)),
+            addCollectionUsers: collectionData => $http.post('/api/collection_members/multiple', angular.toJson(collectionData)),
+            addOneCollectionUser: (collectionData) => $http.post('/api/collection_members/single', angular.toJson(collectionData)),
+            getCollectionUser: (collectionId,resourceType) => $http.get(`/api/collection_members/${collectionId}/${resourceType}`),
+            //用于项目创建成员添加初始化和项目成员标签页的成员添加
+            createCollectionUser: collectionData => $http.post('/api/collection_members/multiple',angular.toJson(collectionData)),
+            //获取项目组或者部署组的用户信息
+            //getCollectionSpaceUser: (resourceType) => $http.get(`/api/collectionspace/list/${resourceType}`)
+            getCollectionList: collectionList => $http.post(`/api/collections/${resourceType}`)
         };
+
         const getLoginUser = () => {
             let deferred = $q.defer();
             if (loginUser.id) {
@@ -185,6 +203,24 @@
                         defered.reject();
                         $domePublic.openWarning('修改失败！');
                     });
+                } else if (this.resourceInfo.resourceType == 'PROJECT_COLLECTION' || this.resourceInfo.resourceType == 'DEPLOY_COLLECTION' || this.resourceInfo.resourceType == 'CLUSTER') {
+                	data = {
+                		collectionId: parseInt(this.resourceInfo.resourceId),
+                		userId: user.userId,
+                		role: user.newRole,
+                		resourceType: this.resourceInfo.resourceType
+                		//userName: user.username
+                	};
+                	userService.modifyUserRole(data).then(() => {
+                		user.isDirty = false;
+                		user.role = user.newRole;
+                        defered.resolve();                        
+
+                	},()=>{
+                		defered.reject();
+                        $domePublic.openWarning('修改失败！');
+
+                	});
                 } else {
                     data = {
                         resourceId: this.resourceInfo.resourceId,
@@ -208,7 +244,6 @@
             }
             deleteUser(user, isSelf) {
                 let defered = $q.defer();
-
                 const spliceUser = () => {
                     for (let i = 0; i < this.resourceInfo.userInfos.length; i++) {
                         if (this.resourceInfo.userInfos[i].userId === user.userId) {
@@ -228,6 +263,24 @@
                             msg: 'Message:' + res.data.resultMsg
                         });
                     });
+                } else if(this.resourceInfo.resourceType == 'PROJECT_COLLECTION' || this.resourceInfo.resourceType == 'DEPLOY_COLLECTION' || this.resourceInfo.resourceType == 'CLUSTER') {
+					let defered = $q.defer();
+					let promptTxt = '确定要删除吗？';
+					$domePublic.openDelete(promptTxt).then(() => {
+						userService.deleteCollectionUser(this.resourceInfo.resourceId, user.userId, this.resourceInfo.resourceType).then(() => {
+								spliceUser();
+								defered.resolve();
+							}, (res) => {
+								defered.reject();
+								$domePublic.openWarning({
+									title:'删除失败!',
+									msg: 'Message:' + res.data.resultMsg
+								});
+						}, () => {
+							defered.reject();
+						});
+					});
+					return defered.promise;
                 } else {
                     let promptTxt;
                     if (isSelf && this.resourceInfo.resourceType == 'alarm') {

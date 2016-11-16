@@ -1,7 +1,7 @@
 package org.domeos.framework.api.biz.base.impl;
 
 import org.domeos.framework.api.biz.base.BaseBiz;
-import org.domeos.framework.api.model.resource.Resource;
+import org.domeos.framework.api.model.collection.CollectionResourceMap;
 import org.domeos.framework.engine.exception.DaoConvertingException;
 import org.domeos.framework.engine.exception.DaoException;
 import org.domeos.framework.engine.mapper.RowMapper;
@@ -24,7 +24,7 @@ public class BaseBizImpl implements BaseBiz {
     RowMapper mapper;
 
     public <T extends RowModelBase> T checkResult(RowMapperDao dao, Class<T> clazz) {
-        if (dao == null ) {
+        if (dao == null) {
             return null;
         }
         if (dao.isRemoved()) {
@@ -33,7 +33,7 @@ public class BaseBizImpl implements BaseBiz {
         T result = dao.toModel(clazz);
         if (result.getId() <= 0) {
             throw new DaoConvertingException("Get MySQL Data failed! id=" + result.getId()
-                + ", getContent=" + dao);
+                    + ", getContent=" + dao);
         }
         return result;
     }
@@ -43,7 +43,7 @@ public class BaseBizImpl implements BaseBiz {
         RowMapperDao dao = null;
         try {
             dao = mapper.getById(tableName, id);
-            if (dao == null ) {
+            if (dao == null) {
                 return null;
             }
             if (dao.isRemoved()) {
@@ -52,13 +52,13 @@ public class BaseBizImpl implements BaseBiz {
             T result = dao.toModel(clazz);
             if (result.getId() <= 0) {
                 throw new DaoConvertingException("Get MySQL Data failed! tableName=" + tableName
-                    + ", getContent=" + dao);
+                        + ", getContent=" + dao);
             }
 
             return result;
         } catch (Exception e) {
             throw new DaoConvertingException("Get MySQL Data failed! tableName=" + tableName
-                + ", getContent=" + dao, e);
+                    + ", getContent=" + dao, e);
         }
 
     }
@@ -69,7 +69,7 @@ public class BaseBizImpl implements BaseBiz {
         RowMapperDao dao = null;
         try {
             dao = mapper.getByName(tableName, name);
-            if (dao == null ) {
+            if (dao == null) {
                 return null;
             }
             if (dao.isRemoved()) {
@@ -78,12 +78,12 @@ public class BaseBizImpl implements BaseBiz {
             T result = dao.toModel(clazz);
             if (result.getId() <= 0) {
                 throw new DaoConvertingException("Get MySQL Data failed! tableName=" + tableName
-                    + ", getContent=" + dao);
+                        + ", getContent=" + dao);
             }
             return result;
         } catch (Exception e) {
             throw new DaoConvertingException("Get MySQL Data failed! tableName=" + tableName
-                + ", getContent=" + dao, e);
+                    + ", getContent=" + dao, e);
         }
 
     }
@@ -93,11 +93,11 @@ public class BaseBizImpl implements BaseBiz {
         try {
             List<RowMapperDao> list = mapper.getList(tableName);
             List<T> result = new ArrayList<>();
-            for (RowMapperDao dao: list) {
+            for (RowMapperDao dao : list) {
                 result.add(dao.toModel(clazz));
             }
             return result;
-        }catch (Exception e) {
+        } catch (Exception e) {
             throw new DaoConvertingException("Get MySQL Data failed! tableName=" + tableName, e);
         }
     }
@@ -107,26 +107,26 @@ public class BaseBizImpl implements BaseBiz {
         try {
             List<RowMapperDao> list = mapper.getListByName(tableName, name);
             List<T> result = new ArrayList<>();
-            for (RowMapperDao dao: list) {
+            for (RowMapperDao dao : list) {
                 result.add(dao.toModel(clazz));
             }
             return result;
-        }catch (Exception e) {
-            throw new DaoConvertingException("Get MySQL Data failed! tableName=" + tableName + ", name=" + name, e );
+        } catch (Exception e) {
+            throw new DaoConvertingException("Get MySQL Data failed! tableName=" + tableName + ", name=" + name, e);
         }
     }
 
     @Override
-    public <T extends RowModelBase> List<T> getListByReousrce(String tableName, List<Resource> resourceList, Class<T> clazz) {
+    public <T extends RowModelBase> List<T> getListByIdList(String tableName, List<Integer> idList, Class<T> clazz) {
         try {
-            if (resourceList == null || resourceList.size() == 0) {
+            if (idList == null || idList.size() == 0) {
                 return new ArrayList<>();
             }
             StringBuilder builder = new StringBuilder();
             builder.append(" ( ");
-            for (int i = 0; i < resourceList.size(); i++) {
-                builder.append(resourceList.get(i).getResourceId());
-                if (i != resourceList.size() - 1) {
+            for (int i = 0; i < idList.size(); i++) {
+                builder.append(idList.get(i));
+                if (i != idList.size() - 1) {
                     builder.append(" , ");
                 }
             }
@@ -139,7 +139,7 @@ public class BaseBizImpl implements BaseBiz {
             return result;
         }catch (Exception e) {
             throw new DaoConvertingException("Get MySQL Data failed! tableName=" + tableName
-                + ", resourceList=" + resourceList, e );
+                    + ", resourceList=" + idList, e );
         }
     }
 
@@ -148,12 +148,39 @@ public class BaseBizImpl implements BaseBiz {
         try {
             List<RowMapperDao> list = mapper.getList(tableName);
             List<T> result = new ArrayList<>();
-            for (RowMapperDao dao: list) {
+            for (RowMapperDao dao : list) {
                 result.add(dao.toModel(clazz));
             }
             return result;
-        }catch (Exception e) {
+        } catch (Exception e) {
             throw new DaoConvertingException("Get MySQL Data failed! tableName=" + tableName, e);
+        }
+    }
+
+    @Override
+    public <T extends RowModelBase> List<T> getListByCollections(String tableName, List<CollectionResourceMap> resourceMaps, Class<T> clazz) {
+        try {
+            if (resourceMaps == null || resourceMaps.size() == 0) {
+                return new ArrayList<>();
+            }
+            StringBuilder builder = new StringBuilder();
+            builder.append(" ( ");
+            for (int i = 0; i < resourceMaps.size(); i++) {
+                builder.append(resourceMaps.get(i).getResourceId());
+                if (i != resourceMaps.size() - 1) {
+                    builder.append(" , ");
+                }
+            }
+            builder.append(") ");
+            List<RowMapperDao> list = mapper.getByIdList(tableName, builder.toString());
+            List<T> result = new ArrayList<>();
+            for (RowMapperDao dao : list) {
+                result.add(dao.toModel(clazz));
+            }
+            return result;
+        } catch (Exception e) {
+            throw new DaoConvertingException("Get MySQL Data failed! tableName=" + tableName
+                    + ", collection resource map = " + resourceMaps, e);
         }
     }
 
@@ -173,7 +200,7 @@ public class BaseBizImpl implements BaseBiz {
     }
 
     @Override
-    public void insertRow(String tableName, RowModelBase rowModelBase) throws DaoException{
+    public void insertRow(String tableName, RowModelBase rowModelBase) throws DaoException {
         if (rowModelBase.getCreateTime() == 0) {
             rowModelBase.setCreateTime(System.currentTimeMillis());
         }

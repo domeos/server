@@ -1,5 +1,8 @@
 package org.domeos.framework.api.service.alarm.impl;
 
+import org.domeos.framework.api.biz.collection.CollectionBiz;
+import org.domeos.framework.api.model.collection.CollectionAuthorityMap;
+import org.domeos.framework.api.model.collection.related.ResourceType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.domeos.basemodel.HttpResponseTemp;
@@ -8,7 +11,6 @@ import org.domeos.framework.api.biz.auth.AuthBiz;
 import org.domeos.framework.api.controller.exception.ApiException;
 import org.domeos.framework.api.model.alarm.AlarmGroupMember;
 import org.domeos.framework.api.model.auth.User;
-import org.domeos.framework.api.model.auth.UserGroupMap;
 import org.domeos.framework.api.model.operation.OperationType;
 import org.domeos.framework.api.service.alarm.AlarmGroupService;
 import org.domeos.framework.engine.AuthUtil;
@@ -31,18 +33,22 @@ public class AlarmGroupServiceImpl implements AlarmGroupService {
     @Autowired
     AuthBiz authBiz;
 
+    @Autowired
+    CollectionBiz collectionBiz;
+
     @Override
     public HttpResponseTemp<?> listAlarmGroupMembers() {
 
-        AuthUtil.groupVerify(CurrentThreadInfo.getUserId(), GlobalConstant.alarmGroupId, OperationType.GET, 0);
+        AuthUtil.collectionVerify(CurrentThreadInfo.getUserId(), GlobalConstant.alarmGroupId, ResourceType.ALARM, OperationType.GET, 0);
 
-        List<UserGroupMap> userGroups = authBiz.getAllUsersInGroup(GlobalConstant.alarmGroupId);
+        List<CollectionAuthorityMap> authorityMaps = collectionBiz.getAuthoritiesByCollectionIdAndResourceType(GlobalConstant.alarmGroupId,
+                ResourceType.ALARM);
         List<AlarmGroupMember> alarmGroupMembers = new ArrayList<>();
-        if (userGroups != null) {
-            for (UserGroupMap userGroup : userGroups) {
+        if (authorityMaps != null) {
+            for (CollectionAuthorityMap authorityMap : authorityMaps) {
                 AlarmGroupMember alarmGroupMember = new AlarmGroupMember();
-                alarmGroupMember.setUserId(userGroup.getUserId());
-                alarmGroupMember.setRole(userGroup.getRole());
+                alarmGroupMember.setUserId(authorityMap.getUserId());
+                alarmGroupMember.setRole(authorityMap.getRole());
                 User user = authBiz.getUserById(alarmGroupMember.getUserId());
                 alarmGroupMember.setUsername(user.getUsername());
                 alarmGroupMembers.add(alarmGroupMember);
@@ -59,19 +65,20 @@ public class AlarmGroupServiceImpl implements AlarmGroupService {
             throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "alarm group member is null");
         }
 
-        AuthUtil.groupVerify(CurrentThreadInfo.getUserId(), GlobalConstant.alarmGroupId, OperationType.MODIFYGROUPMEMBER, 0);
+        AuthUtil.collectionVerify(CurrentThreadInfo.getUserId(), GlobalConstant.alarmGroupId, ResourceType.ALARM, OperationType.MODIFYGROUPMEMBER, 0);
 
         for (AlarmGroupMember alarmGroupMember : alarmGroupMembers) {
-            UserGroupMap userGroup = new UserGroupMap();
-            userGroup.setGroupId(GlobalConstant.alarmGroupId);
-            userGroup.setUserId(alarmGroupMember.getUserId());
-            userGroup.setRole(alarmGroupMember.getRole());
-            userGroup.setUpdateTime(System.currentTimeMillis());
-            int exist = authBiz.userExistInGroup(userGroup);
+            CollectionAuthorityMap collectionAuthorityMap = new CollectionAuthorityMap();
+            collectionAuthorityMap.setCollectionId(GlobalConstant.alarmGroupId);
+            collectionAuthorityMap.setUserId(alarmGroupMember.getUserId());
+            collectionAuthorityMap.setRole(alarmGroupMember.getRole());
+            collectionAuthorityMap.setResourceType(ResourceType.ALARM);
+            collectionAuthorityMap.setUpdateTime(System.currentTimeMillis());
+            int exist = collectionBiz.userExistInCollection(collectionAuthorityMap);
             if (exist != 0) {
-                authBiz.modifyUserGroup(userGroup);
+                collectionBiz.modifyCollectionAuthorityMap(collectionAuthorityMap);
             } else {
-                authBiz.addUserGroup(userGroup);
+                collectionBiz.addAuthority(collectionAuthorityMap);
             }
         }
 
@@ -81,12 +88,13 @@ public class AlarmGroupServiceImpl implements AlarmGroupService {
     @Override
     public HttpResponseTemp<?> deleteAlarmGroupMember(int userId) {
 
-        AuthUtil.groupVerify(CurrentThreadInfo.getUserId(), GlobalConstant.alarmGroupId, OperationType.DELETE, userId);
+        AuthUtil.collectionVerify(CurrentThreadInfo.getUserId(), GlobalConstant.alarmGroupId, ResourceType.ALARM, OperationType.DELETE, userId);
 
-        UserGroupMap userGroup = new UserGroupMap();
-        userGroup.setUserId(userId);
-        userGroup.setGroupId(GlobalConstant.alarmGroupId);
-        authBiz.deleteUserGroup(userGroup);
+        CollectionAuthorityMap authorityMap = new CollectionAuthorityMap();
+        authorityMap.setUserId(userId);
+        authorityMap.setCollectionId(GlobalConstant.alarmGroupId);
+        authorityMap.setResourceType(ResourceType.ALARM);
+        collectionBiz.deleteAuthorityMap(authorityMap);
 
         return ResultStat.OK.wrap(null);
     }

@@ -1,13 +1,12 @@
 package org.domeos.framework.api.controller.deployment;
 
 import org.apache.shiro.util.ThreadContext;
+import org.domeos.framework.api.model.deployment.DeployCollection;
 import org.domeos.framework.api.model.deployment.related.LoadBalanceDraft;
 import org.domeos.base.BaseTestCase;
 import org.domeos.basemodel.ResultStat;
-import org.domeos.framework.api.consolemodel.CreatorDraft;
 import org.domeos.framework.api.consolemodel.deployment.*;
 import org.domeos.framework.api.model.deployment.related.*;
-import org.domeos.framework.api.model.resource.related.ResourceOwnerType;
 import org.domeos.framework.api.service.deployment.impl.InstanceServiceImpl;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
@@ -41,9 +40,34 @@ public class DeploymentControllerTest extends BaseTestCase {
         login("admin", "admin");
     }
 
+    @Test
+    public void T0010CreateDeployCollection() throws Exception {
+        FileInputStream deploymentDraftInputStream = new FileInputStream("./src/test/resources/deploy/deploycollection.json");
+        byte[] deploymentDraftBuff = new byte[deploymentDraftInputStream.available()];
+        deploymentDraftInputStream.read(deploymentDraftBuff);
+        String deploymentDraftStr = new String(deploymentDraftBuff);
+        logger.info("----deploy-collection----" + deploymentDraftStr);
+        mockMvc.perform(post("/api/deploycollection").contentType(MediaType.APPLICATION_JSON).content(deploymentDraftStr))
+                .andDo(print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value(ResultStat.OK.responseCode))
+                .andExpect(status().isOk());
+    }
 
     @Test
-    public void T001CreateDeployment() throws Exception {
+    public void T020ModifyDeployCollection() throws Exception {
+        DeployCollectionDraft deployCollectionDraft = new DeployCollectionDraft();
+        deployCollectionDraft.setCreatorId(1);
+        deployCollectionDraft.setName("collection-test-2");
+        deployCollectionDraft.setId(1);
+        String deployCollectionDraftStr = objectMapper.writeValueAsString(deployCollectionDraft);
+        mockMvc.perform(put("/api/deploycollection/{deployCollectionId}", 1).contentType(MediaType.APPLICATION_JSON).content(deployCollectionDraftStr))
+                .andDo(print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value(ResultStat.OK.responseCode))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void T0030CreateDeployment() throws Exception {
         FileInputStream deploymentDraftInputStream = new FileInputStream("./src/test/resources/deployment/deploymentDraft1.json");
         byte[] deploymentDraftBuff = new byte[deploymentDraftInputStream.available()];
         deploymentDraftInputStream.read(deploymentDraftBuff);
@@ -57,7 +81,7 @@ public class DeploymentControllerTest extends BaseTestCase {
 
 
     @Test
-    public void T002CreateDeployment() throws Exception {
+    public void T031CreateDeployment() throws Exception {
         FileInputStream deploymentDraftInputStream = new FileInputStream("./src/test/resources/deployment/deploymentDraft2.json");
         byte[] deploymentDraftBuff = new byte[deploymentDraftInputStream.available()];
         deploymentDraftInputStream.read(deploymentDraftBuff);
@@ -71,7 +95,7 @@ public class DeploymentControllerTest extends BaseTestCase {
 
 
     @Test
-    public void T003CreateDeployment() throws Exception {
+    public void T032CreateDeployment() throws Exception {
         FileInputStream deploymentDraftInputStream = new FileInputStream("./src/test/resources/deployment/deploymentDraft3.json");
         byte[] deploymentDraftBuff = new byte[deploymentDraftInputStream.available()];
         deploymentDraftInputStream.read(deploymentDraftBuff);
@@ -85,16 +109,16 @@ public class DeploymentControllerTest extends BaseTestCase {
 
 
     @Test
-    public void T010GetDeployment() throws Exception {
-        FileInputStream deploymentDraftInputStream = new FileInputStream("./src/test/resources/deployment/deploymentDraft3.json");
-        byte[] deploymentDraftBuff = new byte[deploymentDraftInputStream.available()];
-        deploymentDraftInputStream.read(deploymentDraftBuff);
-        String deploymentDraftStr = new String(deploymentDraftBuff);
-        logger.info("----deploymentDraftStr----" + deploymentDraftStr);
-        mockMvc.perform(post("/api/deploy/create").contentType(MediaType.APPLICATION_JSON).content(deploymentDraftStr))
-                .andDo(print())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value(ResultStat.OK.responseCode))
-                .andExpect(status().isOk());
+    public void T040GetDeployment() throws Exception {
+//        FileInputStream deploymentDraftInputStream = new FileInputStream("./src/test/resources/deployment/deploymentDraft3.json");
+//        byte[] deploymentDraftBuff = new byte[deploymentDraftInputStream.available()];
+//        deploymentDraftInputStream.read(deploymentDraftBuff);
+//        String deploymentDraftStr = new String(deploymentDraftBuff);
+//        logger.info("----deploymentDraftStr----" + deploymentDraftStr);
+//        mockMvc.perform(post("/api/deploy/create").contentType(MediaType.APPLICATION_JSON).content(deploymentDraftStr))
+//                .andDo(print())
+//                .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value(ResultStat.OK.responseCode))
+//                .andExpect(status().isOk());
         mockMvc.perform(get("/api/deploy/id/{deployId}", 1))
                 .andDo(print())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value(ResultStat.OK.responseCode))
@@ -103,17 +127,25 @@ public class DeploymentControllerTest extends BaseTestCase {
 
 
     @Test
-    public void T020ListDeployment() throws Exception {
-        FileInputStream deploymentDraftInputStream = new FileInputStream("./src/test/resources/deployment/deploymentDraft3.json");
-        byte[] deploymentDraftBuff = new byte[deploymentDraftInputStream.available()];
-        deploymentDraftInputStream.read(deploymentDraftBuff);
-        String deploymentDraftStr = new String(deploymentDraftBuff);
-        logger.info("----deploymentDraftStr----" + deploymentDraftStr);
-        mockMvc.perform(post("/api/deploy/create").contentType(MediaType.APPLICATION_JSON).content(deploymentDraftStr))
+    public void T050ListDeployment() throws Exception {
+//        FileInputStream deploymentDraftInputStream = new FileInputStream("./src/test/resources/deployment/deploymentDraft3.json");
+//        byte[] deploymentDraftBuff = new byte[deploymentDraftInputStream.available()];
+//        deploymentDraftInputStream.read(deploymentDraftBuff);
+//        String deploymentDraftStr = new String(deploymentDraftBuff);
+//        logger.info("----deploymentDraftStr----" + deploymentDraftStr);
+//        mockMvc.perform(post("/api/deploy/create").contentType(MediaType.APPLICATION_JSON).content(deploymentDraftStr))
+//                .andDo(print())
+//                .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value(ResultStat.OK.responseCode))
+//                .andExpect(status().isOk());
+        mockMvc.perform(get("/api/deploy/list"))
                 .andDo(print())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value(ResultStat.OK.responseCode))
                 .andExpect(status().isOk());
-        mockMvc.perform(get("/api/deploy/list"))
+    }
+
+    @Test
+    public void T060ListDeployment() throws Exception {
+        mockMvc.perform(get("/api/deploy/list/{collectionId}", 1))
                 .andDo(print())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value(ResultStat.OK.responseCode))
                 .andExpect(status().isOk());
@@ -121,16 +153,16 @@ public class DeploymentControllerTest extends BaseTestCase {
 
 
     @Test
-    public void T030ModifyDeployment() throws Exception {
-        FileInputStream deploymentDraftInputStream = new FileInputStream("./src/test/resources/deployment/deploymentDraft3.json");
-        byte[] deploymentDraftBuff = new byte[deploymentDraftInputStream.available()];
-        deploymentDraftInputStream.read(deploymentDraftBuff);
-        String deploymentDraftStr = new String(deploymentDraftBuff);
-        logger.info("----deploymentDraftStr----" + deploymentDraftStr);
-        mockMvc.perform(post("/api/deploy/create").contentType(MediaType.APPLICATION_JSON).content(deploymentDraftStr))
-                .andDo(print())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value(ResultStat.OK.responseCode))
-                .andExpect(status().isOk());
+    public void T070ModifyDeployment() throws Exception {
+//        FileInputStream deploymentDraftInputStream = new FileInputStream("./src/test/resources/deployment/deploymentDraft3.json");
+//        byte[] deploymentDraftBuff = new byte[deploymentDraftInputStream.available()];
+//        deploymentDraftInputStream.read(deploymentDraftBuff);
+//        String deploymentDraftStr = new String(deploymentDraftBuff);
+//        logger.info("----deploymentDraftStr----" + deploymentDraftStr);
+//        mockMvc.perform(post("/api/deploy/create").contentType(MediaType.APPLICATION_JSON).content(deploymentDraftStr))
+//                .andDo(print())
+//                .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value(ResultStat.OK.responseCode))
+//                .andExpect(status().isOk());
         mockMvc.perform(get("/api/deploy/id/{deployId}", 1))
                 .andDo(print())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value(ResultStat.OK.responseCode))
@@ -232,10 +264,7 @@ public class DeploymentControllerTest extends BaseTestCase {
         healthCheckerDraft.setPort(8080);
         deploymentDraft.setHealthCheckerDraft(healthCheckerDraft);
 
-        CreatorDraft creatorDraft = new CreatorDraft();
-        creatorDraft.setCreatorId(1);
-        creatorDraft.setCreatorType(ResourceOwnerType.USER);
-        deploymentDraft.setCreator(creatorDraft);
+        deploymentDraft.setCreatorId(1);
 
         List<ContainerDraft> deployContainerDrafts = new ArrayList<>();
         ContainerDraft deployContainerDraft = new ContainerDraft();
@@ -275,7 +304,7 @@ public class DeploymentControllerTest extends BaseTestCase {
 
 
     @Test
-    public void T040RemoveDeployment() throws Exception {
+    public void T080RemoveDeployment() throws Exception {
         FileInputStream deploymentDraftInputStream = new FileInputStream("./src/test/resources/deployment/deploymentDraft3.json");
         byte[] deploymentDraftBuff = new byte[deploymentDraftInputStream.available()];
         deploymentDraftInputStream.read(deploymentDraftBuff);
@@ -301,7 +330,7 @@ public class DeploymentControllerTest extends BaseTestCase {
 
 
     @Test
-    public void T050StartDeployment() throws Exception {
+    public void T090StartDeployment() throws Exception {
         FileInputStream deploymentDraftInputStream = new FileInputStream("./src/test/resources/deployment/deploymentDraft3.json");
         byte[] deploymentDraftBuff = new byte[deploymentDraftInputStream.available()];
         deploymentDraftInputStream.read(deploymentDraftBuff);
@@ -319,7 +348,7 @@ public class DeploymentControllerTest extends BaseTestCase {
 
 
     @Test
-    public void T060StopDeployment() throws Exception {
+    public void T100StopDeployment() throws Exception {
         FileInputStream deploymentDraftInputStream = new FileInputStream("./src/test/resources/deployment/deploymentDraft3.json");
         byte[] deploymentDraftBuff = new byte[deploymentDraftInputStream.available()];
         deploymentDraftInputStream.read(deploymentDraftBuff);
@@ -342,7 +371,7 @@ public class DeploymentControllerTest extends BaseTestCase {
 
 
     @Test
-    public void T070ListDeploymentEvent() throws Exception {
+    public void T110ListDeploymentEvent() throws Exception {
         FileInputStream deploymentDraftInputStream = new FileInputStream("./src/test/resources/deployment/deploymentDraft3.json");
         byte[] deploymentDraftBuff = new byte[deploymentDraftInputStream.available()];
         deploymentDraftInputStream.read(deploymentDraftBuff);
@@ -363,6 +392,14 @@ public class DeploymentControllerTest extends BaseTestCase {
                 .andExpect(status().isOk());
         Thread.sleep(20000);
         mockMvc.perform(get("/api/deploy/event/list").param("deployId", "1"))
+                .andDo(print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value(ResultStat.OK.responseCode))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void T0120RemoveDeployCollection() throws Exception {
+        mockMvc.perform(delete("/api/deploycollection/{collectionId}", 1))
                 .andDo(print())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value(ResultStat.OK.responseCode))
                 .andExpect(status().isOk());

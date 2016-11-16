@@ -7,11 +7,12 @@
  @import "common.scss";
 /* common style or recover style of bootstrap*/
 body{
-    min-width: 1050px;
+    min-width: 1340px;
     font-size: 14px;
     color:dome-color(font,default);
     font-family:Helvetica,Arial,"Helvetica Neue","Hiragino Sans GB","Microsoft YaHei",Simsun,sans-self;
     -webkit-text-size-adjust: 100%;
+    background-color: #f0f2f5;
 }
 ul{
     list-style-type: none;
@@ -53,6 +54,7 @@ a{
 }
 label{
     font-weight: 400;
+    margin-bottom: 0px;
 }
 em,i{
     font-style: normal;
@@ -97,10 +99,10 @@ textarea.ui-input-white{
 // input with fill background
 .ui-input-fill{
     padding-left: 12px;
-    background-color: dome-color(background,light) !important;
+    // background-color: dome-color(background,light) !important;
     border:none;
     border-radius: $default-radius;
-    border: 1px solid transparent;
+    border: $deep-border;
     &:focus{
         border: 1px solid dome-color(dome,primary);
     }
@@ -108,6 +110,9 @@ textarea.ui-input-white{
 
 .ui-input-txt{
     padding-top: 5px;
+}
+.ui-input-full{
+    width: 100%;
 }
 input.ui-input-fill{
     height: 34px;
@@ -120,26 +125,16 @@ textarea.ui-input-fill{
     width: 60px;
     font-size: 14px;
 }
-
-.ui-input-group-vertical {
-
-    .ui-input-group-vertical-top {
-
-    }
-    .ui-input-group-vertical-middle {
-
-    }
-    .ui-input-group-vertical-bottom {
-
-    }
-}
 /* style of input end */
 
 /* style of button */
 .ui-btn{
     display: inline-block;
     text-align: center;
-    vertical-align: middle;
+    // vertical-align: middle;
+    .btn-txt{
+        padding-right: 4px;
+    }
 }
 .ui-btn,.ui-btn:hover,.ui-btn:focus{
     color: #fff;
@@ -148,7 +143,7 @@ textarea.ui-input-fill{
     border-radius: $default-radius;
 }
 .ui-btn-sm{
-    min-width: 60px;
+    min-width: 65px;
     height: 34px;
 }
 .ui-btn-sm.ui-btn-link{
@@ -157,16 +152,19 @@ textarea.ui-input-fill{
 .ui-btn-md{
     min-width: 114px;
     height: 34px;
-    font-weight: bold;
+    font-weight: normal;
 }
 .ui-btn-lg{
-    width: 152px;
-    height: 43px;
-    font-weight: bold;
+    min-width: 100px;
+    height: 34px;
+    font-weight: normal;
+}
+.ui-btn-lg-disabled{
+    background-color: dome-color(dome,disabled) !important;
 }
 // the link that has class .ui-btn
 .ui-btn-link{
-    padding-top: 12px;
+    padding: 7px 12px;
     &.ui-btn-md{
         padding-top: 7px;
     }
@@ -188,6 +186,7 @@ textarea.ui-input-fill{
 .ui-btn-safe{
     background-color: dome-color(dome,safe);
 }
+
 .ui-btn-primary,.ui-btn-primary:hover,.ui-btn-primary:focus{
     background-color: dome-color(dome,primary);
 }
@@ -200,10 +199,10 @@ textarea.ui-input-fill{
 .ui-btn-white{
     background-color: #fff;
     color:dome-color(font,default);
-    border:1px solid dome-color(border,default);
+    border: $deep-border;
     &:hover,&:focus,&:active{
         color:dome-color(font,default);
-        border:1px solid dome-color(border,default);
+        border: $deep-border;
     }
 }
 .ui-btn-select{
@@ -218,7 +217,7 @@ textarea.ui-input-fill{
     background-color: dome-color(dome,error);
 }
 .ui-btn+.ui-btn{
-    margin-left: 12px;
+    margin-left: 15px;
 }
 table{
     tr:hover{
@@ -231,9 +230,12 @@ table{
 .ui-table-dome{
     width: 100%;
     &>thead{
-        background-color: dome-color(background,light);
+        background-color: dome-color(background,white);
         th{
             font-weight: bold;
+        }
+        tr{
+            border-bottom: 2px solid #ddd;
         }
     }
     &.full{
@@ -249,7 +251,7 @@ table{
 }
 // table with border
 .ui-table-primary{
-    border:$light-border;
+    border:$deep-border;
     thead{
         th{
             font-weight: 400;
@@ -259,9 +261,9 @@ table{
 .ui-table-dome,.ui-table-primary{
     &>tbody>tr>td,&>thead>tr>th{
         vertical-align: middle;
-        height: 60px;
-        padding: 8px 6px 8px 14px;
-        border-bottom:$light-border;
+        height: $table-height;
+        padding: 8px;
+        border-bottom:$deep-border;
     }
 }
 
@@ -295,14 +297,14 @@ table{
         bottom: 0px;
         @include animation-delay(-1.0s);
     }
-    @include setKeyframes(bounce){
+    @include setKeyframes(bounce) {
         0%, 100% {
             @include transform(scale(0.0));
         } 50% {
             @include transform(scale(1.0));
         }
     }
-    @include setKeyframes(rotate){
+    @include setKeyframes(rotate) {
         100% {
             @include transform(rotate(360deg));
         }
@@ -314,15 +316,16 @@ table{
 // common modal header style
 .d-modal-header,.d-modal-footer{
     height: 58px;
-    padding-left: 38px;
-    padding-right: 38px;
+    padding-left: 15px;
+    padding-right: 15px;
 }
 .d-modal-header{
     line-height: 58px;
     border-radius: $default-radius $default-radius 0 0;
-    color:#fff;
+    color:dome-color(dome,bright);
     font-size: font-size(large);
-    @extend %dome-background;
+    // @extend %dome-background;
+    border-top: 5px solid dome-color(dome,bright);
     overflow: hidden;
     .model-prompt{
         float: right;
@@ -348,6 +351,9 @@ table{
                 }
             }
         }
+    }
+    .d-modal-container{
+        padding: 20px;
     }
     .com-loading{
         margin-top: 10px;
@@ -425,8 +431,10 @@ ul.modal-info{
 .com-select-con{
     position: relative;
     width: 240px;
-    .ui-btn-select{
+    display: inline-block;
+    button.ui-btn-select{
         width: 100%;
+        padding-left:12px;
     }
     .select-list{
         position: absolute;
@@ -447,7 +455,7 @@ ul.modal-info{
                 line-height: 30px;
                 margin-top: 6px;
                 margin-bottom: 6px;
-                padding-left: 8px;
+                padding-left: 12px;
                 font-weight: 400;
                 text-decoration: none;
                 overflow: hidden;

@@ -82,4 +82,6 @@ public interface UserService {
     boolean createUserForLDAP(User user);
 
     User getUser(String username);
+
+    boolean loginWithoutType(String userName, String pass);
 }

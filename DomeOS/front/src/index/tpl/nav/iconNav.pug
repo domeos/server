@@ -1,0 +1,56 @@
+.icon-bar.navbar-default.sidebar.left-nav(role="navigation" ng-scrollbar rebuild-on-resize).sidebar-nav
+	ul.nav.in.nav-sidebar.nav-lists#side-menu(current-mod="currentMod.mod" login-user="loginUser")
+		li.dome-logo(ui-sref-active="active")
+			a.nav-item(href="/module/module.html")
+				img.img-logo(src="index/images/logo.png")
+			// start of nav 
+		ul.nav.icon-menu
+			// add class has-sub
+			li.has-sub(ng-class="on")
+				a.nav-item(href="" ng-click="check(1)")
+					i.fa.fa-th-large.nav-icon
+				//- span用于做子菜单动画
+				span.hover
+				ul.sub-menu.sub-menu-1
+					li(ng-class="{'on': $stateUrl=='project'}")
+						a.nav-item(ng-click="$stateUrl='project'" ui-sref="projectCollectionManage") 
+							span.a-text 项目
+					li(ng-class="{'on': $stateUrl=='deploy'}")
+						a.nav-item(ng-click="$stateUrl='deploy'" ui-sref="deployManage") 
+							span.a-text 部署 
+					li(ng-class="{'on': $stateUrl=='image'}")
+						a.nav-item(ng-click="$stateUrl='image'" ui-sref="imageManage") 
+							span.a-text 镜像 
+					//- li(ui-sref-active="on")
+						a.nav-item(ui-sref="projectCollectionManage") 
+							span.a-text 
+								| new项目
+								i.nav-border
+			li.has-sub(ng-class="on")
+				a.nav-item(href="javascript:void(0)" ng-click="check(2)")
+					i.glyphicon.glyphicon-stats.nav-icon
+						//- i.fa(ng-class="{'fa-angle-right':collapseVar!==2,'fa-angle-down':collapseVar===2}")
+				span.hover 
+				ul.sub-menu.sub-menu-2
+					li(ng-class="{'on': $stateUrl=='service'}")
+						a.nav-item(ng-click="$stateUrl='service'" ui-sref="service") 
+							span.a-text 服务
+					li(ng-class="{'on': $stateUrl=='monitor'}")
+						a.nav-item(ng-click="$stateUrl='monitor'" ui-sref="monitor") 
+							span.a-text 监控报警
+					li(ng-class="{'on':$stateUrl=='cluster'}")
+						a.nav-item(ng-click="$stateUrl='cluster'" ui-sref="clusterManage") 
+							span.a-text 集群
+					li(ng-class="{'on':$stateUrl=='group'}")
+						a.nav-item(ng-click="$stateUrl='group'" ui-sref="groupManage") 
+							span.a-text 组管理
+					li(ng-class="{'on':$stateUrl=='appStore'}")
+						a.nav-item(ng-click="$stateUrl='appStore'" ui-sref="appStore") 
+							span.a-text 应用商店
+							
+					
+			li(ng-class="{'on':$stateUrl=='setting'}")
+				a.nav-item(ui-sref="globalSetting" ng-click="check(3);$stateUrl='setting'" ng-class="{'txt-white':collapseVar===3}") 
+					i.fa.fa-cog.nav-icon
+					// | 全局配置
+

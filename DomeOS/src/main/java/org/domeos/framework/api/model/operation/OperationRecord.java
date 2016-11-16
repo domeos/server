@@ -1,6 +1,6 @@
 package org.domeos.framework.api.model.operation;
 
-import org.domeos.framework.api.model.resource.related.ResourceType;
+import org.domeos.framework.api.model.collection.related.ResourceType;
 
 import java.io.Serializable;
 

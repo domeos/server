@@ -58,22 +58,6 @@ public interface CodeApiInterface {
 
     /**
      *
-     * @param projectId project id in code repo
-     * @param branch
-     * @return
-     */
-    CommitInformation getBranchCommitInfo(int projectId, String branch);
-
-    /**
-     *
-     * @param projectId
-     * @param tag
-     * @return
-     */
-    CommitInformation getTagCommitInfo(int projectId, String tag);
-
-    /**
-     *
      * @param projectId
      * @param deployKeyId
      * @return

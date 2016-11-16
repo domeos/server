@@ -1,14 +1,22 @@
 {
   "id": 1,
-  "name": "test/domeos_test",
+  "name": "mytest/domeos_test",
   "description": "this is for test case",
-  "authority": 1,
+  "authority": 0,
   "dockerfileConfig": {
     "baseImageName": "sohucs/redhat",
     "baseImageTag": "7.0",
     "baseImageRegistry": "private-registry.sohucs.com",
     "codeStoragePath": "/code",
     "startCmd": "/bin/sh"
+  },
+  "codeInfo": {
+    "codeHttpUrl": "http://code.sohuno.com/feiliutest/mytest",
+    "codeId": 4229,
+    "codeManager": "gitlab",
+    "codeManagerUserId": 1,
+    "codeSshUrl": "git@code.sohuno.com:feiliutest/mytest.git",
+    "nameWithNamespace":"feiliutest / mytest"
   },
   "confFiles": {
     "/file/file1": "file/file1",

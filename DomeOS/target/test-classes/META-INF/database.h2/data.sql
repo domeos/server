@@ -70,6 +70,18 @@ CREATE TABLE IF NOT EXISTS `project` (
 CREATE INDEX `project_name` ON project(`name`);
 CREATE INDEX `project_authority` ON project(`authority`);
 
+CREATE TABLE `project_collection` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `name` VARCHAR(255) NOT NULL,
+  `description` VARCHAR(1024) NULL DEFAULT NULL,
+  `state` VARCHAR(128) NOT NULL,
+  `createTime` BIGINT(20) NOT NULL DEFAULT '0',
+  `removeTime` BIGINT(20) NULL DEFAULT '0',
+  `removed` TINYINT(4) NOT NULL DEFAULT '0',
+  `data` MEDIUMTEXT NULL,
+  `projectCollectionState` VARCHAR(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 CREATE TABLE IF NOT EXISTS `project_rsakey_map` (
   `id` INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `projectId` INT(11) NOT NULL,
@@ -294,13 +306,71 @@ CREATE TABLE IF NOT EXISTS `uniq_port_index` (
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 CREATE UNIQUE INDEX `uniq_port_index_cluster_port` ON uniq_port_index(`port`, `clusterId`);
 
+CREATE TABLE `collection_authority_map` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `collectionId` INT(11) NOT NULL COMMENT 'projectCollectionId or deployCollectionId or clusterId',
+  `resourceType` VARCHAR(255) NOT NULL COMMENT 'PROJECT or DEPLOY or CLUSTER',
+  `userId` INT(11) NOT NULL COMMENT 'userId',
+  `role` VARCHAR(255) NOT NULL COMMENT 'role name',
+  `updateTime` BIGINT(20) NULL DEFAULT NULL
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+CREATE INDEX `collection_authority_map_resourceType_index` ON collection_authority_map(`resourceType`);
+CREATE INDEX `collection_authority_map_collectionId_index` ON collection_authority_map(`collectionId`);
+CREATE INDEX `collection_authority_map_userId_index` ON collection_authority_map(`userId`);
+
+CREATE TABLE `collection_resource_map` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `resourceId` INT(11) NOT NULL COMMENT 'projectId or deployId',
+  `creatorId` INT(11) NOT NULL COMMENT 'userId',
+  `resourceType` VARCHAR(255) NOT NULL COMMENT 'PROJECT or DEPLOY or CLUSTER',
+  `collectionId` INT(11) NOT NULL COMMENT 'projectCollectionId or deployCollectionId',
+  `updateTime` BIGINT(20) NULL DEFAULT NULL
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+CREATE INDEX `collection_resource_map_resourceType_resourceId_index` ON collection_resource_map(`resourceType`, `resourceId`);
+CREATE INDEX `collection_resource_map_collectionId_resourceType_resourceId_index` ON collection_resource_map(`collectionId`, `resourceType`, `resourceId`);
+
+CREATE TABLE `deploy_collection` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `description` varchar(1024) DEFAULT NULL,
+  `state` varchar(128) NOT NULL,
+  `createTime` bigint(20) DEFAULT NULL,
+  `removeTime` bigint(20) DEFAULT NULL,
+  `removed` tinyint(4) NOT NULL DEFAULT '0',
+  `data` mediumtext,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `alarm_user_group_info` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `userGroupName` varchar(128) DEFAULT NULL,
+  `creatorId` int(11) DEFAULT NULL,
+  `creatorName` varchar(128) DEFAULT NULL,
+  `createTime` bigint(20) DEFAULT NULL,
+  `updateTime` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `alarm_user_group_user_bind` (
+  `userGroupId` int(11) NOT NULL,
+  `userId` int(11) NOT NULL,
+  `bindTime` bigint(20) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 -- test, test
 insert into users(username, password, salt, loginType, state) VALUES ('admin','5fdf2372d4f23bdecfd2b8e8d7aacce1','0ea3abcf42700bb1bbcca6c27c92a821','USER','NORMAL');
 insert into users(username, password, salt, loginType, state) VALUES ('test','060b125a2e2de865ccc0f06367bc3491','831d1215e1bcbe99419a3e8f88edb869','USER','NORMAL');
 insert into users(username, password, salt, loginType, state) VALUES ('csf','a190c9f28a28a1d7667f50830d8bf6d5','db5474a6e19613a7081506e2910f5dc4','USER','NORMAL');
-insert into global(type, value) VALUES ('LDAP_SERVER','ldap://test.sohu.com:389');
-insert into global(type, value) VALUES ('LDAP_PREFIX','@sohu.com');
+insert into global(type, value) VALUES ('LDAP_SERVER','ldap://ldap.sohu-inc.com:389');
+insert into global(type, value) VALUES ('LDAP_PREFIX','@sohu-inc.com');
 insert into global(type, value) VALUES ('SERVER','localhost:8080');
+insert into global(type, value) VALUES ('GITLAB','http://code.sohuno.com');
+insert into global(type, value) VALUES ('REGISTRY_URL','http://10.11.150.76:5000');
+insert into global(type, value) VALUES ('BUILD_IMAGE','10.11.150.76:5000/test:4.3.2');
+insert into global(type, value) VALUES ('PUBLIC_REGISTRY_URL','http://pub.domeos.org');
+insert into global(type, value) VALUES ('CI_CLUSTER_ID','1');
+insert into global(type, value) VALUES ('CI_CLUSTER_NAMESPACE','default');
+insert into gitlab_user(userId, name, token) VALUES ('1','admin', 'E5nHzziCYs7G9Q8TjDSK');
 INSERT INTO admin_roles(userId, role) VALUES ('1', 'admin');
 INSERT INTO cluster(name, state, removed, data) VALUES ('mycluster', 'RUNNING', '0', '{"api":"10.16.42.200:8080", "ver":1, "fqcn": "org.domeos.framework.api.model.cluster.Cluster"}');
 

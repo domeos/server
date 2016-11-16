@@ -1,0 +1,30 @@
+.mod-group.group-manage
+	.mod-option
+		.com-btn-group
+			input.ui-input.ui-input-white(placeholder="请输入用户组名称" ng-model="newUserGroupName")
+			button.ui-btn.ui-btn-lg.ui-btn-bright(ng-disabled="!newUserGroupName" ng-click="createUserGroup()")
+				span.btn-txt 创建用户组
+		.pull-right.right-option
+			span(ng-cloak) 共{{groupListFiltered.length}}个组
+			input.ui-input-search.ui-input-fill(type="text" placeholder="输入组名称查询" ng-model="groupKey")
+	.mod-list-alarm
+		loading(ng-if="isLoading")
+		table.ui-table-dome
+			thead
+				tr
+					th 组名称
+					th 成员数
+					th 创建时间
+					th 更新时间
+					th(ng-if="vm.permission.role&&vm.permission.role!='REPORTER'") 操作
+			tbody
+				tr(ng-if="!userGroupList||groupListFiltered.length===0")
+					td(colspan="4") 无相关组信息
+				tr(ng-repeat="group in groupListFiltered=(userGroupList|filter:{'userGroupName':groupKey})")
+					td
+						a.ui-table-link(ui-sref="alarmUserGroupDetail({'id':group.id})" ng-bind="group.userGroupName")
+					td(ng-bind="group.userList.length")
+					td(ng-bind="group.createTime|date:'yyyy-MM-dd'")
+					td(ng-bind="group.updateTime|date:'yyyy-MM-dd'")
+					td(ng-if="vm.permission.role&&vm.permission.role!='REPORTER'")
+						button.fa.fa-trash-o.ui-btn-none.icon-trash-color(ng-click="deleteUserGroup(group.id)" tooltip="删除")

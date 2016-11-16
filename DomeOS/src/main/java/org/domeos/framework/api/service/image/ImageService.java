@@ -1,8 +1,13 @@
 package org.domeos.framework.api.service.image;
 
 import org.domeos.basemodel.HttpResponseTemp;
+import org.domeos.framework.api.consolemodel.image.ImageNameDetail;
+import org.domeos.framework.api.consolemodel.image.ImageNameDetailRequest;
+import org.domeos.framework.api.consolemodel.image.ImageTagDetailRequest;
 import org.domeos.framework.api.model.image.BaseImage;
 import org.domeos.framework.api.model.image.BuildImage;
+
+import java.util.List;
 
 
 /**
@@ -86,4 +91,34 @@ public interface ImageService {
      * @return
      */
     HttpResponseTemp<?> getAllExclusiveImages(String type);
+
+    /**
+     *
+     * @param imageNameDetailRequest
+     * @return
+     */
+    HttpResponseTemp<List<ImageNameDetail>> dockerImageNameDetail(ImageNameDetailRequest imageNameDetailRequest);
+
+    /**
+     *
+     * @param name
+     * @param tag
+     *@param registry  @return
+     */
+    HttpResponseTemp<?> deleteImageByTag(String name, String tag, String registry);
+
+    /**
+     *
+     * @param imageTagDetailRequest
+     * @return
+     */
+    HttpResponseTemp<?> getImageTagDetail(ImageTagDetailRequest imageTagDetailRequest);
+
+    /**
+     *
+     * @param name
+     * @param registry
+     * @return
+     */
+    HttpResponseTemp<?> deleteImage(String name, String registry);
 }

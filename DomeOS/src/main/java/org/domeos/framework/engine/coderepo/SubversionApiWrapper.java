@@ -165,17 +165,13 @@ public class SubversionApiWrapper implements CodeApiInterface {
             if (entries.hasNext()) {
                 SVNLogEntry logEntry = (SVNLogEntry) entries.next();
                 info.setId(name);
-                info.setName(logEntry.getAuthor());
                 info.setMessage(logEntry.getMessage());
-                info.setCommitterName(logEntry.getAuthor());
-                info.setCommittedDate(logEntry.getDate().getTime());
+                info.setCreatedAt(logEntry.getDate().getTime());
             } else {
                 return null;
             }
-            info.setAuthoredDate(entry.getDate().getTime());
             info.setAuthorEmail(null);
             info.setAuthorName(entry.getAuthor());
-            info.setCommitterEmail(null);
         } catch (SVNException e) {
             logger.warn("get project " + svnId + " commit info from svn error, " + e.getMessage());
         }

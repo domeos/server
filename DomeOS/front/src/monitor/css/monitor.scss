@@ -4,9 +4,13 @@
 	height: 60px;
 	padding-left: $page-padding;
 	padding-top: 20px;
-	font-size: 18px;
-	color: #fff;
-	@extend %dome-background;
+	font-size: 16px;
+	color: #888;
+	background-color: dome-color(background,light);
+}
+.monitor-container{
+	background-color: #fff;
+	margin: 0 20px;
 }
 .icon-down{
 	@extend %vertical-middle;
@@ -30,12 +34,15 @@
 		width: 100%;
 		height: 350px;
 		font-size: 0;
-		border-top: 4px solid dome-color(border,light);
+		padding: 10px 0;
 		.monitor-chart{
 			display: inline-block;
-			width: 55%;
+			width: 50.4%;
 			height: 100%;
 			font-size: 14px;
+			border: $deep-border;
+			border-radius: 3px;
+			margin: 0 10px 0 20px;
 			.monitor-chart-title{
 				height: 42px;
 				padding-top: 12px;
@@ -57,12 +64,14 @@
 		}
 		.monitor-table{
 			display: inline-block;
-			width: 45%;
+			width: 44.955%;
 			height: 100%;
 			font-size: 14px;
-			border-left: $light-border;
+			border: $deep-border;
+			border-radius: 3px;
 			overflow-x:auto;
 			vertical-align: top;
+			margin: 0 0 0 10px;
 			table{
 				width: 100%;
 			}

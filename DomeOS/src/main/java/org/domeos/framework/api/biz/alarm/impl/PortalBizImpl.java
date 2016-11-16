@@ -1,6 +1,8 @@
 package org.domeos.framework.api.biz.alarm.impl;
 
 import org.apache.commons.lang3.StringUtils;
+import org.domeos.framework.api.consolemodel.alarm.TemplateInfo;
+import org.domeos.framework.api.consolemodel.alarm.UserGroupInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.domeos.framework.api.biz.alarm.AlarmBiz;
@@ -445,7 +447,11 @@ public class PortalBizImpl extends BaseBizImpl implements PortalBiz {
         Action action = new Action();
         StringBuilder uicBuilder = new StringBuilder();
         for (UserGroupInfo userGroupInfo : userGroupList) {
-            String userGroupName = authBiz.getGroupById((int) userGroupInfo.getId()).getName();
+            UserGroupBasic userGroupBasic = alarmBiz.getUserGroupInfoBasicById(userGroupInfo.getId());
+            if (userGroupBasic == null) {
+                continue;
+            }
+            String userGroupName = userGroupBasic.getUserGroupName();
             if (StringUtils.isBlank(userGroupName)) {
                 continue;
             }

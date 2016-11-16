@@ -42,14 +42,17 @@ public class VersionBizImpl extends BaseBizImpl implements VersionBiz {
 
     @Override
     public int insertVersionWithLogCollect(Version version, Cluster cluster) {
-        LogDraft logDraft = version.getLogDraft();
         ClusterLog clusterLog = cluster.getClusterLog();
-        if (logDraft != null && logDraft.getLogItemDrafts() != null && logDraft.getLogItemDrafts().size() > 0) {
+        if (checkVersionEnable(version)) {
             if (clusterLog == null) {
                 throw ApiException.wrapMessage(ResultStat.CLUSTER_NOT_LEGAL, "cluster log info not exist");
             }
             if(!StringUtils.isBlank(clusterLog.checkLegality())) {
                 throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, clusterLog.checkLegality());
+            }
+            LogDraft logDraft = version.getLogDraft();
+            if (logDraft == null) {
+                logDraft = new LogDraft();
             }
             logDraft.setKafkaBrokers(clusterLog.getKafka());
             ContainerDraft flumeDraft = new ContainerDraft();
@@ -58,6 +61,7 @@ public class VersionBizImpl extends BaseBizImpl implements VersionBiz {
             flumeDraft.setTag(clusterLog.getImageTag());
             flumeDraft.setImage(clusterLog.getImageName());
             logDraft.setFlumeDraft(flumeDraft);
+            version.setLogDraft(logDraft);
         }
         return insertRow(version);
     }
@@ -81,6 +85,28 @@ public class VersionBizImpl extends BaseBizImpl implements VersionBiz {
             result.add(checkResult(dao, Version.class));
         }
         return result;
+    }
+
+    private boolean checkVersionEnable(Version version) {
+        if (version == null) {
+            return false;
+        }
+        LogDraft logDraft = version.getLogDraft();
+        // for version 0.3
+        if (logDraft != null && logDraft.getLogItemDrafts() != null && logDraft.getLogItemDrafts().size() > 0) {
+            return true;
+        }
+        // for version 0.4
+        List<ContainerDraft> containerDrafts = version.getContainerDrafts();
+        if (containerDrafts == null) {
+            return true;
+        }
+        for (ContainerDraft containerDraft : containerDrafts) {
+            if (containerDraft.getLogItemDrafts() != null && containerDraft.getLogItemDrafts().size() > 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
 //    @Autowired

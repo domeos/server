@@ -2,23 +2,18 @@
     loading(ng-if="loadingsIns.isLoading||deployIns.loadingIns.isLoading")
     ul.com-list-info
         li.has-border
-            span.info-name 部署名称
+            span.info-name 部署名称 
+                span.require-domain *
             .info-content
                 .line-long
-                    input.ui-input-fill.line-element(ng-model="config.deployName" name="deployName" required is-deploy-exist namespace="{{config.namespace}}" ng-maxlength="20" clustername="{{deployIns.clusterListIns.cluster.name}}" ng-pattern="/^[0-9a-z](-*[0-9a-z]+)*$/" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" )
+                    input.ui-input-fill.line-element(ng-model="config.deployName" name="deployName" required is-deploy-exist collection="collectionInfo.collectionId" namespace="{{config.namespace}}" ng-maxlength="20" clustername="{{deployIns.clusterListIns.cluster.name}}" ng-pattern="/^[0-9a-z](-*[0-9a-z]+)*$/" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" )
                 .txt-error(ng-if="(needValid||deployForm.deployName.$dirty)&&deployForm.deployName.$error.required") 必填
                 .txt-error(ng-if="(needValid||deployForm.deployName.$dirty)&&!deployForm.deployName.$error.required&&deployForm.deployName.$error.isDeployExist") 部署名已存在
                 .txt-error(ng-if="(needValid||deployForm.deployName.$dirty)&&!deployForm.deployName.$error.required&&deployForm.deployName.$error.pattern") 非法的名称
                 span.txt-error(ng-if="(needValid||deployForm.deployName.$dirty)&&!deployForm.deployName.$error.required&&deployForm.deployName.$error.maxlength") 长度超出限制
         li.has-border
-            span.info-name 创建者
-            .info-content
-                creator-selection(change-event="deployIns.toggleCreator(user)" default-user-id="deployIns.creator.id" default-user-type="{{deployIns.creator.type}}")
-                input(type="hidden" name="creatorName" ng-model="deployIns.creator.id" required)
-                span.txt-error(ng-show="needValid&&deployForm.creatorName.$invalid") 请选择创建者
-        li.has-border
-            span.info-name 配置类型
-            .info-content
+            span.info-name.info-name-content-for-label 配置类型
+            .info-content.info-name-content-for-label
                 span.com-check-con
                     input#defaultType.ui-radio(type="radio" value="CUSTOM" name="versionType" ng-model="config.versionType")
                     label(for="defaultType") 默认类型
@@ -34,7 +29,7 @@
             .info-content.container-info
                 .line-short
                     input.ui-input-fill.ui-input-sm.container-txt(ng-model="config.replicas" name="replicas" ng-pattern="/^[1-9]\\d*$/" is-over max="999" min="1")
-                    span.container-unit 个
+                    span.container-unit &nbsp;个
                 span.txt-error(ng-if="(needValid||deployForm.replicas.$dirty)&&deployForm.replicas.$invalid") 请填写0~999范围内的数字
         li.has-border
             span.info-name 集群
@@ -52,8 +47,8 @@
                         input(type="hidden" ng-model="deployIns.clusterListIns.cluster.name" name="clusterName")
                         span.txt-error(ng-if="(needValid||validHost)&&deployForm.clusterName.$invalid") 请选择集群
         li.has-border
-            span.info-name 工作场景
-            .info-content
+            span.info-name.info-name-content-for-label 工作场景
+            .info-content.info-name-content-for-label
                 span.com-check-con(ng-repeat="env in deployIns.envList")
                     input.ui-radio(id="{{env.value}}EnvType" type="radio" value="{{env.value}}" name="hostEnv" ng-model="deployIns.hostEnv" ng-change="deployIns.toggleEnv(env)")
                     label(for="{{env.value}}EnvType" ng-bind="env.text")
@@ -100,18 +95,18 @@
                 span.txt-error(ng-if="(needValid||deployForm.namespace.$dirty)&&!deployForm.namespace.$error.required&&deployForm.namespace.$error.pattern") 非法的namespace
                 span.txt-error(ng-if="(needValid||deployForm.namespace.$dirty)&&!deployForm.namespace.$error.required&&deployForm.namespace.$error.isNamespaceExist") namespace已存在
         li.has-border(ng-if="config.versionType === 'CUSTOM'")
-            span.info-name 网络模式
-            .info-content
+            span.info-name.info-name-content-for-label 网络模式
+            .info-content.info-name-content-for-label
                 span.com-check-con(ng-click="deployIns.visitMode='noAccess'")
                     input#checkOverlay.ui-radio(type="radio" value="DEFAULT" name="netWork" ng-model="config.networkMode" )
                     label(for="checkOverlay") Overlay
                 span.com-check-con(ng-click="deployIns.visitMode='noAccess';config.healthCheckerDraft.type='NONE'")
                     input#checkHost.ui-radio(type="radio" value="HOST" name="netWork" ng-model="config.networkMode"  ng-change="deployIns.validIps();")
                     label(for="checkHost") Host
-                p.txt-prompt(ng-if="config.networkMode=='HOST'") Host网络模式下不能使用健康检查
-        li.has-border
-            span.info-name 访问设置
-            .info-content
+                    span.txt-prompt(ng-if="config.networkMode=='HOST'") Host网络模式下不能使用健康检查
+        li
+            span.info-name.info-name-content-for-label 访问设置
+            .info-content.info-name-content-for-label
                 span.com-check-con
                     input#noAccess.ui-radio(type="radio" value="noAccess" name="visitMode" ng-model="deployIns.visitMode" ng-change="deployIns.validIps();")
                     label(for="noAccess") 禁止访问
@@ -124,7 +119,7 @@
                 span.com-check-con(ng-if="config.networkMode=='DEFAULT'")
                     input#foreign.ui-radio(type="radio" value="foreign" name="visitMode" ng-model="deployIns.visitMode" ng-change="deployIns.validIps();")
                     label(for="foreign") 对外服务
-        li.has-border(ng-if="deployIns.visitMode!='noAccess'")
+        li(ng-if="deployIns.visitMode!='noAccess'")
             span.info-name
             .info-content
                 div.log-item(ng-form  name="childForm" ng-if="config.networkMode=='DEFAULT'")
@@ -155,5 +150,6 @@
                     span.txt-prompt.tool-align-input Host网络下，系统会给每个实例分配若干个端口，用于对外服务和实例间通信。此外，在Host网络下，实例ip和宿主机ip一致。
     .com-bottom-option
         span.com-bottom-option-con
-            button.ui-btn.ui-btn-md.ui-btn-bright(ng-disabled="loadingsIns.isLoading||deployIns.loadingIns.isLoading" ng-click="needValid=true;deployIns.validIps();deployForm.$valid&&deployIns.valid.ips&&toNext()") 下一步
+            button.ui-btn.ui-btn-sm.ui-btn-bright(ui-sref="deployManage({'id':collectionInfo.collectionId,'name':collectionInfo.collectionName})") 取消
+            button.ui-btn.ui-btn-lg.ui-btn-bright(ng-disabled="loadingsIns.isLoading||deployIns.loadingIns.isLoading" ng-click="needValid=true;deployIns.validIps();deployForm.$valid&&deployIns.valid.ips&&toNext()") 下一步
             span.txt-error(ng-if="needValid&&(!deployIns.valid.ips||deployForm.$invalid)") 存在不合法数据，请修改后提交！

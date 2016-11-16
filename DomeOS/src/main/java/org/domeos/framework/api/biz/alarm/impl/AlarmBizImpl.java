@@ -3,6 +3,7 @@ package org.domeos.framework.api.biz.alarm.impl;
 import org.domeos.framework.api.biz.alarm.AlarmBiz;
 import org.domeos.framework.api.biz.base.impl.BaseBizImpl;
 import org.domeos.framework.api.biz.deployment.DeploymentBiz;
+import org.domeos.framework.api.consolemodel.alarm.AlarmEventInfoDraft;
 import org.domeos.framework.api.mapper.alarm.*;
 import org.domeos.framework.api.model.alarm.*;
 import org.domeos.framework.api.model.alarm.assist.Link;
@@ -24,6 +25,10 @@ public class AlarmBizImpl extends BaseBizImpl implements AlarmBiz {
     HostGroupHostBindMapper hostGroupHostBindMapper;
     @Autowired
     HostGroupInfoBasicMapper hostGroupInfoBasicMapper;
+    @Autowired
+    UserGroupUserBindMapper userGroupUserBindMapper;
+    @Autowired
+    UserGroupInfoBasicMapper userGroupInfoBasicMapper;
     @Autowired
     HostInfoMapper hostInfoMapper;
     @Autowired
@@ -112,6 +117,11 @@ public class AlarmBizImpl extends BaseBizImpl implements AlarmBiz {
     @Override
     public List<TemplateInfoBasic> getTemplateInfoBasicByHostGroupId(long hostGroupId) {
         return templateInfoBasicMapper.getTemplateInfoBasicByHostGroupId(hostGroupId);
+    }
+
+    @Override
+    public List<TemplateInfoBasic> getTemplateInfoBasicByUserGroupId(long userGroupId) {
+        return templateInfoBasicMapper.getTemplateInfoBasicByUserGroupId(userGroupId);
     }
 
     @Override
@@ -287,6 +297,75 @@ public class AlarmBizImpl extends BaseBizImpl implements AlarmBiz {
     @Override
     public Link getLinkById(long id) {
         return linkMapper.getLinkById(id);
+    }
+
+    // user group
+
+    @Override
+    public List<UserGroupBasic> listUserGroupInfoBasic() {
+        return userGroupInfoBasicMapper.listUserGroupInfoBasic();
+    }
+
+    @Override
+    public UserGroupBasic getUserGroupInfoBasicById(long id) {
+        return userGroupInfoBasicMapper.getUserGroupInfoBasicById(id);
+    }
+
+    @Override
+    public UserGroupBasic getUserGroupInfoBasicByName(String userGroupName) {
+        return userGroupInfoBasicMapper.getUserGroupInfoBasicByName(userGroupName);
+    }
+
+    @Override
+    public void addUserGroupInfoBasic(UserGroupBasic userGroupBasic) {
+        userGroupInfoBasicMapper.addUserGroupInfoBasic(userGroupBasic);
+    }
+
+    @Override
+    public void updateUserGroupInfoBasicById(UserGroupBasic userGroupBasic) {
+        userGroupInfoBasicMapper.updateUserGroupInfoBasicById(userGroupBasic);
+    }
+
+    @Override
+    public List<UserGroupBasic> listUserGroupInfoBasicByTemplateId(long templateId) {
+        return userGroupInfoBasicMapper.listUserGroupInfoBasicByTemplateId(templateId);
+    }
+
+    @Override
+    public void deleteUserGroupInfoBasicById(long id) {
+        userGroupInfoBasicMapper.deleteUserGroupInfoBasicById(id);
+    }
+
+    // user group - user
+
+    @Override
+    public Long getUserGroupUserBindTime(long userGroupId, long userId) {
+        return userGroupUserBindMapper.getUserGroupUserBindTime(userGroupId, userId);
+    }
+
+    @Override
+    public void addUserGroupUserBind(long userGroupId, long userId, long bindTime) {
+        userGroupUserBindMapper.addUserGroupUserBind(userGroupId, userId, bindTime);
+    }
+
+    @Override
+    public void updateUserGroupUserBind(long userGroupId, long userId, long bindTime) {
+        userGroupUserBindMapper.updateUserGroupUserBind(userGroupId, userId, bindTime);
+    }
+
+    @Override
+    public void deleteUserGroupUserBindByUserGroupId(long userGroupId) {
+        userGroupUserBindMapper.deleteUserGroupUserBindByUserGroupId(userGroupId);
+    }
+
+    @Override
+    public void deleteUserGroupUserBind(long userGroupId, long userId) {
+        userGroupUserBindMapper.deleteUserGroupUserBind(userGroupId, userId);
+    }
+
+    @Override
+    public List<UserInfo> getUserInfoByUserGroupId(long hostGroupId) {
+        return userGroupUserBindMapper.getUserInfoByUserGroupId(hostGroupId);
     }
 
 }

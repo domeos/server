@@ -2,12 +2,14 @@ package org.domeos.framework.api.service.deployment;
 
 import org.domeos.basemodel.HttpResponseTemp;
 import org.domeos.exception.DeploymentEventException;
+import org.domeos.exception.DeploymentTerminatedException;
 import org.domeos.framework.api.consolemodel.deployment.DeploymentDetail;
 import org.domeos.framework.api.consolemodel.deployment.DeploymentDraft;
 import org.domeos.framework.api.consolemodel.deployment.DeploymentInfo;
 import org.domeos.framework.api.consolemodel.deployment.VersionString;
 import org.domeos.framework.api.model.deployment.DeployEvent;
 import org.domeos.framework.api.model.deployment.Policy;
+import org.domeos.framework.engine.event.AutoDeploy.AutoUpdateInfo;
 import org.domeos.framework.engine.exception.DaoException;
 
 import java.io.IOException;
@@ -53,15 +55,35 @@ public interface DeploymentService {
      * @throws IOException
      * @throws DeploymentEventException
      */
-    DeploymentDetail getDeployment(int deployId) throws IOException, DeploymentEventException;
+    DeploymentDetail getDeployment(int deployId) throws IOException, DeploymentEventException, DeploymentTerminatedException;
 
     /**
-     * list abstract info of deployments
+     * migrate deployment to another deploy collection
+     *
+     * @param deployId deployment id
+     * @param collectionId the collection Id migrate to
+     * @return
+     * @throws IOException
+     * @throws DeploymentEventException
+     */
+    void migrateDeployment(int deployId, int collectionId) throws IOException, DeploymentEventException;
+
+    /**
+     * list abstract info of all deployments
      *
      * @return List of DeploymentInfo
      * @throws IOException
      */
     List<DeploymentInfo> listDeployment() throws IOException;
+
+    /**
+     * list abstract info of deployments of a deploy collection
+     *
+     * @return List of DeploymentInfo
+     * @throws IOException
+     * @throws DeploymentEventException
+     */
+    List<DeploymentInfo> listDeployment(int collectionId) throws IOException;
 
     /**
      * start deployment
@@ -75,7 +97,7 @@ public interface DeploymentService {
      * @throws DeploymentEventException
      */
     void startDeployment(int deployId, int versionId, int replicas)
-            throws IOException, DeploymentEventException, DaoException;
+            throws IOException, DeploymentEventException, DaoException, DeploymentTerminatedException;
 
     /**
      * stop deployment
@@ -86,7 +108,7 @@ public interface DeploymentService {
      * @throws DeploymentEventException
      */
     void stopDeployment(int deployId)
-            throws IOException, DeploymentEventException;
+            throws IOException, DeploymentEventException, DeploymentTerminatedException;
 
     /**
      * start deployment update
@@ -100,7 +122,7 @@ public interface DeploymentService {
      * @throws DeploymentEventException
      */
     HttpResponseTemp<?> startUpdate(int deployId, int versionId, int replicas, Policy policy)
-            throws IOException, DeploymentEventException, DaoException;
+            throws IOException, DeploymentEventException, DaoException, DeploymentTerminatedException;
 
     /**
      * start rollback for deployment
@@ -115,7 +137,7 @@ public interface DeploymentService {
      * @throws DeploymentEventException
      */
     HttpResponseTemp<?> startRollback(int deployId, int versionId, int replicas, Policy policy)
-            throws IOException, DeploymentEventException, DaoException;
+            throws IOException, DeploymentEventException, DaoException, DeploymentTerminatedException;
 
     /**
      * scale up for deployment
@@ -128,7 +150,7 @@ public interface DeploymentService {
      * @throws DeploymentEventException
      */
     HttpResponseTemp<?> scaleUpDeployment(int deployId, int versionId, int replicas)
-            throws IOException, DeploymentEventException, DaoException;
+            throws IOException, DeploymentEventException, DaoException, DeploymentTerminatedException;
 
     /**
      * scale down for deployment
@@ -141,7 +163,7 @@ public interface DeploymentService {
      * @throws DeploymentEventException
      */
     HttpResponseTemp<?> scaleDownDeployment(int deployId, int versionId, int replicas)
-            throws IOException, DeploymentEventException, DaoException;
+            throws IOException, DeploymentEventException, DaoException, DeploymentTerminatedException;
 
     /**
      * list deployment events
@@ -158,7 +180,14 @@ public interface DeploymentService {
      * @return
      */
     HttpResponseTemp<?> abortDeployOperation(int deployId)
-            throws IOException, DeploymentEventException, DaoException;
+            throws IOException, DeploymentEventException, DaoException, DeploymentTerminatedException;
 
     VersionString getRCStr(DeploymentDraft deploymentDraft);
+
+    /**
+     *
+     * @param autoUpdateInfo
+     * @param b
+     */
+    void startUpdate(AutoUpdateInfo autoUpdateInfo, boolean b) throws IOException, DeploymentEventException, DaoException, DeploymentTerminatedException;
 }

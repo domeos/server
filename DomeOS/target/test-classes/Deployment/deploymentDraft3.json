@@ -28,8 +28,7 @@
   "namespace":"default",
   "deployName":"openxxs-sec-blood",
   "clusterId":1,
-  "creator":{
-    "creatorId":1,
-    "creatorType":"USER"
-  }
+  "creatorId":1,
+  "collectionId" :1
+
 }

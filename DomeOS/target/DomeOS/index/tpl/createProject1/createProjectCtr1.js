@@ -7,7 +7,7 @@
 	if (typeof domeApp === 'undefined') return;
 	domeApp.controller('CreateProjectCtr1', ['$scope', '$state', '$domeData', '$modal', '$domeProject', '$domePublic', function ($scope, $state, $domeData, $modal, $domeProject, $domePublic) {
 			$scope.$emit('pageTitle', {
-				title: '新建项目',
+				title: '新建工程',
 				descrition: '在这里把您的代码仓库和DomeOS对接即可创建新项目。此外，您还可以对现有项目进行查询和管理。',
 				mod: 'projectManage'
 			});
@@ -16,6 +16,15 @@
 			$scope.projectList = [];
 			$scope.creator = {};
 			$scope.codeManager = 'gitlab';
+			$scope.projectCollectionId = $state.params.projectCollectionId;
+			if(!$scope.projectCollectionId) {
+				$state.go('projectCollectionManage');
+			}
+			$domeProject.projectService.getProjectCollectionNameById($scope.projectCollectionId).then(function (res) {
+				$scope.projectCollectionName = res.data.result || '';
+			});
+			//面包屑 父级
+			$scope.parentState = 'projectManage({id:"' + $scope.projectCollectionId + '"})';
 			$scope.autoBuildInfo = {
 				tag: 0,
 				master: false,
@@ -23,7 +32,10 @@
 				branches: ''
 			};
 			$scope.role = 'user';
-			$scope.projectType = 'common'; // 'common' / 'custom' / 'dockerfile'
+			// projectType: commonconfig/dockerfileuserdefined/dockerfileincode/java/php
+			$scope.projectType = 'commonconfig';
+			$scope.projectTypeLanguage = ['java'];
+			$scope.projectTypeNotAllowedWOCodeManager = ['dockerfileincode'].concat($scope.projectTypeLanguage);
 			// $scope.currentGroup = {};
 			$scope.currentProject = {};
 			//  如果是“上一步”进入本页面
@@ -43,10 +55,10 @@
 					$scope.currentUserId = createProjectInfo1.info.codeInfo.codeManagerUserId;
 				}
 				$scope.codeManager = createProjectInfo1.codeManager;
-				$scope.creator = {
-					id: createProjectInfo1.creatorDraft.creatorId,
-					type: createProjectInfo1.creatorDraft.creatorType
-				};
+				// $scope.creator = {
+				// 	id: createProjectInfo1.creatorDraft.creatorId,
+				// 	type: 'GROUP'
+				// };
 				$scope.projectName = createProjectInfo1.info.name;
 				if (createProjectInfo1.info.autoBuildInfo) {
 					$scope.autoBuildInfo = createProjectInfo1.info.autoBuildInfo;
@@ -96,7 +108,7 @@
 
 			$scope.toggleCodeManager = function (codeManager) {
 				$scope.codeManager = codeManager;
-				if (!codeManager && ($scope.projectType == 'dockerfile' || $scope.projectType == 'custom')) {
+				if (!codeManager && $scope.projectTypeNotAllowedWOCodeManager.indexOf($scope.projectType) !== -1) {
 					$scope.projectType = 'common';
 				}
 				$scope.$broadcast('changeScrollList', new Date());
@@ -112,20 +124,23 @@
 					getGitLabInfo();
 				});
 			};
-			$scope.changeCreator = function (user) {
-				$scope.creator = user;
-			};
+			// $scope.changeCreator = function (user) {
+			// 	$scope.creator = user;
+			// };
 			$scope.toNext = function () {
 				if ($scope.codeManager && !$scope.currentProject.projectId) {
 					$domePublic.openWarning('请选择一个项目！');
 					return;
 				}
-				var creatorInfo = {
-					creatorType: $scope.creator.type,
-					creatorId: $scope.creator.id
-				};
+				// var creatorInfo = {
+				// 	creatorType: 'GROUP',
+				// 	creatorName: $scope.creator.name,
+				// 	creatorId: $scope.creator.id
+				// };
 				var proInfo = {
 					name: $scope.projectName,
+					projectCollectionId: $scope.projectCollectionId,
+					projectCollectionName: $scope.projectCollectionName,
 					projectBelong: $scope.creator.name
 				};
 
@@ -144,12 +159,13 @@
 				}
 
 				$domeData.setData('projectInfo', {
-					creatorDraft: creatorInfo,
+					// creatorDraft: creatorInfo,
 					codeManager: $scope.codeManager,
 					info: proInfo,
 					projectType: $scope.projectType
 				});
-				$state.go('createProject/2');
+				// console.log($domeData.getData('projectInfo'));
+				$state.go('createProject/2', {projectCollectionId: $scope.projectCollectionId});
 			};
 			$scope.isDescriptionNull = function (str) {
 				var result = str;

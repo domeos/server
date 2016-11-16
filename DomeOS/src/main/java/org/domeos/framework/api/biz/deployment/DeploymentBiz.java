@@ -22,6 +22,8 @@ public interface DeploymentBiz extends BaseBiz {
     List<Deployment> getDeployment(int clusterId, String deployName);
 
     List<Deployment> listUnfinishedStatusDeployment();
+
+    List<Deployment> listRunningDeployment();
 //    /**
 //     *
 //     * @param deployId

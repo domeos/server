@@ -1,16 +1,13 @@
 package org.domeos.framework.api.service.alarm.impl;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.domeos.basemodel.HttpResponseTemp;
 import org.domeos.basemodel.ResultStat;
 import org.domeos.framework.api.controller.exception.ApiException;
 import org.domeos.framework.api.service.alarm.AlarmSenderService;
 import org.domeos.util.CheckMobileAndEmail;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Created by baokangwang on 2016/5/6.
@@ -30,19 +27,22 @@ public class AlarmSenderServiceImpl implements AlarmSenderService {
             throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "content is null");
         }
 
-        SMSSender smsSender = new SMSSender();
-        Set<String> setNum = new HashSet<String>();
+//        SMSSender smsSender = new SMSSender();
+//        Set<String> setNum = new HashSet<String>();
         String[] numbers = tos.split(",");
         for (String number : numbers) {
             if (CheckMobileAndEmail.checkMobile(number)) {
-                setNum.add(number);
+                if (!Wechat.INSTANCE.send(number, content)) {
+                    logger.warn("send alarm message error, phone: " + number + ", message: " + content);
+                }
+//                setNum.add(number);
             }
         }
-        try {
-            smsSender.sendSMS(setNum, content);
-        } catch (Exception e){
-            throw ApiException.wrapUnknownException(e);
-        }
+//        try {
+//            smsSender.sendSMS(setNum, content);
+//        } catch (Exception e){
+//            throw ApiException.wrapUnknownException(e);
+//        }
 
         return ResultStat.OK.wrap(null);
     }

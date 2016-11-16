@@ -1,42 +1,45 @@
 
-<div class="mod-project project-manage">
-  <div class="project-options">
-    <button class="ui-btn ui-btn-lg" ui-sref="createProject/1"><i class="icon-add-white"></i>创建新项目</button>
-    <div class="pull-right"><span ng-cloak="ng-cloak">共{{filteredProjectList.length}}个项目</span>
-      <input class="ui-input-search ui-input-fill" type="text" placeholder="输入项目名称查询" ng-model="proKeywards"/>
+<tabset class="mod-tab">
+  <div class="tab-border"></div>
+  <tab class="first" heading="工程" active="tabActive[0].active" ui-sref="projectManage.project">
+    <div class="mod-project project-manage">
+      <div class="project-options">
+        <button class="ui-btn ui-btn-lg" ui-sref="createProject/1({'projectCollectionId':resourceId})" ng-disabled="!isCreateProject" ng-class="{'ui-btn-lg-disabled':!isCreateProject}"><span class="btn-txt">新建工程</span><i class="fa fa-plus"></i></button>
+        <div class="pull-right"><span ng-cloak="ng-cloak">共{{filteredProjectList.length}}个工程</span>
+          <input class="ui-input-search ui-input-fill" type="text" placeholder="输入工程名称查询" ng-model="proKeywards"/>
+        </div>
+      </div>
+      <div class="mod-list">
+        <loading ng-if="isLoading"></loading>
+        <table class="ui-table-dome">
+          <thead>
+            <tr>
+              <th>工程名称</th>
+              <th>构建类型</th>
+              <th>构建时间</th>
+              <th>构建状态</th>
+              <th>代码源</th>
+              <th>构建</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr ng-if="filteredProjectList.length===0">
+              <td class="text-center" colspan="7">暂无相关项目</td>
+            </tr>
+            <tr ng-repeat="project in filteredProjectList =  (projectList|filter:{name:proKeywards})">
+              <td><a class="ui-table-link" ng-bind="project.name" ui-sref="projectDetail({'projectCollectionId':resourceId,'project':project.id})"></a></td>
+              <td ng-switch="project.projectType"><span ng-switch-default="ng-switch-default">未知配置</span><span ng-switch-when="java">Java专属配置</span><span ng-switch-when="dockerfileuserdefined">定制化配置</span><span ng-switch-when="commonconfig">通用配置</span><span ng-switch-when="dockerfileincode">代码内Dockerfile</span></td>
+              <td ng-bind="vmDome.parseDate(project.buildTime)"></td>
+              <td ng-switch="project.buildStatus"><span class="txt-success" ng-switch-when="Success">成功</span><span class="txt-error" ng-switch-when="Fail">失败</span><span class="txt-normal" ng-switch-when="Building">构建中</span><span class="txt-normal" ng-switch-when="Preparing">准备中</span><span class="txt-normal" ng-switch-when="Send">准备中</span><span ng-switch-default="ng-switch-default">未启动</span></td>
+              <td ng-cloak="ng-cloak" ng-switch="project.codeManager"><span ng-if="!project.nameWithNamespace">无</span><a href="{{project.codeHttpUrl}}" target="_blank" ng-show="project.nameWithNamespace" title="代码源"><i class="fa fa-gitlab icon-git-color" ng-switch-when="gitlab"></i><i class="fa fa-github icon-git-color" ng-switch-when="github"></i></a></td>
+              <td><a ng-click="openBuild(project.id,!!project.nameWithNamespace)" title="构建"><i class="fa fa-wrench icon-edit-color"></i></a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
-  </div>
-  <div class="mod-list">
-    <loading ng-if="isLoading"></loading>
-    <table class="ui-table-dome">
-      <thead>
-        <tr>
-          <th>项目名称</th>
-          <th>项目构建类型</th>
-          <th>自动构建</th>
-          <th>构建时间</th>
-          <th>构建状态</th>
-          <th>代码源</th>
-          <th>操作</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr ng-if="filteredProjectList.length===0">
-          <td class="text-center" colspan="7">暂无相关项目</td>
-        </tr>
-        <tr ng-repeat="project in filteredProjectList =  (projectList|filter:{name:proKeywards})">
-          <td><a class="ui-table-link" ng-bind="project.name" ui-sref="projectDetail({'project':project.id})"></a></td>
-          <td ng-if="project.userDefineDockerfile">代码内Dockerfile</td>
-          <td ng-if="!project.userDefineDockerfile" ng-switch="project.projectType"><span ng-switch-when="java">Java专属配置</span><span ng-switch-default="ng-switch-default">通用配置</span></td>
-          <td><span>{{project.autoBuild===true ? '开启' : '未启用' }}</span></td>
-          <td ng-bind="vmDome.parseDate(project.buildTime)"></td>
-          <td ng-switch="project.buildStatus"><span class="txt-success" ng-switch-when="Success">成功</span><span class="txt-warning" ng-switch-when="Fail">失败</span><span class="txt-normal" ng-switch-when="Building">构建中</span><span class="txt-normal" ng-switch-when="Preparing">准备中</span><span class="txt-normal" ng-switch-when="Send">准备中</span><span ng-switch-default="ng-switch-default">未启动</span></td>
-          <td ng-cloak="ng-cloak" ng-switch="project.codeManager"><span ng-if="!project.nameWithNamespace">无</span><a href="{{project.codeHttpUrl}}" target="_blank" ng-show="project.nameWithNamespace"><i class="icon-gitlab" ng-switch-when="gitlab"></i><i class="icon-github" ng-switch-when="github"></i>{{project.nameWithNamespace}}</a></td>
-          <td>
-            <button class="ui-btn ui-btn-sm ui-btn-safe" ng-click="openBuild(project.id,!!project.nameWithNamespace)">构建</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
+  </tab>
+  <tab heading="成员" active="tabActive[1].active" ui-sref="projectManage.user">
+    <div class="tab-member" ng-include="'index/tpl/tplUserList/tplUserList.html'"></div>
+  </tab>
+</tabset>

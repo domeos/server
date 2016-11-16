@@ -1,16 +1,20 @@
 package org.domeos.framework.api.controller.cluster;
 
-import org.domeos.framework.api.consolemodel.cluster.ClusterCreate;
+import java.util.List;
+
+import org.domeos.basemodel.HttpResponseTemp;
 import org.domeos.framework.api.consolemodel.cluster.ClusterInfo;
 import org.domeos.framework.api.controller.ApiController;
 import org.domeos.framework.api.model.cluster.related.NodeLabel;
 import org.domeos.framework.api.service.cluster.ClusterService;
-import org.domeos.basemodel.HttpResponseTemp;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
  * Created by feiliu206363 on 2015/12/15.
@@ -24,8 +28,8 @@ public class ClusterController extends ApiController {
 
     @ResponseBody
     @RequestMapping(value = "", method = RequestMethod.POST)
-    public HttpResponseTemp<?> setCluster(@RequestBody ClusterCreate clusterCreate) {
-        return clusterService.setCluster(clusterCreate);
+    public HttpResponseTemp<?> setCluster(@RequestBody ClusterInfo clusterInfo) {
+        return clusterService.setCluster(clusterInfo);
     }
 
     @ResponseBody

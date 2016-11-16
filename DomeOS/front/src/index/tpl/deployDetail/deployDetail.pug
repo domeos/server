@@ -37,31 +37,31 @@ div.mod-deploy.deploy-detail
 				span.txt-warning(ng-switch-when="ABORTING") 中断中
 				span.txt-warning(ng-switch-when="BACKROLL_ABORTED") 回滚已中断
 				span.txt-warning(ng-switch-when="UPDATE_ABORTED") 升级已中断
-		.deploy-option.pull-right(ng-switch="config.deploymentStatus")
+		.deploy-option.pull-right.tool-align-input(ng-switch="config.deploymentStatus" ng-if="isEdit")
 			span(ng-switch-when="RUNNING")
-				button.ui-btn.ui-btn-bright.ui-btn-md(ng-disabled="isWaitingUpVersion" ng-click="updateVersion()" ng-if="!config.stateful") 升级/回滚
-				button.ui-btn.ui-btn-bright.ui-btn-md(ng-disabled="isWaitingScale" ng-click="scaleVersion()" ng-if="!config.stateful") 扩容/缩容
+				button.ui-btn.ui-btn-bright.ui-btn-lg(ng-disabled="isWaitingUpVersion" ng-click="updateVersion()" ng-if="!config.stateful") 升级/回滚
+				button.ui-btn.ui-btn-bright.ui-btn-lg(ng-disabled="isWaitingScale" ng-click="scaleVersion()" ng-if="!config.stateful") 扩容/缩容
 				button.ui-btn.ui-btn-bright.ui-btn-md(ng-disabled="isWaitingStop" ng-click="stopVersion()") 停止
 			//- button.ui-btn.ui-btn-bright.ui-btn-md(ng-switch-when="AB_TEST" ng-if="!config.stateful") 全部升级
 			//- button.ui-btn.ui-btn-bright.ui-btn-md(ng-switch-when="AB_TEST" ng-if="!config.stateful") 全部回滚
 			span(ng-switch-when="STOP")
-				button.ui-btn.ui-btn-bright.ui-btn-md(ng-disabled="isWaitingStart" ng-click="startVersion()") 启动
-				button.ui-btn.ui-btn-bright.ui-btn-md(ng-click="deleteDeploy()") 删除
+				button.ui-btn.ui-btn-bright.ui-btn-sm(ng-disabled="isWaitingStart" ng-click="startVersion()") 启动
+				button.ui-btn.ui-btn-bright.ui-btn-sm(ng-class="{'ui-btn-lg-disabled':!isDelete}" ng-disabled="!isDelete" ng-click="deleteDeploy()") 删除
 			span(ng-if="config.deploymentStatus=='ERROR'||config.deploymentStatus=='BACKROLL_ABORTED'||config.deploymentStatus=='UPDATE_ABORTED'")
-				button.ui-btn.ui-btn-bright.ui-btn-md(ng-if="!config.stateful" ng-disabled="isWaitingRecover" ng-click="recover()") 恢复
-				button.ui-btn.ui-btn-bright.ui-btn-md(ng-disabled="isWaitingStop" ng-click="stopVersion()") 停止
-			button.ui-btn.ui-btn-bright.ui-btn-md(ng-switch-when="DEPLOYING" ng-disabled="isWaitingOperation" ng-click="abortDeploy('DEPLOYING')") 中断启动
-			button.ui-btn.ui-btn-bright.ui-btn-md(ng-switch-when="UPDATING" ng-disabled="isWaitingOperation" ng-click="abortDeploy('UPDATING')") 中断升级
-			button.ui-btn.ui-btn-bright.ui-btn-md(ng-switch-when="BACKROLLING" ng-disabled="isWaitingOperation" ng-click="abortDeploy('BACKROLLING')") 中断回滚
-			button.ui-btn.ui-btn-bright.ui-btn-md(ng-switch-when="UPSCALING" ng-disabled="isWaitingOperation" ng-click="abortDeploy('UPSCALING')") 中断扩容
-			button.ui-btn.ui-btn-bright.ui-btn-md(ng-switch-when="DOWNSCALING" ng-disabled="isWaitingOperation" ng-click="abortDeploy('DOWNSCALING')") 中断缩容
+				button.ui-btn.ui-btn-bright.ui-btn-sm(ng-if="!config.stateful" ng-disabled="isWaitingRecover" ng-click="recover()") 恢复
+				button.ui-btn.ui-btn-bright.ui-btn-sm(ng-disabled="isWaitingStop" ng-click="stopVersion()") 停止
+			button.ui-btn.ui-btn-bright.ui-btn-lg(ng-switch-when="DEPLOYING" ng-disabled="isWaitingOperation" ng-click="abortDeploy('DEPLOYING')") 中断启动
+			button.ui-btn.ui-btn-bright.ui-btn-lg(ng-switch-when="UPDATING" ng-disabled="isWaitingOperation" ng-click="abortDeploy('UPDATING')") 中断升级
+			button.ui-btn.ui-btn-bright.ui-btn-lg(ng-switch-when="BACKROLLING" ng-disabled="isWaitingOperation" ng-click="abortDeploy('BACKROLLING')") 中断回滚
+			button.ui-btn.ui-btn-bright.ui-btn-lg(ng-switch-when="UPSCALING" ng-disabled="isWaitingOperation" ng-click="abortDeploy('UPSCALING')") 中断扩容
+			button.ui-btn.ui-btn-bright.ui-btn-lg(ng-switch-when="DOWNSCALING" ng-disabled="isWaitingOperation" ng-click="abortDeploy('DOWNSCALING')") 中断缩容
 	loading(ng-if="isLoading=(loadingsIns.isLoading||(tabActive[0].active&&deployIns.loadingIns.isLoading)||(tabActive[1].active&&deployEditIns.loadingIns.isLoading))")
 	tabset
 		tab(heading="部署详情" active="tabActive[0].active" ui-sref="deployDetail.detail")
 			.deploy-info
 				.deploy-rollback
-					span(ng-if="!config.stateful") 部署版本：
-					span(ng-if="config.stateful") 该部署是有状态服务，只有一个部署版本：
+					span.mod-title-name(ng-if="!config.stateful") 部署版本
+					span.mod-title-name(ng-if="config.stateful") 该部署是有状态服务，只有一个部署版本
 					.com-select-con(select-con)
 						button.ui-btn.ui-btn-select.ui-btn-white
 							i.icon-down
@@ -73,19 +73,25 @@ div.mod-deploy.deploy-detail
 				ul.com-list-info.mirror-con(ng-repeat="containerDraft in config.containerDrafts" ng-show="config.version")
 					li
 						span.info-name 镜像名称
-						.info-content
+						.info-content.info-content-lg-height
 							span.first-info(ng-bind="containerDraft.image" style="font-weight:bold;")
-					li(ng-if="config.stateful")
+					li
+						//-(ng-if="config.stateful")
 						span.info-name 镜像仓库
-						.info-content
+						.info-content.info-content-lg-height
 							span.first-info(ng-bind="containerDraft.registry")
 					li
 						span.info-name 镜像版本
-						.info-content
+						.info-content.info-content-lg-height
 							span.first-info(ng-bind="containerDraft.tag")
 					li
+						span.info-name 自动部署
+						.info-content.info-content-lg-height.first-info(ng-switch="containerDraft.autoDeploy")
+							span(ng-switch-when="true") 已开启自动部署
+							span(ng-switch-default) 未开启自动部署
+					li
 						span.info-name 运行过程环境变量
-						.info-content
+						.info-content.info-content-lg-height
 							.line-long
 								span.first-info(ng-if="!containerDraft.oldEnv||(containerDraft.oldEnv.length===0&&containerDraft.newEnv.length===0)") 未设置
 								table.ui-table-primary.ui-table-env(ng-hide="!containerDraft.oldEnv||(containerDraft.oldEnv.length===0&&containerDraft.newEnv.length===0)")
@@ -105,13 +111,19 @@ div.mod-deploy.deploy-detail
 											td(ng-cloak) {{env.description||'无'}}
 					li
 						span.info-name 容器大小
-						.info-content(ng-cloak)
+						.info-content.info-content-lg-height(ng-cloak)
 							.first-info
 								span.small-info CPU：{{containerDraft.cpu}}个
 								span.small-info 内存：{{containerDraft.mem}}MB
 					li
+						span.info-name 镜像拉取策略
+						.info-content.info-content-lg-height.first-info(ng-switch="containerDraft.imagePullPolicy")
+							span(ng-switch-default) Always
+							span(ng-switch-when="Never") Never
+							span(ng-switch-when="IfNotPresent") If Not Present
+					li
 						span.info-name 健康检查
-						.info-content.first-info(ng-switch="containerDraft.healthChecker.type")
+						.info-content.info-content-lg-height.first-info(ng-switch="containerDraft.healthChecker.type")
 							span(ng-switch-default) None
 							span(ng-switch-when="HTTP") HTTP检查
 							span(ng-switch-when="TCP") TCP检查
@@ -132,7 +144,7 @@ div.mod-deploy.deploy-detail
 								span.tool-next 200-400(不包含400)
 					li
 						span.info-name 日志
-						.info-content
+						.info-content.info-content-lg-height
 							span.first-info(ng-if="containerDraft.logItemDrafts.length===1") 未设置
 							ul.log-info.first-info(ng-cloak)
 								li(ng-repeat="logDraft in containerDraft.logItemDrafts" ng-hide="$last")
@@ -144,16 +156,16 @@ div.mod-deploy.deploy-detail
 											a.icon-help(style="margin-left:10px;" popover="对收集到的日志做进一步处理，比如筛选或增减字段等，可以用grep和awk命令完成，命令以管道形式执行，因此必须以“|”开始，比如一个典型的处理命令为：   | grep \"ERROR\\\\|WARN\\\\| EXCEPTION\\\\| statistic\" | awk -vnhost=\"$HOSTNAME\" '{print \"[\"nhost\"]--\"$0}'，该命令将只筛选包含四个对应关键字的行，并且会在行首添加\"[hostname]--\"的字符串，参照可完成其他复杂的处理方式")
 									span 自动删除日志:{{logDraft.autoDelete?'开启':'未开启'}}
 									span(ng-if="logDraft.autoDelete") 过期时间：{{logDraft.logExpired}}小时
-				h4.mod-title.txt-bright 部署设置
-				ul.com-list-info
+				h4.mod-title 部署设置
+				ul.com-list-info.mirror-con
 					li(ng-if="config.stateful")
 						span.info-name 网络模式
-						.info-content(ng-switch="config.networkMode")
+						.info-content.info-content-lg-height(ng-switch="config.networkMode")
 							span.first-info(ng-switch-when="HOST") Host
 							span.first-info(ng-switch-default) 默认
 					li
-						span.info-name(style="padding-top:8px;") 筛选主机
-						.info-content
+						span.info-name 筛选主机
+						.info-content.info-content-lg-height
 							div(ng-cloak)
 								span 集群：{{deployIns.clusterListIns.cluster.name}}
 								span.tool-next 部署环境：{{deployIns.envText}}
@@ -172,7 +184,7 @@ div.mod-deploy.deploy-detail
 									a.link-safe(ng-click="deployIns.nodeListIns.showHost()") 查看选中主机
 					li(ng-if="(showdeploy.versionType || 'CUSTOM') === 'CUSTOM'")
 						span.info-name 网络模式
-						.info-content
+						.info-content.info-content-lg-height
 							div(ng-cloak)
 								span.small-info {{showdeploy.networkMode=='HOST'?'Host':'Overlay'}}
 					li(ng-if="showdeploy.versionType === 'JSON' || showdeploy.versionType === 'YAML'")
@@ -183,10 +195,10 @@ div.mod-deploy.deploy-detail
 			.deploy-info(ng-form role="form" name="deployForm" ng-class="{'need-valid':valid.needValid}")
 				.info-content(ng-if="editConfig.versionType === 'YAML' || editConfig.versionType === 'JSON'")
 					ul.com-list-info
-						li
+						li.yaml-container
 							span.info-name(ng-if="editConfig.versionType === 'YAML'") YAML配置
 							span.info-name(ng-if="editConfig.versionType === 'JSON'") JSON配置
-							.info-content
+							.info-content.info-content-lg-height
 								label.config-input-group-label
 									.config-input-group
 										.config-input-group-top.code-area(ng-bind="editConfig.versionString.deploymentStrHead")
@@ -197,108 +209,119 @@ div.mod-deploy.deploy-detail
 										textarea.ui-input-fill.ui-input-group-vertical-middle.code-area(ng-model="editConfig.versionString.podSpecStr" ng-change="clearPodStrUndoText()" style="width: calc(100% - {{editConfig.versionString.indent + 2}}ch); margin-left: {{editConfig.versionString.indent + 2}}ch;")
 										.config-input-group-bottom.code-area(ng-bind="editConfig.versionString.deploymentStrTail")
 				.image-container(ng-if="(editConfig.versionType || 'CUSTOM') === 'CUSTOM'")
-					.mod-title 镜像设置
+					span.mod-title-name 镜像设置
 					.com-select-con.add-mirror(select-con)
-						input.ui-input-white.ui-btn-select(placeholder="添加镜像" ng-model="imageKey")
+						input.ui-input-white.ui-btn-select.input-image(placeholder="添加镜像" ng-model="imageKey")
 						ul.select-list
 							li.select-item(ng-repeat="image in deployEditIns.imageList|filter:{'imageName':imageKey}")
 								a(ng-click="deployEditIns.addImage(image);imageKey=''")
 									| {{image.imageName}}
 									span.txt-prompt.pull-right {{image.registry}}
-					a.link-safe.add-other(ng-click="deployEditIns.addOtherImage()") 添加其他镜像
-					ul.com-list-info.mirror-con.mirror-collapse(ng-repeat="containerDraft in editConfig.containerDrafts" ng-form name="childForm" mirror-collapse ng-init="imageindex=$index;")
-						li.cancel
-							a.icon-cancel(ng-click="deployEditIns.deleteImage($index)")
-						li.down(ng-click="toggleCollapse()")
-							i.icon-down-double(ng-class="{'up':!isCollapse}")
-						li
-							span.info-name 镜像仓库
-							.info-content
-								span.first-info(ng-bind="containerDraft.registry")
-						li
-							span.info-name 镜像名称
-							.info-content
-								span.first-info.txt-bright(ng-bind="containerDraft.image" style="font-weight:bold;")
-						li
-							span.info-name 镜像版本
-							.info-content
-								.line-short.com-select-con(select-con)
-									button.ui-btn.ui-btn-white.ui-btn-select(ng-cloak)
-										i.icon-down
-										| {{containerDraft.tag}}
-									ul.select-list
-										li(ng-if="!containerDraft.tagList||containerDraft.tagList.length===0")
-											a 无版本信息
-										li.select-item(ng-repeat="tag in containerDraft.tagList")
-											a(ng-click="deployEditIns.toggleImageTag($parent.$index,tag.tag)")
-												span.txt-prompt.image-tag(ng-bind="vmDome.parseDate(tag.createTime)")
-												span(ng-bind="tag.tag")
+					//- a.link-safe.add-other(ng-show="isEdit" ng-click="deployEditIns.addOtherImage()") 添加其他镜像
+				ul.com-list-info.mirror-con.mirror-collapse(ng-repeat="containerDraft in editConfig.containerDrafts" ng-form name="childForm" mirror-collapse ng-init="imageindex=$index;")
+					li.cancel
+						a.icon-cancel(ng-click="deployEditIns.deleteImage($index)")
+					li.down(ng-click="toggleCollapse()")
+						i.icon-down-double(ng-class="{'up':!isCollapse}")
+					li
+						span.info-name 镜像仓库
+						.info-content.info-content-lg-height
+							span.first-info(ng-bind="containerDraft.registry")
+					li
+						span.info-name 镜像名称
+						.info-content.info-content-lg-height
+							span.first-info.txt-bright(ng-bind="containerDraft.image" style="font-weight:bold;")
+					li
+						span.info-name 镜像版本
+						.info-content
+							.line-short.com-select-con(select-con)
+								button.ui-btn.ui-btn-white.ui-btn-select(ng-cloak)
+									i.icon-down
+									| {{containerDraft.tag}}
+								ul.select-list
+									li(ng-if="!containerDraft.tagList||containerDraft.tagList.length===0")
+										a 无版本信息
+									li.select-item(ng-repeat="tag in containerDraft.tagList")
+										a(ng-click="deployEditIns.toggleImageTag($parent.$index,tag.tag)")
+											span.txt-prompt.image-tag(ng-bind="vmDome.parseDate(tag.createTime)")
+											span(ng-bind="tag.tag")
+					li(ng-show="!isCollapse")
+						span.info-name 自动部署
+						.info-content
+							dome-toggle(ng-class="{'on':containerDraft.autoDeploy}" ng-click="containerDraft.autoDeploy=!containerDraft.autoDeploy" ng-model="containerDraft.autoDeploy")
+							span.txt-prompt  开启后，通过项目构建产生该镜像的新版本时，会自动触发该部署升级。该功能只对运行中的部署有效。
+					li(ng-show="!isCollapse")
+						span.info-name 运行过程环境变量
+						.info-content
+							.line-long
+								table.ui-table-primary.ui-table-env(ng-show="containerDraft.oldEnv.length!==0")
+									thead
+										tr
+											th 环境变量名
+											th 环境变量值
+											th 描述
+									tbody
+										tr(ng-repeat="env in containerDraft.oldEnv")
+											td(ng-bind="env.key")
+											th.txt-cell
+												input.ui-input-fill(ng-model="env.value" placeholder="环境变量值")
+											td(ng-bind="env.description")
+							.line-long.new-env-list(ng-repeat="env in containerDraft.newEnv")
+								input.ui-input-fill.line-element(ng-model="env.key" placeholder="环境变量名" is-required param1="env.value" ng-pattern="/^[A-Za-z_][A-Za-z0-9_]*$/" )
+								input.ui-input-fill.line-element(ng-model="env.value" placeholder="环境变量值" is-required param1="env.key")
+								input.ui-input-fill.line-element(ng-model="env.description" placeholder="描述20字以内")
+								span.txt-wrap
+									a.icon-delete(ng-click="deployEditIns.deleteImageEnv($parent.$index,$index)")
+							.line-long.new-env-list
+								span.add-env(ng-click="deployEditIns.addImageEnv($index)")
+									i.icon-add
+					li(ng-show="!isCollapse")
+						span.info-name.info-name-content-for-label 容器大小
+						.info-content
+							| CPU（个）
+							input.ui-input-fill.ui-input-sm(ng-model="containerDraft.cpu" name="cpu" ng-pattern="/^(\\d*\\.)?\\d+$/" required)
+							| 内存（MB）
+							input.ui-input-fill.ui-input-sm(ng-model="containerDraft.mem" name="mem" ng-pattern="/^(\\d*\\.)?\\d+$/" required)
+							span.tool-inline-error(ng-if="(valid.needValid||childForm.cpu.$dirty)&&childForm.cpu.$invalid||(valid.needValid||childForm.mem.$dirty)&&childForm.mem.$invalid") 请填写数字
+					li(ng-show="!isCollapse")
+						span.info-name.info-name-content-for-label 镜像拉取策略
+						.info-content.info-name-content-for-label
+							dome-radio.com-check-con(d-id="{{'pullPolicyAlways_'+$index}}" d-value="'Always'" d-name="pullPolicyType{{$index}}" d-label="Always" d-model="containerDraft.imagePullPolicy")
+							dome-radio.com-check-con(d-id="{{'pullPolicyNever_'+$index}}" d-value="'Never'" d-name="pullPolicyType{{$index}}" d-label="Never" d-model="containerDraft.imagePullPolicy")
+							dome-radio.com-check-con(d-id="{{'pullPolicyIfNotPresent_'+$index}}" d-value="'IfNotPresent'" d-name="pullPolicyType{{$index}}" d-label="If Not Present" d-model="containerDraft.imagePullPolicy")
+					li(ng-show="!isCollapse")
+						span.info-name.tool-align-input 健康检查
+						.info-content.info-content-lg-height
+							dome-radio.com-check-con(d-id="{{'checkNONE_'+$index}}" d-value="'NONE'" d-name="healthCheckerType{{$index}}" d-label="None" d-model="containerDraft.healthChecker.type")
+							dome-radio.com-check-con(d-id="{{'checkTCP_'+$index}}" d-value="'TCP'" d-name="healthCheckerType{{$index}}" d-disabled="{{editConfig.networkMode=='HOST'}}" d-label="TCP检查" d-model="containerDraft.healthChecker.type")
+							dome-radio.com-check-con(d-id="{{'checkHTTP_'+$index}}" d-value="'HTTP'" d-name="healthCheckerType{{$index}}" d-disabled="{{editConfig.networkMode=='HOST'}}" d-label="HTTP检查" d-model="containerDraft.healthChecker.type")
+							p.txt-prompt(ng-if="editConfig.networkMode=='HOST'") Host网络模式下不能使用健康检查
+							.line-long(ng-if="containerDraft.healthChecker.type=='TCP'||containerDraft.healthChecker.type=='HTTP'")
+								span.child-name 检查端口
+								input.ui-input-fill.line-element(placeholder="请输入端口号" name="port" ng-model="containerDraft.healthChecker.port" required)
+							span.child-error.txt-error(ng-if="(valid.needValid||childForm.port.$dirty)&&childForm.port.$invalid") 必填
+							.line-long(ng-if="containerDraft.healthChecker.type=='TCP'||containerDraft.healthChecker.type=='HTTP'")
+								span.child-name 超时时间（s）
+								input.ui-input-fill.line-element(placeholder="超过时间达到规定阈值，则健康检查判定为异常" name="timeout" ng-model="containerDraft.healthChecker.timeout" required ng-pattern="/^[1-9]\\d*$/")
+							span.child-error.txt-error(ng-if="(valid.needValid||childForm.timeout.$dirty)&&childForm.timeout.$invalid") 请填写数字
+							.line-long(ng-if="containerDraft.healthChecker.type=='TCP'||containerDraft.healthChecker.type=='HTTP'")
+								span.child-name 首次检测延迟（s）
+								input.ui-input-fill.line-element(placeholder="容器启动后延迟规定秒数，再开始健康检查" name="delay" ng-model="containerDraft.healthChecker.delay" required ng-pattern="/^[1-9]\\d*$/")
+							span.child-error.txt-error(ng-if="(valid.needValid||childForm.delay.$dirty)&&childForm.delay.$invalid") 请填写数字
+							.line-long(ng-if="containerDraft.healthChecker.type=='HTTP'")
+								span.child-name 检测URL
+								input.ui-input-fill.line-element(placeholder="请输入URL" name="url" ng-model="containerDraft.healthChecker.url" required)
+							span.child-error.txt-error(ng-if="(valid.needValid||childForm.url.$dirty)&&childForm.url.$invalid") 必填
+							.line-long(ng-if="containerDraft.healthChecker.type=='HTTP'")
+								span.child-name 允许返回值
+								span.child-txt  200-400(不包含400)
 						li(ng-show="!isCollapse")
-							span.info-name 运行过程环境变量
-							.info-content
-								.line-long
-									table.ui-table-primary.ui-table-env(ng-show="containerDraft.oldEnv.length!==0")
-										thead
-											tr
-												th 环境变量名
-												th 环境变量值
-												th 描述
-										tbody
-											tr(ng-repeat="env in containerDraft.oldEnv")
-												td(ng-bind="env.key")
-												th.txt-cell
-													input.ui-input-fill(ng-model="env.value" placeholder="环境变量值")
-												td(ng-bind="env.description")
-								.line-long.new-env-list(ng-repeat="env in containerDraft.newEnv")
-									input.ui-input-fill.line-element(ng-model="env.key" placeholder="环境变量名" is-required param1="env.value" ng-pattern="/^[A-Za-z_][A-Za-z0-9_]*$/" )
-									input.ui-input-fill.line-element(ng-model="env.value" placeholder="环境变量值" is-required param1="env.key")
-									input.ui-input-fill.line-element(ng-model="env.description" placeholder="描述20字以内")
-									span.txt-wrap
-										a.icon-delete(ng-click="deployEditIns.deleteImageEnv($parent.$index,$index)")
-								.line-long.new-env-list
-									span.add-env(ng-click="deployEditIns.addImageEnv($index)")
-										i.icon-add
-						li(ng-show="!isCollapse")
-							span.info-name 容器大小
-							.info-content
-								| CPU（个）
-								input.ui-input-fill.ui-input-sm(ng-model="containerDraft.cpu" name="cpu" ng-pattern="/^(\\d*\\.)?\\d+$/" required)
-								| 内存（MB）
-								input.ui-input-fill.ui-input-sm(ng-model="containerDraft.mem" name="mem" ng-pattern="/^(\\d*\\.)?\\d+$/" required)
-								span.tool-inline-error(ng-if="(valid.needValid||childForm.cpu.$dirty)&&childForm.cpu.$invalid||(valid.needValid||childForm.mem.$dirty)&&childForm.mem.$invalid") 请填写数字
-						li(ng-show="!isCollapse")
-							span.info-name.tool-align-input 健康检查
-							.info-content
-								dome-radio.com-check-con(d-id="{{'checkNONE_'+$index}}" d-value="'NONE'" d-name="healthCheckerType{{$index}}" d-label="None" d-model="containerDraft.healthChecker.type")
-								dome-radio.com-check-con(d-id="{{'checkTCP_'+$index}}" d-value="'TCP'" d-name="healthCheckerType{{$index}}" d-disabled="{{editConfig.networkMode=='HOST'}}" d-label="TCP检查" d-model="containerDraft.healthChecker.type")
-								dome-radio.com-check-con(d-id="{{'checkHTTP_'+$index}}" d-value="'HTTP'" d-name="healthCheckerType{{$index}}" d-disabled="{{editConfig.networkMode=='HOST'}}" d-label="HTTP检查" d-model="containerDraft.healthChecker.type")
-								p.txt-prompt(ng-if="editConfig.networkMode=='HOST'") Host网络模式下不能使用健康检查
-								.line-long(ng-if="containerDraft.healthChecker.type=='TCP'||containerDraft.healthChecker.type=='HTTP'")
-									span.child-name 检查端口
-									input.ui-input-fill.line-element(placeholder="请输入端口号" name="port" ng-model="containerDraft.healthChecker.port" required)
-								span.child-error.txt-error(ng-if="(valid.needValid||childForm.port.$dirty)&&childForm.port.$invalid") 必填
-								.line-long(ng-if="containerDraft.healthChecker.type=='TCP'||containerDraft.healthChecker.type=='HTTP'")
-									span.child-name 超时时间（s）
-									input.ui-input-fill.line-element(placeholder="超过时间达到规定阈值，则健康检查判定为异常" name="timeout" ng-model="containerDraft.healthChecker.timeout" required ng-pattern="/^[1-9]\\d*$/")
-								span.child-error.txt-error(ng-if="(valid.needValid||childForm.timeout.$dirty)&&childForm.timeout.$invalid") 请填写数字
-								.line-long(ng-if="containerDraft.healthChecker.type=='TCP'||containerDraft.healthChecker.type=='HTTP'")
-									span.child-name 首次检测延迟（s）
-									input.ui-input-fill.line-element(placeholder="容器启动后延迟规定秒数，再开始健康检查" name="delay" ng-model="containerDraft.healthChecker.delay" required ng-pattern="/^[1-9]\\d*$/")
-								span.child-error.txt-error(ng-if="(valid.needValid||childForm.delay.$dirty)&&childForm.delay.$invalid") 请填写数字
-								.line-long(ng-if="containerDraft.healthChecker.type=='HTTP'")
-									span.child-name 检测URL
-									input.ui-input-fill.line-element(placeholder="请输入URL" name="url" ng-model="containerDraft.healthChecker.url" required)
-								span.child-error.txt-error(ng-if="(valid.needValid||childForm.url.$dirty)&&childForm.url.$invalid") 必填
-								.line-long(ng-if="containerDraft.healthChecker.type=='HTTP'")
-									span.child-name 允许返回值
-									span.child-txt  200-400(不包含400)
-						li(ng-show="!isCollapse")
-							span.info-name 日志
+							span.info-name.info-name-lg 日志
 							.info-content
 								p.txt-prompt.no-log(ng-if="!deployIns.logConfig") 所选集群没有开启日志自动收集。不能进行日志相关配置。
-								button.ui-btn.ui-btn-sm.ui-btn-active.add-log(ng-click="deployEditIns.addLogDraft(image)" ng-if="deployIns.logConfig") 添加
+								
 								div.log-item(ng-form ng-repeat="log in containerDraft.logItemDrafts" name="childForm" ng-if="deployIns.logConfig")
-									a.icon-cancel.cancel-log(ng-click="deployEditIns.deleteLogDraft(image, log)")
+									a.icon-cancel.cancel-log(ng-click="deployEditIns.deleteLogDraft(containerDraft, log)")
 									input.ui-input-fill.element-full(placeholder="请输入日志路径，不能放在根目录下"  ng-pattern="/^\/.*[^\/]$/" ng-model="log.logPath" name="logPath" is-required param1="{{log.autoCollect&&log.logTopic}}" param2="{{log.autoCollect&&log.processCmd}}" param3="{{log.autoDelete&&log.logExpired}}")
 									span.txt-error(ng-if="childForm.logPath.$dirty&&childForm.logPath.$error.pattern") 非法的格式
 									div.log-check
@@ -321,8 +344,9 @@ div.mod-deploy.deploy-detail
 										input.ui-input-fill(placeholder="过期则自动删除" name="logExpired" ng-model="log.logExpired" required ng-pattern="/^[1-9]\\d*$/" )
 										span.unit 小时
 									.txt-error.log-error(ng-if="(valid.needValid||deployForm.logExpired.$dirty)&&deployForm.logExpired.$invalid") 请输入大于0的整数
-				.mod-title.txt-bright(ng-if="(editConfig.versionType  || 'CUSTOM') === 'CUSTOM'") 部署设置
-				ul.com-list-info(ng-if="(editConfig.versionType  || 'CUSTOM') === 'CUSTOM'")
+								button.ui-btn.ui-btn-sm.ui-btn-active.add-log(ng-click="deployEditIns.addLogDraft(containerDraft)" ng-if="deployIns.logConfig") 添加
+				.mod-title(ng-if="(editConfig.versionType  || 'CUSTOM') === 'CUSTOM'") 部署设置
+				ul.com-list-info.mirror-con(ng-if="(editConfig.versionType  || 'CUSTOM') === 'CUSTOM'")
 					li
 						span.info-name 筛选主机
 						.info-content
@@ -354,12 +378,12 @@ div.mod-deploy.deploy-detail
 									a.link-safe(ng-click="deployEditIns.nodeListIns.showHost()") 查看选中主机
 					li
 						span.info-name 网络模式
-						.info-content
+						.info-content.info-content-lg-height
 							span.first-info {{showdeploy.networkMode=='HOST'?'Host':'Overlay'}}
 
 				.com-bottom-option
 					span.span.com-bottom-option-con
-						button.ui-btn.ui-btn-md.ui-btn-bright(ng-disabled="isWaitingUpdate||isLoading" ng-click="valid.needValid=true;deployForm.$valid&&toUpdate();") 保存升级设置
+						button.ui-btn.ui-btn-sm.ui-btn-bright(ng-class="{'ui-btn-lg-disabled':!isEdit}" ng-disabled="!isEdit||isWaitingUpdate||isLoading" ng-click="valid.needValid=true;deployForm.$valid&&toUpdate();") 保存升级设置
 						.txt-error(ng-show="valid.needValid&&deployForm.$invalid") 存在不合法数据，请修改后提交。
 		tab(heading="事件" active="tabActive[2].active" ng-click="getEvents()" ui-sref="deployDetail.event")
 			.events-con
@@ -388,7 +412,7 @@ div.mod-deploy.deploy-detail
 								div.event-process-detail
 									span.sig-event-process(ng-repeat="status in event.currentSnapshot" ng-bind="status.version+' , '+status.replicas")
 						span.event-process.tool-nowrap(ng-if="event.operation=='KUBERNETES'" ng-bind="event.message" popover="{{event.message}}" popover-trigger="mouseenter")
-						span.txt-warning.event-info(ng-show="event.eventStatus=='FAILED'" popover="{{event.message}}" popover-trigger="mouseenter") 错误信息
+						span.txt-warning.event-info(ng-show="event.eventStatus=='FAILED'" popover="{{event.message}}" popover-trigger="click") 错误信息
 		tab(heading="实例" active="tabActive[3].active" ui-sref="deployDetail.instance")
 			.instance-con
 				table.ui-table-dome.instance-list
@@ -434,20 +458,20 @@ div.mod-deploy.deploy-detail
 								span.child-name 允许返回值
 								span.child-txt  200-400(不包含400)
 		tab(heading="网络/访问" active="tabActive[4].active" ui-sref="deployDetail.network")
-			.health-con
+			.health-con.deploy-info
 				ul.com-list-info(ng-form name="healthFrom" ng-class="{'need-valid':healthNeedValid}")
-					li
-						span.info-name.not-align-input 网络模式
-						.info-content
+					li.has-border
+						span.info-name 网络模式
+						.info-content.info-content-lg-height
 							span.small-info {{showdeploy.networkMode=='HOST'?'Host':'Overlay'}}
-					li
-						span.info-name.not-align-input 访问设置
-						.info-content
+					li.has-border
+						span.info-name 访问设置
+						.info-content.info-content-lg-height
 							span.small-info {{showdeploy.visitSet}}
 							//- span(ng-bind="showdeploy.loadBalanceDrafts")
-							div(ng-if="showdeploy.networkMode=='DEFAULT'")
+							div.tool-align-input(ng-if="showdeploy.networkMode=='DEFAULT'")
 								div(ng-if="showdeploy.loadBalanceDrafts.length!==0")
-									div.log-item(ng-repeat="loadbalance in showdeploy.loadBalanceDrafts")
+									div.log-item-none-top.log-item(ng-repeat="loadbalance in showdeploy.loadBalanceDrafts")
 										.line-full
 											span.log-title.not-align-input 服务监听端口
 											span(ng-bind="loadbalance.targetPort")
@@ -459,7 +483,7 @@ div.mod-deploy.deploy-detail
 											.line-element
 												div.ips(ng-repeat="ips in showdeploy.loadBalanceDrafts[$index].externalIPs" ng-bind="ips" ng-if="!last")
 								div(ng-if="showdeploy.innerServiceDrafts.length!==0")
-									div.log-item(ng-repeat="innerService in showdeploy.innerServiceDrafts")
+									div.log-item-none-top.log-item(ng-repeat="innerService in showdeploy.innerServiceDrafts")
 										.line-full
 											span.log-title.not-align-input 服务监听端口
 											span(ng-bind="innerService.targetPort")
@@ -467,17 +491,17 @@ div.mod-deploy.deploy-detail
 											span.log-title.not-align-input  集群内访问端口
 											span(ng-bind="innerService.port")
 							div(ng-if="showdeploy.networkMode=='HOST'&&showdeploy.exposePortNum!==0")
-								div.log-item
+								div.log-item-none-top.log-item
 									.line-full
 										span 对外暴露端口个数:&nbsp;
 										span(ng-bind="showdeploy.exposePortNum")
 									span.txt-prompt.tool-align-input Host网络下，系统会给每个实例分配若干个端口，用于对外服务和实例间通信。此外，在Host网络下，实例ip和宿主机ip一致。
 					li
-						span.info-name.not-align-input 内网域名
-						.info-content
-							span.small-info {{showdeploy.serviceDnsName}}
-		tab(heading="部署成员" active="tabActive[5].active" ng-hide="!hasMemberPermisson" ui-sref="deployDetail.user")
-			div.tab-member(ng-include="'index/tpl/tplUserList/tplUserList.html'")
+						span.info-name 内网域名
+						.info-content.info-content-lg-height
+							span {{showdeploy.serviceDnsName}}
+		//- tab(heading="部署成员" active="tabActive[5].active" ng-hide="!hasMemberPermisson" ui-sref="deployDetail.user")
+		//- 	div.tab-member(ng-include="'index/tpl/tplUserList/tplUserList.html'")
 script(type="text/ng-template" id="versionListModal.html")
 	.d-modal-header 选择版本
 	form.modal-body(name="versionFrom" ng-class="{'need-valid':needValid}")
@@ -498,7 +522,8 @@ script(type="text/ng-template" id="versionListModal.html")
 				.modal-info
 					input.ui-input-white(ng-model="versionData.replicas" name="replicas" required ng-pattern="/^[1-9]\\d*$/" )
 	.modal-footer
-		button.ui-btn.ui-btn-primary.ui-btn-sm(ng-click="needValid=true;versionFrom.$valid&&submit()") 确定
+		button.ui-btn.ui-btn-sm.ui-btn-white(ng-click="cancel()") 取消
+		button.ui-btn.ui-btn-bright.ui-btn-sm(ng-click="needValid=true;versionFrom.$valid&&submit()") 确定
 script(type="text/ng-template" id="scaleModal.html")
 	.d-modal-header 扩容/缩容
 	.modal-body.text-center.modal-scale
@@ -511,4 +536,5 @@ script(type="text/ng-template" id="scaleModal.html")
 					span.txt-error(ng-if="(needValid||replicasForm.replicas.$dirty)&&replicasForm.replicas.$error.pattern") 必须为大于0的整数
 					span.txt-error(ng-if="(needValid||replicasForm.replicas.$dirty)&&!replicasForm.replicas.$error.pattern&&replicasForm.replicas.$error.notEqual") 不能为当前实例个数
 	.modal-footer
+		button.ui-btn.ui-btn-sm.ui-btn-white(ng-click="cancel()") 取消
 		button.ui-btn.ui-btn-bright.ui-btn-sm.pull-right(ng-click="needValid=true;replicasForm.$valid&&submitScale()") 确定

@@ -1,7 +1,31 @@
 package org.domeos.framework.engine.k8s;
 
-import io.fabric8.kubernetes.api.model.*;
+
+import io.fabric8.kubernetes.api.model.ContainerStatus;
+import io.fabric8.kubernetes.api.model.Namespace;
+import io.fabric8.kubernetes.api.model.NamespaceList;
+import io.fabric8.kubernetes.api.model.Node;
+import io.fabric8.kubernetes.api.model.NodeAddress;
+import io.fabric8.kubernetes.api.model.NodeList;
+import io.fabric8.kubernetes.api.model.ObjectMeta;
+import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.api.model.PodList;
+import io.fabric8.kubernetes.api.model.Quantity;
 import io.fabric8.kubernetes.client.dsl.LogWatch;
+
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.TimeZone;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+
+import org.apache.commons.lang.StringUtils;
 import org.domeos.exception.JobLogException;
 import org.domeos.exception.K8sDriverException;
 import org.domeos.framework.api.biz.deployment.DeploymentBiz;
@@ -12,7 +36,10 @@ import org.domeos.framework.api.model.cluster.related.NodeInfo;
 import org.domeos.framework.api.model.deployment.Deployment;
 import org.domeos.framework.api.model.deployment.related.Instance;
 import org.domeos.framework.api.service.project.impl.KubeServiceInfo;
-import org.domeos.framework.engine.k8s.util.*;
+import org.domeos.framework.engine.k8s.util.Fabric8KubeUtils;
+import org.domeos.framework.engine.k8s.util.KubeUtils;
+import org.domeos.framework.engine.k8s.util.NodeUtils;
+import org.domeos.framework.engine.k8s.util.PodUtils;
 import org.domeos.global.ClientConfigure;
 import org.domeos.global.GlobalConstant;
 import org.domeos.util.CommonUtil;
@@ -22,12 +49,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 /**
  * Created by feiliu206363 on 2015/12/15.
@@ -228,6 +249,19 @@ public class NodeWrapper {
                     return false;
                 }
             }
+        }
+        return true;
+    }
+
+    public boolean deleteSecret(String secretName) {
+        if (StringUtils.isBlank(secretName)) {
+            return false;
+        }
+        try {
+            client.deleteSecret(GlobalConstant.SECRET_NAME_PREFIX + secretName);
+        } catch (IOException | K8sDriverException e) {
+            logger.warn("delete secret error, message is " + e.getMessage());
+            return false;
         }
         return true;
     }

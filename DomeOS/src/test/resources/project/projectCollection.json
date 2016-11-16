@@ -1,0 +1,11 @@
+{
+  "id": 1,
+  "name": "mytest",
+  "description": "this is a test project collection",
+  "creatorInfo": {
+    "name": "admin",
+    "creatorId": 1
+  },
+  "projectCollectionState": "PRIVATE",
+  "createTime": 1474866138213
+}

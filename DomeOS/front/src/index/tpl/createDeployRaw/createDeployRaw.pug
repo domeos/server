@@ -1,7 +1,7 @@
 .mod-deploy.create-deploy-raw(ng-form name="mirrorsListFrom" ng-class="{'need-valid':needValid.valid}" novalidate)
     loading(ng-if="loadingsIns.isLoading||deployIns.loadingIns.isLoading")
     ul.com-list-info
-        li.has-border
+        li
             span.info-name(ng-if="config.versionType === 'JSON'") JSON配置
             span.info-name(ng-if="config.versionType === 'YAML'") YAML配置
             .info-content

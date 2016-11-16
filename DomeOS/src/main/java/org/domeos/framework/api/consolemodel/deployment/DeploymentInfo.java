@@ -24,6 +24,7 @@ public class DeploymentInfo {
     private double memoryUsed;
     private boolean stateful;
     private String serviceDnsName;
+    private boolean deletable;
     private VersionType versionType;
 
     public void setDeployId(int deployId) {
@@ -130,6 +131,14 @@ public class DeploymentInfo {
         return memoryUsed;
     }
 
+    public boolean isDeletable() {
+        return deletable;
+    }
+
+    public void setDeletable(boolean deletable) {
+        this.deletable = deletable;
+    }
+
     public DeploymentInfo(Deployment deployment) {
         deployId = deployment.getId();
         deployName = deployment.getName();
@@ -164,4 +173,5 @@ public class DeploymentInfo {
     public void setVersionType(VersionType versionType) {
         this.versionType = versionType;
     }
+
 }

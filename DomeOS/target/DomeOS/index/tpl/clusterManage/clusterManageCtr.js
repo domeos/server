@@ -13,10 +13,21 @@
         });
         $scope.isLoading = true;
         var clusterService = $domeCluster.getInstance('ClusterService');
+        var nodeService = $domeCluster.getInstance('NodeService');
         clusterService.getData().then(function (res) {
             $scope.clusterList = res.data.result || [];
         }).finally(function () {
             $scope.isLoading = false;
         });
+        $scope.deleteCluster = function(clusterId) {
+            nodeService.deleteData(clusterId).then(function() {
+                for (var i = 0; i < $scope.clusterList.length; i++) {
+                    if ($scope.clusterList[i].id === clusterId) {
+                        $scope.clusterList.splice(i, 1);
+                    }
+                }
+                $state.go('clusterManage');
+            });
+        };
     }]);
 })(window.domeApp);

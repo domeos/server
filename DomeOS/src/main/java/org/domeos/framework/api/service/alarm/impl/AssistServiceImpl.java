@@ -1,6 +1,8 @@
 package org.domeos.framework.api.service.alarm.impl;
 
 import org.apache.commons.lang3.StringUtils;
+import org.domeos.framework.api.model.alarm.UserGroupBasic;
+import org.domeos.framework.api.model.alarm.UserInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.domeos.framework.api.biz.alarm.AlarmBiz;
@@ -11,8 +13,6 @@ import org.domeos.framework.api.model.alarm.assist.Link;
 import org.domeos.framework.api.model.alarm.assist.User;
 import org.domeos.framework.api.model.alarm.assist.UserWrap;
 import org.domeos.framework.api.model.alarm.falcon.portal.Action;
-import org.domeos.framework.api.model.auth.Group;
-import org.domeos.framework.api.model.auth.UserGroupMap;
 import org.domeos.framework.api.service.alarm.AssistService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -58,16 +58,15 @@ public class AssistServiceImpl implements AssistService {
 
         List<User> users = new ArrayList<>();
 
-        Group selectedGroup = authBiz.getGroupByName(group);
+        UserGroupBasic selectedGroup = alarmBiz.getUserGroupInfoBasicByName(group);
         if (selectedGroup == null) {
             return new UserWrap("", users);
         }
-        List<UserGroupMap> userGroupMaps = authBiz.getAllUsersInGroup(selectedGroup.getId());
-        if (userGroupMaps == null) {
+        List<UserInfo> userInfoList = alarmBiz.getUserInfoByUserGroupId(selectedGroup.getId());
+        if (userInfoList == null) {
             return new UserWrap("", users);
         }
-        for (UserGroupMap userGroupMap : userGroupMaps) {
-            org.domeos.framework.api.model.auth.User userInfo = authBiz.getUserById(userGroupMap.getUserId());
+        for (UserInfo userInfo : userInfoList) {
             if (userInfo == null) {
                 continue;
             }

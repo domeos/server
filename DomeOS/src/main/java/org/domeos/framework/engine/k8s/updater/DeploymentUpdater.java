@@ -4,24 +4,6 @@ import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodList;
 import io.fabric8.kubernetes.api.model.ReplicationController;
 import io.fabric8.kubernetes.api.model.ReplicationControllerList;
-import org.domeos.exception.DeploymentEventException;
-import org.domeos.exception.K8sDriverException;
-import org.domeos.exception.TimeoutException;
-import org.domeos.framework.api.consolemodel.deployment.EnvDraft;
-import org.domeos.framework.api.model.LoadBalancer.LoadBalancer;
-import org.domeos.framework.api.model.deployment.Deployment;
-import org.domeos.framework.api.model.deployment.Policy;
-import org.domeos.framework.api.model.deployment.Version;
-import org.domeos.framework.engine.k8s.RcBuilder;
-import org.domeos.framework.engine.k8s.model.DeploymentUpdatePhase;
-import org.domeos.framework.engine.k8s.model.DeploymentUpdateStatus;
-import org.domeos.framework.engine.k8s.model.UpdatePhase;
-import org.domeos.framework.engine.k8s.util.KubeUtils;
-import org.domeos.framework.engine.k8s.util.PodUtils;
-import org.domeos.framework.engine.k8s.util.RCUtils;
-import org.domeos.global.GlobalConstant;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -32,6 +14,28 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+
+import org.domeos.exception.DeploymentEventException;
+import org.domeos.exception.K8sDriverException;
+import org.domeos.exception.TimeoutException;
+import org.domeos.framework.api.consolemodel.deployment.EnvDraft;
+import org.domeos.framework.api.model.LoadBalancer.LoadBalancer;
+import org.domeos.framework.api.model.deployment.Deployment;
+import org.domeos.framework.api.model.deployment.Policy;
+import org.domeos.framework.api.model.deployment.Version;
+import org.domeos.framework.engine.k8s.DomeOSSecretBuilder;
+import org.domeos.framework.engine.k8s.RcBuilder;
+import org.domeos.framework.engine.k8s.model.DeploymentUpdatePhase;
+import org.domeos.framework.engine.k8s.model.DeploymentUpdateStatus;
+import org.domeos.framework.engine.k8s.model.UpdatePhase;
+import org.domeos.framework.engine.k8s.util.KubeUtils;
+import org.domeos.framework.engine.k8s.util.PodUtils;
+import org.domeos.framework.engine.k8s.util.RCUtils;
+import org.domeos.framework.engine.k8s.util.SecretUtils;
+import org.domeos.global.GlobalConstant;
+import org.json.JSONException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by anningluo on 2015/12/16.
@@ -46,7 +50,8 @@ public class  DeploymentUpdater {
     private Lock rcUpdaterLock = new ReentrantLock();
     private Map<String, String> rcSelector = null;
     private Future future;
-    private boolean keepRcQuantity = true;  // if replicas not set, keep rc replicas the same as old version
+    private boolean keepRcQuantity = true; // if replicas not set, keep rc
+                                           // replicas the same as old version
     private int replicas;
     private ReplicationController targetRC = null;
     private static ExecutorService executors = Executors.newCachedThreadPool();
@@ -61,7 +66,8 @@ public class  DeploymentUpdater {
         this.targetRC = new RcBuilder(deployment, null, version, extraEnvs, replicas).build();
     }
 
-    public DeploymentUpdater(KubeUtils client, Deployment deployment, Version version, List<EnvDraft> extraEnvs, Policy policy, List<LoadBalancer> lbs) {
+    public DeploymentUpdater(KubeUtils client, Deployment deployment, Version version, List<EnvDraft> extraEnvs,
+            Policy policy, List<LoadBalancer> lbs) {
         this.client = client;
         this.deployment = deployment;
         this.dstVersion = version;
@@ -70,7 +76,8 @@ public class  DeploymentUpdater {
         this.policy = policy;
     }
 
-    public DeploymentUpdater(KubeUtils client, Deployment deployment, Version version, int replicas, List<EnvDraft> extraEnvs) {
+    public DeploymentUpdater(KubeUtils client, Deployment deployment, Version version, int replicas,
+            List<EnvDraft> extraEnvs) {
         this.client = client;
         this.deployment = deployment;
         this.dstVersion = version;
@@ -79,8 +86,8 @@ public class  DeploymentUpdater {
         this.targetRC = new RcBuilder(deployment, null, version, extraEnvs, replicas).build();
     }
 
-    public DeploymentUpdater(KubeUtils client, Deployment deployment, Version version, int replicas, List<EnvDraft> extraEnvs,
-                             Policy policy, List<LoadBalancer> lbs) {
+    public DeploymentUpdater(KubeUtils client, Deployment deployment, Version version, int replicas,
+            List<EnvDraft> extraEnvs, Policy policy, List<LoadBalancer> lbs) {
         this.client = client;
         this.deployment = deployment;
         this.dstVersion = version;
@@ -96,8 +103,8 @@ public class  DeploymentUpdater {
         }
         synchronized (status) {
             if (status.getPhase() != DeploymentUpdatePhase.Unknown) {
-                String message = "try start one updater which has been start, deployId="
-                        + deployment.getId() + ", dstVersionId=" + dstVersion.getVersion();
+                String message = "try start one updater which has been start, deployId=" + deployment.getId()
+                        + ", dstVersionId=" + dstVersion.getVersion();
                 status.failed(message);
                 logger.error(message);
                 return;
@@ -120,7 +127,8 @@ public class  DeploymentUpdater {
         int maxVersionId = -1;
         int dstVersionId = dstVersion.getVersion();
         for (ReplicationController rc : rcList.getItems()) {
-            // ** ignore 0 replicas ?? is it right, this will ignore rc whose replicas is zero
+            // ** ignore 0 replicas ?? is it right, this will ignore rc whose
+            // replicas is zero
             if (rc.getSpec().getReplicas() == 0) {
                 continue;
             }
@@ -134,19 +142,23 @@ public class  DeploymentUpdater {
         return maxVersionRC;
     }
 
-    private void startOneStepRCUpdate(ReplicationController srcRC) throws DeploymentEventException {
-        ReplicationControllerUpdater oneStepUpdater = ReplicationControllerUpdater.RollingUpdater(client, srcRC, targetRC, policy);
+    private void startOneStepRCUpdate(ReplicationController srcRC)
+            throws DeploymentEventException {
+        ReplicationControllerUpdater oneStepUpdater = ReplicationControllerUpdater.RollingUpdater(client, srcRC,
+                targetRC, policy);
         freshUpdater(oneStepUpdater);
         oneStepUpdater.update();
     }
 
-    private void deleteOtherRC() throws IOException, K8sDriverException, DeploymentEventException {
+    private void deleteOtherRC()
+            throws IOException, K8sDriverException, DeploymentEventException {
         ReplicationControllerList rcList = client.listReplicationController(rcSelector);
         if (rcList == null || rcList.getItems() == null || rcList.getItems().get(0) == null) {
             return;
         }
         for (ReplicationController rc : rcList.getItems()) {
-            if (Integer.parseInt(rc.getMetadata().getLabels().get(GlobalConstant.VERSION_STR)) == dstVersion.getVersion()) {
+            if (Integer.parseInt(rc.getMetadata().getLabels().get(GlobalConstant.VERSION_STR)) == dstVersion
+                    .getVersion()) {
                 continue;
             }
             PodList podList = client.listPod(RCUtils.getSelector(rc));
@@ -187,8 +199,7 @@ public class  DeploymentUpdater {
 
     public DeploymentUpdateStatus getStatus() {
         synchronized (status) {
-            if (future != null && future.isDone()
-                    && status.getPhase() != DeploymentUpdatePhase.Failed
+            if (future != null && future.isDone() && status.getPhase() != DeploymentUpdatePhase.Failed
                     && status.getPhase() != DeploymentUpdatePhase.Succeed) {
                 String message = "executor thread is terminated, but status is not, some unknown exception may happen in update deployment";
                 status.failed(message);
@@ -230,12 +241,9 @@ public class  DeploymentUpdater {
     }
 
     /*
-    private UpdateStatus getRCUpdateStatus() {
-        synchronized (rcUpdater) {
-             return rcUpdater.getStatus();
-        }
-    }
-    */
+     * private UpdateStatus getRCUpdateStatus() { synchronized (rcUpdater) {
+     * return rcUpdater.getStatus(); } }
+     */
 
     private void freshUpdater(ReplicationControllerUpdater updater) {
         rcUpdaterLock.lock();
@@ -251,19 +259,18 @@ public class  DeploymentUpdater {
         long startTimePoint = System.currentTimeMillis();
         ReplicationController rc = client.replicationControllerInfo(rcName);
         if (rc == null || rc.getSpec() == null || rc.getSpec().getSelector() == null) {
-            throw new NullPointerException("get target rc=" + rcName + " is null");
+            logger.error("get target rc error, no such rc!");
+            throw new DeploymentEventException("get target rc=" + rcName + " is null");
         }
         Map<String, String> podSelector = rc.getSpec().getSelector();
         PodList podList = client.listPod(podSelector);
         if (podList == null || podList.getItems() == null) {
-            throw new NullPointerException("get podList with selector=" + podSelector
-                    + ", but return null");
+            logger.error("no pod info for rc(name=" + rcName + ")");
+            throw new DeploymentEventException("get podList with selector=" + podSelector + ", but return null");
         }
-        while (PodUtils.getPodReadyNumber(podList.getItems()) != replicas
-                || podList.getItems().size() != replicas) {
+        while (PodUtils.getPodReadyNumber(podList.getItems()) != replicas || podList.getItems().size() != replicas) {
             if (System.currentTimeMillis() - startTimePoint > timeout) {
-                throw new TimeoutException("TIMEOUT: wait rc=" + rcName + " for "
-                        + timeout + "millisecond.");
+                throw new TimeoutException("TIMEOUT: wait rc=" + rcName + " for " + timeout + "millisecond.");
             }
             try {
                 Thread.sleep(interBreak);
@@ -272,8 +279,8 @@ public class  DeploymentUpdater {
             }
             podList = client.listPod(podSelector);
             if (podList == null || podList.getItems() == null) {
-                throw new NullPointerException("get podList with selector=" + podSelector
-                        + ", but return null");
+                logger.error("no pod info for rc(name=" + rcName + ")");
+                throw new DeploymentEventException("get podList with selector=" + podSelector + ", but return null");
             }
         }
     }
@@ -285,7 +292,7 @@ public class  DeploymentUpdater {
                 succeedPhase();
                 return true;
             } catch (IOException | K8sDriverException | TimeoutException | DeploymentEventException e) {
-                e.printStackTrace();
+                logger.warn("catch exception wait rc success, message is " + e.getMessage());
             }
         }
         return false;
@@ -299,16 +306,29 @@ public class  DeploymentUpdater {
                 int currentTargetReplicas;
 
                 // ** check whether target RC exist, create it if not
-                ReplicationControllerList targetRCList = client.listReplicationController(targetRC.getMetadata().getLabels());
+                ReplicationControllerList targetRCList = client.listReplicationController(targetRC.getMetadata()
+                        .getLabels());
                 if (targetRCList == null || targetRCList.getItems() == null || targetRCList.getItems().size() == 0) {
                     // ** ** no target rc exist, create new
+                    // create secret before the create of rc
+                    // judge the registry is belong to domeos or not
+                    if (SecretUtils.haveDomeOSRegistry(dstVersion.getContainerDrafts())) {// domeos
+                                                                                          // registry
+                        try {
+                            if (client.secretInfo(GlobalConstant.SECRET_NAME_PREFIX + deployment.getNamespace()) == null) {
+                                client.createSecret(new DomeOSSecretBuilder(GlobalConstant.SECRET_NAME_PREFIX
+                                        + deployment.getNamespace(), SecretUtils.getDomeOSImageSecretData()).build());
+                            }
+                        } catch (K8sDriverException | JSONException e) {
+                            throw new DeploymentEventException("kubernetes exception with message=" + e.getMessage());
+                        }
+                    }
                     targetRC.getSpec().setReplicas(0);
                     client.createReplicationController(targetRC);
                 } else if (targetRCList.getItems().size() != 1) {
                     // ** ** make sure only one rc for one version in kubernetes
-                    failedPhase("update deployment(id=" + deployment.getId()
-                            + ") to version=" + dstVersion.getVersion()
-                            + ", but more than one rc exist for that version");
+                    failedPhase("update deployment(id=" + deployment.getId() + ") to version="
+                            + dstVersion.getVersion() + ", but more than one rc exist for that version");
                     return;
                 } else {
                     // ** ** attach to exist rc of target version
@@ -324,7 +344,8 @@ public class  DeploymentUpdater {
                     currentTargetRC = client.replicationControllerInfo(RCUtils.getName(targetRC));
                     currentTargetReplicas = currentTargetRC.getSpec().getReplicas();
                     if (keepRcQuantity) {
-                        // ** ** in this case, the number pod of dst version will be identified with old version
+                        // ** ** in this case, the number pod of dst version
+                        // will be identified with old version
                         targetRC.getSpec().setReplicas(currentTargetReplicas + rc.getSpec().getReplicas());
                     } else if (currentTargetReplicas >= replicas) {
                         // ** ** in this case, just delete old rc and return
@@ -333,8 +354,10 @@ public class  DeploymentUpdater {
                         succeedPhase();
                         return;
                     } else {
-                        // ** ** ensure not more than $replicas pod will be created
-                        targetRC.getSpec().setReplicas(Math.min(replicas, currentTargetReplicas + rc.getSpec().getReplicas()));
+                        // ** ** ensure not more than $replicas pod will be
+                        // created
+                        targetRC.getSpec().setReplicas(
+                                Math.min(replicas, currentTargetReplicas + rc.getSpec().getReplicas()));
                     }
                     // ** start rc updater
                     startOneStepRCUpdate(rc);
@@ -342,7 +365,8 @@ public class  DeploymentUpdater {
                     rcUpdaterLock.lock();
                     try {
                         if (rcUpdater.getStatus().getPhase() == UpdatePhase.Failed) {
-                            // in this case, status could not be modified, get status
+                            // in this case, status could not be modified, get
+                            // status
                             // will moidfy it later.
                             failedPhase(rcUpdater.getStatus().getReason());
                             return;
@@ -365,8 +389,7 @@ public class  DeploymentUpdater {
             } catch (IOException | K8sDriverException e) {
                 failedPhase("kubernetes failed with message=" + e.getMessage());
             } catch (Exception e) {
-                failedPhase("update deployment(id=" + deployment.getId()
-                        + ") failed, exception=" + e);
+                failedPhase("update deployment(id=" + deployment.getId() + ") failed, exception=" + e);
             }
         }
     }

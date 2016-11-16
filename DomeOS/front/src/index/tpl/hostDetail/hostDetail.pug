@@ -24,36 +24,38 @@
 		tabset
 			tab(heading="实例列表" active="tabActive[0].active" ui-sref="hostDetail.instancelist")
 				loading(ng-if="isWaitingHost")
-				.info-options
-					input.ui-input-fill.ui-input-white.ui-input-search.pull-right(placeholder="输入实例名称查找" ng-model="insKey")
-					span.info-count(ng-cloak) 共{{instanceListFiltered.length}}个实例
-				table.ui-table-dome.full
-					thead
-						tr
-							th 实例名称
-							th namespace
-							th 部署名称
-							th 部署版本
-							th 启动时间
-							th 日志
-							th 容器控制台
-					tbody
-						tr(ng-if="instanceList&&instanceListFiltered.length===0")
-							td(colspan="7") 无相关实例信息
-						tr(ng-repeat="ins in instanceListFiltered=(instanceList|filter:{'instanceName':insKey})")
-							td(ng-bind="ins.instanceName")
-							td(ng-bind="ins.namespace")
-							td(ng-if="ins.versionId===0" colspan="2") 该实例由后台创建
-							td(ng-bind="ins.deployName" ng-if="ins.versionId!==0")
-							td(ng-cloak ng-if="ins.versionId!==0") version{{ins.versionId}}
-							td(ng-bind="vmDome.parseDate(ins.startTime)")
-							td
-								a.txt-safe(ng-click="showLog(ins.instanceName,ins.containers,ins.namespace)") 日志
-							td
-								a.link-safe(ng-click="toConsole($index)") 进入
+				.mod-option
+					.info-options.right-option
+						span.info-count(ng-cloak) 共{{instanceListFiltered.length}}个实例
+						input.ui-input-fill.ui-input-white.ui-input-search.pull-right(placeholder="输入实例名称查找" ng-model="insKey")
+				.table-warp
+					table.ui-table-dome.full
+						thead
+							tr
+								th 实例名称
+								th namespace
+								th 部署名称
+								th 部署版本
+								th 启动时间
+								th 日志
+								th 容器控制台
+						tbody
+							tr(ng-if="instanceList&&instanceListFiltered.length===0")
+								td(colspan="7") 无相关实例信息
+							tr(ng-repeat="ins in instanceListFiltered=(instanceList|filter:{'instanceName':insKey})")
+								td(ng-bind="ins.instanceName")
+								td(ng-bind="ins.namespace")
+								td(ng-if="ins.versionId===0" colspan="2") 该实例由后台创建
+								td(ng-bind="ins.deployName" ng-if="ins.versionId!==0")
+								td(ng-cloak ng-if="ins.versionId!==0") version{{ins.versionId}}
+								td(ng-bind="vmDome.parseDate(ins.startTime)")
+								td
+									a.txt-safe(ng-click="showLog(ins.instanceName,ins.containers,ins.namespace)") 日志
+								td
+									a.link-safe(ng-click="toConsole($index)") 进入
 			tab(heading="主机设置" active="tabActive[1].active" ui-sref="hostDetail.info")
 				ul.com-list-info(ng-form role="form" name="hostForm" ng-class="{'need-valid':needValidHost}")
-					li
+					li.has-border
 						span.info-name 工作场景
 						.info-content
 							span.com-check-con
@@ -62,13 +64,13 @@
 							span.com-check-con
 								input#testEnv.ui-check(type="checkbox" ng-model="envData.testEnv")
 								label(for="testEnv") 测试环境
-							button.ui-btn.ui-btn-sm.ui-btn-primary(ng-click="modifyEnv()") 保存
-					li
+							button.ui-btn.ui-btn-sm.ui-btn-bright.save-label(ng-click="modifyEnv()") 保存
+					li.has-border
 						span.info-name 主机标签
 						.info-content
 							.line-short
 								input.ui-input-white.line-element(ng-model="hostSetting.labelTxt" name="labelTxt")
-								button.ui-btn.ui-btn-primary.ui-btn-sm.add-label(ng-click="needValidHost=true;hostForm.$valid&&addLabel()") 添加
+								button.ui-btn.ui-btn-bright.ui-btn-sm.add-label(ng-click="needValidHost=true;hostForm.$valid&&addLabel()") 添加
 							ul.com-label-list.host-label-con
 								li(ng-repeat="(label,value) in labelsList")
 									span.label-item(ng-cloak)

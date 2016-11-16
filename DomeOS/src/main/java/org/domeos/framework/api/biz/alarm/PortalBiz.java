@@ -3,7 +3,7 @@ package org.domeos.framework.api.biz.alarm;
 import org.domeos.framework.api.biz.base.BaseBiz;
 import org.domeos.framework.api.model.alarm.HostGroupInfoBasic;
 import org.domeos.framework.api.model.alarm.StrategyInfo;
-import org.domeos.framework.api.model.alarm.TemplateInfo;
+import org.domeos.framework.api.consolemodel.alarm.TemplateInfo;
 import org.domeos.framework.api.model.alarm.falcon.portal.Action;
 import org.domeos.framework.api.model.alarm.falcon.portal.GroupTemplate;
 

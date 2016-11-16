@@ -48,6 +48,12 @@ const paths = {
       'src/**/*.jpeg',
       'src/**/*.ico',
     ],
+    scssimg: [
+      'src/index/images/icon-*.png',
+      'src/index/images/lib-*.png',
+      'src/index/images/nav-*.png',
+      'src/module/images/icon-*.png',
+    ],
     font: [
       'src/**/*.svg',
       'src/**/*.TTF',
@@ -65,11 +71,11 @@ const paths = {
     clean: 'app'
   },
   release: {
-    dst: '../src/main/webapp',
+    dst: 'dst',
     clean: [
-      '../src/main/webapp/**/*',
-      '!../src/main/webapp/pages{,/**/*}',
-      '!../src/main/webapp/WEB-INF{,/**/*}',
+      'dst/**/*',
+      '!dst/pages{,/**/*}',
+      '!dst/WEB-INF{,/**/*}',
     ]
   }
 };
@@ -77,7 +83,6 @@ const paths = {
 const watchs = [
 ];
 
-watchs.push([paths.src.scss, ['scss']]);
 gulp.task('scss', function () {
   return sass(paths.src.scss, {
     sourcemap: true,
@@ -142,13 +147,21 @@ gulp.task('copyhtml', function () {
 gulp.task('htmls', ['pug', 'copyhtml'], function () {
 });
 
-watchs.push([paths.src.img, ['img']]);
-gulp.task('img', function () {
+gulp.task('copyimg', function () {
   return gulp.src(paths.src.img)
     .pipe(plumber())
     .pipe(cache(imagemin()))
     .pipe(gulp.dest(paths.src.base))
     .pipe(gulp.dest(paths[mode].dst));
+});
+
+watchs.push([[
+  paths.src.scss,
+  paths.src.img,
+  paths.src.scssimg.map(function (x) { return '!' + x; })
+], ['img']]);
+gulp.task('img', function (callback) {
+  sequence('scss', 'copyimg', callback);
 });
 
 watchs.push([paths.src.font, ['font']]);

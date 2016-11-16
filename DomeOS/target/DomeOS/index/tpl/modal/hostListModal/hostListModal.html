@@ -1,6 +1,6 @@
 
 <div class="d-modal-header">选择主机列表<span class="model-prompt" ng-cloak="ng-cloak">共{{hostList.length}}台</span></div>
-<div class="d-modal-full">
+<div class="d-modal-full d-modal-container">
   <table class="ui-table-dome">
     <thead>
       <tr>
@@ -20,4 +20,7 @@
       </tr>
     </tbody>
   </table>
+</div>
+<div class="d-modal-footer text-right">
+  <button class="ui-btn ui-btn-sm ui-btn-white" ng-click="cancel()">取消</button>
 </div>

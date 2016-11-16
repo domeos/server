@@ -3,11 +3,10 @@ package org.domeos.framework.api.biz;
 import org.domeos.base.BaseTestCase;
 import org.domeos.framework.api.model.operation.OperationRecord;
 import org.domeos.framework.api.model.operation.OperationType;
-import org.domeos.framework.api.model.resource.related.ResourceType;
+import org.domeos.framework.api.model.collection.related.ResourceType;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
 
 /**

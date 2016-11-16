@@ -3,8 +3,17 @@
 .monitor-manage{
 	min-height: 700px;
 	padding-bottom: 400px;
+	button{
+		width:132px;
+	}
+	.detail-header{
+		padding: 20px;
+	    border-bottom: 10px solid #def0fe;
+	    overflow: hidden;
+	}
 	.monitor-options{
-		padding: 8px $page-padding 20px $page-padding;
+		margin: 0 20px;
+    	padding: 20px 0px;
 		border-bottom: $light-border;
 		.option-title{
 			display: inline-block;
@@ -23,6 +32,9 @@
 			margin-top: 12px;
 			.host-label{
 				width: 746px;
+			}
+			.input-btn-size{
+				width: 100%;
 			}
 		}
 		.com-select-con{
@@ -74,6 +86,9 @@
 	.container-image{
 		width: 127px;
 		word-break:break-all;
+	}
+	.mod-list{
+		padding:0 20px 0 20px;
 	}
 
 }

@@ -59,6 +59,11 @@ public class DeploymentBizImpl extends BaseBizImpl implements DeploymentBiz {
     public List<Deployment> listUnfinishedStatusDeployment() {
         return mapper.listUnfinishedStatusDeployment();
     }
+
+    @Override
+    public List<Deployment> listRunningDeployment() {
+        return mapper.listRunningDeployment();
+    }
 //    @Autowired
 //    DeploymentMapper deploymentMapper;
 //

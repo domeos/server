@@ -1,8 +1,11 @@
 @import "compass/css3";
 @import "common/css/common.scss";
 .global-setting{
+    .table-container{
+        padding: 0 20px 20px 20px;
+    }
     .com-list-info{
-        padding-top: 20px;
+        padding-top: 0px;
     }
     .ldap-info .info-name{
         width: 202px !important;
@@ -35,11 +38,11 @@
     }
     .btn-cluster-save{
         float: right;
-        margin: 20px $wider-padding 0 0;
+        margin: 10px 0 0 20px;
     }
     .cluster-detail{
         display: inline-block;
-        margin: 28px 0 0 42px;
+        // margin: 28px 0 0 42px;
     }
     @media (max-width:1200px){
         .cluster-detail{
@@ -47,18 +50,21 @@
             margin-top: 20px;
         }
     }
+    .cluster-list-title{
+        padding: 0 20px;
+    }
     .user-list-title{
-        padding: 0 $page-padding 12px 40px;
-        border-bottom: $light-border;
-        height: 69px;
+        padding: $page-padding;
+        // border-bottom: $light-border;
+        // height: 69px;
         .ui-input-search{
-            margin-top: 14px;
+            // margin-top: 14px;
         }
         h3{
             display: inline-block;
-            font-size: 20px;
+            font-size: 16px;
             margin-right: 16px;
-            line-height: 70px;
+            // line-height: 70px;
         }
         .com-select-con{
             display: inline-block;
@@ -66,19 +72,22 @@
         }
         .to-add{
             display: inline-block;
-            padding: 20px 0 0 40px;
+            padding: 0 0 0 40px;
             .icon-down-white{
                 margin-left: 4px;
             }
         }
     }
     .node-option{
-        margin-top: 20px;
-        padding:14px 42px 14px 42px;
-        border-top: $light-border;
+        // margin-top: 20px;
+        padding: 0 20px 20px 20px;
+        // border-top: $light-border;
         overflow: hidden;
         .host-right{
             float: right;
+        }
+        .input-right{
+            margin-left: 34px;
         }
         .host-detail {
             display: inline-block;
@@ -98,8 +107,22 @@
     .table-hostlist{
         td,th{
             &:first-child{
-                padding-left: $wider-padding;
+                padding-left: 8px;
             }
+        }
+    }
+    .table-userlist{
+        td,th{
+            &:first-child{
+                padding-left: 8px;
+            }
+        }
+        .btn-distance{
+            padding-left: 10px !important;
+        }
+        .icon-none-padding{
+            padding-right: 0px !important;
+            padding-left: 10px !important;
         }
     }
     .table-userlist{

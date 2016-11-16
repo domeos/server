@@ -27,7 +27,7 @@
             <bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter" p:objectMapper-ref="modelObjectMapper"/>
         </mvc:message-converters>
     </mvc:annotation-driven>
-    <bean id="modelObjectMapper" class="org.domeos.framework.engine.model.ModelObjectMapper" />
+    <!--<bean id="modelObjectMapper" class="org.domeos.framework.engine.model.ModelObjectMapper" />-->
 
     <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
         <property name="prefix" value="/WEB-INF/pages/"/>

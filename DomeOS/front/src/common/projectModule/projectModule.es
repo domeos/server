@@ -8,10 +8,12 @@
     'use strict';
     let projectModule = angular.module('projectModule', []);
 
-    function DomeProject($http, $util, $state, $domePublic, $domeModel, $q, $modal) {
+    function DomeProject($http, $util, $state, $domePublic, $domeModel, $q, $modal, $domeImage) {
         const ProjectService = function () {
             this.url = 'api/project';
             $domeModel.ServiceModel.call(this, this.url);
+            this.getProjectCollectionNameById = (projectCollectionId) => $http.get(`/api/projectcollection/${projectCollectionId}/name`);
+            this.getProject = (projectCollectionId) => $http.get(`/api/projectcollection/${projectCollectionId}/project`);
             this.getReadMe = (proId, branch) => $http.get(`${this.url}/readme/${proId}/${branch}`);
             this.getBuildList = proId => $http.get(`/api/ci/build/${proId}`);
             this.getBranches = proId => $http.get(`${this.url}/branches/${proId}`);
@@ -54,6 +56,14 @@
                 this.selectedCompileImage = {};
                 this.selectedRunImage = {};
                 this.currentCompileList = [];
+                // 私有仓库所有镜像
+                this.privateRegistryImageList = []
+                // 私有仓库compile镜像
+                this.selectedCompilePrivateImageTag = {};
+                this.currentCompilePrivateImageTagList = [];
+                //私有仓库run镜像
+                this.selectedRunPrivateImageTag = {};
+                this.currentRunPrivateImageTagList = [];
                 this.currentRunList = [];
                 this.projectImagesInfo = {
                     compilePublicImageList: [],
@@ -61,8 +71,10 @@
                     runPublicImageList: [],
                     runPrivateImageList: []
                 };
+                this.userList = [];
             }
             init(imagesInfo) {
+                //this.getProjectImageAsPrivateImageList('all');
                 if (!imagesInfo)
                     imagesInfo = {};
                 if (!$util.isArray(imagesInfo.compilePublicImageList)) {
@@ -70,12 +82,16 @@
                 }
                 if (!$util.isArray(imagesInfo.compilePrivateImageList)) {
                     imagesInfo.compilePrivateImageList = [];
+                }else {
+                    imagesInfo.compilePrivateImageList = this.privateRegistryImageList;
                 }
                 if (!$util.isArray(imagesInfo.runPublicImageList)) {
                     imagesInfo.runPublicImageList = [];
                 }
                 if (!$util.isArray(imagesInfo.runPrivateImageList)) {
                     imagesInfo.runPrivateImageList = [];
+                }else {
+                    imagesInfo.runPrivateImageList = this.privateRegistryImageList;
                 }
 
                 angular.forEach(imagesInfo, (imageList, imageListName) => {
@@ -93,6 +109,47 @@
                     this.toggleIsPublicImage('run');
                 }
             }
+            // 获取私有镜像的工程镜像，并转换成compilePrivateImageList格式
+            getProjectImageAsPrivateImageList(imageType){
+                $domeImage.imageService.getProjectImages().then((res) => {
+                    let imageList = res.data.result || [];
+                    let newImageList = [];
+                    for (let i=0; i < imageList.length; i++) {
+                        let image = imageList[i];
+                        image.createDate = $util.getPageDate(image.createTime);
+                        image.imageTxt = image.imageName;
+                        image.registryUrl = image.registry;
+                        image.registryType = 0;
+                        //image.imageTag 后续填入
+                        if (image.imageTag) {
+                            image.imageTxt += ':' + image.imageTag;
+                        }
+                        newImageList.push(image);
+                    }
+                    if(imageType === 'compile') {
+                        this.projectImagesInfo.compilePrivateImageList = newImageList;                       
+                    }else if (imageType === 'run') {
+                        this.projectImagesInfo.runPrivateImageList = newImageList;
+                    }else if(imageType === 'all'){
+                        this.privateRegistryImageList = newImageList;
+                    }
+
+                }).finally(() => {
+                });
+            }
+            getPrivateImageTag(imageType,image) {
+                $domeImage.imageService.getImageTags(image.imageName, image.registryUrl).then((res) => {
+                    let tags = res.data.result;
+                    if(imageType === 'compile') {
+                        this.currentCompilePrivateImageTagList = tags;                      
+                    }else if (imageType === 'run') {
+                        this.currentRunPrivateImageTagList = tags;
+                    }
+                    
+                }).finally(() => {
+
+                });
+            }
             toggleIsPublicImage(imageType, isPublic) {
                     if (typeof isPublic === 'undefined') {
                         isPublic = imageType == 'compile' ? this.imageInfo.compileIsPublic : this.imageInfo.runIsPublic;
@@ -105,13 +162,85 @@
                         this.toggleImage('run', 0);
                     }
                 }
+            //切换私有镜像tag，并为私有镜像添加tag
+            togglePrivateImageTag(imageType, index, tag) {
+                if (imageType === 'compile') {
+                    this.selectedCompilePrivateImageTag = this.currentCompilePrivateImageTagList[index];
+                    for(let l=0; l< this.currentCompileList.length; l++) {
+                        if(this.currentCompileList[l].imageName === tag.imageName) {
+                            this.currentCompileList[l].imageTag = this.selectedCompilePrivateImageTag.tag;
+                            break;
+                        }
+                    }
+                } else if (imageType === 'run') {
+                    this.selectedRunPrivateImageTag = this.currentRunPrivateImageTagList[index];
+                    for(let l=0; l< this.currentRunList.length; l++) {
+                        if(this.currentRunList[l].imageName === tag.imageName) {
+                            this.currentRunList[l].imageTag = this.selectedRunPrivateImageTag.tag;
+                            break;
+                        }
+                    }
+                }
+            }
                 // @param imageType: 'compile(编译镜像)/'run'(运行镜像)
                 // @param index: 切换到imageType镜像的index下标
-            toggleImage(imageType, index) {
+            toggleImage(imageType, index, image) {
                     if (imageType === 'compile') {
-                        this.selectedCompileImage = this.currentCompileList[index];
+                        if (this.imageInfo.compileIsPublic === 0 || typeof image === 'undefined') {
+                            //this.selectedCompileImage = this.currentCompileList[index];
+                            this.selectedCompilePrivateImageTag = {};
+                            if(typeof image === 'undefined') {
+                                image = this.currentCompileList[0]; //切换radio时image为undefined
+                            }
+                            for(let indexImage = 0; indexImage < this.currentCompileList.length; indexImage ++) {
+                                let selectedImageTmp = this.currentCompileList[indexImage];
+                                if (selectedImageTmp.imageTxt == image.imageTxt) {
+                                    this.selectedCompileImage = selectedImageTmp;
+                                    break;
+                                }
+                            }
+                            this.getPrivateImageTag('compile',image);
+                        }else {
+                            if (typeof image !== 'undefined') {
+                                for(let indexImage = 0; indexImage < this.currentCompileList.length; indexImage ++) {
+                                    let selectedImageTmp = this.currentCompileList[indexImage];
+                                    if (selectedImageTmp.imageTxt == image.imageTxt) {
+                                        this.selectedCompileImage = selectedImageTmp;
+                                        break;
+                                    }
+                                }
+                            }else {
+                                this.selectedCompileImage = this.currentCompileList[index];
+                            }
+                        }
                     } else if (imageType === 'run') {
-                        this.selectedRunImage = angular.copy(this.currentRunList[index]);
+                        if (this.imageInfo.runIsPublic === 0 || typeof image === 'undefined') {
+                            //this.selectedRunImage = this.currentRunList[index];
+                            this.selectedRunPrivateImageTag = {};
+                            if(typeof image === 'undefined') {
+                                image = this.currentRunList[0]; //切换radio时image为undefined
+                            }
+                            for(let ind = 0; ind < this.currentRunList.length; ind ++) {
+                                let selectedRunImageTmp = this.currentRunList[ind];
+                                if (selectedRunImageTmp.imageTxt == image.imageTxt) {
+                                    this.selectedRunImage = selectedRunImageTmp;
+                                    break;
+                                }
+                            }
+                            this.getPrivateImageTag('run',image);
+                        }else {
+                            if (typeof image !== 'undefined') {
+                                for(let ind = 0; ind < this.currentRunList.length; ind ++) {
+                                    let selectedRunImageTmp = this.currentRunList[ind];
+                                    if (selectedRunImageTmp.imageTxt == image.imageTxt) {
+                                        this.selectedRunImage = selectedRunImageTmp;
+                                        break;
+                                    }
+                                }
+                            }else {
+                                this.selectedRunImage = angular.copy(this.currentRunList[index]);
+                            }
+                        }
                     }
                 }
                 // 设置默认选择的镜像
@@ -128,12 +257,14 @@
                 if (type == 'compile') {
                     this.selectedCompileImage = imgObj;
                     this.selectedCompileImage.imageTxt = imageTxt;
+                    this.selectedCompilePrivateImageTag.tag = imgObj.imageTag;
                     this.imageInfo.compileIsPublic = imgObj.registryType !== void 0 ? imgObj.registryType : 1;
                     this.currentCompileList = imgObj.registryType === 1 ? this.projectImagesInfo.compilePublicImageList : this.projectImagesInfo.compilePrivateImageList;
 
                 } else {
                     this.selectedRunImage = imgObj;
                     this.selectedRunImage.imageTxt = imageTxt;
+                    this.selectedRunPrivateImageTag.tag = imgObj.imageTag;
                     this.imageInfo.runIsPublic = imgObj.registryType !== void 0 ? imgObj.registryType : 1;
                     this.currentRunList = imgObj.registryType === 1 ? this.projectImagesInfo.runPublicImageList : this.projectImagesInfo.runPrivateImageList;
                 }
@@ -147,6 +278,7 @@
                 // 提取公共config,保持view不变
                 this.customConfig = {};
                 this.isUseCustom = false;
+                this.isDefDockerfile = false;
                 this.projectImagesIns = new ProjectImages();
                 this.init(initInfo);
             }
@@ -163,8 +295,22 @@
                 if (!$util.isObject(project.dockerfileConfig)) {
                     project.dockerfileConfig = {};
                 }
-                if (project.userDefineDockerfile !== true) {
-                    this.customConfig = !project.exclusiveBuild ? project.dockerfileConfig : project.exclusiveBuild;
+                if (project.exclusiveBuild) {
+                    this.customConfig = project.exclusiveBuild;
+                    this.isUseCustom = true;
+                    this.isDefDockerfile = false;
+                } else if (project.userDefineDockerfile) {
+                    this.customConfig = project.dockerfileInfo;
+                    this.isUseCustom = false;
+                    this.isDefDockerfile = false;
+                } else if (project.customDockerfile) {
+                    this.customConfig = project.customDockerfile;
+                    this.isUseCustom = false;
+                    this.isDefDockerfile = true;
+                } else {
+                    this.customConfig = project.dockerfileConfig;
+                    this.isUseCustom = false;
+                    this.isDefDockerfile = false;
                 }
                 // 初始化 autoBuildInfo
                 this.autoBuildInfo = angular.copy(project.autoBuildInfo);
@@ -225,7 +371,6 @@
                     });
                     return newArr;
                 })();
-                this.isUseCustom = !!this.customConfig.customType;
 
                 if (!$util.isArray(project.envConfDefault)) {
                     project.envConfDefault = [];
@@ -244,6 +389,9 @@
                             envValue: ''
                         }];
                     }
+                    if (typeof compileEnv !== 'string') {
+                        return angular.copy(compileEnv);
+                    }
                     let compileEnvArr = compileEnv.split(',');
                     let newArr = compileEnvArr.map((item) => {
                         let sigEnv = item.split('=');
@@ -258,6 +406,12 @@
                     });
                     return newArr;
                 }.bind(this)();
+
+                this.customConfig.uploadFileInfos = ((uploadFileInfos) => {
+                    if (!uploadFileInfos) uploadFileInfos = [];
+                    if (!uploadFileInfos.length) uploadFileInfos.push({ filename: '', content: '' });
+                    return uploadFileInfos;
+                })(this.customConfig.uploadFileInfos);
 
                 this.customConfig.createdFileStoragePath = function () {
                     let createdFileStoragePath = this.customConfig.createdFileStoragePath;
@@ -278,13 +432,12 @@
                 }.bind(this)();
 
                 this.config = project;
-                this.creatorDraft = {};
+                // this.creatorDraft = {};
             }
             resetConfig() {
                 this.config.dockerfileConfig = null;
                 this.config.dockerfileInfo = null;
                 this.config.exclusiveBuild = null;
-                this.config.dockerfileInfo = null;
                 this.config.confFiles = null;
                 this.config.envConfDefault = null;
                 this.config.autoBuildInfo = this.autoBuildInfo;
@@ -305,6 +458,15 @@
                     value: '',
                     description: ''
                 });
+            }
+            addUploadFileInfo() {
+                this.customConfig.uploadFileInfos.push({
+                    filename: '',
+                    content: ''
+                });
+            }
+            delUploadFileInfo(index) {
+                this.customConfig.uploadFileInfos.splice(index, 1);
             }
             toggleBaseImage(imageName, imageTag, imageRegistry) {
                 this.customConfig.baseImageName = imageName;
@@ -384,12 +546,12 @@
                     openDockerfile();
                 }
             }
-            _formartCreateProject(projectInfo, creatorDraft) {
-                return {
-                    project: projectInfo,
-                    creatorDraft: creatorDraft
-                };
-            }
+            // _formartCreateProject(projectInfo) {
+                // return {
+                //     project: projectInfo
+                // creatorDraft: creatorDraft
+                // };
+            // }
             _formartProject() {
                 let formartProject = {},
                     compileEnvStr = '',
@@ -480,6 +642,7 @@
 
                     if (this.isUseCustom) {
                         project.dockerfileConfig = null;
+                        project.customDockerfile = null;
                         project.exclusiveBuild = {
                             customType: customConfig.customType,
                             compileImage: this.projectImagesIns.selectedCompileImage,
@@ -500,8 +663,16 @@
                             project.exclusiveBuild.runFileStoragePath = this.customConfig.runFileStoragePath;
                             project.exclusiveBuild.startCmd = this.customConfig.startCmd;
                         }
+                    } else if (this.isDefDockerfile) {
+                        project.exclusiveBuild = null;
+                        project.dockerfileConfig = null;
+                        project.customDockerfile = {
+                            dockerfile: customConfig.dockerfile,
+                            uploadFileInfos: customConfig.uploadFileInfos.filter((x) => x.filename || x.content)
+                        };
                     } else {
                         project.exclusiveBuild = null;
+                        project.customDockerfile = null;
                         project.dockerfileConfig = {
                             baseImageName: customConfig.baseImageName,
                             baseImageTag: customConfig.baseImageTag,
@@ -519,11 +690,12 @@
                 }
                 return formartProject;
             }
-            create() {
-                let createProject = this._formartProject(),
-                    creatorDraft = angular.copy(this.creatorDraft);
-                console.log(createProject);
-                return $http.post('/api/project', angular.toJson(this._formartCreateProject(createProject, creatorDraft)));
+            create(projectCollectionId) {
+                let createProject = this._formartProject();
+                    // creatorDraft = angular.copy(this.creatorDraft);
+                // console.log(createProject);
+                // return $http.post('/api/projectcollection/' + projectCollectionId+ '/project', angular.toJson(this._formartCreateProject(createProject)));
+                return $http.post('/api/projectcollection/' + projectCollectionId+ '/project', angular.toJson(createProject));
             }
         }
 
@@ -539,7 +711,7 @@
         };
 
     }
-    DomeProject.$inject = ['$http', '$util', '$state', '$domePublic', '$domeModel', '$q', '$modal'];
+    DomeProject.$inject = ['$http', '$util', '$state', '$domePublic', '$domeModel', '$q', '$modal', '$domeImage'];
     projectModule.factory('$domeProject', DomeProject);
     window.projectModule = projectModule;
 })(window);

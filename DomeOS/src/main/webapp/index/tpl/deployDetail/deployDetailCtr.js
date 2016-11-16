@@ -5,7 +5,7 @@
 (function (domeApp, undefined) {
 	'use strict';
 	if (typeof domeApp === 'undefined') return;
-	domeApp.controller('DeployDetailCtr', ['$scope', '$domeDeploy', '$domeCluster', '$domePublic', '$state', '$modal', '$timeout', '$util', function ($scope, $domeDeploy, $domeCluster, $domePublic, $state, $modal, $timeout, $util) {
+	domeApp.controller('DeployDetailCtr', ['$scope', '$domeDeploy', '$domeCluster', '$domePublic', '$state', '$modal', '$timeout', '$util', '$domeData', '$domeUser', function ($scope, $domeDeploy, $domeCluster, $domePublic, $state, $modal, $timeout, $util, $domeData, $domeUser) {
 		$scope.$emit('pageTitle', {
 			title: '部署',
 			descrition: '',
@@ -14,6 +14,15 @@
 		if (!$state.params.id) {
 			$state.go('deployManage');
 		}
+		$scope.collectionId = $state.params.collectionId;
+		$scope.collectionName = $state.params.collectionName;
+		// 面包屑 父级url
+		if($scope.collectionName === 'all-deploy') {
+			$scope.parentState = 'deployAllManage({id:"' + $scope.collectionId + '",name:"'+ $scope.collectionName +'"})';
+		}else {
+			$scope.parentState = 'deployManage({id:"' + $scope.collectionId + '",name:"'+ $scope.collectionName +'"})';
+		}
+        
 		$scope.valid = {
 			needValid: false
 		};
@@ -135,6 +144,27 @@
 				break;
 			}
 		};
+		//获取用户角色
+		var initUserProjectRole = function () {
+			$domeUser.userService.getResourceUserRole($scope.resourceType, $scope.resourceId).then(function (res) {
+				var userRole = res.data.result;
+				if(userRole === 'MASTER') {
+					$scope.isDelete = true;
+				}else {
+					$scope.isDelete = false;
+				}
+				if (userRole === 'MASTER' || userRole === 'DEVELOPER') {
+					$scope.isEdit = true;
+				}else {
+					$scope.isEdit = false;
+				}
+			}, function () {
+				$scope.isDelete = false;
+				$scope.isEdit = false;
+			});
+		};
+		initUserProjectRole();
+
 		var freshEvents = function () {
 			return $domeDeploy.deployService.getEvents(deployId).then(function (res) {
 				var eventList = res.data.result || [],
@@ -225,6 +255,7 @@
 			getDeployInstance();
 			$domeDeploy.deployService.getSingle(deployId).then(function (res) {
 				var data = res.data.result;
+				$scope.deployName = data.deployName;
 				$scope.$emit('pageTitle', {
 					title: data.deployName,
 					descrition: data.serviceDnsName,
@@ -439,7 +470,12 @@
 			$domePublic.openDelete().then(function () {
 				$scope.deployIns.delete().then(function () {
 					$domePublic.openPrompt('删除成功！');
-					$state.go('deployManage');
+					var backend = {id:$scope.collectionId,name:$scope.collectionName};
+					if($scope.collectionName === 'all-deploy') {
+						$state.go('deployAllManage',backend);
+					}else {
+						$state.go('deployManage',backend);
+					}
 				}, failedCb);
 			});
 		};
@@ -505,10 +541,16 @@
 			}
 			$modalInstance.close($scope.versionData);
 		};
+		$scope.cancel = function() {
+			$modalInstance.dismiss('cancel');
+		};
 	}]).controller('ScaleModalCtr', ['$scope', 'oldReplicas', '$modalInstance', function ($scope, oldReplicas, $modalInstance) {
 		$scope.oldReplicas = oldReplicas;
 		$scope.submitScale = function () {
 			$modalInstance.close($scope.replicas);
+		};
+		$scope.cancel = function() {
+			$modalInstance.dismiss('cancel');
 		};
 	}]);
 })(window.domeApp);

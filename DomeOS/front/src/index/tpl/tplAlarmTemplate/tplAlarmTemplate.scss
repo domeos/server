@@ -1,12 +1,17 @@
 @import "compass/css3";
 @import "common/css/common.scss";
-
+.btn-edit-alarm{
+    margin: 20px 20px 0 20px;
+}
 .alarmtpl-info{
     &>li{
         border-bottom: $light-border;
         &:last-child{
             border-bottom: none;
         }
+    }
+    .has-top-border{
+        border-top: $light-border;
     }
     .alarm-rule{
         position: relative;
@@ -99,7 +104,7 @@
     }
     .setting-description{
         display: block;
-        margin-top: 6px;
+        // margin-top: 6px;
     }
     .com-select-con{
         display: inline-block;

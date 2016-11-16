@@ -2,7 +2,7 @@ package org.domeos.framework.api.service.global;
 
 import org.domeos.framework.api.model.global.WebSsh;
 import org.domeos.basemodel.HttpResponseTemp;
-import org.domeos.framework.api.model.resource.related.ResourceType;
+import org.domeos.framework.api.model.collection.related.ResourceType;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;

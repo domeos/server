@@ -2,7 +2,7 @@ package org.domeos.framework.api.controller.alarm;
 
 import org.domeos.basemodel.HttpResponseTemp;
 import org.domeos.framework.api.controller.ApiController;
-import org.domeos.framework.api.model.alarm.TemplateInfo;
+import org.domeos.framework.api.consolemodel.alarm.TemplateInfo;
 import org.domeos.framework.api.service.alarm.TemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;

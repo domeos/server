@@ -6,14 +6,36 @@
 	'use strict';
 	if (typeof domeApp === 'undefined') return;
 
-	domeApp.controller('DeployManageCtr', ['$scope', '$domeDeploy', '$domeCluster', '$timeout', '$state', function ($scope, $domeDeploy, $domeCluster, $timeout, $state) {
+	domeApp.controller('DeployManageCtr', ['$scope', '$domeDeploy', '$domeCluster', '$timeout', '$state', '$modal', '$domeData', '$domePublic', function ($scope, $domeDeploy, $domeCluster, $timeout, $state, $modal, $domeData, $domePublic) {
 		$scope.$emit('pageTitle', {
 			title: '部署',
 			descrition: '在这里您可以把项目镜像部署到运行环境中。此外，您还可以对现有部署进行监控和管理。',
 			mod: 'deployManage'
 		});
 		$scope.showSelect = true;
+		var stateInfo = $state.$current.name;
+		if (stateInfo.indexOf('deployAllManage') === -1) {
+			$scope.showSelect = false;
+		}else{
+			$scope.showSelect = true;
+		}
 		$scope.isLoading = true;
+		$scope.tabActive = [{
+			active: false
+		}, {
+			active: false
+		}];
+		var stateInfo = $state.$current.name;
+		if (stateInfo.indexOf('user') !== -1) {
+			$scope.tabActive[1].active = true;
+		}else {
+			$scope.tabActive[0].active = true;
+		}
+		$scope.resourceType = 'DEPLOY_COLLECTION'; //add by gb	
+		$scope.collectionName = $state.params.name;
+		$scope.resourceId = $state.params.id;
+		$scope.collectionId = $state.params.id;
+		$scope.deloyList = [];
 
 		var cluserList = [],
 			timeout;
@@ -46,10 +68,54 @@
 		$scope.selectOption.cluster = {
 			ALL: true
 		};
-
+		// 登录用户角色
+		$scope.$on('signalResourceCurrentUserRole', function (event, msg) {
+          	var userRole = msg;
+          	if(userRole === 'MASTER' || userRole === 'DEVELOPER') {
+				$scope.isCreate = true;
+			}else {
+				$scope.isCreate = false;
+			}
+			if (userRole === 'MASTER') {
+				$scope.isMigrate = true;
+			}else {
+				$scope.isMigrate = false;
+			}
+        });
 		$scope.deloyList = [];
 		var init = function () {
-			if ($state.current.name == 'deployManage') {
+			var collectionId = $state.params.id;
+			if ($state.current.name.indexOf('deployManage') !== -1) {
+				$domeDeploy.deployService.getListByCollectionId(collectionId).then(function (res) {
+					var thisDeploy, cpuPercent, memPercent;
+					if (res.data.result) {
+						$scope.deloyList = res.data.result;
+						for (var i = 0, l = $scope.deloyList.length; i < l; i++) {
+							thisDeploy = $scope.deloyList[i];
+							cpuPercent = thisDeploy.cpuTotal > 0 ? (thisDeploy.cpuUsed / thisDeploy.cpuTotal * 100).toFixed(2) : '0.00';
+							memPercent = thisDeploy.memoryTotal > 0 ? (thisDeploy.memoryUsed / thisDeploy.memoryTotal * 100).toFixed(2) : '0.00';
+							if (thisDeploy.serviceDnsName) {
+								thisDeploy.dnsName = thisDeploy.serviceDnsName;
+							} else {
+								thisDeploy.dnsName = '无';
+							}
+							if (cpuPercent > memPercent) {
+								thisDeploy.compare = 'cpu';
+								thisDeploy.comparePercent = cpuPercent;
+							} else {
+								thisDeploy.compare = 'memory';
+								thisDeploy.comparePercent = memPercent;
+							}
+						}
+					}
+				}).finally(function () {
+					$scope.isLoading = false;
+					if (timeout) {
+						$timeout.cancel(timeout);
+					}
+					timeout = $timeout(init, 4000);
+				});
+			}else if ($state.current.name === 'deployAllManage') {
 				$domeDeploy.deployService.getList().then(function (res) {
 					var thisDeploy, cpuPercent, memPercent;
 					if (res.data.result) {
@@ -158,5 +224,62 @@
 				$timeout.cancel(timeout);
 			}
 		});
+		$scope.openMigrateDeployModal = function (deployId,deployName) {
+			$modal.open({
+				animation: true,
+				templateUrl: 'migrateDeployModal.html',
+				controller: 'migrateDeployModalCtr',
+				size: 'md',
+				resolve: {
+					deployId: function() {
+						return deployId;
+					},
+					deployName: function () {
+						return deployName;
+					},
+					collectionName: function () {
+						return $scope.collectionName;
+					}
+				}
+			});
+		};
+	}]).controller('migrateDeployModalCtr', ['$scope', '$state','$domePublic', '$domeDeployCollection', 'deployId', 'deployName','collectionName', '$modalInstance', '$util', function ($scope, $state, $domePublic, $domeDeployCollection, deployId, deployName, collectionName, $modalInstance, $util) {
+		$scope.migrateDeployName = deployName;
+		$scope.migrateCollectionName = collectionName;
+		$scope.migrateCollectionId = '';
+		$scope.deployCollectionList = [];
+		$scope.isLoading = true;
+		$scope.parseDate = $util.getPageDate;
+		$domeDeployCollection.deployCollectionService.getDeployCollection().then(function (res) {
+			var collectionList = res.data.result || [];
+			for (var i=0; i < collectionList.length; i++) {
+				if (collectionList[i].role === "MASTER") {
+					$scope.deployCollectionList.push(collectionList[i]);
+				}
+			}
+
+		}).finally(function () {
+			$scope.isLoading = false;
+		});
+		$scope.toggleCollectionName = function ($index,name,id) {
+			$scope.migrateCollectionName = name;
+			$scope.migrateCollectionId = id;
+		};
+		$scope.save = function() {
+			$domeDeployCollection.deployCollectionService.migrateDeploy(deployId,$scope.migrateCollectionId).then(function(){
+				$state.go('deployManage',{
+					id: $scope.migrateCollectionId,
+					name: $scope.migrateCollectionName
+				});
+			}, function(error) {
+				$domePublic.openWarning('迁移失败');
+				$modalInstance.dismiss('cancel');
+			}).finally(function() {
+				$modalInstance.dismiss('cancel');
+			});
+		};
+		$scope.cancel = function () {
+			$modalInstance.dismiss('cancel');
+		};
 	}]);
 })(window.domeApp);

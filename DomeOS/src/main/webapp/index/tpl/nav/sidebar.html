@@ -1,0 +1,28 @@
+
+<div class="navbar-default sidebar left-nav" role="navigation" ng-scrollbar="ng-scrollbar" rebuild-on-resize="rebuild-on-resize">
+  <div class="sidebar-nav">
+    <ul class="nav in nav-sidebar nav-lists" id="side-menu">
+      <li class="dome-logo" ui-sref-active="active"><a class="nav-item" href="javascript:void(0)"><img class="img-logo" src="index/images/logo.png"/><span class="nav-detail"><span class="txt-logo" style="position:relative;top:1px">DomeOS</span></span></a></li>
+      <li class="nav-top-item" ng-class="on"><a class="nav-item" href="" ng-click="check(1)" ng-class="{'txt-white':collapseVar===1}"><i class="fa fa-th-large nav-icon"></i><span class="nav-detail">开发集成<span class="arrow-sidebar"><i class="fa" ng-class="{'fa-angle-right':collapseVar!==1,'fa-angle-down':collapseVar===1}"></i></span></span></a>
+        <ul class="nav nav-second-level collapse" collapse="collapseVar!==1">
+          <li ng-class="{'on': $stateUrl=='project'}"><a class="nav-item" ng-click="$stateUrl='project'" ui-sref="projectCollectionManage"> <span class="a-text"> </span>项目</a></li>
+          <li ng-class="{'on': $stateUrl=='image'}"><a class="nav-item" ng-click="$stateUrl='image'" ui-sref="imageCollectionManage"> <span class="a-text"> </span>镜像</a></li>
+        </ul>
+      </li>
+      <li class="nav-top-item" ng-class="on"><a class="nav-item" href="" ng-click="check(2)" ng-class="{'txt-white':collapseVar===2}"><i class="glyphicon glyphicon-stats nav-icon"></i><span class="nav-detail"><span ng-class="{'txt-white':collapseVar===2}">运维管理</span><span class="arrow-sidebar"><i class="fa" ng-class="{'fa-angle-right':collapseVar!==2,'fa-angle-down':collapseVar===2}"></i></span></span></a>
+        <ul class="nav nav-second-level collapse" collapse="collapseVar!==2">
+          <li ng-class="{'on': $stateUrl=='deploy'}"><a class="nav-item" ng-click="$stateUrl='deploy'" ui-sref="deployCollectionManage"> <span class="a-text"> </span>服务</a></li>
+          <li ng-class="{'on':$stateUrl=='cluster'}"><a class="nav-item" ng-click="$stateUrl='cluster'" ui-sref="clusterManage"> <span class="a-text"> </span>集群</a></li>
+          <li ng-class="{'on':$stateUrl=='appStore'}"><a class="nav-item" ng-click="$stateUrl='appStore'" ui-sref="appStore"> <span class="a-text"> </span>应用商店</a></li>
+        </ul>
+      </li>
+      <li class="nav-top-item" ng-class="on"><a class="nav-item" href="" ng-click="check(3)" ng-class="{'txt-white':collapseVar===3}"><i class="fa fa-bell-o nav-icon"></i><span class="nav-detail"><span ng-class="{'txt-white':collapseVar===3}">监控报警</span><span class="arrow-sidebar"><i class="fa" ng-class="{'fa-angle-right':collapseVar!==3,'fa-angle-down':collapseVar===3}"></i></span></span></a>
+        <ul class="nav nav-second-level collapse" collapse="collapseVar!==3">
+          <li ng-class="{'on': $stateUrl=='monitor'}"><a class="nav-item" ng-click="$stateUrl='monitor'" ui-sref="monitor"> <span class="a-text"> </span>监控</a></li>
+          <li ng-class="{'on': $stateUrl=='alarm'}"><a class="nav-item" ng-click="$stateUrl='alarm'" ui-sref="alarm.templates"> <span class="a-text"> </span>报警</a></li>
+        </ul>
+      </li>
+      <li class="nav-top-item" ng-class="{'on':$stateUrl=='setting'}" ng-hide="loginUser.username!='admin'"><a class="nav-item" ui-sref="globalSetting" ng-click="check(4);$stateUrl='setting'" ng-class="{'txt-white':collapseVar===4}"> <i class="fa fa-cog nav-icon"></i><span class="nav-detail">全局配置</span></a></li>
+    </ul>
+  </div>
+</div>

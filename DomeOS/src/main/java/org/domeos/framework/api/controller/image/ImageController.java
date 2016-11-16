@@ -1,6 +1,9 @@
 package org.domeos.framework.api.controller.image;
 
 import org.domeos.basemodel.HttpResponseTemp;
+import org.domeos.framework.api.consolemodel.image.ImageNameDetail;
+import org.domeos.framework.api.consolemodel.image.ImageNameDetailRequest;
+import org.domeos.framework.api.consolemodel.image.ImageTagDetailRequest;
 import org.domeos.framework.api.controller.ApiController;
 import org.domeos.framework.api.model.image.BaseImage;
 import org.domeos.framework.api.model.image.BuildImage;
@@ -9,6 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * Created by baokangwang on 2016/4/6.
@@ -77,8 +82,33 @@ public class ImageController extends ApiController {
 
     @ResponseBody
     @RequestMapping(value = "/image/all/detail", method = RequestMethod.GET)
-    public HttpResponseTemp<?> getDockerImageDetail(@RequestParam String name,  @RequestParam(value = "registry", required = false) String registry){
+    public HttpResponseTemp<?> getDockerImageDetail(@RequestParam String name, @RequestParam(value = "registry", required = false) String registry) {
         return imageService.getDockerImageDetail(name, registry);
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "/image/all/detail", method = RequestMethod.POST)
+    public HttpResponseTemp<List<ImageNameDetail>> dockerImageNameDetail(@RequestBody ImageNameDetailRequest imageNameDetailRequest) {
+        return imageService.dockerImageNameDetail(imageNameDetailRequest);
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "/image/all/detail/tag", method = RequestMethod.POST)
+    public HttpResponseTemp<?> getImageTagDetail(@RequestBody ImageTagDetailRequest imageTagDetailRequest) {
+        return imageService.getImageTagDetail(imageTagDetailRequest);
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "/image/all/detail/tag", method = RequestMethod.DELETE)
+    public HttpResponseTemp<?> deleteImageByTag(@RequestParam String name, @RequestParam String tag,
+                                                @RequestParam(value = "registry", required = false) String registry) {
+        return imageService.deleteImageByTag(name, tag, registry);
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "/image/all/detail", method = RequestMethod.DELETE)
+    public HttpResponseTemp<?> deleteAllImage(@RequestParam String name, @RequestParam String registry) {
+        return imageService.deleteImage(name, registry);
     }
 
     @ResponseBody

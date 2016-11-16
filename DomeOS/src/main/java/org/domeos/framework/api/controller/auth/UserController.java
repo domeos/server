@@ -9,7 +9,7 @@ import org.domeos.framework.api.consolemodel.auth.UserPassword;
 import org.domeos.framework.api.controller.ApiController;
 import org.domeos.framework.api.model.auth.User;
 import org.domeos.framework.api.model.auth.related.Role;
-import org.domeos.framework.api.model.resource.related.ResourceType;
+import org.domeos.framework.api.model.collection.related.ResourceType;
 import org.domeos.framework.api.service.auth.UserService;
 import org.domeos.framework.engine.AuthUtil;
 import org.springframework.beans.factory.annotation.Autowired;

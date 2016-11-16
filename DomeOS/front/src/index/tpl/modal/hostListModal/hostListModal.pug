@@ -1,7 +1,7 @@
 .d-modal-header
 	| 选择主机列表
 	span.model-prompt(ng-cloak) 共{{hostList.length}}台
-.d-modal-full
+.d-modal-full.d-modal-container
 	table.ui-table-dome
 		thead
 			tr
@@ -15,3 +15,5 @@
 				td(ng-bind="host.name")
 				td(ng-bind="host.ip")
 				td(ng-bind="host.runningPods")
+.d-modal-footer.text-right
+		button.ui-btn.ui-btn-sm.ui-btn-white(ng-click="cancel()") 取消

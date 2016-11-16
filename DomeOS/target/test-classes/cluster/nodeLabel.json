@@ -1,5 +1,5 @@
 {
-  "node": "bx-42-197",
+  "node": "test-host",
   "labels": {
     "test-label": "USER_LABEL_VALUE"
   }

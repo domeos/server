@@ -4,6 +4,7 @@ import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.*;
 import org.domeos.exception.DataBaseContentException;
 import org.domeos.exception.DeploymentEventException;
+import org.domeos.exception.DeploymentTerminatedException;
 import org.domeos.exception.K8sDriverException;
 import org.domeos.framework.api.biz.deployment.DeployEventBiz;
 import org.domeos.framework.api.biz.deployment.DeploymentBiz;
@@ -28,13 +29,11 @@ import org.domeos.framework.engine.k8s.judgement.FailedJudgement;
 import org.domeos.framework.engine.k8s.model.DeploymentUpdatePhase;
 import org.domeos.framework.engine.k8s.model.DeploymentUpdateStatus;
 import org.domeos.framework.engine.k8s.updater.DeploymentUpdater;
-import org.domeos.framework.engine.k8s.util.Fabric8KubeUtils;
-import org.domeos.framework.engine.k8s.util.KubeUtils;
-import org.domeos.framework.engine.k8s.util.PodUtils;
-import org.domeos.framework.engine.k8s.util.RCUtils;
+import org.domeos.framework.engine.k8s.util.*;
 import org.domeos.framework.engine.k8s.util.filter.Filter;
 import org.domeos.global.GlobalConstant;
 import org.domeos.util.MD5Util;
+import org.json.JSONException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,8 +88,6 @@ public class K8sDriver implements RuntimeDriver {
     @Override
     public void startDeploy(Deployment deployment, Version version, User user, List<LoadBalancer> lbs, List<EnvDraft> allExtraEnvs)
             throws DriverException, DeploymentEventException, IOException {
-        DeployEvent event = new DeployEvent(deployment.getId(), DeployOperation.START, DeployEventStatus.START, user,
-                new ArrayList<DeploymentSnapshot>(), new ArrayList<DeploymentSnapshot>(), new ArrayList<DeploymentSnapshot>());
         long eventId = deploymentStatusManager.registerEvent(deployment.getId(),
                 DeployOperation.START,
                 user,
@@ -98,6 +95,7 @@ public class K8sDriver implements RuntimeDriver {
                 null,
                 buildSingleDeploymentSnapshot(version.getVersion(), deployment.getDefaultReplicas()));
         deploymentStatusManager.freshEvent(eventId, null);
+        DeployEvent event = deployEventBiz.getEvent(eventId);
         try {
             KubeUtils client = Fabric8KubeUtils.buildKubeUtils(cluster, deployment.getNamespace());
             if (deployment.isStateful()) {
@@ -177,6 +175,10 @@ public class K8sDriver implements RuntimeDriver {
                         logger.info("Service:" + service.getMetadata().getName() + " exists, do not need to create");
                     }
                 }
+                // create secret before the create of rc
+                // judge the registry is belong to domeos or not
+                checkSecret(client, version, deployment);
+
                 ReplicationController rc = new RcBuilder(deployment, lbs, version, allExtraEnvs, deployment.getDefaultReplicas()).build();
                 if (rc == null || rc.getSpec() == null) {
                     String message = "build replication controller for deployment:" + deployment.getName() + " failed";
@@ -208,7 +210,7 @@ public class K8sDriver implements RuntimeDriver {
 
     @Override
     public void abortDeployOperation(Deployment deployment, User user)
-            throws IOException, DeploymentEventException {
+            throws IOException, DeploymentEventException, DeploymentTerminatedException {
         KubeUtils kubeUtils;
         try {
             kubeUtils = Fabric8KubeUtils.buildKubeUtils(cluster, deployment.getNamespace());
@@ -303,7 +305,7 @@ public class K8sDriver implements RuntimeDriver {
 
     @Override
     public void rollbackDeploy(Deployment deployment, int versionId, int replicas, List<EnvDraft> allExtraEnvs, User user, Policy policy)
-            throws IOException, DeploymentEventException {
+            throws IOException, DeploymentEventException, DeploymentTerminatedException {
         KubeUtils client;
         try {
             client = Fabric8KubeUtils.buildKubeUtils(cluster, deployment.getNamespace());
@@ -356,13 +358,20 @@ public class K8sDriver implements RuntimeDriver {
             }
         }
 
+        // create secret before the create of rc
+        // judge the registry is belong to domeos or not
+        checkSecret(client, version, deployment);
+
+        if (replicas <= 0) {
+            replicas = deployment.getDefaultReplicas();
+        }
         DeploymentUpdater updater = updaterManager.createUpdater(client, deployment, version, replicas, allExtraEnvs, policy, lbs);
         updater.start();
     }
 
     @Override
     public void startUpdate(Deployment deployment, int versionId, int replicas, List<EnvDraft> allExtraEnvs, User user, Policy policy)
-            throws IOException, DeploymentEventException {
+            throws IOException, DeploymentEventException, DeploymentTerminatedException {
         // ** create KubernetesClient
         KubeUtils client;
         try {
@@ -419,14 +428,19 @@ public class K8sDriver implements RuntimeDriver {
             }
         }
 
+        checkSecret(client, dstVersion, deployment);
+
         // ** create and start updater
+        if (replicas <= 0) {
+            replicas = deployment.getDefaultReplicas();
+        }
         DeploymentUpdater updater = updaterManager.createUpdater(client, deployment, dstVersion, replicas, allExtraEnvs, policy, lbs);
         updater.start();
     }
 
     @Override
     public void scaleUpDeployment(Deployment deployment, int versionId, int replicas, List<EnvDraft> allExtraEnvs, User user)
-            throws DeploymentEventException, IOException {
+            throws DeploymentEventException, IOException, DeploymentTerminatedException {
         KubeUtils client;
         try {
             client = Fabric8KubeUtils.buildKubeUtils(cluster, deployment.getNamespace());
@@ -459,6 +473,8 @@ public class K8sDriver implements RuntimeDriver {
                 deploymentStatusManager.freshEvent(eventId, currentSnapshot);
                 // ** do scale
                 String rcName = GlobalConstant.RC_NAME_PREFIX + deployment.getName() + "-v" + versionId;
+                Version version = versionBiz.getVersion(deployment.getId(), versionId);
+                checkSecret(client, version, deployment);
                 client.scaleReplicationController(rcName, replicas);
             } else {
                 ReplicationController targetRC = findMaxVersionRC(rcList.getItems());
@@ -480,6 +496,8 @@ public class K8sDriver implements RuntimeDriver {
                         dstSnapshot);
                 deploymentStatusManager.freshEvent(eventId, currentSnapshot);
                 // ** do scale
+                Version version = versionBiz.getVersion(deployment.getId(), versionId);
+                checkSecret(client, version, deployment);
                 client.scaleReplicationController(RCUtils.getName(targetRC), replicas);
             }
 
@@ -521,7 +539,7 @@ public class K8sDriver implements RuntimeDriver {
 
     @Override
     public void scaleDownDeployment(Deployment deployment, int versionId, int replicas, List<EnvDraft> allExtraEnvs, User user)
-            throws DeploymentEventException, IOException {
+            throws DeploymentEventException, IOException, DeploymentTerminatedException {
         KubeUtils client;
         try {
             client = Fabric8KubeUtils.buildKubeUtils(cluster, deployment.getNamespace());
@@ -556,6 +574,8 @@ public class K8sDriver implements RuntimeDriver {
 
                 // ** do scale
                 String rcName = GlobalConstant.RC_NAME_PREFIX + deployment.getName() + "-v" + versionId;
+                Version version = versionBiz.getVersion(deployment.getId(), versionId);
+                checkSecret(client, version, deployment);
                 client.scaleReplicationController(rcName, replicas);
             } else {
                 ReplicationController targetRC = findMaxVersionRC(rcList.getItems());
@@ -578,6 +598,8 @@ public class K8sDriver implements RuntimeDriver {
                 deploymentStatusManager.freshEvent(eventId, currentSnapshot);
 
                 // ** do scale
+                Version version = versionBiz.getVersion(deployment.getId(), versionId);
+                checkSecret(client, version, deployment);
                 client.scaleReplicationController(RCUtils.getName(targetRC), replicas);
             }
 
@@ -697,7 +719,7 @@ public class K8sDriver implements RuntimeDriver {
 
     @Override
     public void checkUpdateEvent(Deployment deployment, DeployEvent event)
-            throws IOException, DeploymentEventException {
+            throws IOException, DeploymentEventException, DeploymentTerminatedException {
         DeploymentUpdater updater = updaterManager.getUpdater(event.getDeployId());
         if (updater == null) {
             return;
@@ -726,7 +748,7 @@ public class K8sDriver implements RuntimeDriver {
 
     @Override
     public void checkBasicEvent(Deployment deployment, DeployEvent event)
-            throws DeploymentEventException, IOException, DataBaseContentException, ParseException {
+            throws DeploymentEventException, IOException, DataBaseContentException, ParseException, DeploymentTerminatedException {
         KubeUtils client;
         try {
             client = Fabric8KubeUtils.buildKubeUtils(cluster, deployment.getNamespace());
@@ -774,7 +796,7 @@ public class K8sDriver implements RuntimeDriver {
 
     @Override
     public void checkAbortEvent(Deployment deployment, DeployEvent event)
-            throws DeploymentEventException, IOException {
+            throws DeploymentEventException, IOException, DeploymentTerminatedException {
         KubeUtils client;
         try {
             client = Fabric8KubeUtils.buildKubeUtils(cluster, deployment.getNamespace());
@@ -823,7 +845,7 @@ public class K8sDriver implements RuntimeDriver {
 
     @Override
     public void checkStopEvent(Deployment deployment, DeployEvent event)
-            throws DeploymentEventException, IOException {
+            throws DeploymentEventException, IOException, DeploymentTerminatedException {
         KubeUtils client;
         try {
             client = Fabric8KubeUtils.buildKubeUtils(cluster, deployment.getNamespace());
@@ -846,7 +868,7 @@ public class K8sDriver implements RuntimeDriver {
     }
 
     @Override
-    public void expiredEvent(Deployment deployment, DeployEvent event) throws DeploymentEventException, IOException {
+    public void expiredEvent(Deployment deployment, DeployEvent event) throws DeploymentEventException, IOException, DeploymentTerminatedException {
         KubeUtils client;
         try {
             client = Fabric8KubeUtils.buildKubeUtils(cluster, deployment.getNamespace());
@@ -855,6 +877,46 @@ public class K8sDriver implements RuntimeDriver {
         }
 
         deploymentStatusManager.failedEvent(event.getEid(), queryCurrentSnapshot(client, deployment), "Operation expired. " + event.getMessage());
+    }
+
+    @Override
+    public List<Version> getCurrnetVersionsByDeployment(Deployment deployment) throws IOException, DeploymentEventException {
+        if (deployment == null) {
+            return null;
+        }
+        KubeUtils client = null;
+        try {
+            client = Fabric8KubeUtils.buildKubeUtils(cluster, deployment.getNamespace());
+        } catch (K8sDriverException e) {
+            throw new DeploymentEventException(e);
+        }
+        // get current versions
+        List<DeploymentSnapshot> deploymentSnapshots = queryCurrentSnapshot(client, deployment);
+        List<Version> versions = null;
+        if (deploymentSnapshots != null) {
+            versions = new ArrayList<>(deploymentSnapshots.size());
+            for (DeploymentSnapshot deploymentSnapshot : deploymentSnapshots) {
+                Version version = versionBiz.getVersion(deployment.getId(), (int) deploymentSnapshot.getVersion());
+                versions.add(version);
+            }
+        }
+        return versions;
+    }
+
+    @Override
+    public long getTotalReplicasByDeployment(Deployment deployment) throws DeploymentEventException, IOException {
+        if (deployment == null) {
+            return 0;
+        }
+        KubeUtils client = null;
+        try {
+            client = Fabric8KubeUtils.buildKubeUtils(cluster, deployment.getNamespace());
+        } catch (K8sDriverException e) {
+            throw new DeploymentEventException(e);
+        }
+        // get current versions
+        List<DeploymentSnapshot> deploymentSnapshots = queryCurrentSnapshot(client, deployment);
+        return getTotalReplicas(deploymentSnapshots);
     }
 
     private Map<String, String> buildRCSelectorWithSpecifyVersion(Deployment deployment, long versionV) {
@@ -1155,6 +1217,19 @@ public class K8sDriver implements RuntimeDriver {
                 currentPodNumber = PodUtils.getPodReadyNumber(podList.getItems());
             }
             client.scaleReplicationController(RCUtils.getName(rc), currentPodNumber);
+        }
+    }
+
+    private void checkSecret(KubeUtils client, Version version, Deployment deployment) throws DeploymentEventException {
+        if (version != null && SecretUtils.haveDomeOSRegistry(version.getContainerDrafts())) {
+            try {
+                if (client.secretInfo(GlobalConstant.SECRET_NAME_PREFIX + deployment.getNamespace()) == null) {
+                    client.createSecret(new DomeOSSecretBuilder(GlobalConstant.SECRET_NAME_PREFIX
+                            + deployment.getNamespace(), SecretUtils.getDomeOSImageSecretData()).build());
+                }
+            } catch (IOException | K8sDriverException | JSONException e) {
+                throw new DeploymentEventException("kubernetes exception with message=" + e.getMessage());
+            }
         }
     }
 }

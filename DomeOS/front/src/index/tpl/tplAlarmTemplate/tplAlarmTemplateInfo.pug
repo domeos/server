@@ -1,10 +1,10 @@
 ul.com-list-info.alarmtpl-info
-	li
+	li.has-top-border
 		span.info-name 报警类型
-		span.info-simple {{config.templateType=='deploy'?'容器':'主机'}}
+		span.info-content.info-content-lg-height {{config.templateType=='deploy'?'容器':'主机'}}
 	li(ng-if="config.templateType=='host'")
 		span.info-name 报警主机组
-		span.info-simple(ng-if="config.hostGroupList.length===0") 无
+		span.info-content.info-content-lg-height(ng-if="config.hostGroupList.length===0") 无
 		.info-content(ng-if="config.hostGroupList.length!==0")
 			ul
 				li.ui-label(ng-repeat="hostgroup in config.hostGroupList")
@@ -47,11 +47,11 @@ ul.com-list-info.alarmtpl-info
 						a.icon-help(tooltip="当连续报警次数达到最大报警次数时，即使没有恢复，也不会再发送报警")
 		li
 			span.info-name 报警模板名称
-			span.info-simple(ng-bind="config.templateName")
+			span.info-content.info-content-lg-height(ng-bind="config.templateName")
 		li
 			span.info-name 报警用户组
-			span.info-simple(ng-if="!config.userGroupList||config.userGroupList.length===0") 无
-			.info-content
+			span.info-content.info-content-lg-height(ng-if="!config.userGroupList||config.userGroupList.length===0") 无
+			.info-content.info-content-lg-height
 				ul
 					li.ui-label(ng-repeat="group in config.userGroupList" ng-bind="group.userGroupName")
 		//- li

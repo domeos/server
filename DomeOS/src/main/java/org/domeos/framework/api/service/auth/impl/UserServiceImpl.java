@@ -360,4 +360,38 @@ public class UserServiceImpl implements UserService {
             return false;
         }
     }
+
+    @Override
+    public boolean loginWithoutType(String userName, String password) {
+        if (loginWithType(new UserPassword(userName, password, LoginType.LDAP)) ||
+                loginWithType(new UserPassword(userName, password, LoginType.USER))) {
+            User user = AuthUtil.getUser();
+            CurrentThreadInfo.setUser(user);
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean loginWithType(UserPassword userPass) {
+        Subject subject = SecurityUtils.getSubject();
+        if (userPass.getLoginType() != null && userPass.getLoginType().equals(LoginType.LDAP)) {
+            LdapInfo ldapInfo = globalBiz.getLdapInfo();
+            if (ldapInfo == null) {
+                return false;
+            }
+            String ldapEmailSuffix = ldapInfo.getEmailSuffix();
+            String userName = userPass.getUsername();
+            if (ldapEmailSuffix != null && !userName.endsWith(ldapEmailSuffix)) {
+                userPass.setUsername(userName + ldapEmailSuffix);
+            }
+        }
+        UsernamePasswordToken token = new MultiAuthenticationToken(userPass.getUsername(), userPass.getPassword(), userPass.getLoginType());
+        try {
+            subject.login(token);
+        } catch (Exception e) {
+            return false;
+        }
+        return true;
+    }
 }

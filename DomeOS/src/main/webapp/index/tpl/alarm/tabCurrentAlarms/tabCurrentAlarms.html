@@ -6,7 +6,7 @@
   </div>
   <p class="txt-prompt alarm-prompt">删除报警需要报警组DEVELOPER以上权限</p>
 </div>
-<div class="mod-list">
+<div class="mod-list-alarm">
   <loading ng-if="vmAlarm.isLoading"></loading>
   <table class="ui-table-dome">
     <thead>
@@ -31,7 +31,9 @@
         <td ng-bind="tpl.alarmNum"></td>
         <td ng-bind="tpl.alarmTimes"></td>
         <td ng-bind="tpl.timeStamp|date:'yyyy-MM-dd HH:mm:ss'"></td>
-        <td ng-if="vm.permission.role&amp;&amp;vm.permission.role!='REPORTER'"><a class="icon-delete" ng-click="vmAlarm.ignoreAlarm(tpl.id)"></a></td>
+        <td ng-if="vm.permission.role&amp;&amp;vm.permission.role!='REPORTER'">
+          <button class="fa fa-trash-o ui-btn-none icon-trash-color" ng-click="vmAlarm.ignoreAlarm(tpl.id)"></button>
+        </td>
       </tr>
     </tbody>
   </table>

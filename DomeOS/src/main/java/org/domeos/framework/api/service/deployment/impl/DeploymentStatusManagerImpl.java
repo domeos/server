@@ -2,6 +2,7 @@ package org.domeos.framework.api.service.deployment.impl;
 
 import org.domeos.basemodel.ResultStat;
 import org.domeos.exception.DeploymentEventException;
+import org.domeos.exception.DeploymentTerminatedException;
 import org.domeos.framework.api.biz.deployment.DeploymentStatusBiz;
 import org.domeos.framework.api.biz.deployment.impl.DeployEventBizImpl;
 import org.domeos.framework.api.controller.exception.ApiException;
@@ -21,8 +22,6 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * Created by anningluo on 2015/12/19.
@@ -38,8 +37,8 @@ public class DeploymentStatusManagerImpl implements DeploymentStatusManager {
     @Autowired
     private DeploymentStatusBiz deploymentStatusBiz;
 
-    private static ExecutorService executors = Executors.newCachedThreadPool();
-    //    private static ScheduledExecutorService monitorExectors = Executors.newSingleThreadScheduledExecutor();
+    //private static ExecutorService executors = Executors.newCachedThreadPool();
+    //private static ScheduledExecutorService monitorExectors = Executors.newSingleThreadScheduledExecutor();
     private static boolean isMonitorStart = false;
     private static Logger logger = LoggerFactory.getLogger(DeploymentStatusManagerImpl.class);
     // in ms
@@ -172,14 +171,14 @@ public class DeploymentStatusManagerImpl implements DeploymentStatusManager {
 
     @Override
     public void succeedEvent(long eid, List<DeploymentSnapshot> currentSnapshot)
-            throws IOException, DeploymentEventException {
+            throws IOException, DeploymentEventException, DeploymentTerminatedException {
         // ** get and check latest event
         DeployEvent event = eventBiz.getEvent(eid);
         if (event == null) {
             throw new DeploymentEventException("could not find event(eid=" + eid + ")");
         }
         if (DeployEventStatus.isTerminal(event.getEventStatus())) {
-            throw new DeploymentEventException("latest event(" + event.getOperation() + ") with eid="
+            throw new DeploymentTerminatedException("latest event(" + event.getOperation() + ") with eid="
                     + event.getEid() + "is in status " + event.getEventStatus() + ", has terminated");
         }
         // update event status
@@ -218,14 +217,14 @@ public class DeploymentStatusManagerImpl implements DeploymentStatusManager {
 
     @Override
     public void failedEvent(long eid, List<DeploymentSnapshot> currentSnapshot, String message)
-            throws IOException, DeploymentEventException {
+            throws IOException, DeploymentEventException, DeploymentTerminatedException {
         // ** get and check latest event
         DeployEvent event = eventBiz.getEvent(eid);
         if (event == null) {
             throw new DeploymentEventException("could not find event(eid=" + eid + ")");
         }
         if (DeployEventStatus.isTerminal(event.getEventStatus())) {
-            throw new DeploymentEventException("latest event(" + event.getOperation() + ") with eid="
+            throw new DeploymentTerminatedException("latest event(" + event.getOperation() + ") with eid="
                     + event.getEid() + " is in status " + event.getEventStatus() + ", has terminated");
         }
         // update event status
@@ -242,7 +241,7 @@ public class DeploymentStatusManagerImpl implements DeploymentStatusManager {
 
     @Override
     public void failedEventForDeployment(int deploymentId, List<DeploymentSnapshot> currentSnapshot, String message)
-            throws IOException, DeploymentEventException {
+            throws IOException, DeploymentEventException, DeploymentTerminatedException {
         try {
             failedEvent(eventBiz.getNewestEventByDeployId(deploymentId).getEid(), currentSnapshot, message);
         } catch (DeploymentEventException e) {

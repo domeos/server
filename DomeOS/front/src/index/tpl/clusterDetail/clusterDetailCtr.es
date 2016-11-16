@@ -97,6 +97,13 @@
 				$scope.isWaitingNamespace = false;
 			});
 		};
+		$scope.addHost = (clusterId) => {
+			if($scope.isEditCluster) {
+				$state.go('addHost', {'id':clusterId});
+			}else {
+				$domePublic.openWarning('您没有权限添加主机');
+			}
+		};
 		$scope.addNamespace = () => {
 			$scope.isLoadingNamespace = true;
 			let namespace = $scope.namespaceTxt.namespace;
@@ -234,6 +241,15 @@
 			$scope.tabActive[0].active = true;
 		}
 
+		// 登录用户角色权限
+		$scope.$on('signalResourceCurrentUserRole', function (event, msg) {
+          	var userRole = msg;
+          	if (userRole === 'MASTER' || userRole === 'DEVELOPER') {
+				$scope.isEditCluster = true;
+			}else {
+				$scope.isEditCluster = false;
+			}
+        });
 
 		$scope.$on('memberPermisson', function (event, hasPermisson) {
 			$scope.hasMemberPermisson = hasPermisson;
@@ -243,7 +259,7 @@
 			}
 		});
 	}]).controller('AddLabelModalCtr', ['$scope', 'clusterId', 'nodeList', '$modalInstance', '$domePublic', '$domeCluster', function ($scope, clusterId, nodeList, $modalInstance, $domePublic, $domeCluster) {
-		console.log(nodeList);
+		//console.log(nodeList);
 		$scope.labelList = [];
 		$scope.newLabel = '';
 		let nodeService = $domeCluster.getInstance('NodeService');

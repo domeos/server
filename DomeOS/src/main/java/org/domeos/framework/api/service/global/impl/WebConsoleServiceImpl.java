@@ -9,7 +9,7 @@ import org.domeos.framework.api.controller.exception.ApiException;
 import org.domeos.framework.api.controller.exception.PermitException;
 import org.domeos.framework.api.model.global.WebSsh;
 import org.domeos.framework.api.model.operation.OperationType;
-import org.domeos.framework.api.model.resource.related.ResourceType;
+import org.domeos.framework.api.model.collection.related.ResourceType;
 import org.domeos.framework.api.service.global.WebConsoleService;
 import org.domeos.framework.engine.AuthUtil;
 import org.domeos.framework.engine.model.CustomObjectMapper;

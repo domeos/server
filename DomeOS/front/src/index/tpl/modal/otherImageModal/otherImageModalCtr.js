@@ -14,5 +14,8 @@
 		$scope.submitImage = function () {
 			$modalInstance.close($scope.imageInfo);
 		};
+		$scope.cancel = function () {
+			$modalInstance.dismiss('cancel');
+		};
 	}]);
 })(window.domeApp);

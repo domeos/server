@@ -1,10 +1,7 @@
 {
   "deployName": "testdeploy",
   "createTime": 1454382498,
-  "creator": {
-    "creatorType": "USER",
-    "creatorId": 1
-  },
+  "creatorId": 1,
   "namespace": "default",
   "clusterId": 1,
   "hostEnv": "TEST",
@@ -43,5 +40,6 @@
   "logDraft": null,
   "accessType": "K8S_SERVICE",
   "exposePortNum": 0,
-  "innerServiceDrafts": []
+  "innerServiceDrafts": [],
+  "collectionId" : 1
 }

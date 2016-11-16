@@ -1,36 +1,33 @@
 
-<ul class="com-list-info border-info">
-  <li><span class="info-name not-align-input">集群名称</span>
-    <div class="info-content" ng-bind="config.name"></div>
+<ul class="com-list-info">
+  <li class="has-border"><span class="info-name">集群名称</span>
+    <div class="info-content info-content-lg-height" ng-bind="config.name"></div>
   </li>
-  <li><span class="info-name not-align-input">创建者</span>
-    <div class="info-content" ng-bind="config.ownerName"></div>
+  <li class="has-border"><span class="info-name">集群https访问</span>
+    <div class="info-content info-content-lg-height" ng-bind="config.isHttps?'On':'Off'"></div>
   </li>
-  <li><span class="info-name not-align-input">集群https访问</span>
-    <div class="info-content" ng-bind="config.isHttps?'On':'Off'"></div>
+  <li ng-if="config.isHttps"><span class="info-name">用户名</span>
+    <div class="info-content info-content-lg-height" ng-bind="config.username||'未设置'"></div>
   </li>
-  <li ng-if="config.isHttps"><span class="info-name not-align-input">用户名</span>
-    <div class="info-content" ng-bind="config.username||'未设置'"></div>
+  <li class="has-border" ng-if="config.isHttps"><span class="info-name">密码</span>
+    <div class="info-content info-content-lg-height" ng-bind="config.password||'未设置'"></div>
   </li>
-  <li ng-if="config.isHttps"><span class="info-name not-align-input">密码</span>
-    <div class="info-content" ng-bind="config.password||'未设置'"></div>
+  <li class="has-border"><span class="info-name">api server</span>
+    <div class="info-content info-content-lg-height" ng-bind="config.isHttps?'https://'+config.api:config.api"></div>
   </li>
-  <li><span class="info-name not-align-input">api server</span>
-    <div class="info-content" ng-bind="config.isHttps?'https://'+config.api:config.api"></div>
+  <li class="has-border"><span class="info-name">dns服务器</span>
+    <div class="info-content info-content-lg-height" ng-bind="vmDome.isStrNull(config.dns)"></div>
   </li>
-  <li><span class="info-name not-align-input">dns服务器</span>
-    <div class="info-content" ng-bind="vmDome.isStrNull(config.dns)"></div>
-  </li>
-  <li><span class="info-name">etcd</span>
+  <li class="has-border"><span class="info-name">etcd</span>
     <div class="info-content">
       <div class="line-single" ng-hide="$last" ng-repeat="etcd in config.etcd"><span class="ui-input-white ui-input-txt single-element" ng-bind="etcd.name"></span></div>
     </div>
   </li>
-  <li><span class="info-name not-align-input">domain</span>
-    <div class="info-content"><span ng-bind="vmDome.isStrNull(config.domain)"></span></div>
+  <li class="has-border"><span class="info-name">domain</span>
+    <div class="info-content info-content-lg-height"><span ng-bind="vmDome.isStrNull(config.domain)"></span></div>
   </li>
-  <li><span class="info-name not-align-input">日志自动收集</span>
-    <div class="info-content" ng-switch="config.logConfig"><span ng-switch-when="1">On</span><span ng-switch-default="ng-switch-default">Off</span></div>
+  <li><span class="info-name">日志自动收集</span>
+    <div class="info-content info-content-lg-height" ng-switch="config.logConfig"><span ng-switch-when="1">On</span><span ng-switch-default="ng-switch-default">Off</span></div>
   </li>
   <li ng-if="config.logConfig===1"><span class="info-name">kafka</span>
     <div class="info-content">
@@ -43,7 +40,7 @@
     </div>
   </li>
   <li ng-if="config.logConfig===1"><span class="info-name">日志容器</span>
-    <div class="info-content">
+    <div class="info-content info-content-lg-height">
       <div class="line-singgle"><span>镜像名 :</span><span class="cluster-log" ng-bind="config.clusterLog.imageName"></span></div>
       <div class="line-singgle"><span>镜像版本 :</span><span class="cluster-log" ng-bind="vmDome.isStrNull(config.clusterLog.imageTag)"></span></div>
     </div>

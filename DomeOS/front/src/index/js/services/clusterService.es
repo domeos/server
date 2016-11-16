@@ -383,10 +383,10 @@
             toggleUser: function (user) {
                 if (Object.prototype.toString.call(user) !== '[object Object]') return;
                 this.config.ownerName = user.name;
-                this.creatorDraft = {
-                    creatorType: user.type,
-                    creatorId: user.id
-                };
+                // this.creatorDraft = {
+                //     creatorType: user.type,
+                //     creatorId: user.id
+                // };
             },
             toggleLogConfig: function () {
                 this.config.logConfig = this.config.logConfig === 1 ? 0 : 1;
@@ -464,13 +464,13 @@
                 let formartNewCluster = {};
 
                 formartNewCluster.clusterInfo = cluster;
-                formartNewCluster.creatorDraft = this.creatorDraft;
+                // formartNewCluster.creatorDraft = this.creatorDraft;
                 return formartNewCluster;
             },
             create: function () {
                 let cluster = this._formartCluster(),
                     newCluster = this._formartNewCluster(cluster);
-                return $http.post('/api/cluster', angular.toJson(newCluster));
+                return $http.post('/api/cluster', angular.toJson(newCluster.clusterInfo));
             }
         };
         // ClusterList Class

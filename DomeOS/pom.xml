@@ -4,7 +4,7 @@
     <groupId>org.domeos</groupId>
     <artifactId>DomeOS</artifactId>
     <packaging>war</packaging>
-    <version>0.3.1-SNAPSHOT</version>
+    <version>0.4-SNAPSHOT</version>
     <name>DomeOS Maven Webapp</name>
     <url>http://maven.apache.org</url>
 
@@ -281,6 +281,17 @@
             <artifactId>kubernetes-api</artifactId>
             <version>2.2.155</version>
         </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt</artifactId>
+            <version>0.6.0</version>
+        </dependency>
+        <dependency>
+            <groupId>joda-time</groupId>
+            <artifactId>joda-time</artifactId>
+            <version>2.9.4</version>
+        </dependency>
+
         <dependency>
             <groupId>org.domeos</groupId>
             <artifactId>java-gitlab-api</artifactId>

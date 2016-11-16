@@ -27,6 +27,10 @@
             this.deleteBaseImage = (imageId) => $http.delete(`${this._url}/base/${imageId}`);
             // @param type: 'java'
             this.getExclusiveImages = (type) => $http.get(`${this._url}/exclusive/${type}`);
+            // image collection
+            this.getCollectionImages = (imageNameDetail) => $http.post(`${this._url}/all/detail`, angular.toJson(imageNameDetail));
+            this.deletePrivateImage = (name, tag, registry) => $http.delete(`${this._url}/all/detail/tag?name=${name}&tag=${tag}&registry=${registry}`);
+            this.getTagDetail = (imageTagDetailRequest) => $http.post(`${this._url}/all/detail/tag`, angular.toJson(imageTagDetailRequest));
         }
         const imageService = new ImageService();
 
@@ -38,7 +42,28 @@
                     deferred.resolve();
                 }, () => {
                     deferred.reject();
-                    $domePublic.openWarning('删除失败！');
+                    $domePublic.openWarning({
+                        title: '删除失败！',
+                        msg: res.data.resultMsg
+                    });
+                });
+            }, () => {
+                deferred.reject();
+            });
+            return deferred.promise;
+        };
+        // 删除私有仓库镜像
+        const deletePrivateImage = (name, tag, registry) => {
+            var deferred = $q.defer();
+            $domePublic.openDelete().then(() => {
+                imageService.deletePrivateImage(name, tag, registry).then(() => {
+                    deferred.resolve();
+                }, (res) => {
+                    deferred.reject();
+                    $domePublic.openWarning({
+                        title: '删除失败！',
+                        msg: res.data.errors.message + res.data.resultMsg
+                    });
                 });
             }, () => {
                 deferred.reject();
@@ -105,7 +130,8 @@
             imageService: imageService,
             Mirror: Mirror,
             deleteBaseImage: deleteBaseImage,
-            getMirrorInstance: getMirrorInstance
+            getMirrorInstance: getMirrorInstance,
+            deletePrivateImage: deletePrivateImage
         };
     }
     domeImage.$inject = ['$http', '$q', '$domePublic'];

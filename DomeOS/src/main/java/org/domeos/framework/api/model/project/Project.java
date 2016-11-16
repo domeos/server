@@ -17,6 +17,7 @@ public class Project extends RowModelBase {
     private AutoBuild autoBuildInfo;
     private boolean userDefineDockerfile = false;
     private DockerfileContent dockerfileConfig;
+    private CustomDockerfile customDockerfile;
     private UserDefinedDockerfile dockerfileInfo;
     private Map<String, String> confFiles;
     private List<EnvSetting> envConfDefault;
@@ -53,6 +54,14 @@ public class Project extends RowModelBase {
 
     public void setDockerfileConfig(DockerfileContent dockerfileConfig) {
         this.dockerfileConfig = dockerfileConfig;
+    }
+
+    public CustomDockerfile getCustomDockerfile() {
+        return customDockerfile;
+    }
+
+    public void setCustomDockerfile(CustomDockerfile customDockerfile) {
+        this.customDockerfile = customDockerfile;
     }
 
     public UserDefinedDockerfile getDockerfileInfo() {
@@ -100,21 +109,72 @@ public class Project extends RowModelBase {
         this.exclusiveBuild = privilegeBuild;
     }
 
+    public String dockerfilePathInCodeManager() {
+        if (dockerfileInfo == null) {
+            return null;
+        }
+        String path = dockerfileInfo.getDockerfilePath();
+        if (path.startsWith("/")) {
+            return path.substring(1);
+        }
+        return path;
+    }
+
+    public String dockerfilePath(String ref) {
+        if (dockerfileInfo == null || codeInfo == null) {
+            return null;
+        }
+        String dockerfilePath = dockerfileInfo.getDockerfilePath();
+        if (!dockerfilePath.startsWith("/")) {
+            dockerfilePath = "/" + dockerfilePath;
+        }
+
+        if (CodeManager.subversion.equals(codeInfo.getCodeManager())) {
+            dockerfilePath = "/" + getName() + ref + dockerfilePath;
+        }
+        return dockerfilePath;
+    }
+
+    public String buildPath(String ref) {
+        String buildPath = dockerfileInfo.getBuildPath();
+        if (!buildPath.startsWith("/")) {
+            buildPath = "/" + buildPath;
+        }
+
+        if (CodeManager.subversion.equals(codeInfo.getCodeManager())) {
+            buildPath = "/" + getName() + ref + buildPath;
+        }
+        return buildPath;
+    }
+
     public String checkLegality() {
         if (StringUtils.isBlank(getName())) {
             return "project name must be set";
-        } else if (!isRegularDockerName(getName())) {
+        }
+        if (!isRegularDockerName(getName())) {
             return "project name must match [a-z0-9]+([._-][a-z0-9]+)*";
-        } else if (codeInfo != null && !StringUtils.isBlank(codeInfo.checkLegality())) {
+        }
+        if (codeInfo != null && !StringUtils.isBlank(codeInfo.checkLegality())) {
             return codeInfo.checkLegality();
-        } else if (codeInfo == null && autoBuildInfo != null) {
+        }
+        if (dockerfileInfo != null && !StringUtils.isBlank(dockerfileInfo.checkLegality())) {
+            return dockerfileInfo.checkLegality();
+        }
+        if (autoBuildInfo != null) {
             if ((autoBuildInfo.getBranches() != null && autoBuildInfo.getBranches().size() > 0)
                     || autoBuildInfo.getTag() > 0) {
                 return "code info is null, cannot set auto build info";
             }
-        } else if (dockerfileConfig != null && !StringUtils.isBlank(dockerfileConfig.checkLegality())) {
+        }
+        if (dockerfileConfig != null && !StringUtils.isBlank(dockerfileConfig.checkLegality())) {
             return dockerfileConfig.checkLegality();
-        } else if (exclusiveBuild != null && !StringUtils.isBlank(exclusiveBuild.checkLegality())) {
+        }
+        if (customDockerfile != null) {
+            if (!StringUtils.isBlank(customDockerfile.checkLegality())) {
+                return customDockerfile.checkLegality();
+            }
+        }
+        if (exclusiveBuild != null && !StringUtils.isBlank(exclusiveBuild.checkLegality())) {
             return exclusiveBuild.checkLegality();
         }
         return null;

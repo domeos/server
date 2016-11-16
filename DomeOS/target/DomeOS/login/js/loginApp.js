@@ -25,7 +25,7 @@ loginApp.controller('loginCtr', ['$scope', '$http', '$location', function($scope
 			data: angular.toJson(loginData)
 		}).then(function(res) {
 			if (res.data.resultCode == 200) {
-				location.href = redirect ? redirect : '/module/module.html';
+				location.href = redirect ? redirect : '/#/projectCollectionManage';
 			} else {
 				if (res.data.result == 'password wrong') {
 					$scope.hasError = '密码错误！';

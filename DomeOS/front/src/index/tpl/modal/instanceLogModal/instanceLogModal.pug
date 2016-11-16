@@ -6,3 +6,5 @@
 		li(ng-if="!instanceInfo.containers||instanceInfo.containers.length===0") 无容器信息
 		li(ng-repeat="container in instanceInfo.containers")
 			a.ui-table-link(href="{{container.href}}" target="_blank" ng-bind="container.pageTxt" ng-click="toggleContainer($index)")
+.modal-footer
+	button.ui-btn.ui-btn-sm.ui-btn-white(ng-click="cancel()") 取消

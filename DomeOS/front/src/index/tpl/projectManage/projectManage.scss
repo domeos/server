@@ -3,15 +3,15 @@
 
 .project-manage{
 	.project-options{
-		padding:16px $page-padding 0 $page-padding;
-		height: 82px;
+		padding:20px;
+		// height: 82px;
 		.ui-btn-lg{
-			height: 43px;
-			width: 158px;
+			height: 34px;
+			width: 100px;
 			color: #fff;
 			font-size:14px;
-			font-weight: bold;
-			background-color:#2994e7;
+			font-weight: normal;
+			background-color:#188ae2;
 			.icon-add-white{
 				margin-right: 4px;
 			}
@@ -19,5 +19,8 @@
 		.ui-input-search{
 			margin-left: 34px;
 		}
+	}
+	.mod-list{
+		padding: 0 20px 20px;
 	}
 }

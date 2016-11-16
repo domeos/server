@@ -1,22 +1,56 @@
 package org.domeos.framework.api.service.project;
 
 import org.domeos.basemodel.HttpResponseTemp;
-import org.domeos.framework.api.consolemodel.project.ProjectCreate;
+import org.domeos.framework.api.consolemodel.project.ProjectCollectionConsole;
+import org.domeos.framework.api.consolemodel.project.ProjectConsole;
+import org.domeos.framework.api.consolemodel.project.ProjectInfoConsole;
 import org.domeos.framework.api.model.project.GitlabUser;
 import org.domeos.framework.api.model.project.Project;
 import org.domeos.framework.api.model.project.SubversionUser;
 import org.domeos.framework.api.model.project.related.CodeConfiguration;
 
+import java.util.List;
+
 /**
  */
 public interface ProjectService {
     /**
-     * put project info into database
-     *
-     * @param projectCreate is parameter from front pages
      * @return
      */
-    HttpResponseTemp<?> createProject(ProjectCreate projectCreate);
+    HttpResponseTemp<List<ProjectCollectionConsole>> listProjectCollection();
+
+    /**
+     * @param projectCollection
+     * @return
+     */
+    HttpResponseTemp<ProjectCollectionConsole> addProjectCollection(ProjectCollectionConsole projectCollection);
+
+    /**
+     * @param projectCollection
+     * @return
+     */
+    HttpResponseTemp<ProjectCollectionConsole> updateProjectCollection(ProjectCollectionConsole projectCollection);
+
+    /**
+     * @param id
+     * @return
+     */
+    HttpResponseTemp<?> deleteProjectCollection(int id);
+
+    /**
+     *
+     */
+    HttpResponseTemp<ProjectCollectionConsole> getProjectCollection(int id);
+
+    /**
+     * put project info into database
+     *
+     *
+     * @param collectionId
+     * @param project is parameter from front pages
+     * @return
+     */
+    HttpResponseTemp<ProjectConsole> createProject(int collectionId, Project project);
 
     /**
      * delete project info from database by project id
@@ -29,26 +63,28 @@ public interface ProjectService {
     /**
      * modify project info in database by id
      *
+     *
      * @param project
      * @return
      */
-    HttpResponseTemp<?> modifyProject(Project project);
+    HttpResponseTemp<ProjectConsole> modifyProject(Project project);
 
     /**
      * get project info from database by project id
      *
-     * @param id
-     * @return
+     *
+     * @param projectId @return
      */
-    HttpResponseTemp<Project> getProject(int id);
+    HttpResponseTemp<ProjectConsole> getProject(int projectId);
 
     /**
      * list project info in database
      * this will return latest build info
      *
      * @return
+     * @param collectionId
      */
-    HttpResponseTemp<?> listProjectInfo();
+    HttpResponseTemp<List<ProjectInfoConsole>> listProjectInfo(int collectionId);
 
     /**
      * list gitlab info in database
@@ -119,11 +155,11 @@ public interface ProjectService {
     HttpResponseTemp<?> getReadme(int id, String branch);
 
     /**
-     *
      * @param id
      * @return
      */
     HttpResponseTemp<?> getTags(int id);
+
     /**
      * get tags of a project in git
      *
@@ -131,4 +167,11 @@ public interface ProjectService {
      * @return
      */
     HttpResponseTemp<?> getTags(CodeConfiguration codeConfig);
+
+    /**
+     *
+     * @param collectionId
+     * @return
+     */
+    HttpResponseTemp<String> getProjectCollectionNameById(int collectionId);
 }

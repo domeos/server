@@ -27,6 +27,7 @@ public class DeploymentDetail {
     private int exposePortNum;
     private List<InnerServiceDraft> innerServiceDrafts;
     private NetworkMode networkMode;
+    private boolean deletable;
     private VersionType versionType;
 
 
@@ -180,6 +181,14 @@ public class DeploymentDetail {
 
     public void setNetworkMode(NetworkMode networkMode) {
         this.networkMode = networkMode;
+    }
+
+    public boolean isDeletable() {
+        return deletable;
+    }
+
+    public void setDeletable(boolean deletable) {
+        this.deletable = deletable;
     }
 
     public VersionType getVersionType() {

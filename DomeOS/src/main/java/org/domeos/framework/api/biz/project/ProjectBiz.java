@@ -24,8 +24,6 @@ public interface ProjectBiz extends BaseBiz {
 
     boolean checkProjectName(String name);
 
-    boolean isAuthorited(int resourceId);
-
     Project getProjectByName(String name);
 
     void addProject(Project project);
@@ -83,4 +81,8 @@ public interface ProjectBiz extends BaseBiz {
 //    RSAKeyPair getRSAKeyPairByKeyId(int deployId);
 
     String getBuildTaskNameById(int buildId);
+
+    BuildHistory getBuildHistoryById(int buildId);
+
+    Project getProjectByBuildId(int buildId);
 }

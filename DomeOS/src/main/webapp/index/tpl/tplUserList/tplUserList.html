@@ -1,17 +1,18 @@
 
 <div class="member-con" ng-controller="TplUserListCtr">
   <div class="title-con">
-    <input class="ui-input ui-input-fill ui-input-search pull-right" placeholder="搜索{{resourceName}}成员" ng-model="userKey1"/>
-    <h3 class="member-title txt-bright" ng-cloak="ng-cloak">{{resourceName}}成员</h3>
-    <button class="ui-btn ui-btn-safe ui-btn-sm" ng-click="isEdit=true" ng-show="!isEdit">编辑</button>
-    <button class="ui-btn ui-btn-safe ui-btn-sm" ng-click="isEdit=false" ng-show="isEdit">退出编辑</button>
+    <div class="pull-right"><span ng-cloak="ng-cloak">共{{userinfoFilterred1.length}}个成员</span>
+      <input class="ui-input ui-input-fill ui-input-search" placeholder="搜索{{resourceName}}成员" ng-model="userKey1"/>
+    </div>
+    <button class="ui-btn ui-btn-lg" ng-click="isEdit=true" ng-show="!isEdit" ng-disabled="!isMaster" ng-class="{isDisabledButton: !isMaster}"> <span class="btn-txt">添加成员</span><i class="fa fa-plus"></i></button>
+    <button class="ui-btn ui-btn-lg ui-btn-the-same-second" ng-click="isEdit=false" ng-show="isEdit"> <span class="btn-txt">退出编辑</span><i class="fa fa-undo"></i></button>
   </div>
   <div class="member-select" ng-if="isEdit">
-    <div class="member-way" ng-hide="resourceType=='group'"><a class="select-type" ng-click="toggleWay('member')" ng-class="{'active':selectWay=='member'}">导入成员</a><a class="select-type" ng-click="toggleWay('group')" ng-class="{'active':selectWay=='group'}">导入组成员</a><a class="select-type" ng-click="toggleWay('item')" ng-class="{'active':selectWay=='item'}" ng-hide="resourceType=='ALARM'">导入{{resourceName}}成员</a></div>
+    <div class="member-way" ng-hide="resourceType=='group'"><a class="select-type" ng-click="toggleWay('member')" ng-class="{'active':selectWay=='member'}">导入成员</a><a class="select-type" ng-click="toggleWay('item')" ng-class="{'active':selectWay=='item'}" ng-hide="resourceType=='ALARM'">导入{{resourceName}}成员</a></div>
     <div class="member-search">
       <div class="com-select-con" select-con="select-con" label="true" ng-if="selectWay=='member'">
         <ul class="selected-labels">
-          <li class="select-label" ng-repeat="user in selectedUsers" ng-cloak="ng-cloak"><a class="icon-cancel" ng-click="cancelUser($index)"></a>{{user.username}}</li>
+          <li class="select-label" ng-repeat="user in selectedUsers" ng-cloak="ng-cloak">{{user.username}}<a class="icon-cancel" ng-click="cancelUser($index)"> </a></li>
           <li class="select-input">
             <input class="line-element ui-btn-select" placeholder="搜索成员" ng-model="userKey.key" ng-keydown="userKeyUp($event,userKey.key,userListFiltered[0])"/>
           </li>
@@ -29,13 +30,14 @@
         </ul>
       </div>
       <div class="com-select-con" select-con="select-con" ng-if="selectWay=='item'">
-        <button class="ui-btn ui-btn-white ui-btn-select" ng-cloak="ng-cloak"><i class="icon-down"></i><span>{{selectResource.resourceName||'选择'+resourceName}}</span><span class="tool-item-next txt-prompt" ng-show="selectResource.clusterName">(集群：{{selectResource.clusterName}}</span><span class="tool-item-next txt-prompt" ng-show="selectResource.namespace">namespace:{{selectResource.namespace}})</span></button>
+        <button class="ui-btn ui-btn-white ui-btn-select" ng-cloak="ng-cloak"><i class="icon-down"></i><span class="txt-prompt">{{selectResource.resourceName||'选择'+resourceName}}</span><span class="tool-item-next" ng-show="selectResource.clusterName">集群：{{selectResource.clusterName}}</span><span class="tool-item-next" ng-show="selectResource.namespace">namespace:{{selectResource.namespace}}</span><span class="tool-item-next" ng-show="selectResource.name"> {{selectResource.name}}</span></button>
         <ul class="select-list">
-          <li class="select-item" ng-repeat="resource in selectResourceUser"><a ng-click="toggleResource($index)"><span ng-bind="resource.resourceName"></span><span class="item-right"><span class="txt-prompt" ng-show="resource.clusterName" ng-cloak="ng-cloak">集群：{{resource.clusterName}}</span><span class="tool-item-next txt-prompt" ng-show="resource.namespace" ng-cloak="ng-cloak">namespace:{{resource.namespace}}</span></span></a></li>
+          <li ng-if="!selectResourceUser||selectResourceUser.length===0"><a>无相关组信息</a></li>
+          <li class="select-item" ng-repeat="resource in selectResourceUser"><a ng-click="toggleResource($index)"><span ng-show="resource.resourceName" ng-bind="resource.resourceName"></span><span ng-show="resource.name" ng-bind="resource.name"></span><span class="item-right"><span class="txt-prompt" ng-show="resource.clusterName" ng-cloak="ng-cloak">集群：{{resource.clusterName}}</span><span class="tool-item-next txt-prompt" ng-show="resource.namespace" ng-cloak="ng-cloak">namespace:{{resource.namespace}}</span></span></a></li>
         </ul>
       </div>
       <div class="com-select-con" select-con="select-con">
-        <button class="ui-btn ui-btn-white ui-btn-select"><i class="icon-down"></i>{{selectedRole}}</button>
+        <button class="ui-btn ui-btn-white ui-btn-select line-element-sm"><i class="icon-down"></i>{{selectedRole}}</button>
         <ul class="select-list">
           <li class="select-item"><a ng-click="toggleRole('MASTER')">MASTER</a></li>
           <li class="select-item"><a ng-click="toggleRole('DEVELOPER')">DEVELOPER</a></li>
@@ -43,17 +45,17 @@
           <li class="select-item" ng-if="selectWay=='group'"><a ng-click="toggleRole('oldRole')">保留原有组权限</a></li>
           <li class="select-item" ng-if="selectWay=='item'"><a ng-click="toggleRole('oldRole')" ng-cloak="ng-cloak">保留原有{{resourceName}}权限</a></li>
         </ul>
+        <button class="ui-btn ui-btn-bright ui-btn-sm ui-btn-add" ng-click="addMember()">添加</button>
       </div>
-      <button class="ui-btn ui-btn-primary ui-btn-sm" ng-click="addMember()">添加成员</button>
     </div>
   </div>
-  <div class="member-list">
+  <div class="mod-list">
     <table class="ui-table-dome">
       <thead>
         <tr>
-          <th>用户名称</th>
+          <th style="width:50%">用户名称</th>
           <th ng-cloak="ng-cloak">{{resourceName}}内权限</th>
-          <th></th>
+          <th style="width:15%">操作</th>
         </tr>
       </thead>
       <tbody>
@@ -63,8 +65,8 @@
         <tr></tr>
         <tr ng-repeat="user in userinfoFilterred1=(userInfos|filter:{'username':userKey1})">
           <td ng-bind="user.username"></td>
-          <td><span ng-bind="user.role" ng-hide="isEdit"></span>
-            <div class="edit-role" ng-if="isEdit">
+          <td><span ng-bind="user.role" ng-hide="user.$edit"></span>
+            <div class="edit-role temp" ng-if="user.$edit">
               <div class="com-select-con" select-con="select-con">
                 <button class="ui-btn ui-btn-white ui-btn-select" ng-cloak="ng-cloak"><i class="icon-down"></i>{{user.newRole}}</button>
                 <ul class="select-list">
@@ -73,10 +75,14 @@
                   <li class="select-item"><a ng-click="resourceInfo.toggleRole(user,'REPORTER')">REPORTER</a></li>
                 </ul>
               </div>
-              <button class="ui-btn ui-btn-primary ui-btn-sm" ng-if="user.isDirty" ng-click="saveRole(user)">Save</button>
             </div>
           </td>
-          <td><a class="icon-delete" ng-if="isEdit" ng-click="deleteUser(user)"></a></td>
+          <td>
+            <button class="fa fa-pencil ui-btn-none icon-edit-color" ng-if="!user.$edit" ng-click="user.$edit=true" ng-class="{isDisabledIcon:!isMaster}" ng-disabled="!isMaster" title="修改"></button>
+            <button class="fa fa-trash-o ui-btn-none icon-trash-color" ng-if="!user.$edit" ng-click="deleteUser(user)" ng-class="{isDisabledIcon:!isMaster}" ng-disabled="!isMaster" title="删除"></button>
+            <button class="fa fa-floppy-o ui-btn-none icon-success-color" ng-if="user.$edit" ng-click="saveRole(user);user.$edit=false" title="保存"></button>
+            <button class="fa fa-times ui-btn-none icon-cancel-color" ng-if="user.$edit" ng-click="user.$edit=false" title="取消"></button>
+          </td>
         </tr>
       </tbody>
     </table>

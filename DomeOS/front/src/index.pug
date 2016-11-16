@@ -13,10 +13,11 @@ html(ng-app="domeApp")
       link(rel="stylesheet" href="index/css/index.css" type="text/css")
       link(rel="stylesheet" href="index/css/bussiness.css" type="text/css")
       link(rel="stylesheet" href="index/tpl/nav/nav.css" type="text/css")
+      link(rel="stylesheet" href="index/tpl/nav/iconNav.css" type="text/css")
       link(rel="stylesheet" href="index/tpl/projectManage/projectManage.css" type="text/css")
       link(rel="stylesheet" href="index/tpl/deployManage/deployManage.css" type="text/css")
       link(rel="stylesheet" href="index/tpl/groupManage/groupManage.css" type="text/css")
-      link(rel="stylesheet" href="index/tpl/imageManage/imageManage.css" type="text/css")
+      link(rel="stylesheet" href="index/tpl/imagesManage/imagesManage.css" type="text/css")
       link(rel="stylesheet" href="index/tpl/globalSetting/globalSetting.css" type="text/css")
       link(rel="stylesheet" href="index/tpl/clusterManage/clusterManage.css" type="text/css")
       link(rel="stylesheet" href="index/tpl/appStore/appStore.css" type="text/css")
@@ -27,8 +28,8 @@ html(ng-app="domeApp")
       link(rel="stylesheet" href="index/tpl/tplProjectSetting/projectSettingTpl.css" type="text/css")
       link(rel="stylesheet" href="index/tpl/tplUserList/tplUserList.css" type="text/css")
       link(rel="stylesheet" href="index/tpl/createDeployCommon/createDeployCommon.css" type="text/css")
-      link(rel="stylesheet" href="index/tpl/createDeployImage/createDeployImage.css" type="text/css")
       link(rel="stylesheet" href="index/tpl/createDeployRaw/createDeployRaw.css" type="text/css")
+      link(rel="stylesheet" href="index/tpl/createDeployImage/createDeployImage.css" type="text/css")
       link(rel="stylesheet" href="index/tpl/createAppDeploy/createAppDeploy.css" type="text/css")
       link(rel="stylesheet" href="index/tpl/monitor/monitor.css" type="text/css")
       link(rel="stylesheet" href="index/tpl/alarm/alarm.css" type="text/css")
@@ -41,54 +42,67 @@ html(ng-app="domeApp")
       link(rel="stylesheet" href="index/tpl/clusterDetail/clusterDetail.css" type="text/css")
       link(rel="stylesheet" href="index/tpl/mirrorCustom/mirrorCustom.css" type="text/css")
       link(rel="stylesheet" href="index/tpl/tplAlarmTemplate/tplAlarmTemplate.css" type="text/css")
+      link(rel="stylesheet" href="index/tpl/tplAlarmUserGroupDetail/tplAlarmUserGroupDetail.css" type="text/css")
+      link(rel="stylesheet" href="index/tpl/projectCollectionManage/projectCollectionManage.css" type="text/css")
+      link(rel="stylesheet" href="index/tpl/createProjectCollection/createProjectCollection.css" type="text/css")
+      link(rel="stylesheet" href="index/tpl/imageCollectionManage/imageCollectionManage.css" type="text/css")
+      link(rel="stylesheet" href="index/tpl/deployCollectionManage/deployCollectionManage.css" type="text/css")
+      link(rel="stylesheet" href="index/tpl/createDeployCollection/createDeployCollection.css" type="text/css")
+      link(rel="stylesheet" href="lib/css/font-awesome.min.css" type="text/css")
       link(rel="stylesheet" type="text/css")
       <!-- endbuild -->
-  body(ng-controller="DomeCtr as vmDome" resize-body)
+  body(ng-controller="DomeCtr as vmDome" resize-body ng-class="{'thin-left-nav':vmDome.thinLeftNav}")
     .page
-      ng-include(src="'index/tpl/nav/nav.html'")
+      //- ng-include(src="'index/tpl/nav/nav.html'")
+      //- ng-include(src="'index/tpl/nav/iconNav.html'")
+      .side(left-sidebar="left-sidebar" current-mod="currentMod.mod" login-user="vmDome.loginUser")
       .content
         .top-prompt.ng-hide(ng-show="vmDome.showPrompt") 为了方便试用DomeOS，目前正在使用H2内存数据库。如果DomeOS Server重启，则该数据库信息会丢失。您可以配置MySQL作为数据库，MySQL配置详见
             a.txt-bright(href="http://doc.domeos.org" target="_blank") 使用文档
             | 。
             a.icon-cancel.pull-right(ng-click="vmDome.showPrompt = false")
         header.header
-          ul.pull-right.header-item
-            li.header-doc
-              a(href="http://doc.domeos.org" target="_blank")
-               span.icon-doc
-               | 文档
-            li.header-user
-              div(select-con)
-                button.ui-btn.ui-btn-none.username.ui-btn-select(ng-cloak)
-                 | {{vmDome.loginUser.username}}
-                 i.icon-down-white.up.drop
-                ul.com-user-option.select-list
-                  li.arrow
-                  li(select-item)
-                    a(ng-click="vmDome.modifySelfInfo()") 修改资料
-                  li(select-item  ng-if="vmDome.loginUser.loginType=='USER'")
-                    a(ng-click="vmDome.modifyPw()") 修改密码
-                  li(select-item)
-                    a(ng-click="vmDome.logout()") 退出登录
           .breadcrunmbs
+            span.sidebar
+              a(ng-click="vmDome.toggleThinLeftNav()")
+                i.fa.fa-bars.fa-lg(aria-hidden="true")
             span(ncy-breadcrumb ncy-breadcrumb-text-separator=" > ")
-          .page-info
-            h1.page-title(ng-bind="vmDome.title")
-            span.page-detail(ng-bind="vmDome.descrition")
+            ul.pull-right.header-item
+              li.header-doc
+                a(href="http://doc.domeos.org" target="_blank")
+                 i.fa.fa-file-o
+                 | &nbsp;文档
+              li.header-user
+                div(select-con)
+                  button.ui-btn.ui-btn-none.username.ui-btn-select(ng-cloak)
+                   | {{vmDome.loginUser.username}} &nbsp;
+                   i.fa.fa-angle-right.up.drop
+                  ul.com-user-option.select-list
+                    li.arrow
+                    li(select-item)
+                      a(ng-click="vmDome.modifySelfInfo()") 修改资料
+                    li(select-item  ng-if="vmDome.loginUser.loginType=='USER'")
+                      a(ng-click="vmDome.modifyPw()") 修改密码
+                    li(select-item)
+                      a(ng-click="vmDome.logout()") 退出登录
+          
+          //- .page-info
+          //-   h1.page-title(ng-bind="vmDome.title")
+          //-   span.page-detail(ng-bind="vmDome.descrition")
         .module.container(ui-view="")
     script(type="text/ng-template" id="promptModal.html")
       .d-modal-header 提示
       .modal-body
         p(ng-bind="promptTxt")
       .modal-footer
-        button.ui-btn.ui-btn-primary.ui-btn-sm(ng-click="cancel()") 确定
+        button.ui-btn.ui-btn-bright.ui-btn-sm(ng-click="cancel()") 确定
     script(type="text/ng-template" id="confirmModal.html")
       .d-modal-header 提示
       .modal-body
         p(ng-bind="promptTxt")
       .modal-footer
         button.ui-btn.ui-btn-white.ui-btn-sm(ng-click="cancel()") 取消
-        button.ui-btn.ui-btn-primary.ui-btn-sm(ng-click="sure()") 继续
+        button.ui-btn.ui-btn-bright.ui-btn-sm(ng-click="sure()") 继续
     script(type="text/ng-template" id="warningModal.html")
       .d-modal-header 警告
       .modal-body
@@ -123,7 +137,7 @@ html(ng-app="domeApp")
               span.txt-error(ng-if="(needValidUser.valid||pwForm.newPwAgain.$dirty)&&pwForm.newPwAgain.$error.equal") 两次密码不一致
       .modal-footer
         button.ui-btn.ui-btn-white.ui-btn-sm(ng-click="cancel()") 取消
-        button.ui-btn.ui-btn-sm.ui-btn-primary(ng-click="needValid=true;pwForm.$valid&&modiftPw()") 确定
+        button.ui-btn.ui-btn-sm.ui-btn-bright(ng-click="needValid=true;pwForm.$valid&&modiftPw()") 确定
     script(type="text/ng-template" id="modifyUserInfoModal.html")
       .d-modal-header 修改资料
       .modal-body.text-center.modal-newpw(ng-form role="form" name="userInfoForm")
@@ -142,7 +156,7 @@ html(ng-app="domeApp")
                       input.ui-input-white.full(ng-model="user.phone" name="phone")
       .modal-footer
           button.ui-btn.ui-btn-sm.ui-btn-white(ng-click="cancel()") 取消
-          button.ui-btn.ui-btn-sm.ui-btn-safe(ng-click="submit()") 保存
+          button.ui-btn.ui-btn-sm.ui-btn-bright(ng-click="submit()") 保存
     div
     <!-- build:js index/js/lib.min.js -->
     script(type="text/javascript" src="lib/js/jquery.min.js")
@@ -156,6 +170,10 @@ html(ng-app="domeApp")
     script(type="text/javascript" src="lib/js/angular-breadcrumb.min.js")
     script(type="text/javascript" src="lib/js/bindonce.min.js")
     script(type="text/javascript" src="lib/js/ocLazyLoad.js")
+    script(type="text/javascript" src="lib/js/clipboard.min.js")
+    script(type="text/javascript" src="lib/js/ngclipboard.min.js")
+    script(type="text/javascript" src="lib/js/angular-cookies.js")
+    script(type="text/javascript" src="lib/js/bootstrap.min.js")
     script(type="text/javascript" src="")
     <!-- endbuild -->
     <!-- build:js index/js/domeApp.min.js -->
@@ -169,6 +187,8 @@ html(ng-app="domeApp")
     script(type="text/javascript" src="common/userModule/userModule.js")
     script(type="text/javascript" src="index/js/domeApp.js")
     script(type="text/javascript" src="index/js/filter.js")
+    script(type="text/javascript" src="index/js/services/projectCollectionService.js")
+    script(type="text/javascript" src="index/js/services/deployCollectionService.js")
     script(type="text/javascript" src="index/js/services/domeService.js")
     script(type="text/javascript" src="index/js/services/clusterService.js")
     script(type="text/javascript" src="index/js/services/monitorService.js")
@@ -181,20 +201,21 @@ html(ng-app="domeApp")
     script(type="text/javascript" src="index/tpl/groupManage/groupManageCtr.js")
     script(type="text/javascript" src="index/tpl/clusterManage/clusterManageCtr.js")
     script(type="text/javascript" src="index/tpl/appStore/appStoreCtr.js")
-    script(type="text/javascript" src="index/tpl/imageManage/imageManageCtr.js")
+    script(type="text/javascript" src="index/tpl/imagesManage/imagesManageCtr.js")
     script(type="text/javascript" src="index/tpl/globalSetting/globalSettingCtr.js")
     script(type="text/javascript" src="index/tpl/createProject1/createProjectCtr1.js")
     script(type="text/javascript" src="index/tpl/createProject2/createProjectCtr2.js")
     script(type="text/javascript" src="index/tpl/projectDetail/projectDetailCtr.js")
     script(type="text/javascript" src="index/tpl/createDeployCommon/createDeployCommonCtr.js")
-    script(type="text/javascript" src="index/tpl/createDeployImage/createDeployImageCtr.js")
     script(type="text/javascript" src="index/tpl/createDeployRaw/createDeployRawCtr.js")
+    script(type="text/javascript" src="index/tpl/createDeployImage/createDeployImageCtr.js")
     script(type="text/javascript" src="index/tpl/createAppDeploy/createAppDeployCtr.js")
     script(type="text/javascript" src="index/tpl/monitor/monitorCtr.js")
     script(type="text/javascript" src="index/tpl/alarm/alarmCtr.js")
     script(type="text/javascript" src="index/tpl/alarmAddHosts/alarmAddHostsCtr.js")
     script(type="text/javascript" src="index/tpl/alarmTemplateDetail/alarmTemplateDetailCtr.js")
     script(type="text/javascript" src="index/tpl/createAlarmTemplate/createAlarmTemplateCtr.js")
+    script(type="text/javascript" src="index/tpl/tplAlarmUserGroupDetail/tplAlarmUserGroupDetailCtr.js")
     script(type="text/javascript" src="index/tpl/deployDetail/deployDetailCtr.js")
     script(type="text/javascript" src="index/tpl/createGroup/createGroupCtr.js")
     script(type="text/javascript" src="index/tpl/groupDetail/groupDetailCtr.js")
@@ -211,5 +232,11 @@ html(ng-app="domeApp")
     script(type="text/javascript" src="index/tpl/modal/branchCheckModal/branchCheckModalCtr.js")
     script(type="text/javascript" src="index/tpl/tplUserList/tplUserListCtr.js")
     script(type="text/javascript" src="index/tpl/mirrorCustom/mirrorCustomCtr.js")
+    script(type="text/javascript" src="index/tpl/projectCollectionManage/projectCollectionManageCtr.js")
+    script(type="text/javascript" src="index/tpl/createProjectCollection/createProjectCollectionCtr.js")
+    script(type="text/javascript" src="index/tpl/imageCollectionManage/imageCollectionManageCtr.js")
+    script(type="text/javascript" src="index/tpl/deployCollectionManage/deployCollectionManageCtr.js")
+    script(type="text/javascript" src="index/tpl/createDeployCollection/createDeployCollectionCtr.js")
+    script(type="text/javascript" src="index/tpl/tplChoseImage/choseImageCtr.js")
     script(type="text/javascript" src="")
     <!-- endbuild -->

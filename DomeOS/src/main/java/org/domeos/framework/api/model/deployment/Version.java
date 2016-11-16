@@ -12,6 +12,8 @@ import org.domeos.framework.engine.model.CustomObjectMapper;
 import org.domeos.framework.engine.model.RowModelBase;
 import java.io.IOException;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  */
@@ -109,8 +111,14 @@ public class Version extends RowModelBase{
             if (podSpec == null) {
                 return  "something wrong with pod spec definition";
             } else {
-                if (podSpec.getContainers() == null || podSpec.getContainers().size() == 0) {
-                    return "something wrong with container definition";
+                String checkAdditionalProperties = podSpec.toString();
+                if (checkAdditionalProperties != null && checkAdditionalProperties.contains("additionalProperties")) {
+                    Pattern additionalPropertiesPattern = Pattern.compile("(additionalProperties=\\{)([^\\}]+)\\}");
+                    Matcher matcher = additionalPropertiesPattern.matcher(checkAdditionalProperties);
+                    if (matcher.find()) {
+                        String parameter = matcher.group(2);
+                        return "\""  + parameter + "\" is wrong PodSpec yaml/json definition";
+                    }
                 }
             }
         }
@@ -133,5 +141,4 @@ public class Version extends RowModelBase{
         }
         return null;
     }
-
 }

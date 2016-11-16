@@ -3,10 +3,13 @@
 .project-create2{
 	padding:0 $page-padding 100px $page-padding;
 	.ui-btn-copy{
-		margin: 20px 0 8px $page-padding;
+		margin: 20px 0;
 	}
 	.project-new{
-		padding: 14px 0 0 $page-padding;
+		// padding: 14px 0 0 $page-padding;
+	}
+	.tool-algin-input{
+		margin-top: 10px;
 	}
 }
 .modal-projects{
@@ -24,11 +27,14 @@
 	}
 	td,th{
 		&:first-child{
-			padding-left: $page-padding;
+			// padding-left: 0;
 		}
 		&:last-child{
-			padding-right: $page-padding;
+			padding-right: 0;
 		}
+	}
+	.table-container{
+		padding: 0 20px 20px 20px;
 	}
 
 }

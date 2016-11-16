@@ -14,7 +14,7 @@ import org.domeos.framework.api.model.deployment.Deployment;
 import org.domeos.framework.api.model.deployment.related.Container;
 import org.domeos.framework.api.model.deployment.related.Instance;
 import org.domeos.framework.api.model.operation.OperationType;
-import org.domeos.framework.api.model.resource.related.ResourceType;
+import org.domeos.framework.api.model.collection.related.ResourceType;
 import org.domeos.framework.api.service.deployment.InstanceService;
 import org.domeos.framework.engine.AuthUtil;
 import org.domeos.framework.engine.k8s.NodeWrapper;

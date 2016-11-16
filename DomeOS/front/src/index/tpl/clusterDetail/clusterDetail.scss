@@ -6,8 +6,20 @@
 		margin-left: 20px;
 	}
 	.cluster-info{
+		.selected-node-count{
+			padding-left: 20px;
+		}
+		.table-wrap{
+			padding: 0 20px;
+			td,th:first-child{
+				padding-left: 8px;
+			}
+			td,th:last-child{
+				padding-right: 8px;
+			}
+		}
 		.info-options{
-			padding :16px $page-padding 16px $wider-padding;
+			padding : 20px;
 			overflow: hidden;
 			.info-right{
 				float: right;
@@ -19,6 +31,7 @@
 				display: block;
 				float: left;
 				margin-top: 20px;
+				margin-left: 20px;
 				font-weight: bold;
 				width: 150px;
 			}
@@ -46,14 +59,36 @@
 		margin: 16px 0 10px 58px;
 	}
 	.tab-cluster{
-		padding:6px $page-padding 40px $page-padding;
+		padding:0 $page-padding;
+		.com-list-info{
+			padding: 0;
+		}
+	}
+	.border-info{
+		padding: 0;
+    	margin-bottom: 20px;
+		li{
+			border-top: 0;
+		}
+	}
+	.com-list-info{
+		.info-name{
+			width: 150px;
+			text-align: right;
+		}
+		.info-name-content-for-label{
+			vertical-align: middle;
+		}
+		.info-content{
+			display: table-cell;
+		}
 	}
 }
 .modal-addlabel{
 	padding-left: 40px;
 	.labels-wrap{
 		display: inline-block;
-		width: 430px;
+		width: 448px;
 		margin-left: 34px;
 		vertical-align: top;
 	}

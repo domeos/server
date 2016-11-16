@@ -16,7 +16,7 @@ import org.domeos.framework.api.model.deployment.Deployment;
 import org.domeos.framework.api.model.deployment.Version;
 import org.domeos.framework.api.model.deployment.related.VersionType;
 import org.domeos.framework.api.model.operation.OperationType;
-import org.domeos.framework.api.model.resource.related.ResourceType;
+import org.domeos.framework.api.model.collection.related.ResourceType;
 import org.domeos.framework.api.service.deployment.VersionService;
 import org.domeos.framework.engine.AuthUtil;
 import org.domeos.framework.engine.k8s.RcBuilder;

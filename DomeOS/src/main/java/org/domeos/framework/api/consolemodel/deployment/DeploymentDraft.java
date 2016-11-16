@@ -1,7 +1,6 @@
 package org.domeos.framework.api.consolemodel.deployment;
 
 import org.apache.commons.lang3.StringUtils;
-import org.domeos.framework.api.consolemodel.CreatorDraft;
 import org.domeos.framework.api.model.LoadBalancer.LoadBalancer;
 import org.domeos.framework.api.model.LoadBalancer.related.*;
 import org.domeos.framework.api.model.LoadBalancer.related.LoadBalanceType;
@@ -23,7 +22,7 @@ public final class DeploymentDraft {
 
     private String deployName; // name of this deploy
     private long createTime = 0; // create time for deploy
-    private CreatorDraft creator; // authorize deploy to USER or GROUP
+    private int creatorId; // creator user id
     private String namespace = "default"; // namespace for k8s
     private int clusterId; // which k8s cluster to deploy
     private HostEnv hostEnv; // prod or test
@@ -43,6 +42,8 @@ public final class DeploymentDraft {
     private HealthChecker healthCheckerDraft;
     private DeploymentAccessType accessType = DeploymentAccessType.K8S_SERVICE;
     private int exposePortNum = 0;
+
+    private int collectionId;
 
     private VersionType versionType = VersionType.CUSTOM;
     private String podSpecStr;
@@ -71,14 +72,6 @@ public final class DeploymentDraft {
 
     public void setNamespace(String namespace) {
         this.namespace = namespace;
-    }
-
-    public CreatorDraft getCreator() {
-        return creator;
-    }
-
-    public void setCreator(CreatorDraft creator) {
-        this.creator = creator;
     }
 
     public List<ContainerDraft> getContainerDrafts() {
@@ -225,15 +218,31 @@ public final class DeploymentDraft {
         this.innerServiceDrafts = innerServiceDrafts;
     }
 
+    public int getCreatorId() {
+        return creatorId;
+    }
+
+    public void setCreatorId(int creatorId) {
+        this.creatorId = creatorId;
+    }
+
+    public int getCollectionId() {
+        return collectionId;
+    }
+
+    public void setCollectionId(int collectionId) {
+        this.collectionId = collectionId;
+    }
+
     public String checkLegality() {
         String error = null;
         if (StringUtils.isBlank(deployName)) {
             error = "deployName is blank";
         } else if (deployName.length() > 20 || !namePattern.matcher(deployName).matches()) {
             error = "deployName must less than 20 chars, should start and end with [a-z0-9], only contains [-a-z0-9.]";
-        } else if (creator == null) {
+        } else if (clusterId == 0) {
             error = "creator is blank";
-        } else if (StringUtils.isBlank(namespace)){
+        } else if (StringUtils.isBlank(namespace)) {
             error = "namespace is blank";
         } else if (StringUtils.isBlank(podSpecStr) && (containerDrafts == null || containerDrafts.size() <= 0 )) {
             error = "containerSpec size is 0";
@@ -288,8 +297,8 @@ public final class DeploymentDraft {
 
     public List<LoadBalancer> toLoadBalancer() {
         List<LoadBalancer> result = new ArrayList<>();
-        if ( (loadBalanceDrafts != null && loadBalanceDrafts.size() != 0) ||
-             (innerServiceDrafts != null && innerServiceDrafts.size() !=0) ) {
+        if ((loadBalanceDrafts != null && loadBalanceDrafts.size() != 0) ||
+                (innerServiceDrafts != null && innerServiceDrafts.size() != 0)) {
             LoadBalancer loadBalancer = new LoadBalancer();
             loadBalancer.setClusterId(clusterId);
             loadBalancer.setNamespace(namespace);

@@ -126,7 +126,7 @@ public class ExclusiveBuild {
     }
 
     public String checkLegality() {
-        if (compileImage == null || !StringUtils.isBlank(compileImage.checkLegality()) ) {
+        if (compileImage == null || !StringUtils.isBlank(compileImage.checkLegality())) {
             return "compile image must be set";
         } else if (runImage == null || !StringUtils.isBlank(runImage.checkLegality())) {
             return "run image must be set";
@@ -134,7 +134,7 @@ public class ExclusiveBuild {
             return "created file storage path must be set";
         } else if (createdFileStoragePath.size() > 0) {
             List<String> modifiedPath = new ArrayList<>();
-            for ( String path : createdFileStoragePath) {
+            for (String path : createdFileStoragePath) {
                 if (!path.startsWith(("/"))) {
                     return "created file " + path + "is illegal";
                 }

@@ -7,7 +7,6 @@ import org.apache.shiro.subject.Subject;
 import org.domeos.basemodel.HttpResponseTemp;
 import org.domeos.basemodel.ResultStat;
 import org.domeos.framework.api.biz.global.GlobalBiz;
-import org.domeos.framework.api.biz.resource.ResourceBiz;
 import org.domeos.framework.api.controller.exception.ApiException;
 import org.domeos.framework.api.controller.exception.PermitException;
 import org.domeos.framework.api.model.auth.related.LoginType;
@@ -28,8 +27,6 @@ public class LdapInfoServiceImpl implements LdapInfoService {
 
     @Autowired
     GlobalBiz globalBiz;
-    @Autowired
-    ResourceBiz resourceBiz;
 
     private void checkAdmin() {
         if (!AuthUtil.isAdmin(CurrentThreadInfo.getUserId())) {

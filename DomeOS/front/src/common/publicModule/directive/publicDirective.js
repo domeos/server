@@ -58,10 +58,10 @@
 						showSelect = isShowSelect !== undefined ? isShowSelect : !showSelect;
 						if (showSelect === true) {
 							dropEle.show();
-							iconEle.removeClass('up');
+							iconEle.removeClass('fa-angle-right').addClass('fa-angle-down');
 						} else if (showSelect === false) {
 							dropEle.hide();
-							iconEle.addClass('up');
+							iconEle.removeClass('fa-angle-down').addClass('fa-angle-right');
 						}
 					};
 					var blurFun = function (event) {

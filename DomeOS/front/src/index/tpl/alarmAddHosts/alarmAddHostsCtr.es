@@ -9,6 +9,7 @@
 	domeApp.controller('AlarmAddHostsCtr', AlarmAddHostCtr);
 
 	function AlarmAddHostCtr($scope, $domeCluster, $domeAlarm, $state, $domePublic) {
+		'use strict';
 		let vm = this;
 		const id = +$state.params.id,
 			hostGroupName = $state.params.name,

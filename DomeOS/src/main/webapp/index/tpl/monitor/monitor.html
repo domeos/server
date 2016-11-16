@@ -1,11 +1,10 @@
 
 <div class="mod-monitor monitor-manage">
   <loading ng-if="loadingsIns.isLoading"></loading>
-  <div class="detail-header" ng-if="alarmPermission.name"><a class="ui-btn ui-btn-link ui-btn-safe ui-btn-lg" ui-sref="alarm.templates"><i class="icon-alarm"></i>报警管理</a></div>
   <div class="monitor-options">
     <div class="monitor-option"><span class="option-title">集群</span>
       <div class="com-select-con" select-con="select-con">
-        <button class="ui-btn ui-btn-white ui-btn-select" ng-cloak="ng-cloak">{{clusterListIns.cluster.name||'选择集群'}}<i class="icon-down"></i></button>
+        <button class="ui-btn ui-btn-white ui-btn-select" sg-cloak="sg-cloak">{{clusterListIns.cluster.name||'选择集群'}}<i class="icon-down"></i></button>
         <ul class="select-list">
           <li class="select-item" ng-repeat="cluster in clusterListIns.clusterList"><a ng-bind="cluster.name" ng-click="toggleCluster($index)"></a></li>
         </ul>
@@ -31,7 +30,7 @@
     </div>
     <div class="monitor-line" ng-if="monitorType=='实例'"><span class="option-title">部署</span>
       <div class="com-select-con host-label" select-con="select-con">
-        <input class="ui-input-search ui-input-fill ui-btn-select" placeholder="{{deployListIns.deploy.name?'当前选择：'+deployListIns.deploy.name:'搜索部署'}}" ng-model="keywords.deployName"/>
+        <input class="ui-input-search ui-input-fill ui-btn-select input-btn-size" placeholder="{{deployListIns.deploy.name?'当前选择：'+deployListIns.deploy.name:'搜索部署'}}" ng-model="keywords.deployName"/>
         <ul class="select-list">
           <li class="select-item" ng-if="!deployListIns.deployList||deployFiltered.length===0"><a>无相关部署</a></li>
           <li class="select-item" ng-repeat="deploy in deployFiltered=(deployListIns.deployList|filter:{'clusterFilter':true,'hostEnv':currentEnv.value,'deployName':keywords.deployName})"><a ng-click="toggleDeploy(deploy.deployId,deploy.deployName,deploy.namespace);"><span ng-cloark="ng-cloark">{{deploy.deployName}}</span><span class="item-right txt-prompt" ng-cloak="ng-cloak">namespace:{{deploy.namespace}}</span></a></li>
@@ -53,13 +52,13 @@
       </div>
     </div>
   </div>
-  <div class="monitor-info" ng-if="monitorType=='主机'"><span class="selected-count">已选中{{nodeListIns.selectedCount}}个</span><a class="ui-btn ui-btn-primary ui-btn-link ui-btn-sm" target="_blank" ng-click="toMonitorDetail('node')">查看监控详情</a>
-    <div class="pull-right">共{{nodeListIns.nodeList.length||0}}台主机
+  <div class="monitor-info mod-option" ng-if="monitorType=='主机'"><a class="ui-btn ui-btn-bright ui-btn-link ui-btn-lg" target="_blank" ng-click="toMonitorDetail('node')">查看详情 </a>&nbsp;<span class="selected-count" ng-cloak="ng-cloak">已选中{{nodeListIns.selectedCount}}个</span>
+    <div class="pull-right right-option"><span ng-cloak="ng-cloak">共{{nodeListIns.nodeList.length||0}}台主机</span>
       <input class="ui-input-fill ui-input-search" placeholder="输入主机名称查询" ng-model="keywords.node" ng-change="nodeListIns.filterWithKey(keywords.node)"/>
     </div>
   </div>
-  <div class="monitor-info" ng-if="monitorType=='实例'"><span class="selected-count">已选中{{deployListIns.deployInstanceListIns.selectedCount}}个</span><a class="ui-btn ui-btn-primary ui-btn-link ui-btn-sm" target="_blank" ng-click="toMonitorDetail('pod')">查看监控详情</a>
-    <div class="pull-right">共{{deployListIns.deployInstanceListIns.instanceList.length||0}}个实例
+  <div class="monitor-info mod-option" ng-if="monitorType=='实例'"><a class="ui-btn ui-btn-bright ui-btn-link ui-btn-lg" target="_blank" ng-click="toMonitorDetail('pod')">查看详情</a>&nbsp;<span class="selected-count" ng-cloak="ng-cloak">已选中{{deployListIns.deployInstanceListIns.selectedCount}}个</span>
+    <div class="pull-right right-option"><span ng-cloak="ng-cloak">共{{deployListIns.deployInstanceListIns.instanceList.length||0}}个实例</span>
       <input class="ui-input-fill ui-input-search" placeholder="输入实例名称查询" ng-model="keywords.instance" ng-change="deployListIns.deployInstanceListIns.filterWithKey(keywords.instance)"/>
     </div>
   </div>
@@ -73,7 +72,7 @@
           <th>状态</th>
           <th class="tool-enable-click" ng-click="toggleOrderBy('node','cpuBusyCount')" ng-class="{'active':orderBy.node=='cpuBusyCount'}">CPU占用<i class="icon-order" ng-show="orderBy.node!='cpuBusyCount'"></i><i class="icon-down" ng-show="orderBy.node=='cpuBusyCount'" ng-class="{'up':!orderBy.isReverse}"></i></th>
           <th class="tool-enable-click" ng-click="toggleOrderBy('node','memPercentCount')" ng-class="{'active':orderBy.node=='memPercentCount'}">内存占用<i class="icon-order" ng-show="orderBy.node!='memPercentCount'"></i><i class="icon-down" ng-show="orderBy.node=='memPercentCount'" ng-class="{'up':!orderBy.isReverse}"></i></th>
-          <th class="tool-enable-click" ng-click="toggleOrderBy('node','diskUsedCount')" ng-class="{'active':orderBy.node=='diskUsedCount'}">磁盘最大占用<i class="icon-order" ng-show="orderBy.node!='diskUsedCount'"></i><i class="icon-down" ng-show="orderBy.node=='diskUsedCount'" ng-class="{'up':!orderBy.isReverse}"></i></th>
+          <th class="tool-enable-click" ng-click="toggleOrderBy('node','diskUsedCount')" ng-class="{'active':orderBy.node=='diskUsedCount'}">磁盘占用<i class="icon-order" ng-show="orderBy.node!='diskUsedCount'"></i><i class="icon-down" ng-show="orderBy.node=='diskUsedCount'" ng-class="{'up':!orderBy.isReverse}"></i></th>
           <th class="tool-enable-click" ng-click="toggleOrderBy('node','diskReadCount')" ng-class="{'active':orderBy.node=='diskReadCount'}">磁盘读总量(KB/s)<i class="icon-order" ng-show="orderBy.node!='diskReadCount'"></i><i class="icon-down" ng-show="orderBy.node=='diskReadCount'" ng-class="{'up':!orderBy.isReverse}"></i></th>
           <th class="tool-enable-click" ng-click="toggleOrderBy('node','diskWriteCount')" ng-class="{'active':orderBy.node=='diskWriteCount'}">磁盘写总量(KB/s)<i class="icon-order" ng-show="orderBy.node!='diskWriteCount'"></i><i class="icon-down" ng-show="orderBy.node=='diskWriteCount'" ng-class="{'up':!orderBy.isReverse}"></i></th>
           <th class="tool-enable-click" ng-click="toggleOrderBy('node','netInCount')" ng-class="{'active':orderBy.node=='netInCount'}">网络流入总量(KB/s)<i class="icon-order" ng-show="orderBy.node!='netInCount'"></i><i class="icon-down" ng-show="orderBy.node=='netInCount'" ng-class="{'up':!orderBy.isReverse}"></i></th>
@@ -165,5 +164,5 @@
       </tbody>
     </table>
   </div>
-  <div class="d-modal-footer"><a class="ui-btn ui-btn-primary ui-btn-sm ui-btn-link pull-right" href="" target="_blank" ng-click="toMonitorDetail()">查看监控详情</a></div>
+  <div class="d-modal-footer"><a class="ui-btn ui-btn-bright ui-btn-sm ui-btn-link pull-right" href="" target="_blank" ng-click="toMonitorDetail()">查看监控详情</a></div>
 </script>

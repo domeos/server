@@ -1,10 +1,19 @@
 package org.domeos.framework.api.controller.cluster;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+
 import org.apache.shiro.util.ThreadContext;
 import org.domeos.base.BaseTestCase;
 import org.domeos.basemodel.ResultStat;
-import org.domeos.framework.api.consolemodel.cluster.ClusterCreate;
 import org.domeos.framework.api.consolemodel.cluster.ClusterInfo;
 import org.domeos.framework.api.model.cluster.related.NodeLabel;
 import org.junit.Before;
@@ -14,22 +23,13 @@ import org.junit.runners.MethodSorters;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 
 /**
  * Created by baokangwang on 2016/4/6.
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ClusterControllerTest extends BaseTestCase {
-
-    ClusterCreate clusterCreate;
-    String clusterCreateStr;
 
     ClusterInfo clusterInfo;
     String clusterInfoStr;
@@ -43,12 +43,6 @@ public class ClusterControllerTest extends BaseTestCase {
         ThreadContext.bind(securityManager);
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
-        FileInputStream clusterCreateInputStream = new FileInputStream("./src/test/resources/cluster/clusterCreate.json");
-        byte[] clusterCreateBuff = new byte[clusterCreateInputStream.available()];
-        clusterCreateInputStream.read(clusterCreateBuff);
-        clusterCreate = objectMapper.readValue(clusterCreateBuff, ClusterCreate.class);
-        clusterCreateStr = new String(clusterCreateBuff);
-
         FileInputStream clusterInfoInputStream = new FileInputStream("./src/test/resources/cluster/cluster.json");
         byte[] clusterInfoBuff = new byte[clusterInfoInputStream.available()];
         clusterInfoInputStream.read(clusterInfoBuff);
@@ -60,14 +54,13 @@ public class ClusterControllerTest extends BaseTestCase {
         nodeLabelInputStream.read(nodeLabelBuff);
         nodeLabel = objectMapper.readValue(nodeLabelBuff, NodeLabel.class);
         nodeLabelStr = new String(nodeLabelBuff);
-
         this.mockMvc = webAppContextSetup(this.wac).build();
         login("test", "test");
     }
 
     @Test
     public void T010Create() throws Exception {
-        mockMvc.perform(post("/api/cluster").contentType(MediaType.APPLICATION_JSON).content(clusterCreateStr))
+        mockMvc.perform(post("/api/cluster").contentType(MediaType.APPLICATION_JSON).content(clusterInfoStr))
                 .andDo(print())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value(ResultStat.OK.responseCode))
                 .andExpect(status().isOk());
@@ -111,7 +104,7 @@ public class ClusterControllerTest extends BaseTestCase {
 
     @Test
     public void T060GetNamespace() throws Exception {
-        mockMvc.perform(post("/api/cluster").contentType(MediaType.APPLICATION_JSON).content(clusterCreateStr))
+        mockMvc.perform(post("/api/cluster").contentType(MediaType.APPLICATION_JSON).content(clusterInfoStr))
                 .andDo(print())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value(ResultStat.OK.responseCode))
                 .andExpect(status().isOk());
@@ -121,14 +114,13 @@ public class ClusterControllerTest extends BaseTestCase {
                 .andExpect(status().isOk());
     }
 
-    /*
     @Test
     public void T070AddNamespace() throws Exception {
         mockMvc.perform(post("/api/cluster/{id}/namespace", 3).contentType(MediaType.APPLICATION_JSON).content("[\"mytest2\"]"))
                 .andDo(print())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value(ResultStat.OK.responseCode))
                 .andExpect(status().isOk());
-    }*/
+    }
 
     @Test
     public void T080GetNodeList() throws Exception {

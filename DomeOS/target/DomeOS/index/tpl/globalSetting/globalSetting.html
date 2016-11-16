@@ -13,8 +13,8 @@
           </ul>
         </div>
         <div class="to-add" ng-if="vm.currentUserType.type=='USER'">
-          <button class="ui-btn ui-btn-primary ui-btn-sm" ng-if="!vm.isShowAdd" ng-click="vm.toggleShowAdd()">创建用户<i class="icon-down-white up"></i></button>
-          <button class="ui-btn ui-btn-primary ui-btn-sm" ng-if="vm.isShowAdd" ng-click="vm.toggleShowAdd()">取消<i class="icon-down-white"></i></button>
+          <button class="ui-btn ui-btn-bright ui-btn-lg" ng-if="!vm.isShowAdd" ng-click="vm.toggleShowAdd()">创建用户<i class="icon-down-white up"></i></button>
+          <button class="ui-btn ui-btn-bright ui-btn-sm" ng-if="vm.isShowAdd" ng-click="vm.toggleShowAdd()">取消<i class="icon-down-white"></i></button>
         </div>
       </div>
       <ul class="com-list-info add-user" ng-form="ng-form" name="userForm" role="form" ng-class="{'need-valid':vm.needValidUser.valid}" ng-show="vm.isShowAdd">
@@ -42,38 +42,42 @@
           <div class="info-content">
             <input class="ui-input-white line-single" ng-model="vm.newUser.phone" name="phone"/>
             <div class="txt-wrap">
-              <button class="ui-btn ui-btn-primary ui-btn-sm" ng-click="vm.needValidUser.valid=true;userForm.$valid&amp;&amp;vm.addUser(userForm);">确认创建</button>
+              <button class="ui-btn ui-btn-bright ui-btn-lg" ng-click="vm.needValidUser.valid=true;userForm.$valid&amp;&amp;vm.addUser(userForm);">确认创建</button>
             </div>
           </div>
         </li>
       </ul>
-      <table class="ui-table-dome full table-userlist">
-        <thead>
-          <tr>
-            <th>用户名</th>
-            <th>邮箱</th>
-            <th>电话</th>
-            <th>操作</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr ng-if="!vm.userList||userFiltered.length===0">
-            <td colspan="3">无相关用户信息</td>
-          </tr>
-          <tr ng-repeat="user in userFiltered=(vm.userList|filter:{'username':vm.key.userKey,'loginType':vm.currentUserType.type})">
-            <td ng-bind="user.username"></td>
-            <td><span class="useremail tool-nowrap" ng-bind="user.email||'未设置'"></span></td>
-            <td><span class="useremail tool-nowrap" ng-bind="user.phone||'未设置'"></span></td>
-            <td>
-              <button class="ui-btn ui-btn-primary ui-btn-sm" ng-click="vm.modifyPw(user)" ng-if="vm.currentUserType.type=='USER'">修改密码</button><a class="icon-edit" ng-click="vm.modifyUserInfo(user)"></a><a class="icon-delete" ng-click="vm.deleteUser(user)" ng-if="user.username!='admin'"></a>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="table-container">
+        <table class="ui-table-dome full table-userlist">
+          <thead>
+            <tr>
+              <th>用户名</th>
+              <th>邮箱</th>
+              <th>电话</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr ng-if="!vm.userList||userFiltered.length===0">
+              <td colspan="3">无相关用户信息</td>
+            </tr>
+            <tr ng-repeat="user in userFiltered=(vm.userList|filter:{'username':vm.key.userKey,'loginType':vm.currentUserType.type})">
+              <td ng-bind="user.username"></td>
+              <td><span class="useremail tool-nowrap" ng-bind="user.email||'未设置'"></span></td>
+              <td><span class="useremail tool-nowrap" ng-bind="user.phone||'未设置'"></span></td>
+              <td>
+                <button class="fa fa-key fa-flip-horizontal ui-btn-none icon-success-color icon-none-padding" ng-click="vm.modifyPw(user)" ng-if="vm.currentUserType.type=='USER'" tooltip="修改密码"></button>
+                <button class="fa fa-pencil ui-btn-none icon-edit-color" ng-click="vm.modifyUserInfo(user)" tooltip="修改资料"></button>
+                <button class="fa fa-trash-o ui-btn-none icon-trash-color" ng-click="vm.deleteUser(user)" ng-if="user.username!='admin'" tooltip="删除"></button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </tab>
     <tab heading="LDAP" ng-click="vm.getLdap()" active="vm.tabActive[1].active" ui-sref="globalSetting.ldapinfo">
       <ul class="com-list-info ldap-info" ng-form="ng-form" name="ladpForm" ng-class="{'need-valid':vm.needValidLdap}">
-        <li><span class="info-name">OpenLDAP服务器地址</span>
+        <li class="has-border"><span class="info-name">OpenLDAP服务器地址</span>
           <div class="info-content">
             <input class="ui-input-white line-single" placeholder="IP或域名" name="ladpUrl" ng-model="vm.ldapInfo.url" required="required" ng-pattern="/^[^\s]*$/"/>
             <input class="ui-input-white line-single" placeholder="端口，如：389" name="ladpPort" ng-model="vm.ldapInfo.port" required="required" ng-pattern="/^[^\s]*$/"/>
@@ -91,7 +95,7 @@
     </tab>
     <tab heading="代码仓库" ng-click="vm.getGitInfo()" active="vm.tabActive[2].active" ui-sref="globalSetting.gitinfo">
       <ul class="com-list-info" ng-form="ng-form" name="gitForm" ng-class="{'need-valid':vm.needValidGit}">
-        <li><span class="info-name">选择类型</span>
+        <li class="has-border"><span class="info-name">选择类型</span>
           <div class="info-content com-chose-repository"><span class="repository active"><i class="icon-gitlab"></i>GitLab</span>
             <p class="txt-prompt">每种类型可分别配置一个代码仓库</p>
           </div>
@@ -108,21 +112,39 @@
     </tab>
     <tab heading="私有仓库" ng-click="vm.getRegistryInfo()" active="vm.tabActive[3].active" ui-sref="globalSetting.registryinfo">
       <ul class="com-list-info" ng-form="ng-form" name="registryForm" ng-class="{'need-valid':vm.needValidRegistry}">
-        <li><span class="info-name">私有仓库地址</span>
+        <li class="has-border"><span class="info-name">私有仓库地址</span>
           <div class="info-content">
             <input class="ui-input-white line-single" ng-model="vm.registryInfo.url" name="registryUrl" required="required" ng-pattern="/^[^\s]*$/" style="display:inline-block"/><span>
               <input class="ui-check" type="checkbox" name="isHttps" id="isHttps" ng-model="vm.registryInfo.status" ng-true-value="1" ng-false-value="0"/>
               <label for="isHttps">https</label></span>
           </div>
         </li>
-        <li><span class="info-name">描述</span>
+        <li class="has-border"><span class="info-name">描述</span>
           <div class="info-content">
             <input class="ui-input-white line-single" ng-model="vm.registryInfo.description"/>
           </div>
         </li>
-        <li ng-if="vm.registryInfo.status===1"><span class="info-name">证书信息</span>
+        <li class="has-border" ng-if="vm.registryInfo.status===1"><span class="info-name">证书信息</span>
           <div class="info-content">
             <textarea class="ui-input-white line-single certification-txt" ng-model="vm.registryInfo.certification" placeholder="请将证书文本粘贴至文本框"></textarea>
+          </div>
+        </li>
+        <li class="has-border"><span class="info-name">token验证配置</span>
+          <div class="info-content txt-prompt fixed-top info-content-lg-height">以下三项配置用于请求registry的token验证，请和启动registry时的配置保持一致</div>
+        </li>
+        <li class="has-border"><span class="info-name">ISSUER</span>
+          <div class="info-content">
+            <input class="ui-input-white line-single" ng-model="vm.registryInfo.tokenInfo.issuer"/>
+          </div>
+        </li>
+        <li class="has-border"><span class="info-name">SERVICE</span>
+          <div class="info-content">
+            <input class="ui-input-white line-single" ng-model="vm.registryInfo.tokenInfo.service"/>
+          </div>
+        </li>
+        <li><span class="info-name">PRIVATE KEY</span>
+          <div class="info-content">
+            <textarea class="ui-input-white line-single certification-txt" ng-model="vm.registryInfo.tokenInfo.private_key" placeholder="ROOTCERTBUNDLE所使用的密钥"></textarea>
           </div>
         </li>
       </ul>
@@ -132,8 +154,8 @@
     </tab>
     <tab heading="服务器" ng-click="vm.getServerInfo()" active="vm.tabActive[4].active" ui-sref="globalSetting.serverinfo">
       <ul class="com-list-info" ng-form="ng-form" name="serverForm" ng-class="{'need-valid':vm.needValidServer}">
-        <li><span class="info-name not-align-input">服务器地址</span>
-          <div class="info-content"><span class="txt-prompt">DomeOS API服务器访问地址</span>
+        <li><span class="info-name">服务器地址</span>
+          <div class="info-content info-content-lg-height"><span class="txt-prompt">DomeOS API服务器访问地址</span>
             <input class="ui-input-white line-single" placeholder="https协议url请用“https://”开头" ng-model="vm.serverInfo.url" name="serverUrl" required="required" ng-pattern="/^[^\s]*$/"/>
           </div>
         </li>
@@ -144,81 +166,81 @@
     </tab>
     <tab heading="监控报警" ng-click="vm.getMonitorInfo()" active="vm.tabActive[5].active" ui-sref="globalSetting.monitorinfo">
       <ul class="com-list-info" ng-form="ng-form" name="monitorForm" ng-class="{'need-valid':vm.needValidMonitor}">
-        <li><span class="info-name not-align-input">transfer</span>
-          <div class="info-content"><span class="txt-prompt">监控数据转发组件</span>
+        <li class="has-border"><span class="info-name">transfer</span>
+          <div class="info-content info-content-lg-height"><span class="txt-prompt">监控数据转发组件</span>
             <div class="line-single" ng-repeat="tansfer in vm.monitorConfig.transfer">
               <input class="ui-input-white full" placeholder="请输入ip：port" name="serverUrl" ng-model="tansfer.text" ng-focus="$last&amp;&amp;vm.monitorIns.addItem('transfer')"/>
               <div class="txt-wrap" ng-if="vm.monitorConfig.transfer.length&gt;1"><a class="icon-delete" ng-click="vm.monitorIns.deleteArrItem('transfer',$index)"></a></div>
             </div>
           </div>
         </li>
-        <li><span class="info-name not-align-input">graph</span>
-          <div class="info-content"><span class="txt-prompt">监控数据存储组件</span>
+        <li class="has-border"><span class="info-name">graph</span>
+          <div class="info-content info-content-lg-height"><span class="txt-prompt">监控数据存储组件</span>
             <div class="line-single" ng-repeat="graph in vm.monitorConfig.graph">
               <input class="ui-input-white full" placeholder="请输入ip：port" name="serverUrl" ng-model="graph.text" ng-focus="$last&amp;&amp;vm.monitorIns.addItem('graph')"/>
               <div class="txt-wrap" ng-if="vm.monitorConfig.graph.length&gt;1"><a class="icon-delete" ng-click="vm.monitorIns.deleteArrItem('graph',$index)"></a></div>
             </div>
           </div>
         </li>
-        <li><span class="info-name not-align-input">query</span>
-          <div class="info-content"><span class="txt-prompt">监控数据查询组件</span>
+        <li class="has-border"><span class="info-name">query</span>
+          <div class="info-content info-content-lg-height"><span class="txt-prompt">监控数据查询组件</span>
             <div class="line-single">
               <input class="ui-input-white full" placeholder="请输入ip：port" name="query" ng-model="vm.monitorConfig.query"/>
             </div>
           </div>
         </li>
-        <li><span class="info-name not-align-input">hbs</span>
-          <div class="info-content"><span class="txt-prompt">监控心跳服务器组件</span>
+        <li class="has-border"><span class="info-name">hbs</span>
+          <div class="info-content info-content-lg-height"><span class="txt-prompt">监控心跳服务器组件</span>
             <div class="line-single">
               <input class="ui-input-white full" placeholder="请输入ip：port" name="hbs" ng-model="vm.monitorConfig.hbs"/>
             </div>
           </div>
         </li>
-        <li><span class="info-name not-align-input">judge</span>
-          <div class="info-content"><span class="txt-prompt">报警判断组件</span>
+        <li class="has-border"><span class="info-name">judge</span>
+          <div class="info-content info-content-lg-height"><span class="txt-prompt">报警判断组件</span>
             <div class="line-single" ng-repeat="judge in vm.monitorConfig.judge">
               <input class="ui-input-white full" placeholder="请输入ip：port" name="judge" ng-model="judge.text" ng-focus="$last&amp;&amp;vm.monitorIns.addItem('judge')"/>
               <div class="txt-wrap" ng-if="vm.monitorConfig.judge.length&gt;1"><a class="icon-delete" ng-click="vm.monitorIns.deleteArrItem('judge',$index)"></a></div>
             </div>
           </div>
         </li>
-        <li><span class="info-name not-align-input">alarm</span>
-          <div class="info-content"><span class="txt-prompt">报警事件处理组件</span>
+        <li class="has-border"><span class="info-name">alarm</span>
+          <div class="info-content info-content-lg-height"><span class="txt-prompt">报警事件处理组件</span>
             <div class="line-single">
               <input class="ui-input-white full" placeholder="请输入ip：port" name="alarm" ng-model="vm.monitorConfig.alarm"/>
             </div>
           </div>
         </li>
-        <li><span class="info-name not-align-input">sender</span>
-          <div class="info-content"><span class="txt-prompt">报警发送组件</span>
+        <li class="has-border"><span class="info-name">sender</span>
+          <div class="info-content info-content-lg-height"><span class="txt-prompt">报警发送组件</span>
             <div class="line-single">
               <input class="ui-input-white full" placeholder="请输入ip：port" name="sender" ng-model="vm.monitorConfig.sender"/>
             </div>
           </div>
         </li>
-        <li><span class="info-name not-align-input">nodata</span>
-          <div class="info-content"><span class="txt-prompt">报警假数据填充组件</span>
+        <li class="has-border"><span class="info-name">nodata</span>
+          <div class="info-content info-content-lg-height"><span class="txt-prompt">报警假数据填充组件</span>
             <div class="line-single">
               <input class="ui-input-white full" placeholder="请输入ip：port" name="nodata" ng-model="vm.monitorConfig.nodata"/>
             </div>
           </div>
         </li>
-        <li><span class="info-name not-align-input">redis</span>
-          <div class="info-content"><span class="txt-prompt">报警redis组件</span>
+        <li class="has-border"><span class="info-name">redis</span>
+          <div class="info-content info-content-lg-height"><span class="txt-prompt">报警redis组件</span>
             <div class="line-single">
               <input class="ui-input-white full" placeholder="请输入ip：port" name="redis" ng-model="vm.monitorConfig.redis"/>
             </div>
           </div>
         </li>
-        <li><span class="info-name not-align-input">apiSms</span>
-          <div class="info-content"><span class="txt-prompt">报警短信发送接口。请和使用的短信发送平台保持一致</span>
+        <li class="has-border"><span class="info-name">apiSms</span>
+          <div class="info-content info-content-lg-height"><span class="txt-prompt">报警短信发送接口。请和使用的短信发送平台保持一致</span>
             <div class="line-single">
               <input class="ui-input-white full" placeholder="请输入url" name="apiSms" ng-model="vm.monitorConfig.apiSms"/>
             </div>
           </div>
         </li>
-        <li><span class="info-name not-align-input">apiMail</span>
-          <div class="info-content"><span class="txt-prompt">报警邮件发送接口。请和使用的邮件发送平台保持一致</span>
+        <li><span class="info-name">apiMail</span>
+          <div class="info-content info-content-lg-height"><span class="txt-prompt">报警邮件发送接口。请和使用的邮件发送平台保持一致</span>
             <div class="line-single">
               <input class="ui-input-white full" placeholder="请输入url" name="apiMail" ng-model="vm.monitorConfig.apiMail"/>
             </div>
@@ -231,8 +253,8 @@
     </tab>
     <tab heading="Web SSH" ng-click="vm.getWebSsh()" active="vm.tabActive[6].active" ui-sref="globalSetting.sshinfo">
       <ul class="com-list-info" ng-form="ng-form" name="sshForm" ng-class="{'need-valid':vm.needValidSsh}">
-        <li><span class="info-name not-align-input webssh-txt">Web SSH服务地址</span>
-          <div class="info-content"><span class="txt-prompt">Web SSH登录服务访问地址（对应容器的访问地址）</span>
+        <li><span class="info-name webssh-txt">Web SSH服务地址</span>
+          <div class="info-content info-content-lg-height"><span class="txt-prompt">Web SSH登录服务访问地址（对应容器的访问地址）</span>
             <input class="ui-input-white line-single" placeholder="请输入ip：port" name="sshUrl" ng-model="vm.sshInfo.url" required="required"/>
           </div>
         </li>
@@ -243,10 +265,13 @@
     </tab>
     <tab heading="构建集群" ng-click="vm.initClusterInfo()" active="vm.tabActive[7].active" ui-sref="globalSetting.clusterinfo">
       <loading ng-if="vm.clusterLoadingIns.isLoading"></loading>
-      <button class="ui-btn ui-btn-bright ui-btn-md btn-cluster-save" ng-click="vm.needValidCluster=true;clusterForm.$valid&amp;&amp;vm.saveCluster()" ng-disabled="vm.clusterLoadingIns.isLoading">保存配置</button><span class="cluster-detail">DomeOS的构建任务都在构建集群上运行。构建任务包括项目构建和镜像定制功能。除了运行构建任务，构建集群也可以用于部署其他服务。</span>
+      <div class="cluster-list-title">
+        <div class="cluster-detail txt-prompt">DomeOS的构建任务都在构建集群上运行。</div>
+        <button class="ui-btn ui-btn-bright ui-btn-md btn-cluster-save" ng-click="vm.needValidCluster=true;clusterForm.$valid&amp;&amp;vm.saveCluster()" ng-disabled="vm.clusterLoadingIns.isLoading">保存配置</button>
+      </div>
       <ul class="com-list-info" ng-form="ng-form" name="clusterForm" ng-class="{'need-valid':vm.needValidCluster}">
-        <li><span class="info-name not-align-input">选择集群</span>
-          <div class="info-content"><span class="txt-prompt">列表展示了“集群管理”中的所有集群，选择一个作为构建集群。</span>
+        <li class="has-border"><span class="info-name">选择集群</span>
+          <div class="info-content info-content-lg-height"><span class="txt-prompt">列表展示了“集群管理”中的所有集群，选择一个作为构建集群。</span>
             <div class="com-select-con line-single" select-con="select-con">
               <button class="ui-btn-select ui-btn ui-btn-white"><i class="icon-down"></i>{{vm.clusterInfo.clusterName||'选择集群'}}</button>
               <ul class="select-list">
@@ -256,8 +281,8 @@
             <input type="hidden" ng-model="vm.clusterInfo.clusterName" required="required" name="clusterName"/><span class="txt-error" ng-if="vm.needValidCluster&amp;&amp;clusterForm.clusterName.$invalid">请选择集群</span>
           </div>
         </li>
-        <li><span class="info-name">选择namespace</span>
-          <div class="info-content"><span class="txt-prompt">在集群的namespace中选择一个，用于启动构建任务。</span>
+        <li class="has-border"><span class="info-name">选择namespace</span>
+          <div class="info-content info-content-lg-height"><span class="txt-prompt">在集群的namespace中选择一个，用于启动构建任务。</span>
             <div class="com-select-con line-single" select-con="select-con">
               <button class="ui-btn-select ui-btn ui-btn-white"><i class="icon-down"></i>{{vm.clusterInfo.namespace||'选择namespace'}}</button>
               <ul class="select-list">
@@ -269,36 +294,38 @@
         </li>
       </ul>
       <div class="node-option"><span class="host-right">共有{{nodelistFiltered.length}}台主机
-          <input class="ui-input ui-input-search ui-input-fill" placeholder="输入主机名查询" ng-model="vm.key.nodeKey"/></span><span class="host-detail">构建集群的主机列表，构建任务会在开启“用于构建”的主机上运行，请确保构建集群内有至少一台主机能够用于构建。</span></div>
-      <table class="ui-table ui-table-dome table-hostlist">
-        <thead>
-          <tr>
-            <th>主机名称</th>
-            <th>IP</th>
-            <th>CPU总量（个）</th>
-            <th>内存总量（MB）</th>
-            <th>运行实例（个）</th>
-            <th>状态</th>
-            <th>是否用于构建</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr ng-if="!vm.nodeList||nodelistFiltered.length===0">
-            <td colspan="7">无相关信息</td>
-          </tr>
-          <tr ng-repeat="node in nodelistFiltered=(vm.nodeList|filter:{name:vm.key.nodeKey})">
-            <td ng-bind="node.name"></td>
-            <td ng-bind="node.ip"></td>
-            <td ng-bind="node.capacity.cpu"></td>
-            <td ng-bind="node.capacity.memory"></td>
-            <td ng-bind="node.runningPods"></td>
-            <td ng-switch="node.status"><span class="txt-safe" ng-switch-when="Ready">在线</span><span class="txt-prompt" ng-switch-default="ng-switch-default">离线</span></td>
-            <td>
-              <dome-toggle ng-class="{'on':node.isUsedByBuild}" ng-click="node.isUsedByBuild = !node.isUsedByBuild"></dome-toggle>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+          <input class="ui-input ui-input-search ui-input-fill input-right" placeholder="输入主机名查询" ng-model="vm.key.nodeKey"/></span><span class="host-detail txt-prompt">请确保构建集群有至少一台主机可用于构建。</span></div>
+      <div class="table-container">
+        <table class="ui-table ui-table-dome table-hostlist">
+          <thead>
+            <tr>
+              <th>主机名称</th>
+              <th>IP</th>
+              <th>CPU总量（个）</th>
+              <th>内存总量（MB）</th>
+              <th>运行实例（个）</th>
+              <th>状态</th>
+              <th>是否用于构建</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr ng-if="!vm.nodeList||nodelistFiltered.length===0">
+              <td colspan="7">无相关信息</td>
+            </tr>
+            <tr ng-repeat="node in nodelistFiltered=(vm.nodeList|filter:{name:vm.key.nodeKey})">
+              <td ng-bind="node.name"></td>
+              <td ng-bind="node.ip"></td>
+              <td ng-bind="node.capacity.cpu"></td>
+              <td ng-bind="node.capacity.memory"></td>
+              <td ng-bind="node.runningPods"></td>
+              <td ng-switch="node.status"><span class="txt-safe" ng-switch-when="Ready">在线</span><span class="txt-prompt" ng-switch-default="ng-switch-default">离线</span></td>
+              <td>
+                <dome-toggle ng-class="{'on':node.isUsedByBuild}" ng-click="node.isUsedByBuild = !node.isUsedByBuild"></dome-toggle>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </tab>
   </tabset>
 </div>
@@ -315,6 +342,6 @@
   </div>
   <div class="modal-footer">
     <button class="ui-btn ui-btn-sm ui-btn-white" ng-click="vmPw.cancel()">取消</button>
-    <button class="ui-btn ui-btn-sm ui-btn-safe" ng-click="pwForm.$valid&amp;&amp;vmPw.subPw()">确定</button>
+    <button class="ui-btn ui-btn-sm ui-btn-bright" ng-click="pwForm.$valid&amp;&amp;vmPw.subPw()">确定</button>
   </div>
 </script>

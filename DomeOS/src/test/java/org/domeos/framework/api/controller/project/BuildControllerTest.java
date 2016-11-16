@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import org.apache.shiro.util.ThreadContext;
 import org.domeos.base.BaseTestCase;
 import org.domeos.basemodel.ResultStat;
-import org.domeos.framework.api.consolemodel.project.ProjectCreate;
 import org.domeos.framework.api.model.ci.BuildHistory;
 import org.domeos.framework.api.model.ci.related.BuildResult;
 import org.domeos.framework.api.model.project.Project;
@@ -40,9 +39,7 @@ public class BuildControllerTest extends BaseTestCase {
     WebHook webHooks;
     String webHooksStr;
 
-    ProjectCreate projectCreate;
-    String projectCreateStr;
-
+    String projectCollectionConsoleStr;
     Project project;
     String projectStr;
 
@@ -69,11 +66,10 @@ public class BuildControllerTest extends BaseTestCase {
         webHooks = objectMapper.readValue(webhookStatus, GitWebHook.class);
         webHooksStr = new String(webhookStatus);
 
-        FileInputStream projectCreateStream = new FileInputStream("./src/test/resources/project/projectCreate.json");
-        byte[] projectCreateStatus = new byte[projectCreateStream.available()];
-        projectCreateStream.read(projectCreateStatus);
-        projectCreate = objectMapper.readValue(projectCreateStatus, ProjectCreate.class);
-        projectCreateStr = new String(projectCreateStatus);
+        FileInputStream projectCollectionConsoleStream = new FileInputStream("./src/test/resources/project/projectCollection.json");
+        byte[] projectCollectionConsole = new byte[projectCollectionConsoleStream.available()];
+        projectCollectionConsoleStream.read(projectCollectionConsole);
+        projectCollectionConsoleStr = new String(projectCollectionConsole);
 
         FileInputStream projectStream = new FileInputStream("./src/test/resources/project/project.json");
         byte[] projectStatus = new byte[projectStream.available()];
@@ -82,12 +78,17 @@ public class BuildControllerTest extends BaseTestCase {
         projectStr = new String(projectStatus);
 
         this.mockMvc = webAppContextSetup(this.wac).build();
+
         login("admin", "admin");
     }
 
     @Test
     public void T010Start() throws Exception {
-        mockMvc.perform(post("/api/project").contentType(MediaType.APPLICATION_JSON).content(projectCreateStr))
+        mockMvc.perform(post("/api/projectcollection").contentType(MediaType.APPLICATION_JSON).content(projectCollectionConsoleStr))
+                .andDo(print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value(ResultStat.OK.responseCode))
+                .andExpect(status().isOk());
+        mockMvc.perform(post("/api/projectcollection/1/project").contentType(MediaType.APPLICATION_JSON).content(projectStr))
                 .andDo(print())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.resultCode").value(ResultStat.OK.responseCode))
                 .andExpect(status().isOk());

@@ -33,8 +33,12 @@ public interface DeploymentMapper {
     List<RowMapperDao> getDeployment(@Param("clusterId") int clusterId, @Param("name") String name);
 
     @Select("SELECT * FROM " + GlobalConstant.DEPLOY_TABLE_NAME + " WHERE state in " +
-            "('DEPLOYING', 'ABORTING', 'STOPPING', 'UPSCALING', 'DOWNSCALING', 'UPDATING', 'BACKROLLING')")
+            "('DEPLOYING', 'ABORTING', 'STOPPING', 'UPSCALING', 'DOWNSCALING', 'UPDATING', 'BACKROLLING') AND removed=0")
     List<Deployment> listUnfinishedStatusDeployment();
+
+    @Select("SELECT * FROM " + GlobalConstant.DEPLOY_TABLE_NAME + " WHERE state='RUNNING' and removed=0 ")
+    List<Deployment> listRunningDeployment();
+
 //
 //    @Select("SELECT * FROM version WHERE deployId=#{deployId} AND version=#{version}")
 //    VersionDBProto getVersion(@Param("deployId") long deployId, @Param("version") long version);

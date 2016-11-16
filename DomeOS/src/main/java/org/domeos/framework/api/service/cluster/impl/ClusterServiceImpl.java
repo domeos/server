@@ -1,17 +1,22 @@
 package org.domeos.framework.api.service.cluster.impl;
 
-import com.fasterxml.jackson.core.type.TypeReference;
+
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+
 import org.apache.commons.lang3.StringUtils;
 import org.domeos.basemodel.HttpResponseTemp;
 import org.domeos.basemodel.ResultStat;
 import org.domeos.exception.K8sDriverException;
 import org.domeos.framework.api.biz.auth.AuthBiz;
 import org.domeos.framework.api.biz.cluster.ClusterBiz;
+import org.domeos.framework.api.biz.collection.CollectionBiz;
 import org.domeos.framework.api.biz.deployment.DeploymentBiz;
 import org.domeos.framework.api.biz.global.GlobalBiz;
-import org.domeos.framework.api.biz.resource.ResourceBiz;
-import org.domeos.framework.api.consolemodel.CreatorDraft;
-import org.domeos.framework.api.consolemodel.cluster.ClusterCreate;
 import org.domeos.framework.api.consolemodel.cluster.ClusterInfo;
 import org.domeos.framework.api.consolemodel.cluster.ClusterListInfo;
 import org.domeos.framework.api.controller.exception.ApiException;
@@ -20,11 +25,12 @@ import org.domeos.framework.api.model.auth.related.Role;
 import org.domeos.framework.api.model.cluster.Cluster;
 import org.domeos.framework.api.model.cluster.related.NamespaceInfo;
 import org.domeos.framework.api.model.cluster.related.NodeLabel;
+import org.domeos.framework.api.model.collection.CollectionAuthorityMap;
+import org.domeos.framework.api.model.collection.CollectionResourceMap;
+import org.domeos.framework.api.model.collection.related.ResourceType;
 import org.domeos.framework.api.model.deployment.Deployment;
 import org.domeos.framework.api.model.global.CiCluster;
 import org.domeos.framework.api.model.operation.OperationType;
-import org.domeos.framework.api.model.resource.Resource;
-import org.domeos.framework.api.model.resource.related.ResourceType;
 import org.domeos.framework.api.service.cluster.ClusterService;
 import org.domeos.framework.engine.AuthUtil;
 import org.domeos.framework.engine.ClusterRuntimeDriver;
@@ -43,12 +49,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+import com.fasterxml.jackson.core.type.TypeReference;
+
 
 /**
  * Created by feiliu206363 on 2015/12/15.
@@ -59,7 +61,7 @@ public class ClusterServiceImpl implements ClusterService {
     private static Logger logger = LoggerFactory.getLogger(ClusterServiceImpl.class);
 
     @Autowired
-    ResourceBiz resourceBiz;
+    CollectionBiz collectionBiz;
 
     @Autowired
     ClusterBiz clusterBiz;
@@ -77,28 +79,19 @@ public class ClusterServiceImpl implements ClusterService {
     CustomObjectMapper mapper;
 
     @Override
-    public HttpResponseTemp<?> setCluster(ClusterCreate clusterCreate) {
+    public HttpResponseTemp<?> setCluster(ClusterInfo clusterInfo) {
 
-        if (clusterCreate == null || clusterCreate.getClusterInfo() == null || clusterCreate.getCreatorDraft() == null) {
-            throw ApiException.wrapMessage(ResultStat.CLUSTER_NOT_LEGAL, "cluster info is null");
-        }
-        ClusterInfo clusterInfo = clusterCreate.getClusterInfo();
-        if (!StringUtils.isBlank(clusterInfo.checkLegality())) {
+        if (clusterInfo == null || !StringUtils.isBlank(clusterInfo.checkLegality())) {
             throw ApiException.wrapMessage(ResultStat.CLUSTER_NOT_LEGAL, clusterInfo.checkLegality());
         }
 
-        CreatorDraft creatorDraft = clusterCreate.getCreatorDraft();
-        if (!StringUtils.isBlank(creatorDraft.checkLegality())) {
-            throw ApiException.wrapMessage(ResultStat.CREATOR_ERROR, creatorDraft.checkLegality());
-        }
         if (clusterBiz.hasCluster(clusterInfo.getName())) {
             throw ApiException.wrapResultStat(ResultStat.CLUSTER_ALREADY_EXIST);
         }
 
         clusterInfo.setCreateTime(System.currentTimeMillis());
         Cluster cluster = new Cluster(clusterInfo);
-        cluster.setOwnerId(creatorDraft.getCreatorId());
-        cluster.setOwnerType(creatorDraft.getCreatorType());
+        cluster.setOwnerId(CurrentThreadInfo.getUserId());
 
         try {
             clusterBiz.insertCluster(cluster);
@@ -107,8 +100,8 @@ public class ClusterServiceImpl implements ClusterService {
         }
         clusterInfo.setId(cluster.getId());
 
-        resourceBiz.addResource(cluster.getId(), ResourceType.CLUSTER, creatorDraft.getCreatorId(), creatorDraft.getCreatorType(), Role.MASTER);
-
+        collectionBiz.addAuthority(new CollectionAuthorityMap(cluster.getId(), ResourceType.CLUSTER, CurrentThreadInfo.getUserId(), Role.MASTER, 0));
+        collectionBiz.addResource(new CollectionResourceMap(cluster.getId(), CurrentThreadInfo.getUserId(), ResourceType.CLUSTER, cluster.getId(), 0));
         ClusterRuntimeDriver.addClusterDriver(cluster.getId(), RuntimeDriverFactory.getRuntimeDriver(K8sDriver.class, cluster));
 
         return ResultStat.OK.wrap(clusterInfo);
@@ -164,7 +157,7 @@ public class ClusterServiceImpl implements ClusterService {
         } catch (DaoException | K8sDriverException e) {
             throw ApiException.wrapKnownException(ResultStat.CANNOT_UPDATE_CLUSTER, e);
         }
-
+        
         ClusterRuntimeDriver.updateClusterDriver(clusterInfo.getId(), RuntimeDriverFactory.getRuntimeDriver(K8sDriver.class, oldCluster));
 
         return ResultStat.OK.wrap(clusterInfo);
@@ -185,8 +178,9 @@ public class ClusterServiceImpl implements ClusterService {
             throw ApiException.wrapMessage(ResultStat.DEPLOYMENT_EXIST, "There are deployments in this cluster, you must delete them first");
         }
         clusterBiz.removeById(GlobalConstant.CLUSTER_TABLE_NAME, id);
-        resourceBiz.deleteResourceByIdAndType(id, ResourceType.CLUSTER);
 
+        collectionBiz.deleteAuthoritiesByCollectionIdAndResourceType(id, ResourceType.CLUSTER);
+        collectionBiz.deleteResourceByResourceIdAndResourceType(id, ResourceType.CLUSTER);
         ClusterRuntimeDriver.removeClusterDriver(id);
         try {
             KubeUtils kubeUtils = Fabric8KubeUtils.buildKubeUtils(oldCluster, null);
@@ -219,8 +213,9 @@ public class ClusterServiceImpl implements ClusterService {
 
         try {
             NodeWrapper nodeWrapper = new NodeWrapper().init(id, null);
-            if (nodeWrapper.setNamespaces(namespaces)) {
+            clusterBiz.getById(GlobalConstant.CLUSTER_TABLE_NAME, id, Cluster.class);
 
+            if (nodeWrapper.setNamespaces(namespaces)) {
                 // todo: add operation history
                 return ResultStat.OK.wrap(null);
             } else {
@@ -369,16 +364,20 @@ public class ClusterServiceImpl implements ClusterService {
     }
 
     private List<ClusterListInfo> getClusterListByUserId(int userId) {
-        List<Resource> resources = AuthUtil.getResourceList(userId, ResourceType.CLUSTER);
+        List<CollectionAuthorityMap> collectionAuthoritys = AuthUtil.getCollectionList(userId, ResourceType.CLUSTER);
+        
         List<ClusterListInfo> clusterListInfo = new LinkedList<>();
 
-        if (resources != null && resources.size() > 0) {
+        if (collectionAuthoritys != null && collectionAuthoritys.size() > 0) {
             List<Future<ClusterListInfo>> futures = new LinkedList<>();
             CiCluster ciCluster = globalBiz.getCiCluster();
-            for (Resource resource : resources) {
-                Future<ClusterListInfo> future = ClientConfigure.executorService.submit(new ClusterListInfoTask(resource.getResourceId(), ciCluster));
+            for (CollectionAuthorityMap collectionAuthority : collectionAuthoritys) {
+                Future<ClusterListInfo> future = ClientConfigure.executorService.submit(
+                        new ClusterListInfoTask(userId, collectionAuthority.getCollectionId(), ciCluster)
+                );
                 futures.add(future);
             }
+            
             for (Future<ClusterListInfo> future : futures) {
                 try {
                     ClusterListInfo info = future.get();
@@ -389,15 +388,18 @@ public class ClusterServiceImpl implements ClusterService {
                     logger.warn("get cluster list error, message is " + e.getMessage());
                 }
             }
+            
         }
         return clusterListInfo;
     }
 
     private class ClusterListInfoTask implements Callable<ClusterListInfo> {
+        private int userId;
         private int clusterId;
         private CiCluster ciCluster;
 
-        ClusterListInfoTask(int clusterId, CiCluster ciCluster) {
+        ClusterListInfoTask(int userId, int clusterId, CiCluster ciCluster) {
+            this.userId = userId;
             this.clusterId = clusterId;
             this.ciCluster = ciCluster;
         }
@@ -421,16 +423,17 @@ public class ClusterServiceImpl implements ClusterService {
             if (ciCluster != null && ciCluster.getClusterId() == cluster.getId()) {
                 buildConfig = 1;
             }
-
+            Role role = AuthUtil.getUserRoleInResource(ResourceType.CLUSTER, cluster.getId(), userId);
             return new ClusterListInfo(cluster.getId(), cluster.getName(), cluster.getApi(), cluster.getTag(),
-                    cluster.getDomain(), cluster.getLogConfig(), cluster.getOwnerName(), cluster.getCreateTime(), nodeNum, podNum, buildConfig);
+                    cluster.getDomain(), cluster.getLogConfig(), cluster.getOwnerName(), role,
+                    cluster.getCreateTime(), nodeNum, podNum, buildConfig);
         }
     }
 
     private void checkOperationPermission(int id, org.domeos.framework.api.model.operation.OperationType operationType) {
         int userId = CurrentThreadInfo.getUserId();
         if (!AuthUtil.verify(userId, id, ResourceType.CLUSTER, operationType)) {
-            throw new PermitException("userId:" + userId + ", resourceId:" + id);
+            throw new PermitException("userId:" + userId + ", groupId:" + id);
         }
     }
 }

@@ -110,4 +110,22 @@ public interface BuildService {
      * @return
      */
     HttpResponseTemp<?> listBuildInfo(int projectId);
+
+    /**
+     *
+     * @param projectId
+     * @param buildId
+     * @param filename
+     * @param secret
+     * @return
+     */
+    String downloadUploadFile(int projectId, int buildId, String filename, String secret);
+
+    /**
+     *
+     * @param buildIdStr
+     * @param secretStr
+     * @return
+     */
+    Boolean secretAuthorization(String buildIdStr, String secretStr);
 }

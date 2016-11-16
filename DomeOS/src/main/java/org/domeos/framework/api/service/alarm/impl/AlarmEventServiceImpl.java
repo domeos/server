@@ -1,5 +1,9 @@
 package org.domeos.framework.api.service.alarm.impl;
 
+import org.domeos.framework.api.consolemodel.alarm.AlarmEventInfo;
+import org.domeos.framework.api.consolemodel.alarm.AlarmEventInfoDraft;
+import org.domeos.framework.api.consolemodel.alarm.DeploymentAlarmInfo;
+import org.domeos.framework.api.model.collection.related.ResourceType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.domeos.basemodel.HttpResponseTemp;
@@ -45,6 +49,8 @@ public class AlarmEventServiceImpl implements AlarmEventService {
 
     private static Logger logger = LoggerFactory.getLogger(AlarmEventServiceImpl.class);
 
+    private final ResourceType resourceType = ResourceType.ALARM;
+
     @Autowired
     AlarmBiz alarmBiz;
 
@@ -64,7 +70,7 @@ public class AlarmEventServiceImpl implements AlarmEventService {
     @Override
     public HttpResponseTemp<?> listAlarmEventInfo() {
 
-        AuthUtil.groupVerify(CurrentThreadInfo.getUserId(), GlobalConstant.alarmGroupId, OperationType.GET, 0);
+        AuthUtil.collectionVerify(CurrentThreadInfo.getUserId(), GlobalConstant.alarmGroupId, resourceType, OperationType.GET, 0);
 
         List<AlarmEventInfoDraft> alarmEventInfoDrafts = alarmBiz.listAlarmEventInfoDraft();
         if (alarmEventInfoDrafts == null) {
@@ -94,7 +100,7 @@ public class AlarmEventServiceImpl implements AlarmEventService {
     @Override
     public HttpResponseTemp<?> ignoreAlarms(String alarmString) {
 
-        AuthUtil.groupVerify(CurrentThreadInfo.getUserId(), GlobalConstant.alarmGroupId, OperationType.MODIFY, 0);
+        AuthUtil.collectionVerify(CurrentThreadInfo.getUserId(), GlobalConstant.alarmGroupId, resourceType, OperationType.MODIFY, 0);
 
         GlobalInfo alarmInfo = globalBiz.getGlobalInfoByType(GlobalType.MONITOR_ALARM);
         if (alarmInfo == null) {
@@ -159,7 +165,7 @@ public class AlarmEventServiceImpl implements AlarmEventService {
     }
 
     // notice: template or host group can be deleted while alarm event still reserved
-    public class AlarmEventInfoTask implements Callable<AlarmEventInfo> {
+    private class AlarmEventInfoTask implements Callable<AlarmEventInfo> {
         AlarmEventInfoDraft alarmEventInfoDraft;
 
         public AlarmEventInfoTask(AlarmEventInfoDraft alarmEventInfoDraft) {

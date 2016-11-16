@@ -10,21 +10,21 @@
             | GitHub
         span.repository.nohub(ng-click="toggleCodeManager(null)" ng-class="{active:!codeManager}") 不使用代码仓库
     .chose-account(ng-show="codeManager")
-        input.pull-right.ui-input-search.ui-input-fill(placeholder="请输入项目名称查询" ng-model="pronameKey")
-        ul(list-scroll width-offset="740")
+        input.pull-right.ui-input-search.ui-input-fill(placeholder="请输入工程名称查询" ng-model="pronameKey")
+        ul(list-scroll width-offset="720")
             li.nav-option(disabled="true")
-                span
+                span.tool-item-next
                     a.icon-last.to-last
                     a.icon-next.to-next
             li(ng-repeat="user in gitLabInfo"  ng-class="{'active':currentUserId===user.id}")
                 a.link-list(ng-bind="user.userName" ng-click="setProjectList(user)")
         span.related
             a(ng-click="toRelated()")
-                i.icon-add-green
-                | 关联新账户
+                span.tool-align-text 关联新账户
+                i.fa.fa-plus
     ul.list-project(ng-show="codeManager")
         li(ng-if="!projectListFilter||projectListFilter.length===0")
-            span.no-result 无项目信息
+            span.no-result 无工程信息
         li(ng-repeat="pro in projectListFilter=(projectList|filter:{'nameWithNamespace':pronameKey}|listPage:pageSize:pageNo)" ng-click="setCurrentProject(pro)" ng-class="{'active':currentProject.projectId===pro.projectId}")
             span.project-name(ng-cloak)
                 i.icon-check(ng-if="currentProject.projectId===pro.projectId")
@@ -34,7 +34,7 @@
     .pro-item.branch-setting(ng-show="codeManager")
         span.opt-title 自动构建
         div.opt-content
-            p.txt-prompt.opt-descrip  当所选分支更新或出现新tag时，会自动触发构建，生成新的项目镜像。请不要在频繁push的分支上开启自动构建，以免频繁触发构建，造成资源浪费。
+            p.txt-prompt.opt-descrip  当所选分支更新或出现新tag时，会自动触发构建，生成新的工程镜像。请不要在频繁push的分支上开启自动构建，以免频繁触发构建，造成资源浪费。
             span.branch
                 input#master.ui-check(type="checkbox" name="branches" ng-model="autoBuildInfo.master")
                 label(for="master") master
@@ -47,29 +47,30 @@
                 label(for="other" ng-if="autoBuildInfo.other")
                 input.ui-input-white.txt-branch(placeholder="请输入分支名称，用逗号分隔 e.g. dev,fix-bug"  ng-if="autoBuildInfo.other" ng-model="autoBuildInfo.branches" name="other" required)
     .pro-item
-        span.opt-title 项目构建类型
+        span.opt-title 工程构建类型
         div.opt-content
-            p.txt-prompt.opt-descrip 项目需要构建成Docker镜像，才能被部署到运行环境中。项目构建过程包含了代码编译、docker build等操作。您可以选择一种项目构建类型，并完成相应配置。
-            span.setting-type(ng-class="{'active':projectType=='common'}" ng-click="projectType = 'common'")
+            p.txt-prompt.opt-descrip 工程需要构建成Docker镜像，才能被部署到运行环境中。工程构建过程包含了代码编译、docker build等操作。您可以选择一种工程构建类型，并完成相应配置。
+            span.setting-type(ng-class="{'active':projectType=='commonconfig'}" ng-click="projectType = 'commonconfig'")
                 h4 通用配置
-                p 适合各种编程语言的项目，在页面上配置Dockerfile以及运行过程的相关信息。
-            span.setting-type(ng-class="{'active':projectType=='custom'}" ng-click="projectType = 'custom'" ng-show="codeManager")
+                p 适合各种编程语言的工程，在页面上配置Dockerfile以及运行过程的相关信息。
+            span.setting-type(ng-class="{'active':projectType=='dockerfileuserdefined'}" ng-click="projectType = 'dockerfileuserdefined'")
+                h4 定制化配置
+                p 直接编写Dockerfile和配置文件。自定义构建流程。
+            span.setting-type(ng-class="{'active':projectType=='java'}" ng-click="projectType = 'java'" ng-show="codeManager")
                 h4 Java专属配置
-                p 专为Java项目打造，分离编译和构建过程，精简项目镜像。
-            span.setting-type(ng-class="{'active':projectType=='dockerfile'}" ng-click="projectType = 'dockerfile'" ng-show="codeManager")
+                p 专为Java工程打造，分离编译和构建过程，精简工程镜像。
+            span.setting-type(ng-class="{'active':projectType=='dockerfileincode'}" ng-click="projectType = 'dockerfileincode'" ng-show="codeManager")
                 h4 代码内Dockerfile
-                p 使用代码项目内的Dockerfile。请确保构建所用的代码分支或tag中存在可用的Dockerfile。
-    .pro-item
-        span.opt-title 创建者
-        creator-selection(default-user-id="creator.id" default-user-type="{{creator.type}}" change-event="changeCreator(user)")
+                p 使用代码工程内的Dockerfile。请确保构建所用的代码分支或tag中存在可用的Dockerfile。
     .pro-item.project-info
-        span.opt-title 项目名称 *
+        span.opt-title 工程名称 
+            span.require-domain *
         .creator-info
-            span.creator-name(ng-bind="creator.name")
+            span.creator-name(ng-bind="projectCollectionName")
             | /
-            input.ui-input-white(placeholder="输入项目名称" is-project-exist group-name="{{creator.name}}" name="proname" ng-pattern="/^[a-z0-9]+([._-][a-z0-9]+)*$/" ng-model="projectName" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" required)
+            input.ui-input-white(placeholder="输入工程名称" is-project-exist collection="projectCollectionId" group-name="{{projectCollectionName}}" name="proname" ng-pattern="/^[a-z0-9]+([._-][a-z0-9]+)*$/" ng-model="projectName" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" required)
         span.tool-inline-error(ng-if="(needValid||projectNameForm.proname.$dirty)&&projectNameForm.proname.$error.required") 必填
-        span.tool-inline-error(ng-if="(needValid||projectNameForm.proname.$dirty)&&!projectNameForm.proname.$error.required&&projectNameForm.proname.$error.isProjectExist") 项目已存在
+        span.tool-inline-error(ng-if="(needValid||projectNameForm.proname.$dirty)&&!projectNameForm.proname.$error.required&&projectNameForm.proname.$error.isProjectExist") 工程已存在
         span.tool-inline-error(ng-if="(needValid||projectNameForm.proname.$dirty)&&!projectNameForm.proname.$error.required&&projectNameForm.proname.$error.pattern") 非法的名称
     .com-bottom-option
         button.ui-btn.ui-btn-bright.ui-btn-md(ng-click="needValid=true;projectNameForm.$valid&&toNext()") 下一步

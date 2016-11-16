@@ -9,5 +9,8 @@
 		$scope.hostList = filterFilter(hostList, {
 			'labelFilter': true
 		});
+		$scope.cancel = function(){
+			$modalInstance.dismiss('cancel');
+		};
 	}]);
 })(window.domeApp);

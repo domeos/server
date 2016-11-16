@@ -23,7 +23,7 @@ import org.domeos.framework.api.model.monitor.falcon.EndpointCounter;
 import org.domeos.framework.api.model.monitor.falcon.GraphHistoryRequest;
 import org.domeos.framework.api.model.monitor.falcon.GraphHistoryResponse;
 import org.domeos.framework.api.model.operation.OperationType;
-import org.domeos.framework.api.model.resource.related.ResourceType;
+import org.domeos.framework.api.model.collection.related.ResourceType;
 import org.domeos.framework.api.service.monitor.MonitorService;
 import org.domeos.framework.engine.AuthUtil;
 import org.domeos.framework.engine.model.CustomObjectMapper;

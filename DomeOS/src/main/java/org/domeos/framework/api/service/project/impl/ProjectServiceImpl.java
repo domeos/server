@@ -1,38 +1,43 @@
 package org.domeos.framework.api.service.project.impl;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.domeos.basemodel.HttpResponseTemp;
 import org.domeos.basemodel.ResultStat;
 import org.domeos.framework.api.biz.OperationHistory;
+import org.domeos.framework.api.biz.collection.CollectionBiz;
 import org.domeos.framework.api.biz.global.GlobalBiz;
 import org.domeos.framework.api.biz.project.ProjectBiz;
-import org.domeos.framework.api.biz.resource.ResourceBiz;
-import org.domeos.framework.api.consolemodel.CreatorDraft;
+import org.domeos.framework.api.biz.project.ProjectCollectionBiz;
+import org.domeos.framework.api.consolemodel.auth.CreatorInfo;
 import org.domeos.framework.api.consolemodel.project.CodeSourceInfo;
-import org.domeos.framework.api.consolemodel.project.ProjectCreate;
-import org.domeos.framework.api.consolemodel.project.ProjectList;
+import org.domeos.framework.api.consolemodel.project.ProjectCollectionConsole;
+import org.domeos.framework.api.consolemodel.project.ProjectConsole;
+import org.domeos.framework.api.consolemodel.project.ProjectInfoConsole;
 import org.domeos.framework.api.controller.exception.ApiException;
 import org.domeos.framework.api.controller.exception.PermitException;
 import org.domeos.framework.api.model.auth.User;
 import org.domeos.framework.api.model.auth.related.Role;
 import org.domeos.framework.api.model.ci.BuildHistory;
 import org.domeos.framework.api.model.ci.CodeType;
+import org.domeos.framework.api.model.collection.CollectionAuthorityMap;
+import org.domeos.framework.api.model.collection.CollectionResourceMap;
+import org.domeos.framework.api.model.collection.related.ResourceType;
 import org.domeos.framework.api.model.global.Server;
 import org.domeos.framework.api.model.operation.OperationRecord;
 import org.domeos.framework.api.model.operation.OperationType;
 import org.domeos.framework.api.model.project.GitlabUser;
 import org.domeos.framework.api.model.project.Project;
+import org.domeos.framework.api.model.project.ProjectCollection;
 import org.domeos.framework.api.model.project.SubversionUser;
 import org.domeos.framework.api.model.project.related.AutoBuild;
 import org.domeos.framework.api.model.project.related.CodeConfiguration;
 import org.domeos.framework.api.model.project.related.CodeManager;
 import org.domeos.framework.api.model.project.related.ProjectState;
-import org.domeos.framework.api.model.resource.Resource;
-import org.domeos.framework.api.model.resource.related.ResourceType;
 import org.domeos.framework.api.service.project.ProjectService;
 import org.domeos.framework.engine.AuthUtil;
 import org.domeos.framework.engine.coderepo.CodeApiInterface;
 import org.domeos.framework.engine.coderepo.ReflectFactory;
+import org.domeos.global.ClientConfigure;
 import org.domeos.global.CurrentThreadInfo;
 import org.domeos.global.GlobalConstant;
 import org.slf4j.Logger;
@@ -40,9 +45,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 /**
  */
@@ -54,34 +61,200 @@ public class ProjectServiceImpl implements ProjectService {
     @Autowired
     ProjectBiz projectBiz;
     @Autowired
-    ResourceBiz resourceBiz;
+    ProjectCollectionBiz projectCollectionBiz;
     @Autowired
     GlobalBiz globalBiz;
     @Autowired
     OperationHistory operationHistory;
+    @Autowired
+    CollectionBiz collectionBiz;
 
-    @Override
-    public HttpResponseTemp<?> createProject(ProjectCreate projectCreate) {
-        if (projectCreate == null || projectCreate.getProject() == null || projectCreate.getCreatorDraft() == null) {
-            throw ApiException.wrapMessage(ResultStat.PROJECT_NOT_LEGAL, "project info is null");
-        }
+    private User getUser() {
         User user = CurrentThreadInfo.getUser();
         if (user == null) {
             throw new PermitException("no user logged in");
         }
+        return user;
+    }
 
-        Project project = projectCreate.getProject();
+    @Override
+    public HttpResponseTemp<List<ProjectCollectionConsole>> listProjectCollection() {
+        User user = getUser();
+        Set<ProjectCollection> collectionSet = projectCollectionBiz.getCurrentUserProjectCollectionSet(user.getId());
+        Set<ProjectCollectionConsole> projectCollectionConsoles = new HashSet<>();
+        String name = null;
+        for (ProjectCollection collection : collectionSet) {
+            name = AuthUtil.getUserNameById(collection.getCreatorId());
+            List<CollectionAuthorityMap> collectionAuthorityMaps = collectionBiz.
+                    getAuthoritiesByCollectionIdAndResourceType(collection.getId(), ResourceType.PROJECT_COLLECTION);
+            List<CollectionResourceMap> collectionResourceMaps = collectionBiz.
+                    getResourcesByCollectionIdAndResourceType(collection.getId(), ResourceType.PROJECT);
+            ProjectCollectionConsole tmp = collection.createProjectCollectionList(name);
+            if (collectionAuthorityMaps != null) {
+                tmp.setMemberCount(collectionAuthorityMaps.size());
+            }
+            if (collectionResourceMaps != null) {
+                tmp.setProjectCount(collectionResourceMaps.size());
+            }
+            Role role = AuthUtil.getUserRoleInResource(ResourceType.PROJECT_COLLECTION, tmp.getId(), user.getId());
+            if (Role.GUEST.equals(role)) {
+                tmp.setRole(Role.REPORTER);
+            } else {
+                tmp.setRole(role);
+            }
+            projectCollectionConsoles.add(tmp);
+        }
+
+        List<ProjectCollectionConsole> result = new ArrayList(projectCollectionConsoles);
+        Collections.sort(result, new ProjectCollectionConsole.ProjectCollectionListComparator());
+        return ResultStat.OK.wrap(result);
+    }
+
+    @Override
+    public HttpResponseTemp<ProjectCollectionConsole> addProjectCollection(ProjectCollectionConsole projectCollectionConsole) {
+        if (projectCollectionConsole == null) {
+            throw ApiException.wrapMessage(ResultStat.PROJECT_COLLECTION_NOT_LEGAL, "information is null");
+        }
+        User user = getUser();
+
+        String error = projectCollectionConsole.checkLegality();
+        if (!StringUtils.isBlank(error)) {
+            throw ApiException.wrapMessage(ResultStat.PROJECT_COLLECTION_NOT_LEGAL, error);
+        }
+
+        if (!projectCollectionBiz.checkProjectCollectionName(projectCollectionConsole.getName())) {
+            throw ApiException.wrapResultStat(ResultStat.PROJECT_COLLECTION_EXISTED);
+        }
+        projectCollectionConsole.setCreatorInfo(new CreatorInfo().setName(user.getUsername()).setCreatorId(user.getId()));
+        ProjectCollection projectCollection = projectCollectionConsole.createProjectCollection();
+
+        projectCollectionBiz.addProjectCollection(projectCollection);
+        projectCollectionConsole.setId(projectCollection.getId());
+        projectCollectionConsole.setCreateTime(projectCollection.getCreateTime());
+
+        // add to authority
+        CollectionAuthorityMap authorityMap = new CollectionAuthorityMap();
+        authorityMap.setResourceType(ResourceType.PROJECT_COLLECTION);
+        authorityMap.setCollectionId(projectCollection.getId());
+        authorityMap.setUserId(user.getId());
+        authorityMap.setRole(Role.MASTER);
+        authorityMap.setUpdateTime(System.currentTimeMillis());
+        collectionBiz.addAuthority(authorityMap);
+
+        OperationRecord record = new OperationRecord(projectCollection.getId(), ResourceType.PROJECT_COLLECTION, OperationType.SET,
+                user.getId(), user.getUsername(), "OK", "", System.currentTimeMillis());
+        operationHistory.insertRecord(record);
+
+        return ResultStat.OK.wrap(projectCollectionConsole);
+    }
+
+    @Override
+    public HttpResponseTemp<ProjectCollectionConsole> updateProjectCollection(ProjectCollectionConsole projectCollection) {
+        if (projectCollection == null) {
+            throw ApiException.wrapMessage(ResultStat.PROJECT_COLLECTION_NOT_LEGAL, "project collection is null");
+        }
+        User user = getUser();
+
+        AuthUtil.collectionVerify(user.getId(), projectCollection.getId(), ResourceType.PROJECT_COLLECTION, OperationType.MODIFY, -1);
+
+        String error = projectCollection.checkLegality();
+        if (!StringUtils.isBlank(error)) {
+            throw ApiException.wrapMessage(ResultStat.PROJECT_COLLECTION_NOT_LEGAL, error);
+        }
+
+        ProjectCollection collection = projectCollectionBiz.getById(ProjectCollectionBiz.PROJECT_COLLECTION,
+                projectCollection.getId(), ProjectCollection.class);
+        if (collection == null) {
+            throw ApiException.wrapMessage(ResultStat.PROJECT_COLLECTION_NOT_LEGAL, "no such project collection in database");
+        }
+
+        // only description and collectionstate can be changed
+        // project name is related with docker image name
+        collection.setDescription(projectCollection.getDescription());
+        collection.setProjectCollectionState(projectCollection.getProjectCollectionState());
+        projectCollectionBiz.updateProjectCollection(collection);
+
+        OperationRecord record = new OperationRecord(projectCollection.getId(), ResourceType.PROJECT_COLLECTION, OperationType.MODIFY,
+                user.getId(), user.getUsername(), "OK", "", System.currentTimeMillis());
+        operationHistory.insertRecord(record);
+
+        return ResultStat.OK.wrap(projectCollection);
+    }
+
+    @Override
+    public HttpResponseTemp<?> deleteProjectCollection(int id) {
+        User user = getUser();
+        AuthUtil.collectionVerify(user.getId(), id, ResourceType.PROJECT_COLLECTION, OperationType.DELETE, -1);
+
+        List<CollectionResourceMap> resourceList = collectionBiz.getResourcesByCollectionIdAndResourceType(id, ResourceType.PROJECT);
+        if (resourceList != null) {
+            // delete all projects here, but remain docker image in private registry
+            for (CollectionResourceMap tmp : resourceList) {
+                projectBiz.removeById(GlobalConstant.PROJECT_TABLE_NAME, tmp.getResourceId());
+            }
+            // delete collection resource map info
+            collectionBiz.deleteResourcesByCollectionIdAndResourceType(id, ResourceType.PROJECT_COLLECTION);
+        }
+        projectCollectionBiz.deleteProjectCollection(id);
+        collectionBiz.deleteAuthoritiesByCollectionIdAndResourceType(id, ResourceType.PROJECT_COLLECTION);
+
+        OperationRecord record = new OperationRecord(id, ResourceType.PROJECT_COLLECTION, OperationType.DELETE,
+                user.getId(), user.getUsername(), "OK", "", System.currentTimeMillis());
+        operationHistory.insertRecord(record);
+
+        return null;
+    }
+
+    @Override
+    public HttpResponseTemp<ProjectCollectionConsole> getProjectCollection(int id) {
+        User user = getUser();
+        AuthUtil.collectionVerify(user.getId(), id, ResourceType.PROJECT_COLLECTION, OperationType.GET, -1);
+
+        ProjectCollection collection = projectCollectionBiz.getById(ProjectCollectionBiz.PROJECT_COLLECTION, id, ProjectCollection.class);
+
+        if (collection == null) {
+            throw ApiException.wrapMessage(ResultStat.PROJECT_COLLECTION_NOT_LEGAL, "no such project collection in database");
+        }
+
+        String name = AuthUtil.getUserNameById(collection.getCreatorId());
+        List<CollectionAuthorityMap> collectionAuthorityMaps = collectionBiz.
+                getAuthoritiesByCollectionIdAndResourceType(collection.getId(), ResourceType.PROJECT_COLLECTION);
+        List<CollectionResourceMap> collectionResourceMaps = collectionBiz.
+                getResourcesByCollectionIdAndResourceType(collection.getId(), ResourceType.PROJECT);
+        ProjectCollectionConsole tmp = collection.createProjectCollectionList(name);
+        if (collectionAuthorityMaps != null) {
+            tmp.setMemberCount(collectionAuthorityMaps.size());
+        }
+        if (collectionResourceMaps != null) {
+            tmp.setProjectCount(collectionResourceMaps.size());
+        }
+        Role role = AuthUtil.getUserRoleInResource(ResourceType.PROJECT_COLLECTION, tmp.getId(), user.getId());
+        if (Role.GUEST.equals(role)) {
+            tmp.setRole(Role.REPORTER);
+        } else {
+            tmp.setRole(role);
+        }
+        return ResultStat.OK.wrap(tmp);
+    }
+
+    @Override
+    public HttpResponseTemp<ProjectConsole> createProject(int collectionId, Project project) {
+        if (project == null) {
+            throw ApiException.wrapMessage(ResultStat.PROJECT_NOT_LEGAL, "project info is null");
+        }
+        User user = getUser();
+        checkSetable(user.getId(), collectionId);
+
         String error = project.checkLegality();
         if (!StringUtils.isBlank(error)) {
             throw ApiException.wrapMessage(ResultStat.PROJECT_NOT_LEGAL, error);
         }
 
-        CreatorDraft creatorDraft = projectCreate.getCreatorDraft();
-        error = creatorDraft.checkLegality();
-        if (!StringUtils.isBlank(error)) {
-            throw ApiException.wrapMessage(ResultStat.CREATOR_ERROR, error);
-        }
+        String collectionName = projectCollectionBiz.getNameById(ProjectCollectionBiz.PROJECT_COLLECTION, collectionId);
 
+        if (collectionName == null || !collectionName.equals(project.getName().split("/")[0])) {
+            throw ApiException.wrapMessage(ResultStat.PROJECT_NOT_LEGAL, "project name must be [collection_name]/[name]");
+        }
         if (!projectBiz.checkProjectName(project.getName())) {
             throw ApiException.wrapResultStat(ResultStat.PROJECT_EXISTED);
         }
@@ -122,23 +295,33 @@ public class ProjectServiceImpl implements ProjectService {
 
         projectBiz.addProject(project);
 
-        resourceBiz.addResource(project.getId(), ResourceType.PROJECT, creatorDraft.getCreatorId(), creatorDraft.getCreatorType(), Role.MASTER);
+        CollectionResourceMap resourceMap = new CollectionResourceMap();
+        resourceMap.setResourceId(project.getId());
+        resourceMap.setCreatorId(user.getId());
+        resourceMap.setCollectionId(collectionId);
+        resourceMap.setResourceType(ResourceType.PROJECT);
+        resourceMap.setUpdateTime(System.currentTimeMillis());
+        collectionBiz.addResource(resourceMap);
 
         OperationRecord record = new OperationRecord(project.getId(), ResourceType.PROJECT, OperationType.SET,
                 user.getId(), user.getUsername(), "OK", "", System.currentTimeMillis());
         operationHistory.insertRecord(record);
 
-        return ResultStat.OK.wrap(project);
+        ProjectConsole projectConsole = new ProjectConsole();
+        projectConsole.setCreatorInfo(new CreatorInfo().setCreatorId(user.getId()).setName(user.getUsername()));
+        projectConsole.setProject(project);
+        return ResultStat.OK.wrap(projectConsole);
     }
 
     @Override
-    public HttpResponseTemp<?> deleteProject(int id) {
-        checkDeletable(id);
-        projectBiz.removeById(GlobalConstant.PROJECT_TABLE_NAME, id);
+    public HttpResponseTemp<?> deleteProject(int projectId) {
+        User user = getUser();
+        checkProjectDeletable(user.getId(), projectId);
+        projectBiz.removeById(GlobalConstant.PROJECT_TABLE_NAME, projectId);
 
-        resourceBiz.deleteResourceByIdAndType(id, ResourceType.PROJECT);
+        collectionBiz.deleteResourceByResourceIdAndResourceType(projectId, ResourceType.PROJECT);
 
-        OperationRecord record = new OperationRecord(id, ResourceType.PROJECT, OperationType.DELETE,
+        OperationRecord record = new OperationRecord(projectId, ResourceType.PROJECT, OperationType.DELETE,
                 CurrentThreadInfo.getUserId(), CurrentThreadInfo.getUserName(), "OK", "", System.currentTimeMillis());
         operationHistory.insertRecord(record);
 
@@ -146,12 +329,13 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public HttpResponseTemp<?> modifyProject(Project project) {
+    public HttpResponseTemp<ProjectConsole> modifyProject(Project project) {
         if (project == null) {
             throw ApiException.wrapMessage(ResultStat.PROJECT_NOT_LEGAL, "project info is null");
         }
 
-        checkModifiable(project.getId());
+        User user = getUser();
+        checkProjectModifiable(user.getId(), project.getId());
 
         String error = project.checkLegality();
         if (!StringUtils.isBlank(error)) {
@@ -168,67 +352,119 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public HttpResponseTemp<Project> getProject(int id) {
-        checkGetable(id);
-        Project project = projectBiz.getById(GlobalConstant.PROJECT_TABLE_NAME, id, Project.class);
-        return ResultStat.OK.wrap(project);
+    public HttpResponseTemp<ProjectConsole> getProject(int projectId) {
+        User user = getUser();
+        checkProjectGetable(user.getId(), projectId);
+        Project project = projectBiz.getById(GlobalConstant.PROJECT_TABLE_NAME, projectId, Project.class);
+        ProjectConsole projectConsole = new ProjectConsole();
+        projectConsole.setProject(project);
+
+        CollectionResourceMap resourceMap = collectionBiz.getResourceByResourceIdAndResourceType(projectId, ResourceType.PROJECT);
+        if (resourceMap == null) {
+            throw ApiException.wrapMessage(ResultStat.PROJECT_COLLECTION_NOT_LEGAL, "could not find creator info");
+        }
+
+        String name = AuthUtil.getUserNameById(resourceMap.getCreatorId());
+        projectConsole.setCreatorInfo(new CreatorInfo().setCreatorId(resourceMap.getCreatorId()).setName(name));
+
+        return ResultStat.OK.wrap(projectConsole);
     }
 
     @Override
-    public HttpResponseTemp<?> listProjectInfo() {
-        User user = CurrentThreadInfo.getUser();
-        if (user == null) {
-            throw new PermitException("no user logged in");
-        }
+    public HttpResponseTemp<List<ProjectInfoConsole>> listProjectInfo(int collectionId) {
+        User user = getUser();
+        AuthUtil.collectionVerify(user.getId(), collectionId, ResourceType.PROJECT_COLLECTION, OperationType.GET, -1);
 
-        List<Resource> resources = AuthUtil.getResourceList(user.getId(), ResourceType.PROJECT);
-        List<Project> publicProjects = projectBiz.listAuthoritiedProjects();
-        List<Project> privateProjects = projectBiz.getListByReousrce(GlobalConstant.PROJECT_TABLE_NAME, resources, Project.class);
-
-        List<ProjectList> projectListInfo = new LinkedList<>();
-        for (Project project : publicProjects) {
-            ProjectList projectList = generateProjectList(project);
-            projectListInfo.add(projectList);
-        }
-        for (Project project : privateProjects) {
-            if (project.getAuthority() == 0) {
-                ProjectList projectList = generateProjectList(project);
-                projectListInfo.add(projectList);
+        List<CollectionResourceMap> resourceMaps = collectionBiz.getResourcesByCollectionIdAndResourceType(collectionId, ResourceType.PROJECT);
+        List<ProjectInfoConsole> projectInfoConsoleInfo = null;
+        if (resourceMaps != null) {
+            List<Project> projects = projectBiz.getListByCollections(GlobalConstant.PROJECT_TABLE_NAME, resourceMaps, Project.class);
+            Set<ProjectInfoConsole> projectListSet;
+            if (projects.size() > GlobalConstant.PROJECT_LIST_SIZE) {
+                projectListSet = new CopyOnWriteArraySet<>();
+                parallzieGenerate(projectListSet, projects);
+            } else {
+                projectListSet = new HashSet<>();
+                orderGenerate(projectListSet, projects);
             }
+            projectInfoConsoleInfo = new ArrayList<>(projectListSet);
+            Collections.sort(projectInfoConsoleInfo, new ProjectInfoConsole.ProjectListComparator());
         }
-        Collections.sort(projectListInfo, new ProjectList.ProjectListComparator());
-        return ResultStat.OK.wrap(projectListInfo);
+        return ResultStat.OK.wrap(projectInfoConsoleInfo);
     }
 
-    private ProjectList generateProjectList(Project project) {
+    private void parallzieGenerate(Set<ProjectInfoConsole> set, List<Project> projects) {
+        List<Future<ProjectInfoConsole>> futures = new LinkedList<>();
+        for (Project project : projects) {
+            Future<ProjectInfoConsole> future = ClientConfigure.executorService.submit(new GetProjectInfoConsoleTask(set, project));
+            futures.add(future);
+        }
+        for (Future future : futures) {
+            try {
+                future.get();
+            } catch (InterruptedException | ExecutionException e) {
+                logger.warn("get project list error, message is " + e.getMessage());
+            }
+        }
+    }
+
+    private class GetProjectInfoConsoleTask implements Callable<ProjectInfoConsole> {
+        private Set<ProjectInfoConsole> set;
+        private Project project;
+
+        public GetProjectInfoConsoleTask(Set<ProjectInfoConsole> set, Project project) {
+            this.set = set;
+            this.project = project;
+        }
+
+        @Override
+        public ProjectInfoConsole call() throws Exception {
+            ProjectInfoConsole projectList = generateProjectInfoConsole(project);
+            set.add(projectList);
+            return null;
+        }
+    }
+
+    private void orderGenerate(Set<ProjectInfoConsole> set, List<Project> projects) {
+        for (Project project : projects) {
+            ProjectInfoConsole projecConsole = generateProjectInfoConsole(project);
+            set.add(projecConsole);
+        }
+    }
+
+    private ProjectInfoConsole generateProjectInfoConsole(Project project) {
         BuildHistory buildHistory = projectBiz.getLatestBuildHistoryByProjectId(project.getId());
-        ProjectList projectList = new ProjectList();
-        projectList.setId(project.getId());
-        projectList.setName(project.getName());
+        ProjectInfoConsole projectInfoConsole = new ProjectInfoConsole();
+        projectInfoConsole.setId(project.getId());
+        projectInfoConsole.setName(project.getName());
         if (buildHistory != null) {
-            projectList.setBuildTime(buildHistory.getCreateTime());
-            projectList.setBuildStatus(buildHistory.getState());
+            projectInfoConsole.setBuildTime(buildHistory.getCreateTime());
+            projectInfoConsole.setBuildStatus(buildHistory.getState());
         }
         if (project.getCodeInfo() != null) {
-            projectList.setCodeSshUrl(project.getCodeInfo().getCodeSshUrl());
-            projectList.setCodeManager(project.getCodeInfo().getCodeManager());
-            projectList.setCodeHttpUrl(project.getCodeInfo().getCodeHttpUrl());
-            projectList.setNameWithNamespace(project.getCodeInfo().getNameWithNamespace());
+            projectInfoConsole.setCodeSshUrl(project.getCodeInfo().getCodeSshUrl());
+            projectInfoConsole.setCodeManager(project.getCodeInfo().getCodeManager());
+            projectInfoConsole.setCodeHttpUrl(project.getCodeInfo().getCodeHttpUrl());
+            projectInfoConsole.setNameWithNamespace(project.getCodeInfo().getNameWithNamespace());
         }
         if (project.getExclusiveBuild() != null) {
-            projectList.setProjectType(project.getExclusiveBuild().getCustomType());
+            projectInfoConsole.setProjectType(project.getExclusiveBuild().getCustomType());
+        } else if (project.getCustomDockerfile() != null) {
+            projectInfoConsole.setProjectType("dockerfileuserdefined");
+        } else if (project.getDockerfileInfo() != null) {
+            projectInfoConsole.setProjectType("dockerfileincode");
         } else {
-            projectList.setProjectType("simple");
+            projectInfoConsole.setProjectType("commonconfig");
         }
         AutoBuild info = project.getAutoBuildInfo();
         if (info != null && (info.getTag() > 0 || info.getBranches().size() > 0)) {
-            projectList.setAutoBuild(true);
+            projectInfoConsole.setAutoBuild(true);
         } else {
-            projectList.setAutoBuild(false);
+            projectInfoConsole.setAutoBuild(false);
         }
-        projectList.setUserDefineDockerfile(project.isUserDefineDockerfile());
-        projectList.setCreateTime(project.getCreateTime());
-        return projectList;
+        projectInfoConsole.setUserDefineDockerfile(project.isUserDefineDockerfile());
+        projectInfoConsole.setCreateTime(project.getCreateTime());
+        return projectInfoConsole;
     }
 
     @Override
@@ -323,7 +559,8 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public HttpResponseTemp<?> getProjectDockerfile(int projectId, String branch, String path) {
-        checkGetable(projectId);
+        User user = getUser();
+        checkProjectGetable(user.getId(), projectId);
 
         Project project = projectBiz.getById(GlobalConstant.PROJECT_TABLE_NAME, projectId, Project.class);
         if (project == null) {
@@ -351,7 +588,8 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public HttpResponseTemp<?> getBranches(int projectId) {
-        checkGetable(projectId);
+        User user = getUser();
+        checkProjectGetable(user.getId(), projectId);
 
         Project project = projectBiz.getById(GlobalConstant.PROJECT_TABLE_NAME, projectId, Project.class);
         if (project == null) {
@@ -391,7 +629,8 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public HttpResponseTemp<?> getReadme(int projectId, String branch) {
-        checkGetable(projectId);
+        User user = getUser();
+        checkProjectGetable(user.getId(), projectId);
 
         Project project = projectBiz.getById(GlobalConstant.PROJECT_TABLE_NAME, projectId, Project.class);
         if (project == null) {
@@ -418,7 +657,8 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public HttpResponseTemp<?> getTags(int projectId) {
-        checkGetable(projectId);
+        User user = getUser();
+        checkProjectGetable(user.getId(), projectId);
 
         Project project = projectBiz.getById(GlobalConstant.PROJECT_TABLE_NAME, projectId, Project.class);
         if (project == null) {
@@ -456,15 +696,34 @@ public class ProjectServiceImpl implements ProjectService {
         return ResultStat.OK.wrap(branches);
     }
 
-    public void checkGetable(int id) {
-        AuthUtil.verify(CurrentThreadInfo.getUserId(), id, ResourceType.PROJECT, OperationType.GET);
+    @Override
+    public HttpResponseTemp<String> getProjectCollectionNameById(int collectionId) {
+        User user = getUser();
+        checkGetable(user.getId(), collectionId);
+        String name = projectCollectionBiz.getNameById(ProjectCollectionBiz.PROJECT_COLLECTION, collectionId);
+        if (StringUtils.isBlank(name)) {
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "no such project collection!");
+        }
+        return ResultStat.OK.wrap(name);
     }
 
-    public void checkModifiable(int id) {
-        AuthUtil.verify(CurrentThreadInfo.getUserId(), id, ResourceType.PROJECT, OperationType.MODIFY);
+    private void checkProjectGetable(int userId, int resourceId) {
+        AuthUtil.verify(userId, resourceId, ResourceType.PROJECT, OperationType.GET);
     }
 
-    public void checkDeletable(int id) {
-        AuthUtil.verify(CurrentThreadInfo.getUserId(), id, ResourceType.PROJECT, OperationType.DELETE);
+    private void checkProjectModifiable(int userId, int resourceId) {
+        AuthUtil.verify(userId, resourceId, ResourceType.PROJECT, OperationType.MODIFY);
+    }
+
+    private void checkProjectDeletable(int userId, int resourceId) {
+        AuthUtil.verify(userId, resourceId, ResourceType.PROJECT, OperationType.DELETE);
+    }
+
+    private void checkSetable(int userId, int collectionId) {
+        AuthUtil.collectionVerify(userId, collectionId, ResourceType.PROJECT_COLLECTION, OperationType.SET, -1);
+    }
+
+    private void checkGetable(int userId, int collectionId) {
+        AuthUtil.collectionVerify(userId, collectionId, ResourceType.PROJECT_COLLECTION, OperationType.GET, -1);
     }
 }

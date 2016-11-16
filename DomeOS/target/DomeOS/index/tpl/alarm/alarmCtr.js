@@ -10,6 +10,7 @@
         .controller('TabAlarmTemplatesCtr', TabAlarmTemplatesCtr)
         .controller('TabAlarmCurrentAlarmsCtr', TabAlarmCurrentAlarmsCtr)
         .controller('TabHostGroupsCtr', TabHostGroupsCtr)
+        .controller('TabUserGroupCtr', TabUserGroupCtr)
         .controller('TabGroupCtr', TabGroupCtr)
         .controller('RenameHostGroupModalCtr', RenameHostGroupModalCtr);
 
@@ -48,7 +49,7 @@
                                 }
                             }
                             if (!vm.permission.id) {
-                                $state.go('monitor');
+                                $state.go('alarm.templates');
                                 return;
                             }
                             $scope.$broadcast('permission', vm.permission);
@@ -300,7 +301,6 @@
     }
 
     function TabGroupCtr($scope, $state) {
-        var vmGroup = this;
         $scope.$emit('tabName', 'group');
         $scope.resourceType = 'ALARM';
         $scope.$on('permission', function (event, permission) {
@@ -308,6 +308,52 @@
                 $state.go('alarm.templates');
             }
         });
+    }
+
+//用户组
+    function TabUserGroupCtr($scope, $state, $domeUser, $domeAlarm, $domePublic) {
+        $scope.$emit('tabName', 'usergroup');
+        var userGroupService = $domeAlarm.getInstance('UserGroupService');
+        $scope.resourceType = 'ALARM';
+        function init() {
+            userGroupService.getData().then(function (res) {
+                $scope.userGroupList = res.data.result || [];
+            },function () {
+                $domePublic.openWarning('请求失败！');
+            });
+        }
+        init();
+        $scope.createUserGroup = function() {
+            for (var i = 0, l = $scope.userGroupList.length; i < l; i++) {
+                if ($scope.userGroupList[i].userGroupName === $scope.newUserGroupName) {
+                    $domePublic.openWarning('用户组已存在！');
+                    return;
+                }
+            }
+            var UserGroupDraft = {
+                id: '',
+                userGroupName: $scope.newUserGroupName
+            };
+            userGroupService.createUserGroup(UserGroupDraft).then(function(res) {
+                var result = res.data.result || [];
+                init();
+            },function (res) {
+                $domePublic.openWarning({
+                    title: '添加失败！',
+                    msg: 'Message:' + res.data.resultMsg
+                });
+            });
+        };
+        $scope.deleteUserGroup = function (userGroupId) {
+            $domePublic.openDelete().then(function () {
+                userGroupService.deleteUserGroup(userGroupId).then(function (res) {
+                    $domePublic.openPrompt('删除成功！ ');
+                    init();
+                },function() {
+                    $domePublic.openWarning('删除失败！');
+                });
+            });
+        };
     }
 
     function RenameHostGroupModalCtr(hostGroupList, hostGroup, renameFuc, $domePublic, $modalInstance) {
@@ -338,5 +384,6 @@
     TabAlarmCurrentAlarmsCtr.$inject = ['$scope', '$domeAlarm', '$domePublic', '$util', '$sce'];
     TabHostGroupsCtr.$inject = ['$scope', '$domeAlarm', '$domePublic', '$modal'];
     TabGroupCtr.$inject = ['$scope', '$state'];
+    TabUserGroupCtr.$inject = ['$scope', '$state', '$domeUser', '$domeAlarm', '$domePublic'];
     RenameHostGroupModalCtr.$inject = ['hostGroupList', 'hostGroup', 'renameFuc', '$domePublic', '$modalInstance'];
 })(window.domeApp);
