@@ -1,0 +1,25 @@
+.navbar-default.sidebar.left-nav(role="navigation" ng-scrollbar rebuild-on-resize)
+    .sidebar-nav
+        ul.nav.in.nav-sidebar.nav-lists#side-menu
+            li.dome-logo(ui-sref-active="active")
+                a.nav-item(ui-sref="overview")
+                    img.img-logo(src="index/images/logo.png")
+                    span.nav-detail
+                        span.txt-logo(style="position:relative;top:1px;") DomeOS
+            li.nav-top-item(ng-repeat="menu in sidebarMenu" ng-if="menu.isShow" ng-class="{'on':$stateUrl==menu.target}")
+                a.nav-item(ng-if="menu.child&&menu.child.length !== 0" href="javascript:void(0);" ng-click="check(menu.id)" ng-class="{'txt-white':collapseVar===menu.id}")
+                    i(class="nav-icon {{menu.icon}}")
+                    span.nav-detail
+                        | {{menu.parentName}}
+                        span.arrow-sidebar(ng-hide="!menu.child || menu.child.length === 0")
+                            i.fa(ng-class="{'fa-angle-right':collapseVar!==menu.id,'fa-angle-down':collapseVar===menu.id}")
+                //-处理没有子菜单的情况
+                a.nav-item(ng-if="!menu.child||menu.child.length === 0" ui-sref="{{menu.targetUrl}}" ng-click="check(menu.id);selectedChildMenu(menu.target)" ng-class="{'txt-white':collapseVar===menu.id}")
+                    i(class="nav-icon {{menu.icon}}")
+                    span.nav-detail
+                        | {{menu.parentName}}
+                ul.nav.nav-second-level.collapse(collapse="collapseVar!==menu.id")
+                    li(ng-repeat="childMenu in menu.child" ng-if="childMenu.isShow" ng-class="{'on': $stateUrl==childMenu.target}")
+                        a.nav-item(ng-click="selectedChildMenu(childMenu.target)" ui-sref="{{childMenu.targetUrl}}")
+                            span.a-text
+                            | {{childMenu.name}}

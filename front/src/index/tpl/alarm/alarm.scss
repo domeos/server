@@ -1,0 +1,184 @@
+@import "compass/css3";
+@import "common/css/common.scss";
+
+.mod-alarm{
+	.mod-option{
+		padding: 20px;
+		.alarm-prompt{
+			padding-top: 6px;
+			padding-left: 8px;
+		}
+		.btn-newtemplate{
+			// margin-top: 7px;
+		}
+	}
+	.mod-list-alarm{
+		padding: 0 4px 0 20px;
+	}
+	.tab-hostsgroups{
+		// padding: $page-padding;
+		.mod-tips-info-no{
+			p{
+				margin: 20px 0 0 0;
+			}
+		}
+		.list-hostgroups{
+			overflow: hidden;
+			padding-top: 4px;
+			.hostgroup-wrap{
+				float: left;
+				width: 33.33%;
+				padding-right: 16px;
+				margin-bottom: 16px;
+			}
+			.hostgroup{
+				border:$deep-border;
+			}
+			.hostgroup-header{
+				position: relative;
+				height: 85px;
+				padding: 10px;
+				border-bottom: $deep-border;
+				background-color: dome-color(background,light);
+				.hostgroup-name{
+					margin-bottom: 4px;
+					color: dome-color(font,embed);
+					font-size: 22px;
+				}
+				.hostgroup-detail{
+					font-size: 12px;
+				}
+				.hostgroup-opt{
+					position: absolute;
+					top: 6px;
+					right: 6px;
+					text-align: right;
+					.ui-btn-select{
+						position: relative;
+						z-index: 2;
+					}
+					.select-list{
+						position: absolute;
+						top: 10px;
+						right: 8px;
+						width: 72px;
+						text-align: center;
+						@include box-shadow(0 0 2px 2px rgba(0,0,0,.1));
+						li{
+							background-color: #fff;
+							padding: 6px 4px 6px;
+							border-bottom: $deep-border;
+							&:last-child{
+								border-bottom: none;
+							}
+							a:hover{
+								color: dome-color(dome,primary);
+							}
+						}
+					}
+				}
+			}
+			.hostgroup-body{
+				$left-head-height:46px;
+				$left-body-height:248px;
+				height: $left-body-height+$left-head-height;
+				.hostgroup-left{
+					float: left;
+					width: 65%;
+					border-right: $deep-border;
+				}
+				.hostgroup-right{
+					float: left;
+					width: 35%;
+					height: $left-head-height+$left-body-height;
+					// overflow-x:auto
+				}
+				.hostgroup-left-header{
+					height: $left-head-height;
+					border-bottom: $deep-border;
+					em{
+						display: inline-block;
+						margin: 16px 0 0 12px;
+					}
+					.link-addhost{
+						float: right;
+						display: block;
+						margin:8px 18px 0 0;
+						padding: 6px 10px 6px 10px;
+						border:1px solid dome-color(dome,primary);
+						border-radius: 22px;
+					}
+				}
+				.hostgroup-right-header{
+					height: $left-head-height;
+					padding:16px 0 0 12px;
+				}
+				.list-hosts-wrap{
+					position: relative;
+				}
+				.list-hosts{
+					height: $left-body-height;
+					overflow-y:auto;
+					.sig-host{
+						float: left;
+						padding: 10px 12px 10px 12px;
+						height: 62px;
+						border-right: $deep-border;
+						border-bottom: $deep-border;
+						.icon-cancel{
+							position: absolute;
+							display: none;
+							right: -6px;
+							top: -2px;
+						}
+						&:hover .icon-cancel{
+							display: block;
+						}
+						.sig-host-info-wrap{
+							position: relative;
+						}
+					}
+					.tool-nowrap{
+						display: block;
+						text-align: center;
+						width: 100%;
+					}
+				}
+				.list-tpls{
+					padding: 2px 12px 12px;
+					li{
+						position: relative;
+						margin-bottom: 10px;
+						&:last-child{
+							margin-bottom: 0;
+						}
+						.tpl-wrap{
+							display: inline-block;
+							max-width: 100%;
+						}
+						.popover{
+							max-width: 100%;
+						}
+					}
+				}
+				@media(min-width: 900px) and (max-width: 1450px){
+					.sig-host{
+						width: 50%;
+						&:nth-child(2n){
+							border-right: 0;
+						}
+					}
+				}
+				@media(min-width: 1450px ){
+					.sig-host{
+						width: 33.3%;
+						&:nth-child(3n){
+							width: 33.4%;
+							border-right: 0;
+						}
+					}
+				}
+			}
+		}
+	}
+}

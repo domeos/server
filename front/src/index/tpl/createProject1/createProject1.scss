@@ -1,0 +1,164 @@
+@import "compass/css3";
+@import "common/css/common.scss";
+.project-create1{
+	$first-line-width:127px;
+	min-height: 700px;
+	padding-bottom: 100px;
+	padding: 20px;
+	.opt-title{
+		display: inline-block;
+		width: $first-line-width;
+		font-weight: bold;
+		vertical-align: top;
+		padding: 8px 10px;
+	}
+	.opt-content{
+		display: inline-block;
+		vertical-align: top;
+		padding-left: 10px;
+		.opt-descrip {
+			margin-bottom: 16px;
+			margin-top: 8px;
+		}
+		@media (max-width: 1300px){
+			.opt-descrip {
+				max-width: 700px;
+			}
+		}
+	}
+	.com-select-con{
+		display: inline-block;
+	}
+	.com-chose-repository{
+		padding-top: 22px;
+	}
+	.chose-account{
+		padding-left: 0px;
+		border-bottom: $light-border;
+		margin: 0 0 -7px 0;
+		overflow: hidden;
+		.ui-input-search{
+			margin:16px 0px 6px 0;
+		}
+		.related{
+			display: inline-block;
+			font-weight: bold;
+			margin:16px 20px 0 20px;
+			line-height: 35px;
+			vertical-align: top;
+			.icon-add-green{
+				margin-right: 4px;
+			}
+			a{
+				color:dome-color(dome,active);
+			}
+		}
+	}
+	ul.com-list-tab{
+		font-weight: bold;
+	}
+	.com-tabset-scroll{
+		.list-back{
+			padding-left: 10px;
+		}
+	}
+	.list-project{
+		// margin: 0 0-$page-padding 0 0-$page-padding;
+		background-color: dome-color(background,light);
+		li{
+			border-bottom: 1px solid #e9e9e9;
+			font-size: 0;
+			span{
+				display: inline-block;
+				font-size: font-size(default);
+				padding: 20px 15px 20px 15px;
+				min-height: 60px;
+				&.project-name{
+					position: relative;
+					width: 40%;
+					padding-left: 125px;
+					.icon-check{
+						position: absolute;
+						left: 85px;
+						top: 26px;
+					}
+				}
+				&.project-description{
+					width: 55%;
+				}
+			}
+			.no-result {
+				padding-left: 125px;
+				font-size: 14px;
+			}
+			&:hover{
+				cursor: pointer;
+				color:dome-color(dome,primary);
+			}
+			&.active{
+				color:dome-color(dome,primary);
+				background-color: dome-color(background,primary);
+			}
+
+		}
+	}
+	.pro-item{
+		border-bottom: $light-border;
+		padding-left: $page-padding;
+		// padding-top: 18px;
+		padding: 0 0 18px $wider-padding;
+		// min-height: 64px;
+		.input-md{
+			width: 340px;
+		}
+
+	}
+	.branch-setting{
+		.branch{
+			margin-right: 38px;
+			.txt-branch{
+				width: 339px;
+			}
+		}
+	}
+	.project-info{
+		padding-top: 10px;
+		min-height:85px;
+		border-bottom: $light-border;
+		.ui-input-white{
+			margin-left: 15px;
+		}
+		.icon-down{
+			margin-right: 6px;
+			margin-top: 0px;
+			float: none;
+		}
+		.creator-info{
+			display: inline-block;
+			vertical-align: middle;
+		}
+		.creator-name{
+			margin-right: 15px;
+		}
+	}
+	.tooltip-inner {
+	    min-width: 205px;
+	    max-width: 500px
+	}
+	.right{
+		margin-left: -5%;
+	}
+	.enlarge-focus{
+		font-size: 16px;
+		padding: 3px;
+	}
+    .cursor-disabled{
+        cursor: not-allowed !important;
+    }
+}
+.modal-gitlab{
+	.txt-failed{
+		text-align: left;
+		padding-left: 42px;
+	}
+}

@@ -1,0 +1,4 @@
+[submodule "front/dst"]
+	path = front/dst
+	url = git@code.sohuno.com:feiliu206363/DomeOS.git
+	branch = front-prerelease

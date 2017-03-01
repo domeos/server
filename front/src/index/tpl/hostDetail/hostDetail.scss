@@ -1,0 +1,57 @@
+@import "compass/css3";
+@import "common/css/common.scss";
+.host-detail{
+	.host-info{
+		.info-options{
+			padding : $wider-padding;
+			overflow: hidden;
+			.info-count{
+				text-align: left;
+			}
+		}
+	}
+	.detail-header{
+		.detail-item{
+			.item-name{
+				font-size: 14px;
+			}
+		}
+	}
+	.add-label{
+		margin-left: 16px;
+	}
+	.save-label{
+		margin-left: 21px;
+	}
+	.com-check-con{
+		margin-right: 40px;
+	}
+	.host-label-con{
+		width: 40%;
+	}
+	// cover index.scss
+	.com-label-list li{
+		margin-bottom: 0;
+		margin-top: 18px;
+	}
+	.table-wrap{
+		padding: 0 20px 20px 20px;
+		td,th:first-child{
+			padding-left: 8px !important;
+		}
+		td,th:last-child{
+			padding-right: 8px;
+		}
+	}
+	.com-list-info{
+		&>li{
+			display: table;
+			.info-name{
+				//padding: 20px 20px 20px 8px;
+				height: 74px;
+				text-align: right;
+				width: 112px;
+			}
+		}
+	}
+}

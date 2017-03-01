@@ -1,0 +1,168 @@
+table.table-info.projectinfo.showinfo
+    tr
+        td 工程配置类型
+        td(ng-if="!config.userDefineDockerfile&&project.isUseCustom&&project.customConfig.customType=='java'")
+            h4.custom-type Java专属配置
+            | 专为java工程打造，分离编译和构建过程，精简工程镜像。
+        td(ng-if="!config.userDefineDockerfile&&project.isDefDockerfile")
+            h4.custom-type 定制化配置
+            | 直接编写Dockerfile和配置文件。自定义构建流程。
+        td(ng-if="!config.userDefineDockerfile&&!project.isUseCustom&&!project.isDefDockerfile")
+            h4.custom-type 通用配置
+            | 适合各种编程语言的工程，在页面上配置Dockerfile以及运行过程的相关信息。
+        td(ng-if="config.userDefineDockerfile")
+            h4.custom-type 代码内Dockerfile
+            | 使用代码工程内的Dockerfile。请确保构建所用的代码分支或tag中存在可用的Dockerfile。
+    tbody(ng-if="!config.userDefineDockerfile && !project.isDefDockerfile")
+        tr(ng-if="project.isUseCustom&&project.customConfig.customType=='java'")
+            td 编译镜像
+            td
+                p.txt-prompt {{project.customConfig.compileImage&&project.customConfig.compileImage.registryType===0?'DomeOS私有镜像库':'DomeOS官方镜像库'}}
+                span(ng-cloak) {{project.customConfig.compileImage&&project.customConfig.compileImage.imageName+':'+project.customConfig.compileImage.imageTag||'未设置'}}
+                p.txt-prompt.setting-title 编译镜像内代码存放路径。请确认该路径下可以执行编译命令。
+                span(ng-cloak) {{project.customConfig.codeStoragePath||'未设置'}}
+                p.txt-prompt.setting-title 编译结果在编译镜像中的存放路径
+                span(ng-if="project.customConfig.createdFileStoragePath.length<=1") 未设置
+                ul.settting-list
+                    li(ng-repeat="createdFileStoragePath in project.customConfig.createdFileStoragePath" ng-if="!$last")
+                        .setting-group
+                            span.info-txt.info-show(ng-bind="createdFileStoragePath.name")
+                p.txt-prompt.setting-title 编译命令
+                span(ng-cloak) {{project.customConfig.compileCmd||'未设置'}}
+                p.txt-prompt.setting-title 编译过程环境变量
+                span(ng-if="project.customConfig.compileEnv.length<=1") 未设置
+                ul.settting-list
+                    li(ng-repeat="compileEnv in project.customConfig.compileEnv" ng-if="!$last")
+                        .setting-group
+                            input.ui-input.ui-input-white.info-txt.env-name(value="{{compileEnv.envName}}" readonly)
+                            input.ui-input.ui-input-white.info-txt.env-value(value="{{compileEnv.envValue}}" readonly)
+        tr(ng-if="project.isUseCustom&&project.customConfig.customType=='java'")
+            td 运行镜像
+            td
+                p.txt-prompt {{project.customConfig.runImage&&project.customConfig.runImage.registryType===0?'DomeOS私有镜像库':'DomeOS官方镜像库'}}
+                span(ng-cloak) {{project.customConfig.runImage&&project.customConfig.runImage.imageName+':'+project.customConfig.runImage.imageTag||'未设置'}}
+                p.setting-title 编译结果在运行镜像中的存放路径
+                span(ng-cloak) {{project.customConfig.runFileStoragePath||'未设置'}}
+                p.setting-title 运行镜像的启动命令
+                span(ng-cloak) {{project.customConfig.startCmd||'未设置'}}
+                p.setting-title 工程运行镜像需要配置的环境变量。用于部署时提示运维人员配置。
+                span(ng-if="config.envConfDefault.length<=1") 未设置
+                ul.settting-list
+                    li(ng-repeat="envConfDefault in config.envConfDefault" ng-if="!$last")
+                        .setting-group
+                            input.ui-input.ui-input-white.info-txt.env-name(readonly value="{{envConfDefault.key}}")
+                            input.ui-input.ui-input-white.info-txt.env-name(readonly value="{{envConfDefault.value}}")
+                            input.ui-input.ui-input-white.info-txt.env-name(readonly value="{{envConfDefault.description||'未设置'}}")
+        tr(ng-if="!project.isUseCustom")
+            td 基础镜像
+            td(ng-bind="isNoSet(project.customConfig.baseImageName)")
+        tr(ng-if="!project.isUseCustom")
+            td 安装依赖命令
+            td(ng-bind="isNoSet(project.customConfig.installCmd)")
+        tr(ng-if="!project.isUseCustom")
+            td 代码存放路径 
+                span.require-domain *
+            td(ng-bind="isNoSet(project.customConfig.codeStoragePath)")
+        tr(ng-if="!project.isUseCustom")
+            td 编译命令
+            td(ng-bind="isNoSet(project.customConfig.compileCmd)")
+        tr
+            td 工作目录
+            td(ng-bind="isNoSet(project.customConfig.workDir)")
+        tr(ng-if="!project.isUseCustom")
+            td 启动命令 
+                 span.require-domain *
+            td(ng-bind="isNoSet(project.customConfig.startCmd)")
+        tr
+            td user in docker
+            td(ng-bind="isNoSet(project.customConfig.user)")
+        tr(ng-if="!project.isUseCustom")
+            td 编译过程环境变量
+            td
+                p.txt-prompt build过程的环境变量。会被写入dockerfile，在运行期间也会生效。
+                span(ng-if="project.customConfig.compileEnv.length<=1") 未设置
+                ul.settting-list
+                    li(ng-repeat="compileEnv in project.customConfig.compileEnv" ng-if="!$last")
+                        .setting-group
+                            input.ui-input.ui-input-white.info-txt.env-name(readonly value="{{compileEnv.envName}}")
+                            input.ui-input.ui-input-white.info-txt.env-value(readonly value="{{compileEnv.envValue}}")
+        //- tr
+        //-     td 工程可见性
+        //-     td(ng-switch="config.authority")
+        //-         span(ng-switch-when="0") 仅对工程成员可见
+        //-         span(ng-switch-when="1") 对所有人可见
+        tr
+            td 配置文件模板
+            td
+                p.txt-prompt(ng-non-bindable) 配置文件模版中，用"{{.Env.PATH}}"来表示名称为"PATH"的变量。
+                span(ng-if="config.confFiles.length<=1") 未设置
+                ul.settting-list
+                    li(ng-repeat="confFile in config.confFiles" ng-if="!$last")
+                        .setting-group
+                            input.ui-input.ui-input-white.info-txt.env-name(readonly value="{{confFile.tplDir}}" )
+                            input.ui-input.ui-input-white.info-txt.env-value(readonly value="{{confFile.originDir}}")
+        tr(ng-if="!project.isUseCustom")
+            td 运行过程环境变量
+            td
+                p.txt-prompt 工程运行镜像需要配置的环境变量。用于部署时提示运维人员配置。
+                span(ng-if="config.envConfDefault.length<=1") 未设置
+                ul.settting-list
+                    li(ng-repeat="envConfDefault in config.envConfDefault" ng-if="!$last")
+                        .setting-group
+                            input.ui-input.ui-input-white.info-txt.env-name(readonly value="{{envConfDefault.key}}")
+                            input.ui-input.ui-input-white.info-txt.env-value(readonly value="{{envConfDefault.value}}")
+                            input.ui-input.ui-input-white.info-txt.env-description(readonly value="{{envConfDefault.description}}" )
+    tbody(ng-if="config.userDefineDockerfile")
+        tr
+            td 构建目录
+            td(ng-bind="isNoSet(config.dockerfileInfo.buildPath)")
+        tr
+            td Dockerfile路径
+            td
+                p.txt-prompt 镜像内的Dockerfile存放路径。需要具体到Dockerfile文件名，Dockerfile文件可随意命名。推荐在构建目录下存放Dockerfile。
+                span(ng-bind="isNoSet(config.dockerfileInfo.dockerfilePath)")
+        //- tr
+        //-     td 工程可见性
+        //-     td(ng-switch="config.authority")
+        //-         span(ng-switch-when="0") 仅对工程成员可见
+        //-         span(ng-switch-when="1") 对所有人可见
+        tr
+            td 运行过程环境变量
+            td
+                p.txt-prompt 工程镜像运行过程需要的环境变量。用于部署时提示运维人员配置。
+                span(ng-if="config.envConfDefault[0].key===''") 未设置
+                ul.settting-list(ng-if="config.envConfDefault[0].key!==''")
+                    li(ng-repeat="envConfDefault in config.envConfDefault" ng-if="!$last")
+                        .setting-group
+                            input.ui-input.ui-input-white.info-txt.env-name(readonly value="{{envConfDefault.key}}")
+                            input.ui-input.ui-input-white.info-txt.env-value(readonly value="{{envConfDefault.value}}")
+                            input.ui-input.ui-input-white.info-txt.env-description(readonly value="{{envConfDefault.description}}" )
+    //- tr
+    //-   td 上传本地文件
+    //-   td
+    //-     p(ng-if="config.uploadFile.length!==0") 点击下载
+    //-     ul.settting-list
+    //-       li(ng-repeat="file in config.uploadFile")
+    //-         a.link(href="/api/project/download/file?md5={{file.md5}}&file={{file.location.split('/').pop()}}" target="_blank" ng-bind="file.location")
+    tbody(ng-if="!config.userDefineDockerfile && project.isDefDockerfile")
+        tr
+            td Dockerfile
+            td
+                div.dockerfile-wrapper
+                    textarea.line-long.ui-input-md.ui-input-fill.dockerfile-content(ng-model="project.customConfig.dockerfile" readonly)
+        tr
+            td 配置文件
+            td
+                ul.settting-list.uploadfile-list
+                    p.txt-prompt.upload-info-title(ng-if="hasuploadFileInfos == false") 无
+                    li(ng-if="hasuploadFileInfos == true" ng-repeat="uploadFileInfo in project.customConfig.uploadFileInfos")
+                        table.log-item.ui-table-primary.uploadfile.table-md
+                            tr
+                                td.td-small
+                                    p.con-num(ng-bind="$index+1")
+                                td
+                                    p.uploadfile-filename(ng-bind="uploadFileInfo.filename")
+                            tr
+                                td
+                                td.td-edit
+                                    textarea.line-long.dome-input-lg.ui-input-fill.uploadfile-content(ng-model="uploadFileInfo.content" readonly)

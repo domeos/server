@@ -1,0 +1,149 @@
+@import "compass/css3";
+@import "common/css/common.scss";
+.btn-edit-alarm{
+    margin: 20px 20px 0 20px;
+}
+.alarmtpl-info{
+    &>li{
+        border-bottom: $light-border;
+        &:last-child{
+            border-bottom: none;
+        }
+        .info-name{
+            text-align: right;
+            width: 117px;
+        }
+    }
+    .btn-add-alarm{
+        margin-top: 16px;
+    }
+    .alarm-rule{
+        position: relative;
+        padding: 12px;
+        border: $deep-border;
+        border-radius: $default-radius;
+        li{
+            margin:10px 0;
+        }
+        .rule-cancel{
+            position: absolute;
+            top: 0;
+            right: 10px;
+        }
+         .ui-input-sm{
+            width: 50px;
+        }
+        .l3{
+            margin-top: 10px;
+        }
+        .c1{
+            width: 191px;
+        }
+        .c2{
+            width: 187px;
+        }
+        .c3{
+            display: inline-block;
+            width: 60px;
+            margin-left: 0 !important;
+            text-align: center;
+            // &.com-select-con{
+            //     padding-right: 6px;
+            // }
+        }
+        .c4{
+            width: 79px;
+        }
+        .c9{
+            width: 86px;
+        }
+        .c5{
+            width: 190px;
+            margin-right: 12px;
+        }
+        .c6{
+            width: 87px;
+        }
+        .c7{
+            width: 50px;
+            margin-left: 10px;
+        }
+        .c8{
+            width: 92px;
+        }
+        .c10{
+            width: 62px;
+        }
+        // .agent-point{
+        //  margin-left: 7px;
+        // }
+        .icon-help{
+            margin-left: 16px;
+        }
+        .ui-input,.com-select-con,.ui-input-fill{
+            margin-left: 6px;
+            margin-right: 6px;
+        }
+        .near-input{
+            margin-left: 0;
+        }
+        .com-select-con{
+            display: inline-block;
+        }
+    }
+    .first-input{
+        margin-left: 0 !important;
+    }
+    .tooltip .tooltip-inner{
+        text-align: left;
+    }
+    // .ui-input:not(:first-child){
+    //  margin-left: 10px;
+    // }
+    .host-group{
+        margin-left: 0 !important;
+    }
+    .callback-addr{
+        margin-bottom: 16px;
+    }
+    .setting-description{
+        display: block;
+        // margin-top: 6px;
+    }
+    .com-select-con{
+        display: inline-block;
+    }
+    .deploy-label{
+        width:413px!important;
+        display:block!important;
+        margin-top: 12px;
+        margin-left:0!important;
+    }
+    .select-env{
+        width: 200px;
+        margin-left: 10px !important;
+        &.select-cluster{
+            margin-left: 0 !important;
+        }
+    }
+    .select-input-wrap .com-select-con{
+        width: 100%;
+    }
+    .callback-opt{
+        margin-right: 16px;
+    }
+    .deploy-option .com-select-con{
+        width:200px;
+    }
+}
+// page: create alarm template (tpl/createAlarmTemplate.html)
+// page: alarm template detail (tpl/alarmTemplateDetail.html)
+.create-alarm-tpl{
+    padding-bottom: 300px;
+}
+.alarm-tpl-detail{
+    padding-bottom: 300px;
+    .has-top-border{
+        border-top: $light-border;
+    }
+}

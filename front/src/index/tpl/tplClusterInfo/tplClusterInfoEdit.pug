@@ -1,0 +1,79 @@
+div(ng-form name="clusterForm" role="form" ng-class="{'need-valid':valid.needValid}")
+	ul.com-list-info
+		.mod-tips-info
+			p.txt-prompt
+				i.fa.fa-info-circle.icon-algin-right
+				| DomeOS支持通过flume镜像进行日志收集。
+		li.has-border
+			span.info-name 集群名称
+			.info-content
+				input.ui-input-fill.line-single(ng-model="config.name" is-cluster-exist cluster-list="clusterList" name="clusterName" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" required)
+				span.txt-error(ng-if="(valid.needValid||clusterForm.clusterName.$dirty)&&clusterForm.clusterName.$error.isClusterExist") 集群已存在
+		//- li(ng-if="config.id")
+		//- 	span.info-name 创建者
+		//- 	.info-content(ng-bind="config.ownerName||'无'")
+		//- li(ng-if="!config.id")
+		//- 	span.info-name 创建者
+		//- 	.info-content
+		//- 		creator-selection(change-event="clusterIns.toggleUser(user)")
+		li.has-border
+			span.info-name 集群https访问
+			.info-content
+				dome-toggle(ng-class="{true:'on'}[config.isHttps]" ng-click="config.isHttps=!config.isHttps")
+				span.txt-prompt 启用https后需要输入用户名密码
+		li(ng-if="config.isHttps")
+			span.info-name 用户名
+			.info-content
+				input.ui-input-fill.line-single(placeholder="集群权限验证用户名" required ng-model="config.username")
+		li.has-border(ng-if="config.isHttps")
+			span.info-name 密码
+			.info-content
+				input.ui-input-fill.line-single(type="password" required placeholder="集群权限验证密码" ng-model="config.password")
+		li.has-border
+			span.info-name api server
+			.info-content
+				div.line-single
+					span.protocol(ng-if="config.isHttps") https://
+					input.ui-input-fill.line-element(ng-model="config.api" name="api" placeholder="请输入api server地址" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}"  is-api-server-exist current-cluster="{{config.name}}" cluster-list="clusterList" required)
+					span.txt-error(ng-if="(valid.needValid||clusterForm.api.$dirty)&&clusterForm.api.$error.isApiServerExist") api server已存在
+		li.has-border
+			span.info-name dns服务器
+			.info-content
+				input.ui-input-fill.line-single(ng-model="config.dns" name="dns" placeholder="请输入dns服务器地址，不加端口号" required)
+		li.has-border
+			span.info-name etcd
+			.info-content(ng-form name="etcdTotalForm")
+				div.line-single(ng-form role="form" name="etcdForm" ng-repeat="etcd in config.etcd")
+					input.ui-input-fill.single-element(ng-model="etcd.name" name="etcd" ng-focus="$last&&clusterIns.addEtcd()" ng-keyup="clusterIns.validItem('etcd')" ng-pattern="/^[^\\s]*$/" placeholder="请输入etcd地址")
+					button.txt-wrap.delete-icon.fa.fa-trash-o.ui-btn-none.icon-trash-color(ng-show="config.etcd.length>1" ng-click="clusterIns.deleteArrItem('etcd',$index)")
+				span.txt-error(ng-if="etcdTotalForm.$valid&&!clusterIns.etcdValid") 至少填写一个
+		li.has-border
+			span.info-name domain
+			.info-content
+				input.ui-input-fill.line-single(ng-model="config.domain" name="domain" required)
+		li
+			span.info-name 日志自动收集
+			.info-content.info-content-lg-height
+				p.txt-prompt 请在启用前确认您的集群配置了kafka。zookeeper和kafka需要在集群外自行搭建。DomeOS提供了flume镜像，pub.domeos.org/domeos-flume:1.1，您也可以根据需要自己制作flume镜像。
+				dome-toggle(ng-class="{1:'on'}[config.logConfig]" ng-click="clusterIns.toggleLogConfig()")
+				span.txt-prompt 
+		li(ng-if="config.logConfig===1")
+			span.info-name kafka
+			.info-content(ng-form name="kafkaTotalForm")
+				div.line-single(ng-form role="form" name="kafkaForm" ng-repeat="kafka in config.clusterLog.kafka")
+					input.ui-input-fill.single-element(ng-model="kafka.name" name="kafka" ng-focus="$last&&clusterIns.addKafka()" ng-keyup="clusterIns.validItem('kafka')" ng-pattern="/^[^\\s]*$/" placeholder="请输入kafka地址")
+					button.txt-wrap.delete-icon.fa.fa-trash-o.icon-trash-color.ui-btn-none(ng-show="config.clusterLog.kafka.length>1" ng-click="clusterIns.deleteLogArrItem('kafka',$index)")
+				span.txt-error(ng-if="kafkaTotalForm.$valid&&!clusterIns.kafkaValid") 至少填写一个
+		li(ng-if="config.logConfig===1")
+			span.info-name zookeeper
+			.info-content(ng-form name="zookeeperTotalForm")
+				div.line-single(ng-form role="form" name="zookeeperForm" ng-repeat="zookeeper in config.clusterLog.zookeeper")
+					input.ui-input-fill.single-element(ng-model="zookeeper.name" ng-focus="$last&&clusterIns.addZookeeper()" name="zookeeper" ng-keyup="clusterIns.validItem('zookeeper')" ng-pattern="/^[^\\s]*$/" placeholder="请输入zookeeper地址")
+					button.txt-wrap.delete-icon.fa.fa-trash-o.icon-trash-color.ui-btn-none(ng-show="config.clusterLog.zookeeper.length>1" ng-click="clusterIns.deleteLogArrItem('zookeeper',$index)")
+				span.txt-error(ng-if="zookeeperTotalForm.$valid&&!clusterIns.zookeeperValid") 至少填写一个
+		li(ng-if="config.logConfig===1")
+			span.info-name 日志容器
+			.info-content
+				.cluster-log-con
+					input.ui-input-fill.cluster-log(placeholder="请输入容器镜像名" name="imageName" ng-model="config.clusterLog.imageName" required)
+					input.ui-input-fill.cluster-log(placeholder="请输入容器镜像版本" name="imageTag" ng-model="config.clusterLog.imageTag")

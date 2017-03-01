@@ -1,0 +1,33 @@
+.d-modal-header 修改Gitlab
+div.code-info-modal(ng-if="vmPro.showForm==='createProject'")
+    //- modify code info when create project modify
+    ul.modal-body.modal-info.modal-gitlab( ng-form role="form" name="projectForm")
+        li
+            label.info-name(for="username") httpUrl
+            .info-txt.text-left
+                input#username.full.ui-input-white(placeholder="httpUrl" name="httpUrl" ng-model="vmPro.project.httpUrl" required)
+                span.txt-error(ng-show="projectForm.httpUrl.$dirty&&projectForm.httpUrl.$invalid") 必填
+        li
+            label.info-name(for="sshUrl") sshUrl
+            .info-txt.text-left
+                input#password.full.ui-input-white(placeholder="sshUrl" name="sshUrl"  ng-model="vmPro.project.sshUrl" required)
+                span.txt-error(ng-show="projectForm.sshUrl.$dirty&&projectForm.sshUrl.$invalid") 必填
+    .modal-footer.text-right
+        button.ui-btn.ui-btn-sm.ui-btn-white(ng-click="close()") 取消
+        button.ui-btn.ui-btn-sm.ui-btn-bright(ng-disabled="projectForm.$invalid" ng-click="toModify()") 确定
+div.code-info-modal(ng-if="vmPro.showForm==='projectDetail'")
+    //- modify code info in project detail
+    ul.modal-body.modal-info.modal-gitlab(ng-form role="form" name="codeInfoForm")
+        li
+            label.info-name(for="username") httpUrl
+            .info-txt.text-left
+                input#username.full.ui-input-white(placeholder="codeHttpUrl" name="codeHttpUrl" ng-model="vmPro.project.codeHttpUrl" required)
+                span.txt-error(ng-show="codeInfoForm.httpUrl.$dirty&&codeInfoForm.httpUrl.$invalid") 必填
+        li
+            label.info-name(for="sshUrl") sshUrl
+            .info-txt.text-left
+                input#password.full.ui-input-white(placeholder="codeSshUrl" name="codeSshUrl"  ng-model="vmPro.project.codeSshUrl" required)
+                span.txt-error(ng-show="codeInfoForm.sshUrl.$dirty&&codeInfoForm.sshUrl.$invalid") 必填
+    .modal-footer.text-right
+        button.ui-btn.ui-btn-sm.ui-btn-white(ng-click="close()") 取消
+        button.ui-btn.ui-btn-sm.ui-btn-bright(ng-disabled="codeInfoForm.$invalid||isWaiting" ng-click="toModify()") 确定

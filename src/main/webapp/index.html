@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html ng-app="domeApp">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>DomeOS</title>
+    <link rel="stylesheet" href="common/css/ng-cloak.css" type="text/css">
+    <link href="/favicon.ico" rel="shortcut icon">
+    <link rel="stylesheet" href="lib/css/bootstrap.css" type="text/css">
+    <link rel="stylesheet" href="lib/css/loading-bar.css" type="text/css">
+    <link rel="stylesheet" href="index/css/ng-scrollbar.css" type="text/css">
+    <link rel="stylesheet" href="common/css/base.css?version=kmom8yza2sj1hpd61qylh7ke3frxp11r" type="text/css">
+    <link rel="stylesheet" href="common/pageLayout/pageLayout.css?version=kmom8yza2sj1hpd61qylh7ke3frxp11r" type="text/css">
+    <link rel="stylesheet" href="common/formInputs/formInputs.css?version=kmom8yza2sj1hpd61qylh7ke3frxp11r" type="text/css">
+    <link rel="stylesheet" href="index/css/index.css?version=kmom8yza2sj1hpd61qylh7ke3frxp11r" type="text/css">
+    <link rel="stylesheet" href="index/css/dome-index.css?version=kmom8yza2sj1hpd61qylh7ke3frxp11r" type="text/css">
+    <link rel="stylesheet" href="index/css/bussiness.css?version=kmom8yza2sj1hpd61qylh7ke3frxp11r" type="text/css">
+    <link rel="stylesheet" href="index/tpl/nav/nav.css?version=kmom8yza2sj1hpd61qylh7ke3frxp11r" type="text/css">
+    <link rel="stylesheet" href="index/tpl/nav/iconNav.css?version=kmom8yza2sj1hpd61qylh7ke3frxp11r" type="text/css">
+    <link rel="stylesheet" href="index/tpl/projectManage/projectManage.css?version=kmom8yza2sj1hpd61qylh7ke3frxp11r" type="text/css">
+    <link rel="stylesheet" href="index/tpl/deployManage/deployManage.css?version=kmom8yza2sj1hpd61qylh7ke3frxp11r" type="text/css">
+    <link rel="stylesheet" href="index/tpl/imagesManage/imagesManage.css?version=kmom8yza2sj1hpd61qylh7ke3frxp11r" type="text/css">
+    <link rel="stylesheet" href="index/tpl/publicImageDetail/publicImageDetail.css?version=kmom8yza2sj1hpd61qylh7ke3frxp11r" type="text/css">
+    <link rel="stylesheet" href="index/tpl/globalSetting/globalSetting.css?version=kmom8yza2sj1hpd61qylh7ke3frxp11r" type="text/css">
+    <link rel="stylesheet" href="index/tpl/clusterManage/clusterManage.css?version=kmom8yza2sj1hpd61qylh7ke3frxp11r" type="text/css">
+    <link rel="stylesheet" href="index/tpl/appStore/appStore.css?version=kmom8yza2sj1hpd61qylh7ke3frxp11r" type="text/css">
+    <link rel="stylesheet" href="index/tpl/createProject1/createProject1.css?version=kmom8yza2sj1hpd61qylh7ke3frxp11r" type="text/css">
+    <link rel="stylesheet" href="index/tpl/createProject2/createProject2.css?version=kmom8yza2sj1hpd61qylh7ke3frxp11r" type="text/css">
+    <link rel="stylesheet" href="index/tpl/projectDetail/projectDetail.css?version=kmom8yza2sj1hpd61qylh7ke3frxp11r" type="text/css">
+    <link rel="stylesheet" href="index/tpl/createCluster/createCluster.css?version=kmom8yza2sj1hpd61qylh7ke3frxp11r" type="text/css">
+    <link rel="stylesheet" href="index/tpl/tplProjectSetting/projectSettingTpl.css?version=kmom8yza2sj1hpd61qylh7ke3frxp11r" type="text/css">
+    <link rel="stylesheet" href="index/tpl/createDeployCommon/createDeployCommon.css?version=kmom8yza2sj1hpd61qylh7ke3frxp11r" type="text/css">
+    <link rel="stylesheet" href="index/tpl/createDeployRaw/createDeployRaw.css?version=kmom8yza2sj1hpd61qylh7ke3frxp11r" type="text/css">
+    <link rel="stylesheet" href="index/tpl/createDeployImage/createDeployImage.css?version=kmom8yza2sj1hpd61qylh7ke3frxp11r" type="text/css">
+    <link rel="stylesheet" href="index/tpl/createAppDeploy/createAppDeploy.css?version=kmom8yza2sj1hpd61qylh7ke3frxp11r" type="text/css">
+    <link rel="stylesheet" href="index/tpl/monitor/monitor.css?version=kmom8yza2sj1hpd61qylh7ke3frxp11r" type="text/css">
+    <link rel="stylesheet" href="index/tpl/alarm/alarm.css?version=kmom8yza2sj1hpd61qylh7ke3frxp11r" type="text/css">
+    <link rel="stylesheet" href="index/tpl/alarmAddHosts/alarmAddHosts.css?version=kmom8yza2sj1hpd61qylh7ke3frxp11r" type="text/css">
+    <link rel="stylesheet" href="index/tpl/deployDetail/deployDetail.css?version=kmom8yza2sj1hpd61qylh7ke3frxp11r" type="text/css">
+    <link rel="stylesheet" href="index/tpl/hostDetail/hostDetail.css?version=kmom8yza2sj1hpd61qylh7ke3frxp11r" type="text/css">
+    <link rel="stylesheet" href="index/tpl/addHost/addHost.css?version=kmom8yza2sj1hpd61qylh7ke3frxp11r" type="text/css">
+    <link rel="stylesheet" href="index/tpl/clusterDetail/clusterDetail.css?version=kmom8yza2sj1hpd61qylh7ke3frxp11r" type="text/css">
+    <link rel="stylesheet" href="index/tpl/mirrorCustom/mirrorCustom.css?version=kmom8yza2sj1hpd61qylh7ke3frxp11r" type="text/css">
+    <link rel="stylesheet" href="index/tpl/tplAlarmTemplate/tplAlarmTemplate.css?version=kmom8yza2sj1hpd61qylh7ke3frxp11r" type="text/css">
+    <link rel="stylesheet" href="index/tpl/tplAlarmUserGroupDetail/tplAlarmUserGroupDetail.css?version=kmom8yza2sj1hpd61qylh7ke3frxp11r" type="text/css">
+    <link rel="stylesheet" href="index/tpl/projectCollectionManage/projectCollectionManage.css?version=kmom8yza2sj1hpd61qylh7ke3frxp11r" type="text/css">
+    <link rel="stylesheet" href="index/tpl/createProjectCollection/createProjectCollection.css?version=kmom8yza2sj1hpd61qylh7ke3frxp11r" type="text/css">
+    <link rel="stylesheet" href="index/tpl/imageCollectionManage/imageCollectionManage.css?version=kmom8yza2sj1hpd61qylh7ke3frxp11r" type="text/css">
+    <link rel="stylesheet" href="index/tpl/deployCollectionManage/deployCollectionManage.css?version=kmom8yza2sj1hpd61qylh7ke3frxp11r" type="text/css">
+    <link rel="stylesheet" href="index/tpl/createDeployCollection/createDeployCollection.css?version=kmom8yza2sj1hpd61qylh7ke3frxp11r" type="text/css">
+    <link rel="stylesheet" href="index/tpl/overview/overview.css?version=kmom8yza2sj1hpd61qylh7ke3frxp11r" type="text/css">
+    <link rel="stylesheet" href="lib/css/font-awesome.min.css?version=kmom8yza2sj1hpd61qylh7ke3frxp11r" type="text/css">
+  </head>
+  <body ng-controller="DomeCtr as vmDome" resize-body ng-class="{'thin-left-nav':vmDome.thinLeftNav}">
+    <div class="page">
+      <div class="side" left-sidebar="left-sidebar" login-user="vmDome.loginUser"></div>
+      <div class="content">
+        <div class="top-prompt ng-hide" ng-show="vmDome.showPrompt">为了方便试用DomeOS，目前正在使用H2内存数据库。如果DomeOS Server重启，则该数据库信息会丢失。您可以配置MySQL作为数据库，MySQL配置详见<a class="txt-bright" href="http://doc.domeos.org" target="_blank">使用文档</a>。<a class="icon-cancel pull-right" ng-click="vmDome.showPrompt = false"></a></div>
+        <header class="header">
+          <div class="breadcrunmbs"><span class="sidebar"><a ng-click="vmDome.toggleThinLeftNav()"><i class="fa fa-bars fa-lg" aria-hidden="true"></i></a></span><span ncy-breadcrumb ncy-breadcrumb-text-separator=" &gt; "></span>
+            <ul class="pull-right header-item">
+              <li class="header-doc"><a href="http://gitbook.domeos.org" target="_blank"><i class="fa fa-file-o"></i>&nbsp;文档</a></li>
+              <li class="header-user">
+                <div select-con>
+                  <button class="ui-btn ui-btn-none username ui-btn-select" ng-cloak>{{vmDome.loginUser.username}} &nbsp;<i class="fa fa-angle-right up drop"></i></button>
+                  <ul class="com-user-option select-list">
+                    <li class="arrow"></li>
+                    <li select-item><a ng-click="vmDome.modifySelfInfo()">修改资料</a></li>
+                    <li select-item ng-if="vmDome.loginUser.loginType=='USER'"><a ng-click="vmDome.modifyPw()">修改密码</a></li>
+                    <li select-item><a ng-click="vmDome.logout()">退出登录</a></li>
+                  </ul>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </header>
+        <div class="module container" ui-view=""></div>
+      </div>
+    </div>
+    <script type="text/ng-template" id="promptModal.html">
+      <div class="d-modal-header">提示</div>
+      <div class="modal-body">
+        <p ng-bind="promptTxt"></p>
+      </div>
+      <div class="modal-footer">
+        <button class="ui-btn ui-btn-bright ui-btn-sm" ng-click="cancel()">确定</button>
+      </div>
+    </script>
+    <script type="text/ng-template" id="confirmModal.html">
+      <div class="d-modal-header">提示</div>
+      <div class="modal-body">
+        <p ng-bind="promptTxt"></p>
+      </div>
+      <div class="modal-footer">
+        <button class="ui-btn ui-btn-white ui-btn-sm" ng-click="cancel()">取消</button>
+        <button class="ui-btn ui-btn-bright ui-btn-sm" ng-click="sure()">继续</button>
+      </div>
+    </script>
+    <script type="text/ng-template" id="warningModal.html">
+      <div class="d-modal-header">警告</div>
+      <div class="modal-body">
+        <p class="txt-error" ng-bind="titleInfo" ng-class="{'font-size-16':detailInfo}"></p>
+        <p class="txt-error tool-white-space" ng-bind="detailInfo"></p>
+      </div>
+      <div class="modal-footer">
+        <button class="ui-btn ui-btn-error ui-btn-sm" ng-click="cancel()">确定</button>
+      </div>
+    </script>
+    <script type="text/ng-template" id="deleteModal.html">
+      <div class="d-modal-header">删除</div>
+      <div class="modal-body">
+        <p class="txt-error" ng-bind="promptTxt"></p>
+      </div>
+      <div class="modal-footer">
+        <button class="ui-btn ui-btn-white ui-btn-sm" ng-click="cancel()">取消</button>
+        <button class="ui-btn ui-btn-error ui-btn-sm" ng-click="delete()">确定</button>
+      </div>
+    </script>
+    <script type="text/ng-template" id="modifyPwModal.html">
+      <div class="d-modal-header">修改密码</div>
+      <div class="modal-body">
+        <ul class="modal-info" ng-form name="pwForm" role="form" ng-class="{'need-valid':needValid}">
+          <li>
+            <label class="info-name">原密码</label>
+            <div class="info-txt text-left">
+              <input class="full ui-input-white" placeholder="请输入原密码" type="password" name="oldPw" ng-model="pwObj.oldpassword" required>
+            </div>
+          </li>
+          <li>
+            <label class="info-name">新密码</label>
+            <div class="info-txt text-left">
+              <input class="full ui-input-white" placeholder="8-20位" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" type="password" name="newPw" ng-model="pwObj.newpassword" required ng-minlength="8" ng-maxlength="20"><span class="txt-error" ng-if="(needValid||pwForm.newPw.$dirty)&amp;&amp;(pwForm.newPw.$error.minlength||pwForm.newPw.$error.maxlength)">长度必须为8-20位</span>
+            </div>
+          </li>
+          <li>
+            <label class="info-name">确认新密码</label>
+            <div class="info-txt text-left">
+              <input class="full ui-input-white" placeholder="再次输入新密码" type="password" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" name="newPwAgain" ng-model="newPwAgain" required equal="pwObj.newpassword"><span class="txt-error" ng-if="(needValidUser.valid||pwForm.newPwAgain.$dirty)&amp;&amp;pwForm.newPwAgain.$error.equal">两次密码不一致</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button class="ui-btn ui-btn-white ui-btn-sm" ng-click="cancel()">取消</button>
+        <button class="ui-btn ui-btn-sm ui-btn-bright" ng-click="needValid=true;pwForm.$valid&amp;&amp;modiftPw()">确定</button>
+      </div>
+    </script>
+    <script type="text/ng-template" id="modifyUserInfoModal.html">
+      <div class="d-modal-header">修改资料</div>
+      <div class="modal-body text-center modal-newpw" ng-form role="form" name="userInfoForm">
+        <ul class="modal-info">
+          <li><span class="info-name">用户名</span>
+            <div class="info-content text-left"><span class="align-input" ng-bind="user.username"></span></div>
+          </li>
+          <li><span class="info-name">邮箱</span>
+            <div class="info-content text-left">
+              <input class="ui-input-white full" ng-model="user.email" name="email">
+            </div>
+          </li>
+          <li><span class="info-name">电话</span>
+            <div class="info-content text-left">
+              <input class="ui-input-white full" ng-model="user.phone" name="phone">
+            </div>
+          </li>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button class="ui-btn ui-btn-sm ui-btn-white" ng-click="cancel()">取消</button>
+        <button class="ui-btn ui-btn-sm ui-btn-bright" ng-click="submit()">保存</button>
+      </div>
+    </script>
+    <div></div>
+    <script type="text/javascript" src="lib/js/jquery.min.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="lib/js/angular.min.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="lib/js/angular-ui-router.min.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="lib/js/ng-scrollbar.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="lib/js/angular-locale_zh-cn.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="lib/js/ui-bootstrap-tpls.min.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="lib/js/angular-animate.min.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="lib/js/angular-breadcrumb.min.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="lib/js/bindonce.min.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="lib/js/ocLazyLoad.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="lib/js/clipboard.min.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="lib/js/ngclipboard.min.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="lib/js/angular-cookies.min.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="lib/js/bootstrap.min.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="lib/js/angular-sanitize.min.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="common/publicModule/publicModule.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="common/publicModule/directive/publicDirective.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="common/backendApi/backendApi.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="common/pageLayout/pageLayout.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="common/formInputs/formInputs.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="common/commonFilters/commonFilters.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="common/domeModule/domeModule.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="common/deployModule/deployModule.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="common/imageModule/imageModule.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="common/projectModule/projectModule.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="common/userModule/userModule.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/js/domeApp.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/js/filter.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/js/services/projectCollectionService.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/js/services/deployCollectionService.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/js/services/domeService.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/js/services/clusterService.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/js/services/monitorService.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/js/services/alarmService.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/js/directives/domeDirective.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/js/directives/domeValidation.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/js/controllers/indexController.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/tpl/projectManage/projectManageCtr.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/tpl/deployManage/deployManageCtr.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/tpl/clusterManage/clusterManageCtr.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/tpl/appStore/appStoreCtr.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/tpl/imagesManage/imagesManageCtr.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/tpl/publicImageDetail/publicImageDetailCtr.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/tpl/globalSetting/globalSettingCtr.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/tpl/createProject1/createProjectCtr1.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/tpl/createProject2/createProjectCtr2.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/tpl/projectDetail/projectDetailCtr.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/tpl/createDeployCommon/createDeployCommonCtr.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/tpl/createDeployRaw/createDeployRawCtr.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/tpl/createDeployImage/createDeployImageCtr.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/tpl/createAppDeploy/createAppDeployCtr.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/tpl/monitor/monitorCtr.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/tpl/alarm/alarmCtr.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/tpl/alarmAddHosts/alarmAddHostsCtr.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/tpl/alarmTemplateDetail/alarmTemplateDetailCtr.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/tpl/createAlarmTemplate/createAlarmTemplateCtr.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/tpl/tplAlarmUserGroupDetail/tplAlarmUserGroupDetailCtr.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/tpl/deployDetail/deployDetailCtr.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/tpl/clusterDetail/clusterDetailCtr.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/tpl/createCluster/createClusterCtr.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/tpl/hostDetail/hostDetailCtr.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/tpl/addHost/addHostCtr.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/tpl/modal/buildModal/buildModalCtr.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/tpl/modal/hostListModal/hostListModalCtr.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/tpl/modal/otherImageModal/otherImageModalCtr.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/tpl/modal/instanceLogModal/instanceLogModalCtr.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/tpl/modal/selectContainerModal/selectContainerModalCtr.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/tpl/modal/dockerfileModal/dockerfileModalCtr.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/tpl/modal/branchCheckModal/branchCheckModalCtr.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/tpl/modal/codeInfoModal/codeInfoModalCtr.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/tpl/mirrorCustom/mirrorCustomCtr.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/tpl/projectCollectionManage/projectCollectionManageCtr.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/tpl/createProjectCollection/createProjectCollectionCtr.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/tpl/imageCollectionManage/imageCollectionManageCtr.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/tpl/deployCollectionManage/deployCollectionManageCtr.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/tpl/createDeployCollection/createDeployCollectionCtr.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/tpl/tplChoseImage/choseImageCtr.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script type="text/javascript" src="index/tpl/overview/overviewCtr.js?version=kmom8yza2sj1hpd61qylh7ke3frxp11r"></script>
+    <script>window.VERSION_HASH = "kmom8yza2sj1hpd61qylh7ke3frxp11r";</script>
+  </body>
+</html>

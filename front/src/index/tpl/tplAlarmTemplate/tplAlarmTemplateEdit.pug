@@ -1,0 +1,139 @@
+ul.com-list-info.alarmtpl-info(role="form" ng-form name="alarmForm" ng-init="oldName=config.templateName;")
+    li.has-top-border
+        span.info-name 报警模板名称
+        .info-content
+            input.line-single.ui-input-fill(ng-model="config.templateName" name="templateName" is-alarm-template-exist required self-name="{{oldName}}")
+            span.txt-error(ng-if="alarmForm.templateName.$dirty&&alarmForm.templateName.$error.isAlarmTemplateExist") 名称已存在
+    li
+        span.info-name 选择报警类型
+        .info-content.info-content-lg-height
+            p.txt-prompt.setting-description 报警模板一经创建，无法修改报警类型。
+            .com-select-con.first-input(select-con)
+                button.ui-btn.ui-btn-white.ui-btn-select(ng-disabled="config.id!==undefined") {{config.templateType=='deploy'?'容器':'主机'}}
+                    i.icon-down
+                ul.select-list
+                    li.select-item
+                        a(ng-click="alarmTemplateIns.toggleTemplateType('host')") 主机
+                    li.select-item
+                        a(ng-click="alarmTemplateIns.toggleTemplateType('deploy')") 容器
+    li(ng-if="config.templateType=='deploy'")
+        span.info-name 选择报警容器
+        .info-content.info-content-lg-height.deploy-option
+            p.txt-prompt.setting-description 请选择集群、工作环境和部署。系统会对所选部署的所有容器进行报警监控。
+            .com-select-con.select-env.select-cluster(select-con)
+                button.ui-btn.ui-btn-white.ui-btn-select {{config.deploymentInfo.clusterName||'选择集群'}}
+                    i.icon-down
+                ul.select-list
+                    li.select-item(ng-if="alarmTemplateIns.clusterList.length===0")
+                        a 无集群信息
+                    li.select-item(ng-repeat="cluster in alarmTemplateIns.clusterList")
+                        a(ng-bind="cluster.name" ng-click="alarmTemplateIns.toggleCluster(cluster.name)")
+            .com-select-con.select-env(select-con)
+                button.ui-btn.ui-btn-white.ui-btn-select {{config.deploymentInfo.hostEnv=='PROD'?'生产':'测试'}}
+                    i.icon-down
+                ul.select-list
+                    li.select-item
+                        a(ng-click="alarmTemplateIns.toggleHostEnv('PROD')") 生产
+                    li.select-item
+                        a(ng-click="alarmTemplateIns.toggleHostEnv('TEST')") 测试
+            .com-select-con.deploy-label(select-con)
+                button.ui-btn.ui-btn-white.ui-btn-select(ng-cloak)
+                    span {{alarmTemplateIns.deployListIns.deploy.name||'选择部署'}}
+                    span.tool-item-next.txt-prompt(ng-show="alarmTemplateIns.deployListIns.deploy.namespace") (namespace:{{alarmTemplateIns.deployListIns.deploy.namespace}})
+                    i.icon-down
+                ul.select-list
+                    li.select-item(ng-if="deployFiltered.length===0")
+                        a 无相关部署
+                    li.select-item(ng-repeat="deploy in deployFiltered=(alarmTemplateIns.deployListIns.deployList|filter:{hostEnv:config.deploymentInfo.hostEnv,clusterFilter:true})")
+                        a(ng-click="alarmTemplateIns.deployListIns.toggleDeploy(deploy.deployId,deploy.deployName,deploy.namespace,true)")
+                            span(ng-cloark) {{deploy.deployName}}
+                            span.item-right.txt-prompt(ng-cloak) namespace:{{deploy.namespace}}
+            input(type="hidden" name="deployName" ng-model="alarmTemplateIns.deployListIns.deploy.name" required)
+            .txt-error(ng-if="(needValid.valid||alarmForm.deployName.$dirty)&&alarmForm.deployName.$invalid") 请选择部署
+    li(ng-if="config.templateType=='host'")
+        span.info-name 选择报警主机组
+        .info-content
+            select-input.line-single.line-single.select-input-wrap(d-placeholder="搜索主机组" option-list="alarmTemplateIns.hostGroupList" show-key="hostGroupName")
+                | {{item.hostGroupName}}
+    li
+        span.info-name 添加报警逻辑
+        .info-content
+            .line-single.alarm-rule(ng-repeat="strategy in config.strategyList")
+                ul
+                    li.rule-cancel
+                        a.icon-cancel(ng-click="alarmTemplateIns.deleteStrategy($index)")
+                    li
+                        span 选择报警指标
+                        .com-select-con.c2(select-con)
+                            button.ui-btn.ui-btn-white.ui-btn-select(ng-cloak)
+                                i.icon-down
+                                | {{alarmTemplateIns.keyMaps.metric[strategy.metric].text}}
+                            ul.select-list
+                                li.select-item(ng-repeat="(metric,value) in alarmTemplateIns.keyMaps.metric" ng-show="value.belong===config.templateType||value.belong=='all'")
+                                    a(ng-bind="value.text" ng-click="alarmTemplateIns.toggleStrategyMetric($parent.$index,metric)")
+                        span.c3(ng-bind="tagName=alarmTemplateIns.keyMaps.metric[strategy.metric].tagName" ng-show="config.templateType!='deploy'")
+                        input.ui-input-fill(ng-model="strategy.tag" ng-if="tagName&&config.templateType!='deploy'" name="tagName" placeholder="默认选择全部")
+                    li
+                        div.l3(ng-if="strategy.metric=='agent_alive'") 当agent最近
+                            input.ui-input-fill.ui-input-sm.agent-point(ng-model="strategy.pointNum")
+                            | 次检测
+                            .com-select-con.c9(select-con)
+                                button.ui-btn.ui-btn-white.ui-btn-select(ng-cloak)
+                                    i.icon-down
+                                    | {{alarmTemplateIns.keyMaps.aggregateTypeAgent[strategy.aggregateType]}}
+                                ul.select-list
+                                    li.select-item(ng-repeat="(aggregateType,value) in alarmTemplateIns.keyMaps.aggregateTypeAgent")
+                                        a(ng-bind="value" ng-click="strategy.aggregateType=aggregateType")
+                            | 表现为“未存活”时，发送报警
+                        div.l3(ng-if="strategy.metric!='agent_alive'" ng-cloak) 该指标最新的
+                            input.ui-input-fill.ui-input-sm(ng-model="strategy.pointNum" name="pointNum" required ng-pattern="/^[1-9]\\d*$/")
+                            | 个监控值，
+                            .com-select-con.c4(select-con)
+                                button.ui-btn.ui-btn-white.ui-btn-select(ng-cloak)
+                                    i.icon-down
+                                    | {{alarmTemplateIns.keyMaps.aggregateType[strategy.aggregateType]}}
+                                ul.select-list
+                                    li.select-item(ng-repeat="(aggregateType,value) in alarmTemplateIns.keyMaps.aggregateType")
+                                        a(ng-bind="value" ng-click="strategy.aggregateType=aggregateType")
+                            .com-select-con.c3(select-con)
+                                button.ui-btn.ui-btn-white.ui-btn-select(ng-cloak)
+                                    i.icon-down
+                                    | {{strategy.operator}}
+                                ul.select-list
+                                    li.select-item
+                                        a(ng-click="strategy.operator='=='") ==
+                                    li.select-item
+                                        a(ng-click="strategy.operator='!='") !=
+                                    li.select-item
+                                        a(ng-click="strategy.operator='<='") <=
+                                    li.select-item
+                                        a(ng-click="strategy.operator='>='") >=
+                                    li.select-item
+                                        a(ng-click="strategy.operator='<'") <
+                                    li.select-item
+                                        a(ng-click="strategy.operator='>'") >
+                            input.ui-input-fill.ui-input-sm.near-input.c10(placeholder="阈值" ng-model="strategy.rightValue" name="rightValue" ng-pattern="/^(\\d*\\.)?\\d+$/" required)
+                            | {{alarmTemplateIns.keyMaps.metric[strategy.metric].unit}}时，发送报警。
+                    li
+                        | 邮件/短信的报警文字为：
+                        input.ui-input-fill.c5(placeholder="如：CPU占用率报警" ng-model="strategy.note")
+                        | 最大报警次数
+                        input.ui-input-fill.ui-input-sm(ng-model="strategy.maxStep" name="maxStep" required ng-pattern="/^[1-9]\\d*$/")
+                        | 次
+                        a.icon-help(tooltip="当连续报警次数达到最大报警次数时，即使没有恢复，也不会再发送报警")
+            button.ui-btn.ui-btn-safe.ui-btn-sm.btn-add-alarm(ng-click="alarmTemplateIns.addStrategy()") 添加
+    li
+        span.info-name 指定报警用户组
+        .info-content.info-content-lg-height
+            p.txt-prompt.setting-description 可以选择您在“组管理”中所在的用户组
+            select-input.line-single.select-input-wrap(d-placeholder="搜索组" option-list="alarmTemplateIns.groupList" show-key="userGroupName")
+                | {{item.userGroupName}}
+    //- li
+        span.info-name 指定报警回调
+        .info-content
+            span.txt-prompt.setting-description 您可以指定一个回调地址，当出现报警时，系统自动发出回调。只支持http get方式回调。
+            input.line-single.ui-input-fill.callback-addr(ng-model="config.callback.url" name="callbackUrl" is-required param1="{{config.callback.beforeCallbackSms}}"  param2="{{config.callback.beforeCallbackMail}}"  param3="{{config.callback.afterCallbackMail}}"  param4="{{config.callback.afterCallbackSms}}")
+            dome-check(ng-model="config.callback.beforeCallbackSms" d-label="回调前发提醒短信" d-id="beforeMessage" d-name="beforeMessage" d-true-value="true" d-false-value="false")
+            dome-check(ng-model="config.callback.beforeCallbackMail" d-label="回调前发提醒邮件" d-id="beforeEmail" d-name="beforeEmail" d-true-value="true" d-false-value="false")
+            dome-check(ng-model="config.callback.afterCallbackSms" d-label="回调后发结果短信" d-id="afterMessage" d-name="afterMessage" d-true-value="true" d-false-value="false")
+            dome-check(ng-model="config.callback.afterCallbackMail" d-label="回调后发结果邮件" d-id="afterEmail" d-name="afterEmail" d-true-value="true" d-false-value="false")

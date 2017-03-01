@@ -1,5 +1,6 @@
 /target
 /lib
+/logs
 *.iml
 .idea
 .DS_Store

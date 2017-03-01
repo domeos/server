@@ -1,0 +1,13 @@
+.mod-alarm
+	ul.nav.nav-tabs
+		li(ng-class="{active: vm.tabName=='templates'}")
+			a.link-list(ui-sref="alarm.templates") 报警模板
+		li(ng-class="{active: vm.tabName=='hostgroups'}")
+			a.link-list(ui-sref="alarm.nodegroups") 主机组
+		li(ng-class="{active: vm.tabName=='usergroup'}")
+			a.link-list(ui-sref="alarm.usergroup") 用户组
+		li(ng-class="{active: vm.tabName=='currentAlarms'}")
+			a.link-list(ui-sref="alarm.currentAlarms") 未恢复报警
+		li(ng-class="{active: vm.tabName=='group'}")
+			a.link-list(ui-sref="alarm.group") 报警组
+	div(ui-view="")

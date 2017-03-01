@@ -1,0 +1,84 @@
+
+<div class="mod-cluster host-detail">
+  <div class="detail-header">
+    <div class="detail-item"><em class="item-name">IP</em><b class="item-content" ng-bind="node.ip"></b></div><i class="detail-sep"></i>
+    <div class="detail-item"><em class="item-name">CPU（个）</em><b class="item-content" ng-bind="node.capacity.cpu"></b></div><i class="detail-sep"></i>
+    <div class="detail-item"><em class="item-name">内存（MB）</em><b class="item-content" ng-bind="node.capacity.memory"></b></div><i class="detail-sep"></i>
+    <div class="detail-item"><em class="item-name">运行实例（个）</em><b class="item-content" ng-bind="node.runningPods"></b></div><i class="detail-sep"></i>
+    <div class="detail-item"><em class="item-name">状态</em><b class="item-content" ng-bind="node.statusTxt"></b></div>
+  </div>
+  <loading ng-if="loading"></loading>
+  <div class="host-info">
+    <tabset>
+      <tab heading="实例列表" active="tabActive[0].active" ui-sref="hostDetail.instancelist">
+        <loading ng-if="isWaitingHost"></loading>
+        <div class="mod-option">
+          <div class="info-options right-option"><span class="info-count" ng-cloak="ng-cloak">共{{instanceListFiltered.length}}个实例</span>
+            <input class="ui-input-fill ui-input-white ui-input-search pull-right" placeholder="输入实例名称查找" ng-model="insKey"/>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="ui-table-dome full">
+            <thead>
+              <tr>
+                <th>实例名称</th>
+                <th>namespace</th>
+                <th>部署名称</th>
+                <th>部署版本</th>
+                <th>启动时间</th>
+                <th>实例状态</th>
+                <th>日志</th>
+                <th>容器控制台</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-if="instanceList&amp;&amp;instanceListFiltered.length===0">
+                <td colspan="8">无相关实例信息</td>
+              </tr>
+              <tr ng-repeat="ins in instanceListFiltered=(instanceList|filter:{'instanceName':insKey})">
+                <td ng-bind="ins.instanceName"></td>
+                <td ng-bind="ins.namespace"></td>
+                <td ng-if="ins.versionId===0" colspan="2">该实例由后台创建</td>
+                <td ng-bind="ins.deployName" ng-if="ins.versionId!==0"></td>
+                <td ng-cloak="ng-cloak" ng-if="ins.versionId!==0">version{{ins.versionId}}</td>
+                <td ng-bind="vmDome.parseDate(ins.startTime)"></td>
+                <td ng-bind="ins.status"></td>
+                <td><a class="txt-safe" ng-click="showLog(ins.instanceName,ins.containers,ins.namespace)">日志</a></td>
+                <td><a class="link-safe" ng-click="toConsole($index)">进入</a></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </tab>
+      <tab heading="主机设置" active="tabActive[1].active" ui-sref="hostDetail.info">
+        <ul class="com-list-info" ng-form="ng-form" role="form" name="hostForm" ng-class="{'need-valid':needValidHost}">
+          <li class="has-border"><span class="info-name">工作场景</span>
+            <div class="info-content"><span class="com-check-con">
+                <input class="ui-check" id="productionEnv" type="checkbox" ng-model="envData.prodEnv"/>
+                <label for="productionEnv">生产环境</label></span><span class="com-check-con">
+                <input class="ui-check" id="testEnv" type="checkbox" ng-model="envData.testEnv"/>
+                <label for="testEnv">测试环境</label></span>
+              <button class="ui-btn ui-btn-sm ui-btn-bright save-label" ng-click="modifyEnv()">保存</button>
+            </div>
+          </li>
+          <li class="has-border"><span class="info-name">主机标签</span>
+            <div class="info-content">
+              <div class="line-short">
+                <input class="ui-input-white line-element" ng-model="hostSetting.labelTxt" name="labelTxt"/>
+                <button class="ui-btn ui-btn-bright ui-btn-sm add-label" ng-click="needValidHost=true;hostForm.$valid&amp;&amp;addLabel()">添加</button>
+              </div>
+              <ul class="com-label-list host-label-con">
+                <li ng-repeat="(label,value) in labelsList"><span class="label-item" ng-cloak="ng-cloak"><a class="icon-cancel" ng-click="deleteLable(label)"></a>{{label}}</span></li>
+              </ul>
+            </div>
+          </li>
+          <li ng-if="clusterConfig.buildConfig===1"><span class="info-name">是否用于构建</span>
+            <div class="info-content txt-prompt">
+              <dome-toggle ng-class="{'on':hostSetting.isUsedToBuild}" ng-click="toggleBuildEnv()"></dome-toggle>由于构建时可能会从第三方镜像库下载基础镜像，请开启时尽量保证主机有外网权限
+            </div>
+          </li>
+        </ul>
+      </tab>
+    </tabset>
+  </div>
+</div>

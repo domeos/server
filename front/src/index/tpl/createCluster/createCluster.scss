@@ -1,0 +1,66 @@
+@import "compass/css3";
+@import "common/css/common.scss";
+.select-creator{}
+
+$position-info-name: 122px;
+.create-cluster{
+	.com-list-info{
+		&>li{
+			display: table;
+			.info-name{
+				padding-left: 8px;
+				padding-right: 20px; 
+				text-align: right;
+				width: $position-info-name;
+			}
+			.info-content{
+				// display: table-cell;
+				// padding: 10px 0 16px 0; 
+				// vertical-align: top;
+				.line-long{
+					width: 70%;
+					position: relative;
+					@include display-flex;
+					&+.line-long{
+						margin-top: 12px;
+					}
+				}
+				.line-element{
+					@include flex(1);
+					.line-element-sm{
+						width: calc(100% - 72px);
+					}
+				}
+				.delete-icon{
+					width: 20px;
+				}
+				textarea{
+					height: 54px;
+					overflow-y:auto;
+					// resize:none;
+				}
+			}
+		}
+		&.group-info{
+			.info-content{
+				padding-right: 24px;
+				table{
+					width: 100%;
+				}
+				.line-member{
+					margin-right: 72px;
+				}
+				.tip{
+					padding-bottom: 5px;
+				}
+			}
+		}
+	}
+	.com-bottom-option{
+		text-align: left;
+		padding-left: $position-info-name + 40px;
+	}
+	.mod-tips-info{
+		padding-left: 12px;
+	}
+}

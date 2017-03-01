@@ -1,0 +1,167 @@
+
+<div class="mod-cluster cluster-detail">
+  <div class="cluster-info">
+    <tabset>
+      <tab heading="主机列表" active="tabActive[0].active" ui-sref="clusterDetail.hostlist">
+        <loading ng-if="isWaitingHost"></loading>
+        <div class="info-options mod-option">
+          <button class="ui-btn ui-btn-lg ui-btn-link ui-btn-bright" ng-class="{'ui-btn-lg-disabled':!mayEditCluster()}" ng-disabled="!mayEditCluster()" ng-click="addHost(clusterId)"><span class="btn-txt">添加主机</span><i class="fa fa-plus"></i></button>
+          <button class="ui-btn ui-btn-bright ui-btn-lg" ng-click="addLabels()" ng-class="{'ui-btn-lg-disabled':!mayEditCluster()}" ng-disabled="!mayEditCluster()">添加主机标签</button><span class="selected-node-count">已选中{{nodeListIns.selectedCount}}个</span>
+          <div class="info-right right-option"><span class="info-count" ng-cloak="ng-cloak">共{{nodelistFiltered.length}}台主机</span>
+            <input class="ui-input-fill ui-input-white ui-input-search" placeholder="输入主机名查找" ng-model="hostKey"/>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="ui-table-dome full">
+            <thead>
+              <tr>
+                <th>
+                  <dome-check d-id="allNode" ng-model="nodeListIns.isCheckAll" d-change="nodeListIns.checkAllItem(model)"></dome-check>主机名称
+                </th>
+                <th>IP</th>
+                <th>CPU总量（个）</th>
+                <th>内存总量（MB）</th>
+                <th>运行实例（个）</th>
+                <th>状态</th>
+                <th ng-if="config.buildConfig===1">是否用于构建</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-if="nodelistFiltered.length===0">
+                <td colspan="6">无相关信息</td>
+              </tr>
+              <tr ng-repeat="node in nodelistFiltered=(nodeListIns.nodeList|filter:{'name':hostKey})">
+                <td>
+                  <dome-check d-id="node{{$index}}" ng-model="node.isSelected" d-change="nodeListIns.toggleCheck(node,model)"></dome-check><a class="ui-table-link" ng-bind="node.name" ui-sref="hostDetail({name:node.name,clusterId:clusterId})"></a>
+                </td>
+                <td ng-bind="node.ip"></td>
+                <td ng-bind="node.capacity.cpu"></td>
+                <td ng-bind="node.capacity.memory"></td>
+                <td ng-bind="node.runningPods"></td>
+                <td ng-switch="node.status"><span class="txt-safe" ng-switch-when="Ready">在线</span><span class="txt-prompt" ng-switch-default="ng-switch-default">离线</span></td>
+                <td ng-if="config.buildConfig===1">
+                  <dome-toggle ng-class="{'on':node.isUsedByBuild}" ng-click="toggleNodeLabel(node)" ng-disabled="!mayEditCluster()"></dome-toggle>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </tab>
+      <tab heading="集群设置" active="tabActive[1].active" ui-sref="clusterDetail.info">
+        <div class="info-options">
+          <button class="ui-btn ui-btn-sm ui-btn-bright" ng-click="checkEdit()" ng-if="!isEdit" ng-class="{'ui-btn-lg-disabled':!mayEditCluster()}" ng-disabled="!mayEditCluster()">编辑</button>
+          <button class="ui-btn ui-btn-lg ui-btn-bright" ng-click="checkEdit()" ng-if="isEdit">取消编辑</button>
+        </div>
+        <div ng-form="ng-form" name="modifyclusterFrom">
+          <div class="tab-cluster" ng-include="'index/tpl/tplClusterInfo/tplClusterInfo.html'" ng-if="!isEdit"></div>
+          <div class="tab-cluster" ng-include="'index/tpl/tplClusterInfo/tplClusterInfoEdit.html'" ng-if="isEdit"></div>
+        </div>
+        <div class="com-bottom-option" ng-if="isEdit">
+          <div class="com-bottom-option-con">
+            <button class="ui-btn ui-btn-bright ui-btn-md" ng-disabled="isWaitingModify" ng-click="valid.needValid=true;modifyclusterFrom.$valid&amp;&amp;modifyCluster()">保存设置</button><span class="txt-error" ng-if="valid.needValid&amp;&amp;(modifyclusterFrom.$invalid||!clusterIns.etcdValid||!clusterIns.zookeeperValid||!clusterIns.kafkaValid)">存在不合法数据，请修改后提交。</span>
+          </div>
+        </div>
+      </tab>
+      <tab heading="namespace" ng-click="getNamespace()" active="tabActive[2].active" ui-sref="clusterDetail.namespace">
+        <loading ng-if="isWaitingNamespace"></loading>
+        <div class="info-options" ng-form="ng-form" role="form" name="namespaceForm" ng-class="{'need-valid':needValidNamespace}"><span class="namespace-title">namespace</span>
+          <div class="namespace-con">
+            <p class="txt-prompt namespace-description">通过namespace对集群内的部署进行逻辑划分，同一集群的同一namespace下，不会出现同名部署。</p>
+            <div class="new-namespace">
+              <input class="ui-input-white namespace-txt" ng-model="namespaceTxt.namespace" name="namespace" ng-pattern="/^[a-zA-Z][a-zA-Z0-9_-]*$/" placeholder="不能以数字开头"/>
+              <button class="ui-btn ui-btn-sm ui-btn-bright" ng-disabled="isLoadingNamespace || !mayEditCluster()" ng-click="needValidNamespace=true;namespaceForm.$valid&amp;&amp;addNamespace()">添加namespace</button>
+            </div><span class="txt-error" ng-if="(valid.needValid||namespaceForm.namespace.$dirty)&amp;&amp;namespaceForm.namespace.$invalid"></span>
+            <ul class="com-label-list namespace-list">
+              <li ng-repeat="namespace in namespaceList"><span class="label-item">{{namespace}}</span></li>
+            </ul>
+          </div>
+        </div>
+      </tab>
+      <tab heading="实例列表" active="tabActive[4].active" ui-sref="clusterDetail.instances">
+        <loading ng-if="isWaitingInstances"></loading>
+        <div class="info-options mod-option">
+          <div class="com-select-con" select-con="select-con" multicheckbox="true">
+            <button class="ui-btn ui-btn-white ui-btn-select"><i class="icon-down"></i>显示更多列</button>
+            <ul class="select-list">
+              <li ng-repeat="column in hideColumn track by $index"><span class="com-check-con">
+                  <input class="ui-check" id="{{column.key}}" type="checkbox" ng-model="showColumn[column.key]"/>
+                  <label for="{{column.key}}">{{column.name}}</label></span></li>
+            </ul>
+          </div><span class="tool-next"></span><span class="dome-dot dome-dot-success"></span><span class="dome-dot-next">Running {{(instanceListFiltered|filter:{'status':'Running'}).length}}个</span><span class="dome-dot dome-dot-error"></span><span class="dome-dot-next">Error {{(instanceListFiltered|filter:{'status':'Error'}).length}}个</span><span class="dome-dot dome-dot-default"></span><span class="dome-dot-next">Other {{instanceListFiltered.length - (instanceListFiltered|filter:{'status':'Running'}).length - (instanceListFiltered|filter:{'status':'Error'}).length}}个</span>
+          <div class="info-right right-option" style="line-height:34px;"><span ng-cloak="ng-cloak">共{{instanceListFiltered.length || 0}}个实例</span>
+            <input class="ui-input-fill ui-input-white ui-input-search pull-right" placeholder="请输入关键词" ng-model="insKey"/>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="ui-table-dome full">
+            <thead>
+              <tr>
+                <th>实例名称</th>
+                <th ng-show="showColumn.hostName">主机名称</th>
+                <th ng-show="showColumn.podIp">实例IP</th>
+                <th ng-show="showColumn.status">实例状态</th>
+                <th ng-show="showColumn.deployName">部署名称</th>
+                <th ng-show="showColumn.deployVersion">部署版本</th>
+                <th ng-show="showColumn.namespace">namespace</th>
+                <th ng-show="showColumn.startTime">启动时间</th>
+                <th ng-show="showColumn.containerId">容器ID</th>
+                <th ng-show="showColumn.imageName">镜像名称</th>
+                <th>日志</th>
+                <th>容器控制台</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-if="instanceList&amp;&amp;instanceListFiltered.length===0">
+                <td colspan="12">无相关实例信息</td>
+              </tr>
+              <tr ng-repeat="ins in instanceListFiltered=(instanceList|filter:insKey)">
+                <td ng-bind="ins.instanceName"></td>
+                <td ng-show="showColumn.hostName" ng-bind="ins.hostName"></td>
+                <td ng-show="showColumn.podIp" ng-bind="ins.podIp"></td>
+                <td ng-show="showColumn.status" ng-bind="ins.status"></td>
+                <td ng-show="showColumn.deployName" ng-bind="ins.deployName || '由后台创建'"></td>
+                <td ng-cloak="ng-cloak" ng-show="showColumn.deployVersion"><span ng-if="ins.versionId!==0">version{{ins.versionId}}</span><span ng-if="ins.versionId===0">无</span></td>
+                <td ng-bind="ins.namespace" ng-show="showColumn.namespace"></td>
+                <td ng-bind="vmDome.parseDate(ins.startTime)" ng-show="showColumn.startTime"></td>
+                <td ng-show="showColumn.containerId">
+                  <div ng-repeat="container in ins.containers">
+                    <div ng-bind="container.containerId | limitTo:12"></div>
+                  </div>
+                </td>
+                <td ng-show="showColumn.imageName" style="width: 20%;word-break: break-all;">
+                  <div ng-repeat="container in ins.containers">
+                    <div ng-bind="container.imageName"></div>
+                  </div>
+                </td>
+                <td><a class="link-safe" ng-click="showLog(ins.instanceName,ins.containers,ins.namespace)">日志</a></td>
+                <td><a class="link-safe" ng-click="toConsole(ins.containers, ins.hostIp)">进入</a></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </tab>
+      <tab heading="集群成员" active="tabActive[3].active" ui-sref="clusterDetail.users">
+        <form-container left-column-width="0">
+          <form>
+            <collection-member-table collection-id="resourceId" collection-type="resourceType" on-role-change="setRole(role)" on-no-permission="exitToList()" help-text="有MASTER权限的成员可以查看、修改、删除集群，可以在集群上启动部署；有DEVELOPER权限的成员可以查看、修改集群配置，可以在项目中添加、查看、修改工程，可以在集群上启动部署；有REPORTER权限的成员可以查看集群。添加、修改或删除集群成员需要MASTER权限。"></collection-member-table>
+          </form>
+        </form-container>
+      </tab>
+    </tabset>
+  </div>
+</div>
+<script type="text/ng-template" id="addLabelModal.html">
+  <div class="d-modal-header">添加主机标签</div>
+  <div class="modal-body modal-addlabel"><span class="label-name">主机标签</span>
+    <div class="labels-wrap">
+      <input class="ui-input ui-input-white label-txt" ng-model="newLabel"/>
+      <button class="ui-btn ui-btn-lg ui-btn-bright" ng-click="addLabel()" ng-disabled="!newLabel">添加标签</button>
+      <p class="txt-prompt">会对勾选的主机加上相同的主机标签</p>
+      <div class="labels-con"><span class="ui-label" ng-repeat="label in labelList" ng-cloak="ng-cloak">{{label}}<a class="icon-cancel" ng-click="deleteLabel($index)"></a></span></div>
+    </div>
+  </div>
+  <div class="modal-footer text-right">
+    <button class="ui-btn ui-btn-white ui-btn-sm" ng-click="cancel()">取消</button>
+    <button class="ui-btn ui-btn-bright ui-btn-sm" ng-click="submitLabels()">确定</button>
+  </div>
+</script>

@@ -1,0 +1,331 @@
+@import "compass/css3";
+@import "/index/images/nav/*.png";
+@import "common/css/common.scss";
+
+$nav-on-height:45px;
+$nav-bg:#36404e;
+$nav-bg-on:#313a46;
+$nav-color:#98a6ad;
+$nav-color-on:#7fc1fc;
+$nav-border-bg-color-on:#7fc1fc;
+$nav-li-a-hover:#313a46;
+
+// @include all-nav-sprites("index/images/nav/*.png");
+$navs :sprite-map("/index/images/nav/*.png");
+// @mixin get-nav-sprite($name){
+// 	height: nav-sprite-height($name);
+// 	width: nav-sprite-width($name);
+// }
+.left-nav{
+	position: fixed;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	z-index:98;
+	width: $nav-width;
+	background-color:#fff;
+	overflow: auto;
+	background-color: $nav-bg;
+	.nav-lists{
+		color: $nav-color;
+		li{
+			/* border-bottom:1px solid $nav-bg-on; */
+			.nav-item{
+				display: block;
+				position: relative;
+				height:$nav-on-height;
+				color: $nav-color;
+				text-align: left;
+				font-size: font-size(default);
+				padding-left: 27px;
+				margin-bottom: 2px;
+				.icon-nav{
+					display: block;
+					margin: 0 auto 12px auto;
+					background: sprite-url($navs) no-repeat 0 0;
+					@include sprite-dimensions($navs, mod-deploy);
+				}
+				&:link,&:hover,&:active{
+					text-decoration: none;
+				}
+				.nav-mod-project{
+					background-position: sprite-position($navs,mod-project);
+				}
+				.nav-mod-deploy{
+					background-position: sprite-position($navs,mod-deploy);
+				}
+				.nav-mod-mirror{
+					background-position: sprite-position($navs,mod-mirror);
+				}
+				.nav-mod-cluster{
+					background-position: sprite-position($navs,mod-cluster);
+				}
+				.nav-mod-monitor{
+					background-position: sprite-position($navs,mod-monitor);
+				}
+				.nav-mod-user{
+					background-position: sprite-position($navs,mod-user);
+				}
+				.nav-mod-global{
+					background-position: sprite-position($navs,mod-global);
+				}
+				.nav-mod-app{
+					background-position: sprite-position($navs,mod-app);
+				}
+			}
+			&.on{
+				background-color: $nav-bg-on;
+				.nav-mod-project{
+					background-position: sprite-position($navs,mod-project-on);
+				}
+				.nav-mod-deploy{
+					background-position: sprite-position($navs,mod-deploy-on);
+				}
+				.nav-mod-mirror{
+					background-position: sprite-position($navs,mod-mirror-on);
+				}
+				.nav-mod-cluster{
+					background-position: sprite-position($navs,mod-cluster-on);
+				}
+				.nav-mod-monitor{
+					background-position: sprite-position($navs,mod-monitor-on);
+				}
+				.nav-mod-user{
+					background-position: sprite-position($navs,mod-user-on);
+				}
+				.nav-mod-global{
+					background-position: sprite-position($navs,mod-global-on);
+				}
+				.nav-mod-app{
+					background-position: sprite-position($navs,mod-app-on);
+				}
+				.nav-item{
+					color: $nav-color-on;
+					.nav-border{
+						position: absolute;
+						left: 0;
+						top: 0;
+						height: $nav-on-height;
+						width: 4px;
+						background-color: $nav-border-bg-color-on;
+					}
+				}
+			}
+			&.dome-logo{
+				a{
+					display: block;
+					height: 70px;
+					padding: 25px 0 0 15px;
+				}
+				.txt-logo{
+					font-size: 18px;
+				    font-weight: bold;
+				    color: #fff;
+				    margin-left:15px;
+				    letter-spacing: 1px;
+				}
+				.img-logo{
+					margin-top:-10px;
+				}
+			}
+		}
+	}
+}
+.nav-sidebar{
+  	li{
+    	a{
+      		color:$nav-color;
+      		.a-text{
+        		margin-left: 15px;
+      		}
+	    }
+	    a:hover{
+	     	 background-color:$nav-li-a-hover;
+	    }
+	    a:visited{
+	     	 background-color:$nav-li-a-hover;
+	    }
+	    a:focus{
+	     	 background-color:$nav-bg-on;
+	    }
+	    a:active{
+	     	 background-color:$nav-bg-on;
+	    }
+    
+  	}
+}
+
+.arrow-sidebar{
+  	float:right;
+  	margin-right: 12px;
+	font-size: 16px !important;
+	vertical-align: middle;
+}
+
+.nav-icon {
+	margin-right: 19px;
+	font-size: 16px !important;
+	vertical-align: middle;
+}
+
+.sidebar-nav, .left-nav, #side-menu, .left-nav .ngsb-wrap .ngsb-container {
+    width: 225px;
+}
+
+.left-nav {
+    ul {
+        background: #36404e;
+    }
+
+    .nav-lists li {
+        white-space: nowrap;
+        position: relative;
+    }
+
+    .nav-lists li:hover > .nav-item {
+        color: white;
+    }
+
+    .nav-lists li .nav-item {
+        padding: 10px 25px 10px 55px;
+        line-height: 30px;
+        vertical-align: middle;
+    }
+
+    .nav-lists li.dome-logo .nav-item {
+        padding: 20px 25px 20px 55px;
+    }
+
+    .nav-lists li.dome-logo .img-logo {
+        padding: 4.5px 0;
+    }
+
+    .nav-lists li.dome-logo .img-logo,
+    .nav-lists li .nav-item .nav-icon {
+        width: 30px;
+        text-align: center;
+        margin: 0 0 0 -30px;
+        line-height: 30px;
+        float: left;
+    }
+
+    .nav-lists li.dome-logo .txt-logo {
+        margin-left: 0;
+    }
+
+    .nav-lists li .nav-detail {
+        margin-left: 15px;
+        display: block;
+        width: 130px;
+        position: relative;
+    }
+
+    .nav-lists li .arrow-sidebar {
+        float: none;
+        position: absolute;
+        right: 0;
+        top: 0;
+    }
+}
+
+.thin-left-nav {
+    .sidebar-nav,
+    .left-nav,
+    #side-menu,
+    .left-nav .ngsb-wrap .ngsb-container {
+        width: $thin-nav-width;
+    }
+
+    .left-nav .ngsb-wrap .ngsb-container, .left-nav {
+        overflow: visible !important;
+    }
+
+    .left-nav {
+
+        .nav-lists li .nav-detail {
+            width: 0;
+            overflow: hidden;
+        }
+
+        .nav-lists li .nav-item {
+            padding: 15px 20px 15px 50px;
+            width: 0;
+            height: 65px;
+            overflow: hidden;
+        }
+
+        .nav-lists li.dome-logo {
+            overflow: hidden;
+        }
+
+        .nav-lists li .arrow-sidebar {
+            display: none;
+        }
+
+        .nav-lists li ul.nav-second-level .nav-item {
+            height: 45px;
+            padding: 10px 15px;
+        }
+
+        .nav-lists li.dome-logo .nav-item {
+            padding: 20px 20px 20px 50px;
+            height: $thin-nav-width;
+        }
+
+        .nav-lists li .nav-item .nav-icon {
+            font-size: 20px !important;
+        }
+
+        .nav-lists li ul.nav-second-level {
+            overflow: hidden;
+            position: absolute;
+            left: $thin-nav-width;
+            top: 65px;
+            display: none;
+            padding-top: 2px;
+        }
+
+        .nav-lists li:hover {
+            width: 225px;
+            background-color: #313a46;
+        }
+
+        .nav-lists li.dome-logo:hover {
+            width: $thin-nav-width;
+        }
+
+        .nav-lists li:hover .nav-item {
+            width: 225px;
+        }
+
+        .nav-lists li:hover .nav-detail {
+            width: 130px;
+            margin-left: 25px;
+        }
+
+        .nav-lists li:hover ul.nav-second-level {
+            display: table;
+        }
+
+        .nav-lists li ul.nav-second-level,
+        .nav-lists li ul.nav-second-level li,
+        .nav-lists li ul.nav-second-level .nav-item {
+            width: ($nav-width - $thin-nav-width);
+        }
+    }
+}
+
+.left-nav .nav-lists li .nav-item {
+    transition: padding $nav-transition-duration linear, height $nav-transition-duration linear;
+}
+
+.left-nav .nav-lists li.dome-logo .img-logo,
+.left-nav .nav-lists li .nav-item .nav-icon {
+    transition: font-size $nav-transition-duration linear;
+}
+
+.sidebar-nav, .left-nav, #side-menu, .left-nav .ngsb-wrap .ngsb-container {
+    transition: width $nav-transition-duration linear;
+}
+
+

@@ -1,0 +1,216 @@
+@import "compass/css3";
+@import "common/css/common.scss";
+
+.create-deploy-image {
+	$deploy1-back:#e5e5e5;
+	// min-height: 500px;
+	// background-color: $deploy1-back;
+	.mirror-button{
+		position: absolute;
+	    left: 120%;
+	    top: 7px;
+	    margin-left: 10px;
+	    width: 80px;
+	}
+	.nomirror{
+		padding-left: 70px;
+		padding-bottom: 16px;
+		background-color: #fff;
+		margin-bottom: 0;
+	}
+	.containerdrafts-con{
+		padding-right: $page-padding;
+		padding-left: 95px;
+		background-color: #fff;
+		font-size: 0;
+		.txt-error a{
+			color:dome-color(dome,error);
+		}
+	}
+	.deploy-select-image-input{
+		width: 620px !important;
+	}
+	.search-txt{
+		width: 100%;
+	}
+	.tabset{
+		background-color: #fff;
+	}
+	.tab-content{
+		background-color: $deploy1-back;
+	}
+	ng-form{
+		display: block;
+	}
+	.mirror-info-con{
+		.com-list-info{
+			// padding-bottom: 14px;
+			background-color: #fff;
+			border-radius: $default-radius;
+			// &>li{
+			// 	display: table ;
+			// 	width: 100%;
+			// 	&:not(:first-child){
+			// 		border-top: $light-border;
+			// 	}
+			// }
+			input.ui-radio + label, input.ui-check + label {
+			    min-width: 85px;
+			}
+			.info-name{
+			// 	display: table-cell;
+				width: 150px;
+				text-align: right;
+				height: 66px;
+			}
+			.info-name-content-for-label{
+				vertical-align: middle;
+			}
+			.info-content{
+				display: table-cell;
+				.delete-icon{
+					width: 20px;
+				}
+				.ui-table-mirror,.env-line,.add-env{
+					width: 70%;
+				}
+				.com-select-con{
+					width: 70%;
+					.txt-prompt{
+						float: right;
+						margin-right: 12px;
+					}
+				}
+				.ui-table-mirror{
+					table-layout: fixed;
+					width: 70%;
+					margin-bottom: 16px;
+					.tb-value{
+						padding-left: 8px;
+						.ui-input-fill{
+							width: 100%;
+						}
+					}
+					td{
+						word-break:break-all;
+					}
+				}
+				.line-long{
+					width:70%;
+				}
+				.next-item{
+					margin-left: 16px;
+				}
+				.env-line{
+					position: relative;
+					display: flex;
+					margin-top: 12px;
+					input{
+						margin-left: 10px;
+						flex:1;
+						&:first-child{
+							margin-left: 0;
+						}
+					}
+					.icon-delete{
+						position: absolute;
+						top: 8px;
+						left: 100%;
+						margin-left: 14px;
+					}
+				}
+				.env-list li:last-child{
+					margin-bottom: 12px;
+				}
+				.ui-input-sm{
+					width: 90px;
+					margin-right:50px;
+				}
+				.add-env{
+					display: block;
+					height: 34px;
+					margin-top: 0;
+					border:$light-border;
+					text-align: center;
+					line-height: 30px;
+					&:hover{
+						cursor: pointer;
+					}
+				}
+			}
+		}
+	}
+	.container-wrap{
+		border: $deep-border;
+        border-radius: 2px;
+	}
+	ul.com-list-tab{
+		padding: 0px;
+    	border-bottom: 0px;
+	    li{
+	        display: inline-block;
+	        margin-right: 34px;
+	        border-bottom: 0px;
+	        &:last-child{
+	            margin-right: 0;
+	        }
+	        &.txt-error{
+	            color:dome-color(dome,error);
+	        }
+	        &.active{
+	            cursor: pointer;
+	            background-color:dome-color(dome,bright);
+                border-radius: 2px;
+	            a{
+	                color:dome-color(dome,white);
+	            }
+	            .container-wrap{
+					border: 1px solid transparent;
+				}
+	        }
+	        &:hover{
+	        	cursor: pointer;
+	        }
+	        &.nav-option{
+	            position: absolute;
+	            right: 0;
+	            top: 0;
+	            width: 48px;
+	            height: 42px;
+	            margin-right: 0;
+	            padding-top: 24px;
+	            background-color: #fff;
+	            .icon-next{
+	                margin-left: 8px;
+	            }
+	            &:hover{
+	                border-bottom: none;
+	            }
+	        }
+	        a.link-list{
+	            display: inline-block;
+	            padding: 8px;
+	            &:focus{
+	                text-decoration: none;
+	            }
+	        }
+	        a.cancel-container{
+	        	padding: 4px 4px 4px 0;
+	        }
+	    }
+	}
+}
+.modal-otherimage{
+	ul{
+		li{
+			.info-name{
+				width: 90px;
+				text-align: right;
+			}
+			.info-txt{
+				width: 345px;
+				margin-left: 20px;
+			}
+		} 
+	}
+}
