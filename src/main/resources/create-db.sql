@@ -220,8 +220,11 @@ CREATE INDEX `k8s_events_deploy_index` ON k8s_events(`clusterId`, `namespace`, `
   `operation` VARCHAR(255) DEFAULT NULL,
   `eventStatus` VARCHAR(255) DEFAULT NULL,
   `statusExpire` BIGINT(20) DEFAULT NULL,
-  `content` MEDIUMTEXT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  `content` MEDIUMTEXT NULL,
+   `startTime` BIGINT(20) DEFAULT NULL
+ ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+CREATE INDEX `deploy_event_start_time_index` ON deploy_event(`startTime`);
+
 
 CREATE TABLE IF NOT EXISTS `project_collection` (
   `id` INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,

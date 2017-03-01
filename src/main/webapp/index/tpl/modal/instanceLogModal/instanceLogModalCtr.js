@@ -6,7 +6,7 @@
 	'use strict';
 	if (typeof domeApp === 'undefined') return;
 	domeApp.controller('InstanceLogModalCtr', ['$scope', 'instanceInfo', '$location', '$modalInstance', function ($scope, instanceInfo, $location, $modalInstance) {
-		var requestUrl = 'ws://' + $location.host();
+		var requestUrl = location.protocol.replace('http', 'ws') + '//' + $location.host();
 		if ($location.port()) {
 			requestUrl += ':' + $location.port();
 		}

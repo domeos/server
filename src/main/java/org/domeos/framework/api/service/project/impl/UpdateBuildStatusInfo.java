@@ -7,6 +7,7 @@ import org.domeos.framework.api.model.ci.BuildHistory;
 import org.domeos.framework.api.model.ci.related.BuildState;
 import org.domeos.framework.engine.k8s.JobWrapper;
 import org.domeos.framework.engine.model.JobType;
+import org.domeos.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -46,19 +47,13 @@ public class UpdateBuildStatusInfo {
 
     private static BuildHistory update(JobWrapper jobWrapper, BuildHistory buildInfo) {
         String status = jobWrapper.fetchJobStatus(buildInfo.getId(), JobType.PROJECT);
-        if (status == null) {
-            projectBiz.setHistoryStatus(buildInfo.getId(), BuildState.Fail);
-            buildInfo.setState(BuildState.Fail.name());
-            return buildInfo;
-        }
-        if ("Running".equals(status)) {
-            buildInfo.setState(BuildState.Building.name());
-            projectBiz.setHistoryStatus(buildInfo.getId(), BuildState.Building);
-        } else {
+        if (StringUtils.isBlank(status)) {
             buildInfo.setState(BuildState.Preparing.name());
             projectBiz.setHistoryStatus(buildInfo.getId(), BuildState.Preparing);
+        } else {
+            buildInfo.setState(BuildState.Building.name());
+            projectBiz.setHistoryStatus(buildInfo.getId(), BuildState.Building);
         }
         return buildInfo;
     }
-
 }

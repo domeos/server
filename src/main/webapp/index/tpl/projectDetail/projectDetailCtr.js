@@ -152,7 +152,7 @@
 			if (sigBuild.state === 'Success' || sigBuild.state === 'Fail') {
 				logUrl = $location.protocol() + '://' + requestUrl + '/api/ci/build/download/' + sigBuild.projectId + '/' + sigBuild.id;
 			} else if (sigBuild.state === 'Building') {
-				logUrl = 'ws://' + requestUrl + '/api/ci/build/log/realtime/websocket?buildId=' + sigBuild.id;
+				logUrl = location.protocol.replace('http', 'ws') + '//' + requestUrl + '/api/ci/build/log/realtime/websocket?buildId=' + sigBuild.id;
 			} else {
 				logUrl = '';
 			}

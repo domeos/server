@@ -11,6 +11,7 @@ public class DeployEventDBProto {
     DeployOperation operation;
     DeployEventStatus eventStatus;
     long statusExpire;
+    long startTime;
     String content;
 
     public long getEid() {
@@ -59,5 +60,13 @@ public class DeployEventDBProto {
 
     public void setStatusExpire(long statusExpire) {
         this.statusExpire = statusExpire;
+    }
+
+    public long getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(long startTime) {
+        this.startTime = startTime;
     }
 }

@@ -9,7 +9,7 @@
     // 应用商店service
     domeApp.factory('$domeAppStore', ['$http', '$domeDeploy', function ($http, $domeDeploy) {
             var getStoreApps = function () {
-                return $http.get('http://app-domeos.bjctc.scs.sohucs.com/apps.json', {
+                return $http.get('//app-domeos.bjctc.scs.sohucs.com/apps.json', {
                     'notIntercept': true
                 });
             };

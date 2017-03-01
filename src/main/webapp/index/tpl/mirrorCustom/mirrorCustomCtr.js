@@ -271,7 +271,7 @@
 				customImg.type = '配置文件';
 			}
 			if (customImg.state == 'Building') {
-				logUrl = 'ws://' + requestUrl + '/api/ci/build/log/realtime/websocket?buildId=' + customImg.id + '&type=baseimage';
+				logUrl = location.protocol.replace('http', 'ws') + '//' + requestUrl + '/api/ci/build/log/realtime/websocket?buildId=' + customImg.id + '&type=baseimage';
 			} else if (customImg.state === 'Success' || customImg.state === 'Fail') {
 				logUrl = $location.protocol() + '://' + requestUrl + '/api/image/custom/download/' + customImg.id;
 			}

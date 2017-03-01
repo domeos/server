@@ -162,8 +162,8 @@ public class DeployEventBizImpl implements DeployEventBiz {
             event.setDeployId(proto.getDeployId());
             event.setOperation(proto.getOperation());
             event.setStatusExpire(proto.getStatusExpire());
+            event.setStartTime(proto.getStartTime());
             JSONObject content = new JSONObject(proto.getContent());
-            event.setStartTime(content.getLong("startTime"));
             event.setUserName(content.getString("userName"));
             return event;
         } catch (Exception ignored) {

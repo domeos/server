@@ -755,6 +755,7 @@ public class Fabric8KubeUtils implements KubeUtils<KubernetesClient> {
         }
         job.setApiVersion(GlobalConstant.K8S_JOB_VERSION);
         try {
+            job.setApiVersion(GlobalConstant.K8S_JOB_VERSION);
             return client.extensions().jobs().create(job);
         } catch (KubernetesClientException e) {
             throw new K8sDriverException(e.getMessage());
@@ -828,6 +829,7 @@ public class Fabric8KubeUtils implements KubeUtils<KubernetesClient> {
         logger.debug("update job with name=" + jobName + ", job\n" + job);
         job.setApiVersion(GlobalConstant.K8S_JOB_VERSION);
         try {
+            job.setApiVersion(GlobalConstant.K8S_JOB_VERSION);
             return client.extensions().jobs().withName(jobName).patch(job);
         } catch (KubernetesClientException e) {
             throw new K8sDriverException(e.getMessage());

@@ -58,7 +58,7 @@ public class Server {
     }
 
     public String serverInfo() {
-        if (url.startsWith(GlobalConstant.HTTP_PREFIX)) {
+        if (url.startsWith(GlobalConstant.HTTP_PREFIX) || url.startsWith(GlobalConstant.HTTPS_PREFIX) ) {
             return url;
         } else {
             return GlobalConstant.HTTP_PREFIX + url;

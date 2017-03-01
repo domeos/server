@@ -14,8 +14,8 @@ import java.util.List;
  */
 @Mapper
 public interface DeployEventMapper {
-    @Insert("INSERT INTO " + DeployEventBiz.DEPLOY_EVENT_NAME + " (deployId, operation, eventStatus, statusExpire, content) values" +
-            "(#{item.deployId}, #{item.operation}, #{item.eventStatus}, #{item.statusExpire}, #{data})")
+    @Insert("INSERT INTO " + DeployEventBiz.DEPLOY_EVENT_NAME + " (deployId, operation, eventStatus, statusExpire, content, startTime) values" +
+            "(#{item.deployId}, #{item.operation}, #{item.eventStatus}, #{item.statusExpire}, #{data}, #{item.startTime})")
     @Options(useGeneratedKeys = true, keyProperty = "item.eid", keyColumn = "eid")
     void createEvent(@Param("item") DeployEvent item, @Param("data") String data);
 
@@ -39,11 +39,11 @@ public interface DeployEventMapper {
     @Select("SELECT * FROM " + DeployEventBiz.DEPLOY_EVENT_NAME  + " de "
             + " JOIN " + CollectionBiz.COLLECTION_RESOURCE_MAP_NAME + " crm ON crm.resourceId = de.deployId "
             + " WHERE crm.resourceType = 'DEPLOY' AND crm.collectionId IN ${idList} "
-            + " AND de.content->'$.startTime' >= #{startTime}")
+            + " AND de.startTime >= #{startTime}")
     List<DeployEventDBProto> listRecentEventByDeployCollectionIdTime(@Param("idList") String idList, @Param("startTime") long startTime);
 
     @Select("SELECT * FROM " + DeployEventBiz.DEPLOY_EVENT_NAME  + " de "
             + " JOIN " + GlobalConstant.DEPLOY_TABLE_NAME + " d ON d.id = de.deployId "
-            + " WHERE de.content->'$.startTime' >= #{startTime}")
+            + " WHERE de.startTime >= #{startTime}")
     List<DeployEventDBProto> listRecentEventAllDeploymentIncludeRemovedByTime(@Param("startTime") long startTime);
 }
