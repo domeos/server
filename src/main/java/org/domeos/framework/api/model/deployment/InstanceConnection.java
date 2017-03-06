@@ -13,8 +13,6 @@ import org.springframework.web.socket.WebSocketSession;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * Created by feiliu206363 on 2015/12/21.
@@ -72,7 +70,6 @@ public class InstanceConnection implements Connection {
 
     @Override
     public void sendMessage() throws Exception {
-        ExecutorService executor = Executors.newSingleThreadExecutor();
         watchContainerLog = new WatchContainerLog(clusterId, namespace, podName, containerName);
         ClientConfigure.executorService.submit(new WatchContainerLogTask(watchContainerLog));
     }
@@ -121,10 +118,6 @@ public class InstanceConnection implements Connection {
                     byte[] buf = new byte[1024];
                     int len = pipedInputStream.read(buf);
                     session.sendMessage(new TextMessage(new String(buf, 0, len)));
-//                    String pingString = "hello pings";
-//                    ByteBuffer pingData = ByteBuffer.allocate(pingString.getBytes().length);
-//                    pingData.put(pingString.getBytes()).flip();
-//                    session.getBasicRemote().sendPing(pingData);
                     if (len == 0) {
                         stopRun();
                     }
