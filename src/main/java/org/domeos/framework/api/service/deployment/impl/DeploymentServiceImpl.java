@@ -111,6 +111,11 @@ public class DeploymentServiceImpl implements DeploymentService {
     private String domeosAddr = null;
 
     private static Logger logger = LoggerFactory.getLogger(DeploymentServiceImpl.class);
+	
+    @Override
+    public void clearDomeosAddrCache() {
+        this.domeosAddr = null;
+    }
 
     private void checkDeployPermit(int deployId, OperationType operationType) {
         int userId = CurrentThreadInfo.getUserId();
