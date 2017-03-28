@@ -28,7 +28,7 @@ const connect = require('gulp-connect');
 const proxy = require('http-proxy-middleware');
 
 const conf = {
-  backend: 'beta.domeos.sohucs.com:80',
+  backend: 'https://beta.domeos.sohucs.com',
   port: 8080
 };
 
@@ -221,7 +221,7 @@ gulp.task('connect', ['build'], function () {
       var middlewares = [];
       if (backend) middlewares.push([
         proxy('/api', {
-          target: 'http://' + backend,
+          target: backend,
           changeOrigin: true,
         })
       ]);

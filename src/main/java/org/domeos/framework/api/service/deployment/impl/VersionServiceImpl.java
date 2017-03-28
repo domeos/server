@@ -100,6 +100,7 @@ public class VersionServiceImpl implements VersionService {
         versionDetail.setLogDraft(version.getLogDraft());
         versionDetail.setNetworkMode(deployment.getNetworkMode());
         versionDetail.setVersion(versionId);
+        versionDetail.setVolumeDrafts(version.getVolumeDrafts());
         versionDetail.setVersionType(version.getVersionType() == null ? VersionType.CUSTOM : version.getVersionType());
         if (version.getVersionType() != VersionType.CUSTOM) {
             DeployResourceHandler deployResourceHandler = ReflectFactory.createDeployResourceHandler(

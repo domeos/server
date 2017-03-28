@@ -83,6 +83,11 @@ div.mod-deploy.deploy-detail
                         span.info-name 主机目录
                         .info-content.info-content-lg-height
                             span.first-info(ng-bind="volume.hostPath")
+                    li.has-border(ng-repeat-end ng-show="volume.volumeType === 'PERSISTENTVOLUMECLAIM'")
+                        span.info-name PVC配置
+                        .info-content.info-content-lg-height
+                            span.first-info(style="margin-right:20px;") 数据卷：{{volume.volumePVC.volumeName}}
+                            span.first-info(style="margin-right:20px;") 访问权限：{{({false:'读写',true:'只读'}[volume.volumePVC.readOnly])}}
                 .deploy-rollback
                     span.mod-title-name(ng-if="!config.stateful") 部署版本
                     span.mod-title-name(ng-if="config.stateful") 该部署是有状态服务，只有一个部署版本

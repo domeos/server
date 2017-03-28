@@ -286,6 +286,7 @@
 				});
 				$scope.deployIns = $domeDeploy.getInstance('Deploy', angular.copy(res.data.result));
 				$scope.config = $scope.deployIns.config;
+				
 				// 初始化clusterlist
 				$scope.deployIns.clusterListIns.init(angular.copy(clusterList));
 				// 选择当前version的cluster
@@ -293,6 +294,7 @@
 
 				$scope.deployEditIns = $domeDeploy.getInstance('Deploy', angular.copy(res.data.result));
 				$scope.editConfig = $scope.deployEditIns.config;
+				
 				$scope.deployEditIns.clusterListIns.init(angular.copy(clusterList));
 				$scope.deployEditIns.toggleCluster();
 
@@ -549,7 +551,6 @@
 				}
 			});
 		};
-
 		stateInfo = $state.$current.name;
 		if (stateInfo.indexOf('update') !== -1) {
 			$scope.tabActive[1].active = true;
