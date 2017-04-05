@@ -51,6 +51,7 @@ import org.domeos.framework.engine.runtime.IResourceStatus;
 import org.domeos.global.ClientConfigure;
 import org.domeos.global.CurrentThreadInfo;
 import org.domeos.global.GlobalConstant;
+import org.domeos.util.CommonUtil;
 import org.domeos.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -107,8 +108,6 @@ public class DeploymentServiceImpl implements DeploymentService {
 
     @Autowired
     DeployCollectionBiz deployCollectionBiz;
-
-    private String domeosAddr = null;
 
     private static Logger logger = LoggerFactory.getLogger(DeploymentServiceImpl.class);
 
@@ -1021,11 +1020,11 @@ public class DeploymentServiceImpl implements DeploymentService {
 
     private List<EnvDraft> buildExtraEnv(Cluster cluster) {
         List<EnvDraft> extraEnvs = new LinkedList<>();
-        if (domeosAddr == null) {
-            GlobalInfo info = globalMapper.getGlobalInfoByType(GlobalType.SERVER);
-            domeosAddr = info.getValue();
+        GlobalInfo info = globalMapper.getGlobalInfoByType(GlobalType.SERVER);
+        if (info == null) {
+            throw ApiException.wrapMessage(ResultStat.PARAM_ERROR, "domeos server is null!");
         }
-        extraEnvs.add(new EnvDraft("DOMEOS_SERVER_ADDR", domeosAddr));
+        extraEnvs.add(new EnvDraft("DOMEOS_SERVER_ADDR", CommonUtil.fullUrl(info.getValue())));
         extraEnvs.add(new EnvDraft("CLUSTER_NAME", cluster.getName()));
         return extraEnvs;
     }
