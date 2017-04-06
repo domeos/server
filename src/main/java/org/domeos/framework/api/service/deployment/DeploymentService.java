@@ -202,4 +202,11 @@ public interface DeploymentService {
      * @return
      */
     void updateJobResult(UpdateJobResult updateJobResult);
+	
+    /**
+     * clear local cache of DomeosAddr
+     * @return
+     */
+    void clearDomeosAddrCache();
+	
 }

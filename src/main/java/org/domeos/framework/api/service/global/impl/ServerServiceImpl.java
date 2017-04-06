@@ -8,6 +8,7 @@ import org.domeos.framework.api.controller.exception.ApiException;
 import org.domeos.framework.api.controller.exception.PermitException;
 import org.domeos.framework.api.model.global.Server;
 import org.domeos.framework.api.service.global.ServerService;
+import org.domeos.framework.api.service.deployment.DeploymentService;
 import org.domeos.framework.engine.AuthUtil;
 import org.domeos.global.CurrentThreadInfo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,9 @@ public class ServerServiceImpl implements ServerService {
 
     @Autowired
     GlobalBiz globalBiz;
+	
+    @Autowired
+    DeploymentService deploymentService;
 
     private void checkAdmin() {
         if (!AuthUtil.isAdmin(CurrentThreadInfo.getUserId())) {
@@ -51,6 +55,7 @@ public class ServerServiceImpl implements ServerService {
         }
 
         globalBiz.deleteServer();
+        deploymentService.clearDomeosAddrCache();
         globalBiz.setServer(server);
         return ResultStat.OK.wrap(server);
     }
