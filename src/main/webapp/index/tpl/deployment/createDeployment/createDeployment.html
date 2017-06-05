@@ -1,0 +1,429 @@
+
+<form-container left-column-width="120px">
+  <loading ng-if="isCreating"></loading>
+  <form name="createDeploymentCommon" ng-show="createDeploymentStep === 'common'" ng-class="{'need-valid':createDeploymentCommon.$submitted}">
+    <form-config-group>
+      <form-config-item config-title="部署名称" required="required">
+        <form-input-container help-text="部署名称会作为部署内部域名的一部分，创建后不可修改。">
+          <input ng-model="deploymentDraft.name" type="text" name="name" placeholder="不能有大写字母，不能以中横线开头和结尾" ng-pattern="/^[0-9a-z](-*[0-9a-z]+)*$/" required="required" is-deployment-unique="is-deployment-unique" clustername="{{ deploymentDraft.cluster.name }}" namespace="{{ deploymentDraft.namespace.namespace }}" ng-model-options="{updateOn:'default blur',debounce:{default:1000,blur:0}}"/>
+          <form-error-message form="createDeploymentCommon" target="name" type="required">名称不能为空</form-error-message>
+          <form-error-message form="createDeploymentCommon" target="name" type="isDeploymentUnique">名称重复，请修改</form-error-message>
+          <form-error-message form="createDeploymentCommon" target="name" type="pattern">输入格式错误，不能有大写字母，不能以中横线开头和结尾，请修改！</form-error-message>
+        </form-input-container>
+      </form-config-item>
+    </form-config-group>
+    <form-config-group>
+      <form-config-item config-title="部署描述">
+        <form-input-container>
+          <textarea ng-model="deploymentDraft.description"></textarea>
+        </form-input-container>
+      </form-config-item>
+    </form-config-group>
+    <form-config-group>
+      <form-config-item config-title="部署类型">
+        <form-input-container help-text="{{deploymentTypeHelpText(deploymentDraft.deploymentType)}}">
+          <form-input-radio-group ng-model="deploymentDraft.deploymentType" name="Type" fallback-value="'DEPLOYMENT'" options="deploymentTypeRadioList" required="required"></form-input-radio-group>
+        </form-input-container>
+      </form-config-item>
+    </form-config-group>
+    <form-config-group>
+      <form-config-item config-title="配置类型">
+        <form-input-container>
+          <form-input-radio-group ng-model="deploymentDraft.versionType" name="versionType" fallback-value="'CUSTOM'" options="deploymentVersionTypeRadioList" required="required"></form-input-radio-group>
+        </form-input-container>
+      </form-config-item>
+    </form-config-group>
+    <form-config-group ng-if="isDisplayReplicas()">
+      <form-config-item config-title="实例个数">
+        <form-input-container help-text="实例在集群内启动副本数">
+          <input ng-model="deploymentDraft.replicas" type="number" min="1" name="replicas" ng-pattern="/^[1-9]\d*$/" required="required"/>&nbsp;个
+        </form-input-container>
+      </form-config-item>
+    </form-config-group>
+    <form-config-group>
+      <form-config-item config-title="集群" required="required">
+        <form-input-container help-text="请选择部署启动的集群，选定后可以点击查看选中主机，以确保后台有资源启动该部署。如果无可选集群，请在“运维管理-&gt;集群”中添加集群或联系管理员添加已有集群部署权限。">
+          <cluster-selector ng-model="deploymentDraft.cluster" name="cluster" required="true" on-change="listForeignServiceIP()"></cluster-selector>
+          <form-error-message form="createDeploymentCommon" target="cluster" type="required">集群不能为空</form-error-message>
+        </form-input-container>
+      </form-config-item>
+    </form-config-group>
+    <form-config-group>
+      <form-config-item config-title="namespace" required="required">
+        <form-input-container>
+          <namespace-selector ng-model="deploymentDraft.namespace" name="namespace" cluster="deploymentDraft.cluster" form-name="createDeploymentCommon"></namespace-selector>
+        </form-input-container>
+      </form-config-item>
+    </form-config-group>
+    <form-config-group>
+      <form-config-item config-title="工作场景">
+        <form-input-container>
+          <form-input-radio-group ng-model="deploymentDraft.hostEnv" name="appEnv" fallback-value="'TEST'" options="deploymentAppEnvRadioList" required="required"></form-input-radio-group>
+        </form-input-container>
+      </form-config-item>
+    </form-config-group>
+    <form-config-group ng-if="isDisplayLabelSelectors()">
+      <form-config-item config-title="主机标签">
+        <form-input-container>
+          <host-label-selector ng-model="deploymentDraft.labelSelectors" host-env="deploymentDraft.hostEnv" cluster="deploymentDraft.cluster"></host-label-selector>
+        </form-input-container>
+      </form-config-item>
+    </form-config-group>
+    <form-config-group ng-if="isDisplayNetworkMode()">
+      <form-config-item config-title="网络模式">
+        <form-input-container help-text="Overlay模式下采用flannel管理容器网络；Host模式下容器网络配置与宿主机一致，不能使用健康检查">
+          <form-input-radio-group ng-model="deploymentDraft.networkMode" name="networkMode" on-change="updateDeploymentAccessType()" fallback-value="'DEFAULT'" options="deploymentNetworkModeRadioList" required="required"></form-input-radio-group>
+        </form-input-container>
+      </form-config-item>
+    </form-config-group>
+    <form-config-group>
+      <form-config-item config-title="访问模式">
+        <form-input-container help-text="{{ visitModeHelpText[deploymentDraft.visitMode] }}">
+          <form-input-radio-group ng-model="deploymentDraft.visitMode" name="visitMode" fallback-value="deploymentDefaultVisitMode" options="deploymentAccessTypeRadioList" on-change="toggleVisitMode()" required="required"></form-input-radio-group>
+          <sub-form-container left-column-width="100px" ng-if="deploymentDraft.visitMode === 'internal'">
+            <form-config-group>
+              <form-config-item config-title="程序服务端口" required="required">
+                <div class="form-help-text">集群内部访问端口和程序服务端口相同。</div>
+                <form-input-container>
+                  <form-array-container ng-model="deploymentDraft.loadBalanceDraft.loadBalancerPorts" name="innerService" template="_innerService" max-length="100" min-length="1" type="simple"></form-array-container>
+                  <script type="text/ng-template" id="_innerService">
+                    <input type="number" style="width: 100%;" min="1" max="65535" placeholder="容器内程序服务端口" ng-model="$ctrl.ngModel[$index].targetPort" required="required"/>
+                  </script>
+                </form-input-container>
+              </form-config-item>
+              <form-config-item config-title="粘性会话" required="required">
+                <form-input-container>
+                  <form-input-radio-group ng-model="deploymentDraft.loadBalanceDraft.sessionAffinity" name="sessionAffinity" fallback-value="'false'" options="deploymentSessionAffinityRadioList" required="required"></form-input-radio-group>
+                </form-input-container>
+              </form-config-item>
+            </form-config-group>
+          </sub-form-container>
+          <!--sub-form-container(left-column-width="100px" ng-if="deploymentDraft.visitMode ==='foreign'")-->
+          <!--    form-config-group-->
+          <!--        form-config-item(config-title="程序服务端口" required)-->
+          <!--            form-input-container-->
+          <!--                form-array-container(ng-model="deploymentDraft.loadBalanceDraft.loadBalancerPorts" name="innerService" template="_loadBalanceService" max-length="100" min-length="1" type="simple")-->
+          <!--                script(type="text/ng-template" id="_loadBalanceService")-->
+          <!--                    form-multiple-inline-->
+          <!--                        form-multiple-inline-item(style="margin-right: 6px;")-->
+          <!--                            input(type="number" style="width: 100%;" min="1" max="65535" ng-model="$ctrl.ngModel[$index].port" placeholder="主机上对外访问端口" required)-->
+          <!--                        form-multiple-inline-item-->
+          <!--                            input(type="number" style="width: 100%;" min="1" max="65535" ng-model="$ctrl.ngModel[$index].targetPort" placeholder="容器内程序服务端口" required)-->
+          <!--        form-config-item(config-title="对外访问IP" required)-->
+          <!--            form-input-container-->
+          <!--                form-multiple-select(ng-model="deploymentDraft.loadBalanceDraft.externalIPs" name="externalIPInput" options="nodeIPListSelector"  placeholder="请选择主机IP" is-loading="isLoadingNodeIP" loading-text="正在获取主机IP" empty-text="无主机相关信息" required="true")-->
+          <!--                form-error-message(form="createDeploymentCommon" target="externalIPInput" type="required") 对外访问IP不能为空，请至少选择一个IP！-->
+          <!--        form-config-item(config-title="粘性会话" required)-->
+          <!--            form-input-container-->
+          <!--                form-input-radio-group(ng-model="deploymentDraft.loadBalanceDraft.sessionAffinity" name="sessionAffinity" fallback-value="'false'" options="deploymentSessionAffinityRadioList"  required)-->
+          <sub-form-container left-column-width="120px" ng-if="deploymentDraft.visitMode === 'access'">
+            <form-config-group>
+              <form-config-item config-title="对外暴露端口个数" required="required">
+                <form-input-container>
+                  <input type="number" min="1" ng-model="deploymentDraft.exposePortNum" required="required" ng-pattern="/^[1-9]\d*$/"/>
+                  <div class="form-help-text">Host网络下，系统会给每个实例分配若干个端口，用于对外服务和实例间通信。此外，在Host网络下，实例ip和宿主机ip一致。</div>
+                </form-input-container>
+              </form-config-item>
+            </form-config-group>
+          </sub-form-container>
+        </form-input-container>
+      </form-config-item>
+    </form-config-group>
+    <form-config-group>
+      <form-config-item>
+        <button type="button" ng-click="cancel()" style="margin-right:15px;">取消</button>
+        <form-submit-button form="createDeploymentCommon" on-submit="commonNextStep()">下一步</form-submit-button>
+      </form-config-item>
+    </form-config-group>
+  </form>
+  <form name="createDeploymentImage" ng-show="createDeploymentStep === 'image'" ng-class="{'need-valid':createDeploymentImage.$submitted}">
+    <form-config-group>
+      <button typye="button" ng-click="copyFrom.enabled = true" ng-if="!copyFrom.enabled">复制已有部署</button>
+      <button typye="button" ng-click="copyFrom.enabled = false; copyFrom.collection = copyFrom.version = copyFrom.deploy = null" ng-if="copyFrom.enabled">收起复制部署</button>
+      <form-config-item config-title="复制来源" ng-if="copyFrom.enabled">
+        <form-input-container>
+          <loading ng-if="copyFrom.isLoading"></loading>
+          <form-multiple-inline>
+            <form-multiple-inline-item style="flex-basis: 0;">
+              <form-select-with-backend backend="deployCollectionList" ng-model="copyFrom.collection" placeholder="选择服务" on-change="copyFrom.version = copyFrom.deploy = null"></form-select-with-backend>
+            </form-multiple-inline-item>
+            <form-multiple-inline-item style="flex-basis: 0;">
+              <form-select-with-backend backend="deployListByCollection" param="copyFrom.collection" ng-model="copyFrom.deploy" placeholder="选择部署" on-change="copyFrom.version = null"></form-select-with-backend>
+            </form-multiple-inline-item>
+            <form-multiple-inline-item style="flex-basis: 0;">
+              <form-select-with-backend backend="deployVersionList" param="copyFrom.deploy" ng-model="copyFrom.version" placeholder="选择版本" on-change="doCopyFrom()"></form-select-with-backend>
+            </form-multiple-inline-item>
+          </form-multiple-inline>
+        </form-input-container>
+      </form-config-item>
+    </form-config-group>
+    <form-config-group>
+      <form-config-item config-title="选择镜像">
+        <form-input-container>
+          <form-with-button width="80px">
+            <content-area>
+              <form-select ng-model="deploymentDraft.image" name="image" options="imageSelectorList" on-change="addImage(deploymentDraft.image)" placeholder="请选择镜像，可多次选择添加多个镜像" empty-text="无相关信息"></form-select>
+            </content-area>
+            <button-area>
+              <button type="button" ng-click="addOtherImage()">其他镜像</button>
+            </button-area>
+          </form-with-button>
+        </form-input-container>
+      </form-config-item>
+    </form-config-group>
+    <form-multiple-item-scroll ng-init="currentDraftIndex = 0" ng-model="currentDraftIndex" options="deploymentDraft.containerConsoles" form-object="createDeploymentImage" required="true"></form-multiple-item-scroll>
+    <div ng-repeat="imageDraft in deploymentDraft.containerConsoles track by $index" ng-show="currentDraftIndex===$index" ng-init="innerForm='form' + $index">
+      <ng-form role="form" name="{{ innerForm }}">
+        <form-config-group>
+          <form-config-item config-title="镜像仓库">
+            <form-input-container><span ng-bind="imageDraft.registry"></span></form-input-container>
+          </form-config-item>
+        </form-config-group>
+        <form-config-group>
+          <form-config-item config-title="镜像版本" required="required">
+            <form-input-container>
+              <form-select-with-backend backend="imageVersionList" param="{ name: imageDraft.name, registry: imageDraft.registry }" ng-model="imageDraft.tag" name="{{ innerForm + 'tag' }}" placeholder="选择版本" required="required"></form-select-with-backend>
+              <form-error-message form="createDeploymentImage[innerForm]" target="{{ innerForm + 'tag' }}" type="required">请选择镜像版本</form-error-message>
+            </form-input-container>
+          </form-config-item>
+        </form-config-group>
+        <form-config-group>
+          <form-config-item config-title="自动部署">
+            <form-input-container>
+              <form-multiple-inline>
+                <form-multiple-inline-item style="flex: 0.2;">
+                  <form-input-checkbox ng-model="imageDraft.autoDeploy" name="{{ innerForm + 'autoDeploy' }}" value="true" value-false="false" appearance="switch"></form-input-checkbox>
+                </form-multiple-inline-item>
+                <form-multiple-inline-item>
+                  <div class="form-help-text" style="display: inline-block;">开启后，通过项目构建产生该镜像的新版本时，会自动触发该部署升级。该功能只对运行中的部署有效。</div>
+                </form-multiple-inline-item>
+              </form-multiple-inline>
+            </form-input-container>
+          </form-config-item>
+        </form-config-group>
+        <form-config-group>
+          <form-config-item config-title="镜像拉取策略">
+            <form-input-container>
+              <form-input-radio-group ng-model="imageDraft.imagePullPolicy" name="{{ innerForm + 'pullPolicyType' }}" fallback-value="'Always'" options="imagePullPolicyRadioList" required="required"></form-input-radio-group>
+            </form-input-container>
+          </form-config-item>
+        </form-config-group>
+        <form-config-group>
+          <form-config-item config-title="挂载存储">
+            <form-input-container>
+              <volume-mount-storage ng-model="imageDraft.volumeMountConsoles" name="{{ innerForm + 'volumeMount' }}" cluster="deploymentDraft.cluster" namespace="deploymentDraft.namespace.namespace" container-consoles="deploymentDraft.containerConsoles" container-index="{{ $index }}" image-name="{{ imageDraft.name }}"></volume-mount-storage>
+            </form-input-container>
+          </form-config-item>
+        </form-config-group>
+        <form-config-group>
+          <form-config-item config-title="配置管理">
+            <form-input-container>
+              <volume-mount-configmap ng-model="imageDraft.configConsoles" name="{{ innerForm + 'configMap'}}" cluster="deploymentDraft.cluster" namespace="deploymentDraft.namespace.namespace"></volume-mount-configmap>
+              <form-error-message form="createDeployment[innerForm]" target="{{ innerForm + 'configMap'}}">配置不能为空，请选择配置</form-error-message>
+            </form-input-container>
+          </form-config-item>
+        </form-config-group>
+        <form-config-group>
+          <form-config-item config-title="启动命令">
+            <form-input-container>
+              <input ng-model="imageDraft.commands" type="text" name="{{ innerForm + 'commands'}}" cluster="deploymentDraft.cluster" placeholder="启动命令不能包含启动参数，示例/sbin/dumb-init、docker-entrypoint.sh"/>
+            </form-input-container>
+          </form-config-item>
+        </form-config-group>
+        <form-config-group> 
+          <form-config-item config-title="启动参数">
+            <form-input-container>
+              <form-array-container ng-model="imageDraft.args" template="envInputargs" max-length="100" min-length="0" type="simple"></form-array-container>
+              <script type="text/ng-template" id="envInputargs">
+                <form-multiple-inline>
+                  <form-multiple-inline-item>
+                    <input ng-model="$ctrl.ngModel[$index]" type="text" name="argsValue{{$index}}" required="required" placeholder="用于设置启动命令所需的参数，一个输入框中仅能添加一个启动参数"/>
+                  </form-multiple-inline-item>
+                </form-multiple-inline>
+              </script>
+            </form-input-container>
+          </form-config-item>
+        </form-config-group>
+        <form-config-group>
+          <form-config-item config-title="运行过程环境变量">
+            <form-input-container>
+              <form-table ng-if="imageDraft.oldEnv &amp;&amp; imageDraft.oldEnv.length &gt; 0" ng-model="imageDraft.oldEnv" template="existentEnvTable" columns="[
+                                { text: '环境变量名', key: 'key' },
+                                { text: '环境变量值', key: 'value' },
+                                { text: '描述', key: 'description'},
+                                ]"></form-table>
+              <script type="text/ng-template" id="existentEnvTable">
+                <div ng-if="column.key === 'key'" ng-bind="value"></div>
+                <div ng-if="column.key === 'value'">
+                  <input type="text" ng-model="value"/>
+                </div>
+                <div ng-if="column.key === 'description'" ng-bind="value"></div>
+              </script>
+              <form-array-container ng-model="imageDraft.newEnv" template="envInput" max-length="100" min-length="0" type="simple"></form-array-container>
+              <script type="text/ng-template" id="envInput">
+                <form-multiple-inline>
+                  <form-multiple-inline-item>
+                    <input ng-model="$ctrl.ngModel[$index].key" type="text" name="envKey{{$index}}" required="required" ng-pattern="/^[A-Za-z_][A-Za-z0-9_]*$/" placeholder="环境变量名"/>
+                  </form-multiple-inline-item>
+                  <form-multiple-inline-item style="margin-left: 6px;">
+                    <input ng-model="$ctrl.ngModel[$index].value" type="text" name="envValue{{$index}}" required="required" placeholder="环境变量值"/>
+                  </form-multiple-inline-item>
+                  <form-multiple-inline-item style="margin-left: 6px;">
+                    <input ng-model="$ctrl.ngModel[$index].description" type="text" name="envDescription{{$index}}" placeholder="描述信息"/>
+                  </form-multiple-inline-item>
+                </form-multiple-inline>
+              </script>
+            </form-input-container>
+          </form-config-item>
+        </form-config-group>
+        <form-config-group>
+          <form-config-item config-title="容器大小" required="required">
+            <form-input-container><span style="margin-right: 20px;"><span style="margin-right: 1ch;">CPU(个)</span>
+                <input ng-model="imageDraft.cpu" type="number" step="0.1" min="0" name="{{ innerForm + 'imageCpu' }}" required="required" ng-pattern="/^(([0-9]+.[0-9]*[0-9][0-9]*)|([0-9]*[0-9][0-9]*.[0-9]+)|([0-9]*[0-9][0-9]*))$/"/></span><span style="margin-right: 20px;"><span style="margin-right: 1ch;">内存(MB)</span>
+                <input ng-model="imageDraft.mem" type="number" min="0" name="{{ innerForm + 'imageMemory' }}" required="required" ng-pattern="/^[0-9]\d*$/"/></span></form-input-container>
+          </form-config-item>
+        </form-config-group>
+        <form-config-group>
+          <form-config-item config-title="健康检查">
+            <form-input-container help-text="根据配置的检查规则来判定部署实例是否健康，如果不健康就重启该部署实例。">
+              <form-input-radio-group ng-model="imageDraft.healthChecker.type" name="{{ innerForm + 'healthCheckerType' }}" fallback-value="'NONE'" options="imageHealthCheckerRadioList" required="required"></form-input-radio-group>
+              <sub-form-container left-column-width="105px" ng-if="isDisplayChecker(imageDraft,'healthChecker')">
+                <form-config-group>
+                  <form-config-item config-title="检查端口">
+                    <form-input-container>
+                      <input ng-model="imageDraft.healthChecker.port" type="number" min="1" max="65535" style="width:100%;" name="{{ innerForm + 'healthCheckerPort' }}" placeholder="请输入端口号" required="required"/>
+                    </form-input-container>
+                  </form-config-item>
+                  <form-config-item config-title="超时时间(s)">
+                    <form-input-container>
+                      <input ng-model="imageDraft.healthChecker.timeout" type="number" min="1" name="{{ innerForm + 'healthCheckerTimeout' }}" placeholder="超过时间达到规定阈值，则健康检查判定为异常" required="required" style="width: 100%;"/>
+                    </form-input-container>
+                  </form-config-item>
+                  <form-config-item config-title="首次检测延迟(s)">
+                    <form-input-container>
+                      <input ng-model="imageDraft.healthChecker.delay" type="number" min="1" name="{{ innerForm + 'healthCheckerDelay' }}" placeholder="容器启动后延迟规定秒数，再开始健康检查" required="required" style="width: 100%;"/>
+                    </form-input-container>
+                  </form-config-item>
+                  <form-config-item config-title="检查周期(s)">
+                    <form-input-container>
+                      <input ng-model="imageDraft.healthChecker.periodSeconds" placeholder="健康检查的时间间隔" type="number" min="1" name="{{ innerForm + 'healthCheckerPeriodSeconds' }}" required="required" style="width: 100%;"/>
+                    </form-input-container>
+                  </form-config-item>
+                  <form-config-item config-title="检查次数">
+                    <form-input-container help-text="健康检查连续失败次数达到阈值，健康检查判断为异常；健康检查连续成功次数达到阈值，健康检查判断为正常" help-text-position="bottom">
+                      <form-multiple-inline>
+                        <form-multiple-inline-item style="flex:1;"><span style="margin-right: 1ch;">失败次数</span>
+                          <input ng-model="imageDraft.healthChecker.failureThreshold" type="number" min="1" name="{{innerForm + 'healthCheckerFailureThreshold' }}" style="width: 48%;" required="required"/>
+                        </form-multiple-inline-item>
+                        <form-multiple-inline-item style="flex:1;"><span>成功次数 :1</span></form-multiple-inline-item>
+                      </form-multiple-inline>
+                    </form-input-container>
+                  </form-config-item>
+                  <form-config-item config-title="检测URL" ng-if="isDisplayCheckerUrl(imageDraft,'healthChecker')">
+                    <form-input-container>
+                      <input ng-model="imageDraft.healthChecker.url" type="text" name="{{ innerForm + 'healthCheckerUrl' }}" placeholder="请输入URL" required="required"/>
+                    </form-input-container>
+                  </form-config-item>
+                  <form-config-item config-title="允许返回值" ng-if="isDisplayCheckerStatusCode(imageDraft,'healthChecker')">
+                    <form-input-container><span>200-400(不包含400)</span></form-input-container>
+                  </form-config-item>
+                </form-config-group>
+              </sub-form-container>
+            </form-input-container>
+          </form-config-item>
+        </form-config-group>
+        <form-config-group>
+          <form-config-item config-title="就绪性检查">
+            <form-input-container help-text="根据配置的规则来检查实例能否访问；配置该项时，通过对内服务或对外服务访问部署时，请求只被转发到就绪状态的实例；非就绪状态的实例不会被重启。">
+              <form-input-radio-group ng-model="imageDraft.readinessChecker.type" name="{{ innerForm + 'readinessType' }}" fallback-value="'NONE'" options="imageReadinessCheckerRadioList" required="required"></form-input-radio-group>
+              <sub-form-container left-column-width="105px" ng-if="isDisplayChecker(imageDraft,'readinessChecker')">
+                <form-config-group>
+                  <form-config-item config-title="检查端口">
+                    <form-input-container>
+                      <input ng-model="imageDraft.readinessChecker.port" type="number" min="1" max="65535" style="width:100%;" name="{{ innerForm + 'readinessCheckerPort' }}" placeholder="请输入端口号" required="required"/>
+                    </form-input-container>
+                  </form-config-item>
+                  <form-config-item config-title="超时时间(s)">
+                    <form-input-container>
+                      <input ng-model="imageDraft.readinessChecker.timeout" type="number" min="1" name="{{ innerForm + 'readinessCheckerTimeout' }}" placeholder="超过时间达到规定阈值，则就绪性检查判定为异常" required="required" style="width: 100%;"/>
+                    </form-input-container>
+                  </form-config-item>
+                  <form-config-item config-title="首次检测延迟(s)">
+                    <form-input-container>
+                      <input ng-model="imageDraft.readinessChecker.delay" type="number" min="1" name="{{ innerForm + 'readinessCheckerDelay' }}" placeholder="容器启动后延迟规定秒数，再开始就绪性检查" required="required" style="width: 100%;"/>
+                    </form-input-container>
+                  </form-config-item>
+                  <form-config-item config-title="检查周期(s)">
+                    <form-input-container>
+                      <input ng-model="imageDraft.readinessChecker.periodSeconds" placeholder="就绪性检查的时间间隔" type="number" min="1" name="{{ innerForm + 'readinessCheckerPeriodSeconds' }}" required="required" style="width: 100%;"/>
+                    </form-input-container>
+                  </form-config-item>
+                  <form-config-item config-title="检查次数">
+                    <form-input-container help-text="就绪性检查连续失败次数达到阈值，就绪性检查判断为异常；就绪性检查连续成功次数达到阈值，就绪性检查判断为正常" help-text-position="bottom">
+                      <form-multiple-inline>
+                        <form-multiple-inline-item style="flex:1;"><span style="margin-right: 1ch;">失败次数</span>
+                          <input ng-model="imageDraft.readinessChecker.failureThreshold" type="number" min="1" name="{{innerForm + 'readinessCheckerFailureThreshold' }}" style="width: 48%;" required="required"/>
+                        </form-multiple-inline-item>
+                        <form-multiple-inline-item style="flex:1;"><span style="margin-right: 1ch;">成功次数</span>
+                          <input ng-model="imageDraft.readinessChecker.successThreshold" type="number" min="1" name="{{innerForm + 'readinessCheckerFailureThreshold' }}" style="width: 48%;" required="required"/>
+                        </form-multiple-inline-item>
+                      </form-multiple-inline>
+                    </form-input-container>
+                  </form-config-item>
+                  <form-config-item config-title="检测URL" ng-if="isDisplayCheckerUrl(imageDraft,'readinessChecker')">
+                    <form-input-container>
+                      <input ng-model="imageDraft.readinessChecker.url" type="text" name="{{ innerForm + 'readinessCheckerUrl' }}" placeholder="请输入URL" required="required"/>
+                    </form-input-container>
+                  </form-config-item>
+                  <form-config-item config-title="允许返回值" ng-if="isDisplayCheckerStatusCode(imageDraft,'readinessChecker')">
+                    <form-input-container><span>200-400(不包含400)</span></form-input-container>
+                  </form-config-item>
+                </form-config-group>
+              </sub-form-container>
+            </form-input-container>
+          </form-config-item>
+        </form-config-group>
+        <form-config-group>
+          <form-config-item config-title="日志">
+            <form-input-container>
+              <container-log ng-model="imageDraft.logItemDrafts" name="{{ innerForm + 'logItem' }}" cluster="deploymentDraft.cluster"></container-log>
+            </form-input-container>
+          </form-config-item>
+        </form-config-group>
+      </ng-form>
+    </div>
+    <form-config-group>
+      <form-config-item>
+        <form-input-container>
+          <button type="button" ng-click="imageLastStep()" style="margin-right:15px;">上一步</button>
+          <form-submit-button form="createDeploymentImage" on-submit="createDeployment()" ng-disabled="isCreating">提交</form-submit-button>
+        </form-input-container>
+      </form-config-item>
+    </form-config-group>
+  </form>
+  <form name="createDeploymentRaw" ng-show="createDeploymentStep === 'raw'">
+    <form-config-group>
+      <form-config-item config-title="{{versionTypeName[deploymentDraft.versionType]}}">
+        <form-input-container>
+          <loading ng-if="isLoadingDeployString"></loading>
+          <div class="info-content" style="margin-top: 10px;">
+            <div class="config-input-group-label">
+              <div class="config-input-group">
+                <div class="config-input-group-top code-area" style="line-height: 20px;" ng-bind="deploymentDraft.versionString.deploymentStrHead"></div>
+                <div class="config-input-group-textarea-tip" style="text-align: right;margin-top: -20px;"><a ng-click="setPodStrToDefault()" href="javascript:void 0;" ng-if="podStrUndoText === null &amp;&amp; deploymentDraft.versionType === 'YAML'">YAML配置样例</a><a ng-click="setPodStrToDefault()" href="javascript:void 0;" ng-if="podStrUndoText === null &amp;&amp; deploymentDraft.versionType === 'JSON'">JSON配置样例</a><a ng-click="undoPodStrToDefault()" href="javascript:void 0;" ng-if="podStrUndoText !== null">撤销</a></div>
+                <codearea ng-model="deploymentDraft.versionString.podSpecStr" language="{{ (deploymentDraft.versionType).toLowerCase() }}" name="dockerFileConfig" ng-change="clearPodStrUndoText()" height="15, 50"></codearea>
+                <div class="config-input-group-bottom code-area" ng-bind="deploymentDraft.versionString.deploymentStrTail"></div>
+              </div>
+            </div>
+          </div>
+        </form-input-container>
+      </form-config-item>
+    </form-config-group>
+    <form-config-group>
+      <form-config-item>
+        <button type="button" ng-click="imageLastStep()" style="margin-right:15px;">上一步</button>
+        <form-submit-button form="createDeploymentRaw" on-submit="createDeployment()" ng-disabled="isCreating">提交</form-submit-button>
+      </form-config-item>
+    </form-config-group>
+  </form>
+</form-container>

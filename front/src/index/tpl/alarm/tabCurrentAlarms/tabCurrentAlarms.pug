@@ -1,0 +1,35 @@
+loading(ng-if="vmAlarm.loading")
+.mod-option
+	.pull-right.right-option
+		span(ng-cloak) 共{{alarmsListFiltered.length}}个报警
+		input.ui-input-search.ui-input-fill(type="text" placeholder="输入关键词查询" ng-model="vmAlarm.keywords")
+	p.txt-prompt.alarm-prompt
+		i.fa.fa-info-circle.icon-algin-right
+		| 删除报警需要报警组DEVELOPER以上权限
+.mod-list-alarm
+	loading(ng-if="vmAlarm.isLoading")
+	table.ui-table-dome
+		thead
+			tr
+				th 报警对象
+				th 报警类型
+				th 报警指标
+				th 报警数值
+				th 报警次数
+				th 报警时间
+				th(ng-if="vm.permission.role&&vm.permission.role!='REPORTER'") 操作
+		tbody
+			tr(ng-if="alarmsListFiltered.length==0")
+				td(colspan="7") 无相关信息
+			tr(ng-repeat="tpl in alarmsListFiltered=(vmAlarm.alarmsList|alarmFilter:vmAlarm.keywords)")
+				td
+					span(ng-bind="tpl.alarmObject" ng-mouseenter="vmAlarm.changePopover(tpl)" popover-template="'currentAlarmPopover.html'" popover-trigger="mouseenter")
+				td(ng-bind="tpl.templateTypeName")
+				td(ng-bind="tpl.metricName")
+				td(ng-bind="tpl.alarmNum")
+				td(ng-bind="tpl.alarmTimes")
+				td(ng-bind="tpl.timeStamp|date:'yyyy-MM-dd HH:mm:ss'")
+				td(ng-if="vm.permission.role&&vm.permission.role!='REPORTER'")
+					button.fa.fa-trash-o.ui-btn-none.icon-trash-color(ng-click="vmAlarm.ignoreAlarm(tpl.id)")
+script(type="text/ng-template" id="currentAlarmPopover.html")
+	div(ng-bind-html="currentAlarmPopoverHtml")

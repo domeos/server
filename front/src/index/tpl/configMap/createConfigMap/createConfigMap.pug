@@ -1,0 +1,35 @@
+//
+   Created by haozhou on 2017/2/13.
+.dome-config-map
+    loading(ng-if="isLoadingCluster")
+    form-container(left-column-width="150px")
+        form(name="createConfigMap")
+            form-config-group
+                form-config-item(config-title="配置名称" required)
+                    form-input-container
+                        input(name="configMapName" type="text" placeholder="名称唯一，不可重复，不能有大写字母，不能以中横线开头和结尾，且不能包含点和下划线" ng-model="configMap.name" pattern="^[a-z0-9]([-a-z0-9]*[a-z0-9])?$" required is-configmap-unique ng-model-options="{updateOn:'default blur',debounce:{default:1000,blur:0}}")
+                        form-error-message(form="createConfigMap" target="configMapName" type="required") 名称不能为空
+                        form-error-message(form="createConfigMap" target="configMapName" type="pattern") 名称格式错误，不能有大写字母，不能以中横线开头和结尾，且不能包含点和下划线
+                        form-error-message(form="createConfigMap" target="configMapName" type="isConfigmapUnique") 名称重复，请修改！
+            form-config-group
+                form-config-item(config-title="配置描述")
+                    form-input-container
+                        textarea(ng-model="configMap.description" style="padding-top: 6px;")
+            form-config-group
+                form-config-item(config-title="集群" required)
+                    form-input-container
+                        form-select(name="clusterSelect" ng-model="configMap.clusterId" options="clusterOption" placeholder="选择集群" on-change="initNamespace(configMap.clusterId)" required empty-text="无相关信息")
+                        form-error-message(form="createConfigMap" target="clusterSelect" type="required") 集群不能为空
+            form-config-group
+                form-config-item(config-title="namespace" required)
+                    form-input-container
+                        form-select(name="namespaceSelect" ng-model="configMap.namespace" options="namespaceOption" placeholder="选择namespace" required empty-text="无相关信息")
+                        form-error-message(form="createConfigMap" target="namespaceSelect" type="required") namespace不能为空
+            form-config-group
+                form-config-item(config-title="配置文件" required)
+                    form-input-container
+                        multiple-config-files(config-file-list="configMap.configFileList")
+            form-config-group
+                form-config-item
+                    button(type="button" style="margin-right:15px;" ng-click="cancel()") 取消
+                    form-submit-button(form="createConfigMap" on-submit="createConfigMapSubmit()") 提交

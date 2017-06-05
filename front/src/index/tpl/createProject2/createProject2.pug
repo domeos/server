@@ -1,0 +1,65 @@
+.mod-project.project-create2(role="form" ng-form name="projectForm" ng-class="{'need-valid':valid.needValid}")
+    button.ui-btn.ui-btn-bright.ui-btn-lg.ui-btn-copy(ng-click="toCopy()") 复制已有工程
+    .project-new
+        ng-include(src="'index/tpl/tplProjectSetting/projectSettingTpl.html'")
+    .com-bottom-option
+        span.com-bottom-option-con
+            button.ui-btn.ui-btn-bright.ui-btn-md.ui-btn-last(ng-click="toLastPage();") 上一步
+            button.ui-btn.ui-btn-bright.ui-btn-md(ng-click="valid.needValid=true;validCreatedFileStoragePath();projectForm.$valid&&valid.createdFileStoragePath&&createProject()") 完成创建
+            button.ui-btn.ui-btn-safe.ui-btn-md(ng-click="valid.needValid=true;validCreatedFileStoragePath();projectForm.$valid&&valid.createdFileStoragePath&&getDockerfile()") 预览Dockerfile
+            span.txt-error(ng-if="valid.needValid&&(!valid.createdFileStoragePath||projectForm.$invalid)") 存在不合法数据，请修改后提交！
+    script(type="text/ng-template" id="projectListModal.html")
+        .d-modal-header 选择复制的工程
+        div.modal-projects
+            loading(ng-if="loading")
+            .filter-con
+                p.txt-prompt
+                    i.fa.fa-info-circle.icon-algin-right
+                    | 此处只可选择与您上一步所选择的“工程构建类型”相匹配的项目
+                span 所属项目
+                .com-select-con(select-con="select-con")
+                   button.ui-btn.ui-btn-white.ui-btn-select
+                     i.icon-down
+                     | {{selectedCollection.name}}
+                   ul.select-list(style="max-height: 200px")
+                     li.select-item(ng-repeat="collection in collectionList track by $index")
+                       a(ng-click="selectCollection(collection)") {{ collection.name }}
+                input.ui-input.ui-input-fill.ui-input-search(ng-model="key.searchKey" placeholder="输入工程名称搜索")
+                span.tool-align-input(ng-cloak style="float: right; padding-right: 10px;") 共{{ (projectList|filter:{name:key.searchKey}).length }}个工程
+            .table-container
+                table.ui-table-dome
+                    thead
+                        tr
+                            th 工程名称
+                            th 构建类型
+                            th 构建时间
+                            th 构建状态
+                            th 代码源
+                            th 复制工程
+                    tbody
+                        tr
+                            td(colspan="6" ng-if="!projectList||projectListFiltered.length===0").text-center 暂无相关工程
+                        tr(ng-repeat="project in projectListFiltered=(projectList|filter:{name:key.searchKey})")
+                            td
+                                a(ng-bind="project.name")
+                            td(ng-switch="project.projectType")
+                                span(ng-switch-default) 未知配置
+                                span(ng-switch-when="java") Java专属配置
+                                span(ng-switch-when="dockerfileuserdefined") 定制化配置
+                                span(ng-switch-when="commonconfig") 通用配置
+                                span(ng-switch-when="dockerfileincode") 代码内Dockerfile
+                            td(ng-bind="project.buildTime ? (project.buildTime | time) : '无'")
+                            td( ng-switch="project.buildStatus")
+                                span.txt-success(ng-switch-when="Success") 成功
+                                span.txt-warning(ng-switch-when="Fail") 失败
+                                span.txt-normal(ng-switch-when="Building") 构建中
+                                span.txt-normal(ng-switch-when="Preparing") 准备中
+                                span.txt-normal(ng-switch-when="Send") 准备中
+                                span(ng-switch-default) 未启动
+                            td(ng-cloak ng-switch="project.codeManager")
+                                span(ng-if="!project.nameWithNamespace") 无
+                                a(href="{{project.codeHttpUrl}}" target="_blank" ng-show="project.nameWithNamespace" title="{{project.nameWithNamespace}}")
+                                    i.fa.fa-gitlab.icon-git-color(ng-switch-when="gitlab")
+                                    i.fa.fa-github.icon-git-color(ng-switch-when="github")
+                            td
+                                button.ui-btn.ui-btn-sm.ui-btn-bright(ng-click="copy(project.id)") 复制

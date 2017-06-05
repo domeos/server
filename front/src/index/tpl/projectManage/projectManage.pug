@@ -1,0 +1,68 @@
+tabset.mod-tab
+  .tab-border
+  tab.first(heading="工程" active="tabActive[0].active" ui-sref="projectManage.project")
+    .mod-project.project-manage
+      .project-options
+        button.ui-btn.ui-btn-lg(ui-sref="createProject1({'projectCollectionId':resourceId})" ng-disabled="!mayCreateProject()" ng-class="{'ui-btn-lg-disabled':!mayCreateProject()}")
+          span.btn-txt 新建工程
+          i.fa.fa-plus
+        .pull-right
+          span(ng-cloak) 共{{filteredProjectList.length}}个工程
+          input.ui-input-search.ui-input-fill(type="text" placeholder="输入工程名称查询" ng-model="proKeywards")
+      .mod-tips-info
+        p.txt-prompt
+          i.fa.fa-info-circle.icon-algin-right
+          | 工程用来配置生成镜像的信息，启动构建后会按照配置执行命令生成镜像并存储倒私有仓库中。
+      .mod-list
+        loading(ng-if="isLoading")
+        table.ui-table-dome
+          thead
+            tr
+              th 工程名称
+              th 构建类型
+              //- th 自动构建
+              th 构建时间
+              th 构建状态
+              th 代码源
+              th 构建
+          tbody
+            tr(ng-if="filteredProjectList.length===0")
+              td.text-center(colspan="7") 暂无相关工程
+            tr(ng-repeat="project in filteredProjectList =  (projectList|filter:{name:proKeywards})")
+              td
+                a.ui-table-link(ng-bind="project.name" ui-sref="projectDetail({'projectCollectionId':resourceId,'project':project.id})")
+              //- td(ng-if="project.userDefineDockerfile") 代码内Dockerfile
+              td(ng-switch="project.projectType")
+                span(ng-switch-default) 未知配置
+                span(ng-switch-when="java") Java专属配置
+                span(ng-switch-when="dockerfileuserdefined") 定制化配置
+                span(ng-switch-when="commonconfig") 通用配置
+                span(ng-switch-when="dockerfileincode") 代码内Dockerfile
+              //- td
+              //-   span {{project.autoBuild===true ? '开启' : '未启用' }}
+              td(ng-bind="(project.buildTime | day)")
+              td(ng-switch="project.buildStatus")
+                span.txt-success(ng-switch-when="Success") 成功
+                span.txt-warning(ng-switch-when="Fail") 失败
+                span.txt-error(ng-switch-when="Stopped") 已停止
+                span.txt-normal(ng-switch-when="Building") 构建中
+                span.txt-normal(ng-switch-when="Preparing") 准备中
+                span.txt-normal(ng-switch-when="Send") 准备中
+                span(ng-switch-default) 未启动
+              td(ng-cloak ng-switch="project.codeManager")
+                span(ng-if="!project.nameWithNamespace") 无
+                a(href="{{project.codeHttpUrl}}" target="_blank" ng-show="project.nameWithNamespace" title="代码源")
+                  i.fa.fa-gitlab.icon-git-color(ng-switch-when="gitlab")
+                  i.fa.fa-github.icon-git-color(ng-switch-when="github")
+                  //- | {{project.nameWithNamespace}}
+              //- td
+                a 查看
+              td
+                a(ng-click="openBuild(project.id,!!project.nameWithNamespace)" title="构建")
+                  i.fa.fa-wrench.icon-edit-color
+                //- button.ui-btn.ui-btn-sm.ui-btn-primary 部署
+  //- 成员
+  tab(heading="成员" active="tabActive[1].active" ui-sref="projectManage.user")
+      form-container(left-column-width="0")
+        form
+          collection-member-table(collection-id="resourceId" collection-type="resourceType" on-role-change="setRole(role)" on-no-permission="exitToList()" help-text="有MASTER权限的成员可以查看、修改、删除项目，可以在项目中添加、查看、修改、删除工程；有DEVELOPER权限的成员可以查看、修改项目，可以在项目中添加、查看、修改工程；有REPORTER权限的成员可以查看项目，可以查看项目中的工程。添加、修改或删除项目成员需要MASTER权限。")

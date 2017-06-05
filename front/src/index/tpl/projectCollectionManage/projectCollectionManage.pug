@@ -1,0 +1,39 @@
+.mod-project-collection.project-collection-manage
+	.mod-option
+		button.ui-btn.ui-btn-lg.ui-btn-bright(ui-sref="createProjectCollection")
+			span.btn-txt 新建项目
+			i.fa.fa-plus
+		.pull-right.right-option
+			span(ng-cloak) 共{{collectionFilter.length}}个项目
+			input.ui-input-search.ui-input-fill(type="text" placeholder="输入项目名称查询" ng-model="proKeywards")
+	loading(ng-if="isLoading")
+	.mod-tips-info
+		p.txt-prompt
+			i.fa.fa-info-circle.icon-algin-right
+			| 项目是工程的集合，用来控制一组工程的访问权限。
+	ul.project-collection-list
+		li.no-project-collection(ng-if="!isLoading&&(!projectCollectionList||collectionFilter.length===0)")
+			span 暂无项目，可以新建一个
+		li(ng-repeat="projectCollection in collectionFilter = (projectCollectionList |filter:{name:proKeywards}|orderBy:'createTime':true)")
+			.project-collection-item.text-center
+				.project-collection-header
+					a.project-collection-name(ui-sref="projectManage({'id':projectCollection.id})" ng-bind="projectCollection.name")
+					span.pull-right.build-project-collection-title.pull-right-margin
+						button.fa.fa-pencil.ui-btn-none(ng-if="!projectCollection.isEdit" ng-click="projectCollection.isEdit = true" ng-class="{true:'icon-edit-color',false:'icon-fa-disabled'}[projectCollection.role==='MASTER'||projectCollection.role==='DEVELOPER']" ng-disabled="!(projectCollection.role==='MASTER'||projectCollection.role==='DEVELOPER')" tooltip="编辑")
+						button.fa.fa-trash-o.ui-btn-none.icon-trash-color(ng-if="!projectCollection.isEdit" ng-click="deleteProjectCollection(projectCollection.id)" ng-class="{true:'icon-trash-color',false:'icon-fa-disabled'}[projectCollection.role==='MASTER']" ng-disabled="!(projectCollection.role==='MASTER')" tooltip="删除")
+
+						button.fa.fa-floppy-o.ui-btn-none.icon-success-color(ng-if="projectCollection.isEdit" ng-click="saveEdit(projectCollection);projectCollection.isEdit = false" tooltip="保存")
+						button.fa.fa-times.ui-btn-none.icon-cancel-color(ng-if="projectCollection.isEdit" ng-click="cancelEdit();projectCollection.isEdit = false" tooltip="取消")
+				.project-collection-content
+					em.txt-success(ng-show="projectCollection.projectCollectionState==='PUBLIC'") 公开项目
+					em.txt-error(ng-show="projectCollection.projectCollectionState==='PRIVATE'") 私有项目
+					.project-collection-info-description(ng-show="!projectCollection.isEdit" title="{{projectCollection.description}}") {{projectCollection.description || '此项目无描述信息'}}
+					.project-collection-info-description(ng-show="projectCollection.isEdit")
+						textarea.ui-input-fill.textarea-edit(ng-model="projectCollection.description" name="collectionDescription" required)
+				.project-collection-content.content-last
+					span.project-collection-info.col 工程数：
+						span.txt-bright(ng-cloak) {{projectCollection.projectCount}}
+					span.project-collection-info.col 成员数：
+						span.txt-success(ng-cloak) {{projectCollection.memberCount}}
+					span.project-collection-info.create-time-size 创建时间：{{projectCollection.createTime|date:'yyyy-MM-dd'}}
+					span.project-collection-info 创建者：{{projectCollection.creatorInfo.name}}

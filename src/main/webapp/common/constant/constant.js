@@ -1,0 +1,1 @@
+"use strict";!function(o){o.constant("loginUrl","/login/login.html"),o.constant("logoutUrl","/api/user/logout"),o.constant("documentUrl","http://gitbook.domeos.org/")}(angular.module("constant",[]));

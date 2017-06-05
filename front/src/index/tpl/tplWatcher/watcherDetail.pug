@@ -1,0 +1,53 @@
+.deploy-info
+    .deploy-rollback
+        span.mod-title-name(ng-if="!config.stateful") 部署版本
+        span.mod-title-name(ng-if="config.stateful") 该部署是有状态服务，只有一个部署版本
+        .com-select-con(select-con)
+            button.ui-btn.ui-btn-select.ui-btn-white
+                i.icon-down
+                | {{deployIns.config.version?'version'+deployIns.config.version:'选择版本'}}
+            ul.select-list
+                li.select-item(ng-repeat="version in deployIns.versionList")
+                    a(ng-click="toggleVersion(version.version)" ng-cloak) version{{version.version}}
+    ul.com-list-info.mirror-con(ng-repeat="containerDraft in config.containerDrafts" ng-show="config.version")
+        li
+            span.info-name 镜像名称
+            .info-content.info-content-lg-height
+                span.first-info(ng-bind="containerDraft.image" style="font-weight:bold;")
+        li
+            span.info-name 镜像仓库
+            .info-content.info-content-lg-height
+                span.first-info(ng-bind="containerDraft.registry")
+        li
+            span.info-name 镜像版本
+            .info-content.info-content-lg-height
+                span.first-info(ng-bind="containerDraft.tag")
+        li
+            span.info-name 筛选主机
+            .info-content.info-content-lg-height
+                div(ng-cloak)
+                    span.tool-align-input 部署环境：{{deployIns.envText}}
+                .line-long(ng-if="!config.stateful && (showdeploy.versionType || 'CUSTOM') === 'CUSTOM'")
+                    span.tool-align-input 主机标签：
+                    .host-txt-con.line-element.com-select-con(select-con)
+                        ul.selected-labels
+                            li.select-label(ng-repeat="(label,value) in deployIns.nodeListIns.labelsInfo|search:'isSelected':true|search:'isShow':true" ng-cloak)
+                                | {{label}}
+                    span.txt-wrap
+                        a.link-safe(ng-click="deployIns.nodeListIns.showHost()") 查看选中主机
+    h4.mod-title 实例配置
+    ul.com-list-info.mirror-con
+        li
+            span.info-name 实例状态
+            .info-content.info-content-lg-height
+                span.first-info(ng-class="{true: 'txt-success', false: 'txt-warning'}[instanceList[0].status=='Running']" ng-if="instanceList[0].status") {{instanceList[0].status}}
+                span.first-info(ng-if="!instanceList[0].status") -
+        li
+            span.info-name 实例信息
+            .info-content.info-content-lg-height
+                .instance-info-row
+                    span.cell 名称：{{instanceList[0].instanceName || '-'}}
+                    span.cell 版本：{{instanceList[0].versionId ? 'version'+instanceList[0].versionId : '-'}}
+                .instance-info-row
+                    span.cell 所在主机：{{instanceList[0].hostIp || '-'}}
+                    span.cell 启动时间：{{instanceList[0].startTime?(instanceList[0].startTime | time):'-'}}

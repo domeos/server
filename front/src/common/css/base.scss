@@ -1,0 +1,619 @@
+/*
+ * @description: dome system common stylesheet
+ * @version: 0.1
+ */
+
+@import "compass/css3";
+@import "common.scss";
+
+/* common style or recover style of bootstrap*/
+
+body {
+    min-width: 1340px;
+    font-size: 14px;
+    color: dome-color(font, default);
+    font-family: Helvetica, Arial, "Helvetica Neue", "Hiragino Sans GB", "Microsoft YaHei", Simsun, sans-self;
+    -webkit-text-size-adjust: 100%;
+    background-color: #f0f2f5;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+* {
+    outline: none;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    margin: 0;
+    font-weight: 400;
+}
+
+a {
+    cursor: pointer;
+    color: dome-color(font, default);
+    text-decoration: none;
+    &:hover {
+        color: dome-color(dome, bright);
+        text-decoration: none;
+    }
+    &.link,
+    &.link:hover {
+        color: dome-color(dome, primary);
+        text-decoration: underline;
+    }
+    &.link-safe,
+    &.link-safe:hover {
+        color: dome-color(dome, safe);
+    }
+    &.link-primary,
+    &.link-primary:hover {
+        color: dome-color(dome, primary);
+    }
+    &:focus {
+        outline: none;
+    }
+    &.disabled {
+        color: #cdcdcf;
+        cursor: default;
+    }
+}
+
+label {
+    font-weight: 400;
+    margin-bottom: 0px;
+}
+
+em,
+i {
+    font-style: normal;
+}
+
+button,
+input[type="button"],
+input[type="text"] {
+    &:disabled {
+        cursor: not-allowed;
+    }
+}
+
+* {
+    outline: none;
+}
+
+// error text
+.txt-error {
+    display: block;
+    color: dome-color(dome, error);
+}
+
+
+/* style of input */
+
+// error input stylesheet
+input:not(.ng-pristine).ng-invalid,
+textarea:not(.ng-pristine).ng-invalid,
+.need-valid input.ng-invalid,
+.need-valid textarea.ng-invalid,
+input:not(.ng-pristine).ng-invalid-pattern,
+textarea:not(.ng-pristine).ng-invalid-pattern,
+.need-valid input.ng-invalid-pattern,
+.need-valid textarea.ng-invalid-pattern {
+    border: 1px solid dome-color(dome, error) !important;
+    &:focus {
+        border: 1px solid dome-color(dome, error) !important;
+    }
+}
+
+input[required]:invalid,
+input:focus:invalid,
+textarea[required]:invalid,
+textarea:focus:invalid {
+    @include box-shadow(none);
+}
+
+// input with white background
+.ui-input-white {
+    height: 34px;
+    padding-left: 12px;
+    padding-right: 20px;
+    border: 1px solid dome-color(border, default);
+    border-radius: $default-radius;
+}
+
+textarea.ui-input-white {
+    min-height: 66px;
+    resize: none;
+}
+
+// input with fill background
+.ui-input-fill {
+    padding-left: 12px;
+    // background-color: dome-color(background,light) !important;
+    border: none;
+    border-radius: $default-radius;
+    border: $deep-border;
+    &:focus {
+        border: 1px solid dome-color(dome, primary);
+    }
+}
+
+.ui-input-txt {
+    padding-top: 5px;
+}
+
+.ui-input-full {
+    width: 100%;
+}
+
+input.ui-input-fill {
+    height: 34px;
+}
+
+textarea.ui-input-fill {
+    min-height: 56px;
+}
+
+// small input
+.ui-input-sm {
+    width: 60px;
+    font-size: 14px;
+}
+
+
+/* style of input end */
+
+
+/* style of button */
+
+.ui-btn {
+    display: inline-block;
+    text-align: center;
+    // vertical-align: middle;
+    .btn-txt {
+        padding-right: 4px;
+    }
+}
+
+.ui-btn,
+.ui-btn:hover,
+.ui-btn:focus {
+    color: #fff;
+    font-size: 14px;
+    border: none;
+    border-radius: $default-radius;
+}
+
+.ui-btn-sm {
+    min-width: 65px;
+    height: 34px;
+}
+
+.ui-btn-sm.ui-btn-link {
+    padding: 6px 6px 3px;
+}
+
+.ui-btn-md {
+    min-width: 114px;
+    height: 34px;
+    font-weight: normal;
+}
+
+.ui-btn-lg {
+    min-width: 100px;
+    height: 34px;
+    font-weight: normal;
+}
+
+.ui-btn-lg-disabled {
+    background-color: dome-color(dome, disabled) !important;
+}
+
+// the link that has class .ui-btn
+.ui-btn-link {
+    padding: 7px 12px;
+    &.ui-btn-md {
+        padding-top: 7px;
+    }
+    &:hover {
+        text-decoration: none;
+    }
+}
+
+.ui-btn-none {
+    height: auto !important;
+    border: none;
+    background: none;
+    padding: 0 !important;
+    a:hover,
+    &:active,
+    &:focus,
+    &:link,
+    &:visited {
+        outline: none;
+        background: none;
+        @include box-shadow(none);
+    }
+}
+
+.ui-btn-safe {
+    background-color: dome-color(dome, safe);
+}
+
+.ui-btn-primary,
+.ui-btn-primary:hover,
+.ui-btn-primary:focus {
+    background-color: dome-color(dome, primary);
+}
+
+.ui-btn-bright,
+.ui-btn-bright:hover,
+.ui-btn-bright:focus {
+    background-color: dome-color(dome, bright);
+}
+
+.ui-btn-active {
+    background-color: dome-color(dome, active);
+}
+
+.ui-btn-white {
+    background-color: #fff;
+    color: dome-color(font, default);
+    border: $deep-border;
+    &:hover,
+    &:focus,
+    &:active {
+        color: dome-color(font, default);
+        border: $deep-border;
+    }
+}
+
+.ui-btn-select {
+    text-align: left;
+    height: 34px;
+    .icon-down {
+        float: right;
+        margin-top: 7px;
+    }
+}
+
+.ui-btn-error {
+    background-color: dome-color(dome, error);
+}
+
+.ui-btn+.ui-btn {
+    margin-left: 15px;
+}
+
+table {
+    tr:hover {
+        .ui-table-link {
+            color: dome-color(dome, bright);
+        }
+    }
+}
+
+.ui-table-dome {
+    width: 100%;
+    &>thead {
+        background-color: dome-color(background, white);
+        th {
+            font-weight: bold;
+        }
+        tr {
+            border-bottom: 2px solid #ddd;
+        }
+    }
+    &.full {
+        th,
+        td {
+            &:first-child {
+                padding-left: $wider-padding;
+            }
+            &:last-child {
+                padding-right: $wider-padding;
+            }
+        }
+    }
+}
+
+// table with border
+.ui-table-primary {
+    border: $deep-border;
+    thead {
+        th {
+            font-weight: 400;
+        }
+    }
+}
+
+.ui-table-dome,
+.ui-table-primary {
+    &>tbody>tr>td,
+    &>thead>tr>th {
+        vertical-align: middle;
+        height: $table-height;
+        padding: 8px;
+        border-bottom: $deep-border;
+    }
+}
+
+.com-loading {
+    // margin: 100px auto;
+    // position: absolute;
+    width: 70px;
+    height: 70px;
+    left: 50%;
+    position: fixed;  //新加样式
+    top:20%; //新加样式
+    margin-left: -35px;
+    text-align: center;
+    @include animation(rotate 1.8s infinite linear);
+    z-index: 99;
+    &.ng-leave {
+        display: none;
+    }
+    .dot1,
+    .dot2 {
+        width: 60%;
+        height: 60%;
+        display: inline-block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        background-color: #67CF22;
+        border-radius: 100%;
+        @include animation(bounce 2s infinite ease-in-out);
+    }
+    .dot2 {
+        top: auto;
+        bottom: 0px;
+        @include animation-delay(-1.0s);
+    }
+    @include setKeyframes(bounce) {
+        0%,
+        100% {
+            @include transform(scale(0.0));
+        }
+        50% {
+            @include transform(scale(1.0));
+        }
+    }
+    @include setKeyframes(rotate) {
+        100% {
+            @include transform(rotate(360deg));
+        }
+    }
+}
+
+
+/* style of button end */
+
+// common modal header style
+.d-modal-header,
+.d-modal-footer {
+    height: 58px;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+.d-modal-header {
+    line-height: 58px;
+    border-radius: $default-radius $default-radius 0 0;
+    color: dome-color(dome, bright);
+    font-size: font-size(large);
+    // @extend %dome-background;
+    border-top: 5px solid dome-color(dome, bright);
+    overflow: hidden;
+    .model-prompt {
+        float: right;
+    }
+}
+
+.d-modal-footer {
+    padding-top: 12px;
+    padding-bottom: 12px;
+}
+
+// common modal content style
+.modal-content {
+    border-radius: $default-radius;
+    .d-modal-full {
+        max-height: 500px;
+        overflow-y: auto;
+        &>.ui-table-dome {
+            width: 100%;
+            th,
+            td {
+                &:first-child {
+                    padding-left: $page-padding+$wider-padding;
+                }
+                &:last-child {
+                    padding-right: $page-padding+$wider-padding;
+                }
+            }
+        }
+    }
+    .d-modal-container {
+        padding: 20px;
+    }
+    .com-loading {
+        margin-top: 10px;
+    }
+}
+
+// common modal content info style(Especially in the form)
+ul.modal-info {
+    text-align: center;
+    &>li {
+        padding-top: 18px;
+        .info-name {
+            display: inline-block;
+            width: 120px;
+            padding-top: 6px;
+            text-align: left;
+            vertical-align: top;
+        }
+        .info-txt {
+            display: inline-block;
+            width: 362px;
+        }
+        .info-content {
+            margin-left: 12px;
+            width: 300px;
+            display: inline-block;
+            vertical-align: top;
+        }
+        .align-input {
+            display: inline-block;
+            margin-top: 11px;
+        }
+    }
+}
+
+// common modal body
+.modal-body {
+    word-break: break-word;
+}
+
+.modal-footer {
+    border-top: none;
+}
+
+// user dropdown list
+.com-user-option {
+    position: absolute;
+    z-index: 9999;
+    top: 28px;
+    right: 0;
+    width: 120px;
+    background-color: #fff;
+    border-radius: $default-radius;
+    border: $light-border;
+    @include box-shadow(0 0 2px 2px rgba(0, 0, 0, .2));
+    li {
+        &.arrow {
+            position: absolute;
+            width: 0;
+            height: 0;
+            top: -9px;
+            right: 19px;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 9px solid #fff;
+        }
+        a {
+            display: block;
+            padding: 4px 10px 4px 10px;
+            border-bottom: $light-border;
+        }
+        &:last-child {
+            a {
+                border-bottom: none;
+            }
+        }
+    }
+}
+
+// dropdown list
+.com-select-con {
+    position: relative;
+    width: 240px;
+    display: inline-block;
+    button.ui-btn-select {
+        width: 100%;
+        padding-left: 12px;
+    }
+    .select-list {
+        position: absolute;
+        top: 34px;
+        left: 0;
+        width: 100%;
+        margin-top: 2px;
+        z-index: 99;
+        max-height: 300px;
+        overflow: auto;
+        border: $deep-border;
+        border-radius: $default-radius;
+        background-color: #fff;
+        text-align: left;
+        li {
+            a {
+                display: block;
+                line-height: 30px;
+                margin-top: 6px;
+                margin-bottom: 6px;
+                padding-left: 12px;
+                font-weight: 400;
+                text-decoration: none;
+                overflow: hidden;
+                &:hover,
+                &:focus {
+                    background-color: dome-color(background, light);
+                }
+                .item-right {
+                    float: right;
+                    margin-right: 15px;
+                    word-break: break-all;
+                    word-wrap: break-word;
+                }
+            }
+        }
+    }
+    &[label] {
+        border: $deep-border;
+        border-radius: $default-radius;
+        padding-left: 12px;
+        height: auto;
+        .select-list {
+            top: 100%;
+        }
+    }
+    .selected-labels {
+        @include display-flex;
+        @include flex-wrap(wrap);
+        width: 100%;
+        li.select-label {
+            margin: 4px 8px 4px 0;
+            // padding: 4px;
+            padding: 2px 5px 2px 4px;
+            width: auto;
+            height: 26px;
+            // background-color: dome-color(background,light);
+            background-color: #eee;
+            // border-radius: $default-radius;
+        }
+        li.select-input {
+            width: 120px;
+            input {
+                border: none;
+                min-width: 120px;
+            }
+        }
+    }
+}
+
+//mutipul select 
+a.icon-cancle.icon-cancle-former {
+    display: inline-block;
+    font-family: FontAwesome;
+    width: 16px;
+    height: 16px;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    padding: 3px;
+    margin: 0px 10px 0px 1px;
+    line-height: 16px;
+    &:before {
+        content: "\f00d";
+    }
+}

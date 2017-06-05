@@ -1,0 +1,56 @@
+
+<div class="mod-group alarm-user-group-detail" ng-form="ng-form" name="deployCollectionFrom" ng-class="{'need-valid':needValid}" novalidate="novalidate">
+  <loading ng-if="isWaitingCreate"></loading>
+  <div class="mod-option">
+    <div class="pull-right right-option"><span ng-cloak="ng-cloak">共{{userinfoFilterred1.length}}个成员</span>
+      <input class="ui-input ui-input-fill ui-input-search" placeholder="搜索{{resourceName}}成员" ng-model="userKey1"/>
+    </div>
+    <button class="ui-btn ui-btn-lg ui-btn-bright" ng-class="{'ui-btn-lg-disabled':permission.role==='REPORTER'}" ng-disabled="permission.role==='REPORTER'" ng-click="isEdit=true" ng-show="!isEdit"> <span class="btn-txt">添加成员</span><i class="fa fa-plus"></i></button><span>
+      <button class="ui-btn ui-btn-lg ui-btn-bright" ng-click="isEdit=false" ng-show="isEdit"> <span class="btn-txt">退出编辑</span><i class="fa fa-undo"></i></button></span>
+  </div>
+  <div class="list-info" ng-if="isEdit">
+    <div class="info-content">
+      <div class="line-long">
+        <div class="com-select-con line-element input-size" select-con="select-con" label="true">
+          <ul class="selected-labels">
+            <li class="select-label" ng-repeat="user in selectedUsers" ng-cloak="ng-cloak"><a class="icon-cancle icon-cancle-former" ng-click="cancelUser($index)"></a>{{user.username}}</li>
+            <li class="select-input">
+              <input class="line-element ui-btn-select" placeholder="搜索成员" ng-model="userKey.key" ng-keydown="userKeyDown($event,userKey.key,userListFiltered[0])"/>
+            </li>
+          </ul>
+          <ul class="select-list">
+            <li ng-if="!userList||userListFiltered.length===0"><a>无相关用户信息</a></li>
+            <li class="select-item" ng-repeat="user in userListFiltered=(userList| filter:{'username':userKey.key})"><a ng-bind="user.username" ng-click="selectUser(user);"></a></li>
+          </ul>
+        </div>
+        <button class="ui-btn ui-btn-sm ui-btn-bright ui-btn-add" ng-click="addUser()">添加</button>
+      </div>
+    </div>
+  </div>
+  <div class="mod-list">
+    <table class="ui-table-dome">
+      <thead>
+        <tr>
+          <th>用户名称</th>
+          <th>邮箱</th>
+          <th>电话</th>
+          <th ng-if="permission.role&amp;&amp;permission.role!='REPORTER'" style="width:15%;">操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-if="!userInfos||userinfoFilterred1.length===0">
+          <td colspan="3" ng-if="!(permission.role&amp;&amp;permission.role!='REPORTER')">无相关用户信息</td>
+          <td colspan="4" ng-if="permission.role&amp;&amp;permission.role!='REPORTER'">无相关用户信息</td>
+        </tr>
+        <tr ng-repeat="user in userinfoFilterred1=(userInfos|filter:{'username':userKey1})">
+          <td ng-bind="user.username"></td>
+          <td ng-bind="user.email"></td>
+          <td ng-bind="user.phone"></td>
+          <td ng-if="permission.role&amp;&amp;permission.role!='REPORTER'">
+            <button class="fa fa-trash-o ui-btn-none icon-trash-color" ng-click="deleteUser(user.id)" tooltip="删除"></button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -1,0 +1,57 @@
+
+<!--Created by haozhou on 2017/2/9.
+-->
+<page-container>
+  <page-summary-box>
+    <page-summary-item text="配置集合名称"><span ng-bind="configMapCollectionInfo.name"></span></page-summary-item>
+    <page-summary-item text="创建者"><span ng-bind="configMapCollectionInfo.creatorName"></span></page-summary-item>
+    <page-summary-item text="创建时间"><span ng-bind="configMapCollectionInfo.createTime | date:'yyyy-MM-dd HH:mm:ss'"></span></page-summary-item>
+  </page-summary-box>
+  <page-content-box tabs="[
+        { text: &quot;配置详情&quot;, page: &quot;&quot;, html: 'configMapDetail.html' },
+        ]"></page-content-box>
+</page-container>
+<!--        { text: "事件", page: "event", html: 'configMapEvent.html' },-->
+<script type="text/ng-template" id="configMapDetail.html">
+  <ng-controller ng-controller="ConfigMapDetailInfoCtr">
+    <loading ng-if="isLoading || isUpdating"></loading>
+    <form name="updateConfigMapForm">
+      <form-container left-column-width="80px">
+        <form-multiple-inline>
+          <form-multiple-inline-item>
+            <button ng-if="!isEditConfigMap &amp;&amp; hasPostPermission()" type="button" ng-click="toggleEdit()">编辑</button>
+            <button style="margin-right:15px;" ng-if="isEditConfigMap" type="button" ng-click="toggleEdit('cancel')">取消</button>
+          </form-multiple-inline-item>
+        </form-multiple-inline>
+        <form-config-group>
+          <form-config-item config-title="配置名称">
+            <form-input-container><span ng-bind="configMapDetailInfo.name"></span></form-input-container>
+          </form-config-item>
+          <form-config-item config-title="配置描述">
+            <form-input-container><span ng-if="!isEditConfigMap" ng-bind="configMapDetailInfo.description || '无描述信息'"></span>
+              <textarea ng-if="isEditConfigMap" ng-model="configMapDetailInfo.description"></textarea>
+            </form-input-container>
+          </form-config-item>
+          <form-config-item config-title="集群">
+            <form-input-container><span ng-bind="configMapDetailInfo.clusterName"></span></form-input-container>
+          </form-config-item>
+          <form-config-item config-title="namespace">
+            <form-input-container><span ng-bind="configMapDetailInfo.namespace"></span></form-input-container>
+          </form-config-item>
+          <form-config-item config-title="配置文件">
+            <form-input-container>
+              <multiple-config-file-read ng-if="!isEditConfigMap" config-file-list="configMapDetailInfo.configFileList"></multiple-config-file-read>
+              <multiple-config-file-write ng-if="isEditConfigMap" config-file-list="configMapDetailInfo.configFileList"></multiple-config-file-write>
+            </form-input-container>
+          </form-config-item>
+          <form-config-item>
+            <form-input-container>
+              <form-submit-button form="updateConfigMapForm" on-submit="updateConfigMap()" ng-if="isEditConfigMap &amp;&amp; hasPostPermission()" ng-disabled="isUpdating">保存</form-submit-button>
+            </form-input-container>
+          </form-config-item>
+        </form-config-group>
+      </form-container>
+    </form>
+  </ng-controller>
+</script>
+<!--script(type="text/ng-template" id="configMapEvent.html")-->

@@ -1,0 +1,9 @@
+ul.mod-appstore.app-store
+	li(ng-repeat="app in appList")
+		.app-item
+			h3(ng-bind="app.appName")
+			.app-img-on(app-img-con)
+				.cover-con
+					p(ng-bind="app.description")
+					a.ui-btn.ui-btn-white.ui-btn-deploy.ui-btn-sm.ui-btn-link(ui-sref="createAppDeploy({'appName':app.appName})") 部署
+				img(ng-src="{{app.appIcon}}")

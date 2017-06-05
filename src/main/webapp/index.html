@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html ng-app="domeApp">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>DomeOS</title>
+    <link href="/favicon.ico" rel="shortcut icon">
+    <link rel="stylesheet" href="./lib/min/minpage.20170321.css">
+    <link rel="stylesheet" href="./min/minpage.6t-0M5XJPuNsx-HG.css">
+    <link rel="stylesheet" href="common/pageLayout/pageLayout.css?v=6t-0M5XJPuNsx-HG" type="text/css">
+    <link rel="stylesheet" href="common/formInputs/formInputs.css?v=6t-0M5XJPuNsx-HG" type="text/css">
+    <link rel="stylesheet" href="index/mainpage/mainpage.css?v=6t-0M5XJPuNsx-HG" type="text/css">
+  </head>
+  <body ng-controller="MainCtr" resize-body ng-class="{
+    'thin-left-nav': thinLeftNav || lowResolution,
+    'low-resolution': lowResolution
+  }">
+    <left-nav></left-nav>
+    <right-main>
+      <memory-database-warning></memory-database-warning>
+      <header>
+        <icon-nav-switch ng-click="switchThinNav()"></icon-nav-switch>
+        <ncy-breadcrumb></ncy-breadcrumb>
+        <header-action></header-action>
+      </header>
+      <main ui-view=""></main>
+    </right-main>
+    <div></div>
+    <script src="./lib/min/mainpage.20170511.js"></script>
+    <script src="./min/mainpage.6t-0M5XJPuNsx-HG.js"></script>
+    <script type="text/javascript" src="index/tpl/overview/overviewCtr.js?v=6t-0M5XJPuNsx-HG"></script>
+    <script>window.VERSION_HASH = "6t-0M5XJPuNsx-HG";</script>
+  </body>
+</html>

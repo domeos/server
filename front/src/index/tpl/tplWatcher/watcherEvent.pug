@@ -1,0 +1,34 @@
+.events-con
+    ul.events-list
+        li.event-success(ng-if="eventList.length===0") 无事件信息
+        li(ng-repeat="event in eventList" ng-class="{'START':'event-building','PROCESSING':'event-building','SUCCESS':'event-success','FAILED':'event-failed','KUBERNETES':'event-system','ABORTED':'event-system','null':'event-system','undefined':'event-system'}[event.eventStatus]")
+            span.icon-dot
+                i.dot-line
+            span.event-name(ng-bind="event.operation | eventOperation")
+            span.event-result(ng-bind="event.eventStatus | eventStatus")
+            span.event-date(ng-bind="event.startTime| time")
+            span.event-author(ng-cloak)
+                i.icon-user(tooltip="操作者")
+                | {{event.userName}}
+            span.event-process(ng-if="event.operation!='KUBERNETES'")
+                span.event-process-item(tooltip="起始状态" tooltip-placement="left")
+                    i.icon-process-dot.start
+                    div.event-process-detail
+                        span.sig-event-process(ng-bind="'无状态'+' , '+'0实例'" ng-if="!event.primarySnapshot.length")
+                        span.sig-event-process(ng-repeat="status in event.primarySnapshot" ng-bind="'version'+status.version+' , '+status.replicas+'实例'")
+                span.event-process-item(tooltip="目标状态" tooltip-placement="left")
+                    i.icon-process-dot.origin
+                    div.event-process-detail
+                        span.sig-event-process(ng-bind="'无状态'+' , '+'0实例'" ng-if="!event.targetSnapshot.length")
+                        span.sig-event-process(ng-repeat="status in event.targetSnapshot" ng-bind="'version'+status.version+' , '+status.replicas+'实例'")
+                span.event-process-item(tooltip="完成状态" tooltip-placement="left")
+                    i.icon-process-dot.current
+                    div.event-process-detail
+                        span.sig-event-process(ng-bind="'无状态'+' , '+'0实例'" ng-if="!event.currentSnapshot.length")
+                        span.sig-event-process(ng-repeat="status in event.currentSnapshot" ng-bind="'version'+status.version+' , '+status.replicas+'实例'")
+            span.event-process.tool-nowrap(ng-if="event.operation=='KUBERNETES'" ng-bind="event.message" hoverable-popover content="event.message")
+            span.txt-warning.event-info(ng-show="event.eventStatus=='FAILED'"  tooltip="点击打开/关闭" tooltip-placement="left" style="position:relative;user-select:none;" ng-click="showWrong(event.eid)") 错误信息
+                            .popover.top.toggle(ng-show="event.eventStatus=='FAILED' && wrongMessageList[event.eid]" ng-class="animation")
+                                .arrow
+                                .popover-inner
+                                    .popover-content(ng-bind="event.message")

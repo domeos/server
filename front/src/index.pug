@@ -1,0 +1,103 @@
+doctype html
+html(ng-app="domeApp")
+  head
+      meta(http-equiv="Content-Type",content="text/html; charset=utf-8")
+      title DomeOS
+
+      link(href="/favicon.ico" rel="shortcut icon")
+
+      // build:css ./lib/min/minpage.20170321.css
+      link(rel="stylesheet" href='lib/css/bootstrap.css' type="text/css")
+      link(rel="stylesheet" href='lib/css/loading-bar.css' type="text/css")
+      link(rel="stylesheet" href="lib/css/font-awesome.min.css" type="text/css")
+      link(rel="stylesheet" href="lib/css/ng-animation.css" type="text/css")
+      // endbuild
+
+      // build:css ./min/minpage.##version-hash##.css
+      link(rel="stylesheet" href='common/css/ng-cloak.css' type="text/css")
+      link(rel="stylesheet" href="common/css/base.css" type="text/css")
+      link(rel="stylesheet" href='index/css/index.css' type="text/css")
+      link(rel="stylesheet" href='index/css/dome-index.css' type="text/css")
+      link(rel="stylesheet" href="index/css/bussiness.css" type="text/css")
+      // endbuild
+
+      link(rel="stylesheet" href="common/pageLayout/pageLayout.css?v=##version-hash##" type="text/css")
+      link(rel="stylesheet" href="common/formInputs/formInputs.css?v=##version-hash##" type="text/css")
+      link(rel="stylesheet" href="index/mainpage/mainpage.css?v=##version-hash##" type="text/css")
+      
+  body(ng-controller="MainCtr" resize-body ng-class=`{
+    'thin-left-nav': thinLeftNav || lowResolution,
+    'low-resolution': lowResolution
+  }`)
+    left-nav
+    right-main
+      memory-database-warning
+      header
+        icon-nav-switch(ng-click="switchThinNav()")
+        ncy-breadcrumb
+        header-action
+      main(ui-view="")
+
+    div
+    // build:js ./lib/min/mainpage.20170511.js
+    script(type="text/javascript" src="lib/js/jquery.min.js")
+    script(type="text/javascript" src="lib/js/angular.min.js")
+    script(type="text/javascript" src="lib/js/angular-ui-router.min.js")
+    script(type="text/javascript" src="lib/js/angular-locale_zh-cn.js")
+    script(type="text/javascript" src="lib/js/ui-bootstrap-tpls.min.js")
+    script(type="text/javascript" src="lib/js/angular-animate.min.js")
+    script(type="text/javascript" src="lib/js/angular-breadcrumb.min.js")
+    script(type="text/javascript" src="lib/js/bindonce.min.js")
+    script(type="text/javascript" src="lib/js/ocLazyLoad.js")
+    script(type="text/javascript" src="lib/js/clipboard.min.js")
+    script(type="text/javascript" src="lib/js/ngclipboard.min.js")
+    script(type="text/javascript" src="lib/js/angular-cookies.min.js")
+    script(type="text/javascript" src="lib/js/bootstrap.min.js")
+    script(type="text/javascript" src="lib/js/angular-sanitize.min.js")
+    script(type="text/javascript" src="lib/js/bindonce.min.js")
+    script(type="text/javascript" src="lib/js/scrollbar/ya-simple-scrollbar.min.js")
+    script(type="text/javascript" src="lib/js/chart/dygraph.min.js")
+    script(type="text/javascript" src="lib/js/chart/extras/smooth-plotter.js")
+    // endbuild
+    // build:js ./min/mainpage.##version-hash##.js
+    script(type="text/javascript" src="common/publicModule/publicModule.js")
+    script(type="text/javascript" src="common/publicModule/directive/publicDirective.js")
+    script(type="text/javascript" src="common/constant/constant.js")
+    script(type="text/javascript" src="common/backendApi/backendApi.js")
+    script(type="text/javascript" src="common/pageLayout/pageLayout.js")
+    script(type="text/javascript" src="common/formInputs/formInputs.js")
+    script(type="text/javascript" src="common/commonFilters/commonFilters.js")
+    script(type="text/javascript" src="common/domeModule/domeModule.js")
+    script(type="text/javascript" src="common/deployModule/deployModule.js")
+    script(type="text/javascript" src="common/imageModule/imageModule.js")
+    script(type="text/javascript" src="common/projectModule/projectModule.js")
+    script(type="text/javascript" src="common/userModule/userModule.js")
+
+    script(type="text/javascript" src="index/js/domeApp.js")
+    script(type="text/javascript" src="index/mainpage/mainpage.js")
+    script(type="text/javascript" src="index/js/common/commonDialogs.js")
+    script(type="text/javascript" src="index/js/filter.js")
+    script(type="text/javascript" src="index/js/services/projectCollectionService.js")
+    script(type="text/javascript" src="index/js/services/deployCollectionService.js")
+    script(type="text/javascript" src="index/js/services/domeService.js")
+    script(type="text/javascript" src="index/js/services/clusterService.js")
+    script(type="text/javascript" src="index/js/services/monitorService.js")
+    script(type="text/javascript" src="index/js/services/alarmService.js")
+    script(type="text/javascript" src="index/js/directives/domeDirective.js")
+    script(type="text/javascript" src="index/js/directives/domeValidation.js")
+
+    script(type="text/javascript" src="index/tpl/modal/buildModal/buildModalCtr.js")
+    script(type="text/javascript" src="index/tpl/modal/hostListModal/hostListModalCtr.js")
+    script(type="text/javascript" src="index/tpl/modal/otherImageModal/otherImageModalCtr.js")
+    script(type="text/javascript" src="index/tpl/modal/instanceLogModal/instanceLogModalCtr.js")
+    script(type="text/javascript" src="index/tpl/modal/selectContainerModal/selectContainerModalCtr.js")
+    script(type="text/javascript" src="index/tpl/modal/dockerfileModal/dockerfileModalCtr.js")
+    script(type="text/javascript" src="index/tpl/modal/branchCheckModal/branchCheckModalCtr.js")
+    script(type="text/javascript" src="index/tpl/modal/codeInfoModal/codeInfoModalCtr.js")
+
+    script(type="text/javascript" src="common/deploymentComponent/deploymentComponent.js")
+    // endbuild
+
+    script(type="text/javascript" src="index/tpl/overview/overviewCtr.js?v=##version-hash##")
+
+    script window.VERSION_HASH = "##version-hash##";

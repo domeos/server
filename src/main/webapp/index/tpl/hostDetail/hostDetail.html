@@ -1,0 +1,165 @@
+
+<div class="mod-cluster host-detail">
+  <div class="detail-header-wrap">
+    <div class="detail-item-logo"><i ng-class="{ 'ubuntu': 'icon-ubuntu', 'centos': 'icon-centos' }[osType]"></i></div>
+    <div class="detail-item">
+      <div class="item-name"><span>版本：</span><span class="item-name-next" ng-bind="node.osVersion || '无'" title="{{ node.osVersion }}"></span></div>
+      <div class="item-name"><span>内核：</span><span class="item-name-next" ng-bind="node.kernelVersion || '无' " title="{{ node.kernelVersion }}"></span></div>
+    </div>
+    <div class="detail-item">
+      <div class="item-name"><span>主机名：</span><span class="item-name-next" ng-bind="node.name || '未设置'" title="{{ node.name }}"></span></div>
+      <div class="item-name"><span>主机IP：</span><span class="item-name-next" ng-bind="node.ip || '未设置'" title="{{ node.ip }}"></span></div>
+    </div>
+    <div class="detail-item" style="min-width: 90px;">
+      <div class="item-name"><span><i class="icon-memory" title="内存"></i></span><span class="item-name-next" ng-bind="node.capacity.memory || 0" title="{{ node.capacity.memory + 'MB' }}"></span>MB</div>
+      <div class="item-name"><span><i class="icon-cpu" style="margin-right: 7px;" title="CPU"></i></span><span class="item-name-next" ng-bind="node.capacity.cpu || 0" title="{{ node.capacity.cpu + '个'}}"></span>个</div>
+    </div>
+    <div class="detail-item">
+      <div class="item-name"><span><i class="icon-docker-sm" title="Docker版本"></i></span><span class="item-name-next" ng-bind="node.dockerVersion || '无'" title="{{ node.dockerVersion }}"></span></div>
+      <div class="item-name"><span><i class="icon-kube-sm" title="Kubernetes版本"></i></span><span class="item-name-next" ng-bind="node.kubeletVersion || '无'" title="{{ node.kubeletVersion }}"></span></div>
+    </div>
+    <div class="detail-item-line"><span ng-bind="node.statusTxt" ng-class="{ 'Ready': 'txt-success', 'NotReady': 'txt-warning'}[node.status]"></span></div>
+  </div>
+  <loading ng-if="loading"></loading>
+  <div class="host-info">
+    <tabset>
+      <tab heading="实例列表" active="tabActive[0].active" ui-sref="hostDetail.instancelist">
+        <loading ng-if="isWaitingHost"></loading>
+        <div class="info-options mod-option" style="line-height: 34px;"><span class="dome-dot dome-dot-success"></span><span class="dome-dot-next" ng-cloak="ng-cloak">Running {{(instanceListFiltered|filter:{'status':'Running'}).length}}个</span><span class="dome-dot dome-dot-error"></span><span class="dome-dot-next" ng-cloak="ng-cloak">Error {{(instanceListFiltered|filter:{'status':'Error'}).length}}个</span><span class="dome-dot dome-dot-default"></span><span class="dome-dot-next" ng-cloak="ng-cloak">Other {{instanceListFiltered.length - (instanceListFiltered|filter:{'status':'Running'}).length - (instanceListFiltered|filter:{'status':'Error'}).length}}个</span>
+          <div class="info-right right-option pull-right"><span class="info-count" ng-cloak="ng-cloak">共{{instanceListFiltered.length}}个实例</span>
+            <input class="ui-input-fill ui-input-white ui-input-search pull-right" placeholder="输入实例名称查找" ng-model="insKey"/>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="ui-table-dome full">
+            <thead>
+              <tr>
+                <th><span class="tool-enable-click" ng-click="toggleOrderBy('instanceName')" ng-class="{'active':orderBy.item==='instanceName'}"> 实例名称<i class="icon-order" ng-show="orderBy.item!='instanceName'"></i><i class="icon-down" ng-show="orderBy.item=='instanceName'" ng-class="{'up':!orderBy.isReverse}"></i></span></th>
+                <th><span class="tool-enable-click" ng-click="toggleOrderBy('namespace')" ng-class="{'active':orderBy.item==='namespace'}">namespace<i class="icon-order" ng-show="orderBy.item!='namespace'"></i><i class="icon-down" ng-show="orderBy.item=='namespace'" ng-class="{'up':!orderBy.isReverse}"></i></span></th>
+                <th><span class="tool-enable-click" ng-click="toggleOrderBy('deployName')" ng-class="{'active':orderBy.item==='deployName'}">部署名称<i class="icon-order" ng-show="orderBy.item!='deployName'"></i><i class="icon-down" ng-show="orderBy.item=='deployName'" ng-class="{'up':!orderBy.isReverse}"></i></span></th>
+                <th><span class="tool-enable-click" ng-click="toggleOrderBy('versionId')" ng-class="{'active':orderBy.item==='versionId'}">部署版本<i class="icon-order" ng-show="orderBy.item!='versionId'"></i><i class="icon-down" ng-show="orderBy.item=='versionId'" ng-class="{'up':!orderBy.isReverse}"></i></span></th>
+                <th><span class="tool-enable-click" ng-click="toggleOrderBy('startTime')" ng-class="{'active':orderBy.item==='startTime'}">启动时间<i class="icon-order" ng-show="orderBy.item!='startTime'"></i><i class="icon-down" ng-show="orderBy.item=='startTime'" ng-class="{'up':!orderBy.isReverse}"></i></span></th>
+                <th><span class="tool-enable-click" ng-click="toggleOrderBy('status')" ng-class="{'active':orderBy.item==='status'}">实例状态<i class="icon-order" ng-show="orderBy.item!='status'"></i><i class="icon-down" ng-show="orderBy.item=='status'" ng-class="{'up':!orderBy.isReverse}"></i></span></th>
+                <!--th 日志-->
+                <!--th 容器控制台-->
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-if="instanceList&amp;&amp;instanceListFiltered.length===0">
+                <td colspan="6">无相关实例信息</td>
+              </tr>
+              <tr ng-repeat="ins in instanceListFiltered=(instanceList|filter:{'instanceName':insKey} | orderBy: (orderBy.isReverse ? '-' + orderBy.item : orderBy.item))">
+                <td><a class="ui-table-link" ng-if="ins.versionId!==0" ng-click="goToDeployInstance(ins)" ng-bind="ins.instanceName"></a><span ng-if="ins.versionId===0" ng-bind="ins.instanceName"></span></td>
+                <td ng-bind="ins.namespace"></td>
+                <td ng-if="ins.versionId===0" colspan="2">该实例由后台创建</td>
+                <td ng-bind="ins.deployName" ng-if="ins.versionId!==0"></td>
+                <td ng-cloak="ng-cloak" ng-if="ins.versionId!==0">version{{ins.versionId}}</td>
+                <td ng-bind="ins.startTime | time"></td>
+                <td ng-bind="ins.status" ng-class="ins.status === 'Running' ? 'txt-success' : ins.status === 'Error' ? 'txt-error' : 'txt-warning'"></td>
+                <!--td-->
+                <!--	a.txt-safe(ng-click="showLog(ins.instanceName,ins.containers,ins.namespace)") 日志-->
+                <!--td-->
+                <!--	a.link-safe(ng-click="toConsole($index)") 进入-->
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </tab>
+      <tab heading="主机设置" active="tabActive[1].active" ui-sref="hostDetail.info">
+        <form name="hostForm">
+          <form-container>
+            <form-config-group>
+              <form-config-item config-title="工作场景">
+                <form-input-container>
+                  <form-multiple-inline>
+                    <form-multiple-inline-item style="flex-grow: 0; flex-basis: 40%;">
+                      <div style="line-height: 20px;"><span class="com-check-con">
+                          <input class="ui-check" id="productionEnv" type="checkbox" ng-model="envData.prodEnv"/>
+                          <label for="productionEnv">生产环境</label></span><span class="com-check-con">
+                          <input class="ui-check" id="testEnv" type="checkbox" ng-model="envData.testEnv"/>
+                          <label for="testEnv">测试环境</label></span></div>
+                    </form-multiple-inline-item>
+                    <form-multiple-inline-item>
+                      <button class="save-label" type="button" ng-click="modifyEnv()">保存</button>
+                    </form-multiple-inline-item>
+                  </form-multiple-inline>
+                </form-input-container>
+              </form-config-item>
+            </form-config-group>
+            <form-config-group>
+              <form-config-item config-title="主机标签">
+                <form-input-container>
+                  <form-multiple-inline>
+                    <form-multiple-inline-item style="flex-grow: 0; flex-basis: 40%;">
+                      <input type="text" ng-model="hostSetting.labelTxt" name="labelTxt" required="required"/>
+                    </form-multiple-inline-item>
+                    <form-multiple-inline-item>
+                      <button class="save-label" type="submit" ng-click="hostForm.$valid&amp;&amp;addLabel()">添加</button>
+                    </form-multiple-inline-item>
+                  </form-multiple-inline>
+                  <div style="overflow: hidden; line-height: 20px;">
+                    <ul class="com-label-list host-label-con">
+                      <li ng-repeat="(label,value) in labelsList"><span class="label-item" ng-cloak="ng-cloak"><a class="icon-cancle icon-cancle-former" ng-click="deleteLable(label)"></a>{{label}}</span></li>
+                    </ul>
+                  </div>
+                </form-input-container>
+              </form-config-item>
+            </form-config-group>
+            <form-config-group ng-if="clusterConfig.buildConfig===1">
+              <form-config-item config-title="是否用于构建">
+                <form-input-container>
+                  <form-multiple-inline>
+                    <form-multiple-inline-item style="flex: 0.2;">
+                      <form-input-checkbox ng-model="hostSetting.isUsedToBuild" on-change="toggleBuildEnv()" value="true" value-false="false" appearance="switch"></form-input-checkbox>
+                    </form-multiple-inline-item>
+                    <form-multiple-inline-item><span class="form-help-text">由于构建时可能会从第三方镜像库下载基础镜像，请开启时尽量保证主机有外网权限</span></form-multiple-inline-item>
+                  </form-multiple-inline>
+                  <!--dome-toggle(ng-class="{'on':hostSetting.isUsedToBuild}" ng-click="toggleBuildEnv()")-->
+                  <!--	| 由于构建时可能会从第三方镜像库下载基础镜像，请开启时尽量保证主机有外网权限-->
+                </form-input-container>
+              </form-config-item>
+            </form-config-group>
+          </form-container>
+        </form>
+      </tab>
+      <!--tab(heading="主机设置" active="tabActive[2].active" ui-sref="hostDetail.info")-->
+      <!--	ul.com-list-info(ng-form role="form" name="hostForm" ng-class="{'need-valid':needValidHost}")-->
+      <!--		li.has-border-->
+      <!--			span.info-name 工作场景-->
+      <!--			.info-content-->
+      <!--				.line-hostEnv(style="width: 40%; margin-top: 5px;")-->
+      <!--					span.com-check-con-->
+      <!--						input#productionEnv.ui-check(type="checkbox" ng-model="envData.prodEnv")-->
+      <!--						label(for="productionEnv") 生产环境-->
+      <!--					span.com-check-con-->
+      <!--						input#testEnv.ui-check(type="checkbox" ng-model="envData.testEnv")-->
+      <!--						label(for="testEnv") 测试环境-->
+      <!--					.pull-right-->
+      <!--						button.ui-btn.ui-btn-sm.ui-btn-bright.save-label(ng-click="modifyEnv()") 保存-->
+      <!--		li.has-border-->
+      <!--			span.info-name 主机标签-->
+      <!--			.info-content-->
+      <!--				.line-short-->
+      <!--					input.ui-input-white.line-element(ng-model="hostSetting.labelTxt" name="labelTxt")-->
+      <!--					button.ui-btn.ui-btn-bright.ui-btn-sm.add-label(ng-click="needValidHost=true;hostForm.$valid&&addLabel()") 添加-->
+      <!--				ul.com-label-list.host-label-con-->
+      <!--					li(ng-repeat="(label,value) in labelsList")-->
+      <!--						span.label-item(ng-cloak)-->
+      <!--							//- a.icon-cancel(ng-click="deleteLable(label)")-->
+      <!--							a.icon-cancle.icon-cancle-former(ng-click="deleteLable(label)")-->
+      <!--							| {{label}}-->
+      <!--		li(ng-if="clusterConfig.buildConfig===1")-->
+      <!--			span.info-name 是否用于构建-->
+      <!--			.info-content.txt-prompt-->
+      <!--				dome-toggle(ng-class="{'on':hostSetting.isUsedToBuild}" ng-click="toggleBuildEnv()")-->
+      <!--				| 由于构建时可能会从第三方镜像库下载基础镜像，请开启时尽量保证主机有外网权限
+      //- li
+      	span.info-name 磁盘挂载点
+      	.info-content
+      		.line-short
+      			input.ui-input-white.line-element(placeholder="请输入磁盘路径，用于保存有状态服务数据" ng-model="hostSetting.diskTxt" name="labelTxt")
+      			button.ui-btn.ui-btn-primary.ui-btn-sm.add-label(ng-click="saveDisk()") 保存
+      -->
+    </tabset>
+  </div>
+</div>

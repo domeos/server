@@ -1,0 +1,115 @@
+/*
+ * @description: common css variable and function
+ * @version: 0.1
+ */
+
+$default-radius:3px;
+$nav-width:225px;
+$thin-nav-width:70px;
+$nav-transition-duration:0.1s;
+$page-padding:20px;
+$wider-padding:0px;//52px
+$list-padding:8px;
+$table-height:45px;
+//active:#77bf4f,
+//safe:#4ed6b2,
+//bright:#188ae2,
+$dome-colors:(
+    dome:(
+        active:#4bd396,
+        warning:#f9c851,
+        error:#f5707a,
+        safe:#4bd396,
+        primary:#5dabf3,
+        bright:#188ae2,
+        white:#fff,
+        active-font:#188ae2,
+        disabled:#777
+        ),
+    border:(
+        deep:#999,
+        default:#cfcfcf,
+        light:#eee
+        ),
+    font:(
+        prompt:#bbb,
+        default:#888,
+        embed:#444,
+        light-blue:#7fc1fc
+        ),
+    background:(
+        light:#f0f2f5,
+        primary:#def0fe,
+        white:#fff,
+        table-hover-background: #f9f9f9
+        )
+    );
+$font-size:(
+    title:22px,
+    large:16px,
+    default:14px,
+    prompt:12px
+    );
+$light-border:1px solid #f0f2f5;
+$deep-border:1px solid #ddd;
+%dome-background{
+    @include background(linear-gradient(left,#5dabf3, #4ed6b2)); 
+}
+%nowrap{
+    overflow: hidden;
+    text-overflow:ellipsis;
+    white-space: nowrap;
+}
+%noback{
+    &,&:focus,&:link,&:visited,&:hover,&:active{
+        background:none;
+        border:none;
+        outline: none !important;
+        box-shadow: none;
+    }
+}
+%cursor{
+    &:hover{
+        cursor: pointer;
+    }
+}
+%vertical-middle{
+    display: inline-block;
+    vertical-align: middle;
+}
+// common  function
+@function font-size($format){
+    @if map-has-key($font-size,$format){
+        @return map-get($font-size,$format);
+    }
+    @warn "No color found for $font-size in #{$format} map.";
+}
+@function dome-color($map,$color){
+    @if map-has-key($dome-colors,$map){
+        @if map-has-key(map-get($dome-colors,$map),$color){
+            @return map-get(map-get($dome-colors,$map),$color);
+        }
+        @warn "No color found for #{$color} in #{$map} map.";
+    }
+    @warn "No color found for #{$map} in $dome-colors map.";
+}
+@function color($map,$color){
+    @if map-has-key($map,$color){
+        @return map-get($map,$color);
+    }
+    @warn "No color found for #{$color} in #{$map} map.";
+}
+@mixin get-sprite($icon,$name,$is-block){
+    background: sprite-url($icon) no-repeat sprite-position($icon, $name);
+    @if $is-block{
+        @extend %vertical-middle;
+        @include sprite-dimensions($icon, $name);
+    }
+}
+
+// keyframes mixin
+@mixin setKeyframes($name) {
+    @include keyframes($name){
+        @content;
+    }
+}

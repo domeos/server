@@ -1,0 +1,51 @@
+//
+   Created by haozhou on 2017/3/14.
+
+.dome-load-balance
+    page-title(page-title="负载均衡")
+    loading(ng-if="isLoading")
+    .dome-option-container
+        button.ui-btn.ui-btn-lg.ui-btn-bright(ui-sref="createLoadBalanceCollection")
+            span.btn-txt 新建负载均衡
+            i.fa.fa-plus
+        .option-right
+            span(ng-cloak) 共{{loadBalanceCollectionFilter.length || 0}}个负载均衡
+            input.ui-input-search.ui-input-fill(type="text" placeholder="输入名称进行查询" ng-model="proKeywords")
+    .dome-prompt-container
+        dome-prompt(content="负载均衡用来控制一组负载均衡实例的访问权限。")
+    .dome-list-container
+        ul
+            li.dome-list-item-no(ng-if="!isLoading&&(!loadBalanceCollectionList||loadBalanceCollectionFilter.length===0)")
+                span 暂无负载均衡，可以
+                a.txt-bright(ui-sref="createLoadBalanceCollection") 新建一个
+            li.dome-list-item(ng-repeat="loadBalanceCollection in loadBalanceCollectionFilter=(loadBalanceCollectionList|filter:{name:proKeywords})")
+
+                .dome-list-item-header
+                    a.item-header-name(ng-if="!loadBalanceCollection.isEdit" ui-sref="loadBalanceInfo({'id': loadBalanceCollection.id, 'type': loadBalanceCollection.type})" ng-bind="loadBalanceCollection.name || '未设置'")
+                    input.ui-input-fill(ng-if="loadBalanceCollection.isEdit" ng-model="loadBalanceCollection.name")
+                    .item-header-option
+                        button.dome-fa-icon.fa.fa-pencil.dome-btn-none(ng-if="!loadBalanceCollection.isEdit" ng-click="loadBalanceCollection.isEdit = true" ng-class="{true:'icon-edit-color',false:'icon-fa-disabled'}[loadBalanceCollection.role==='MASTER' || loadBalanceCollection.role==='DEVELOPER']" ng-disabled="!(loadBalanceCollection.role==='MASTER' || loadBalanceCollection.role==='DEVELOPER')" tooltip="编辑")
+                        button.dome-fa-icon.fa.fa-trash-o.dome-btn-none(ng-if="!loadBalanceCollection.isEdit" ng-click="delete(loadBalanceCollection)" ng-class="{true:'icon-trash-color',false:'icon-fa-disabled'}[loadBalanceCollection.role==='MASTER']" ng-disabled="!(loadBalanceCollection.role==='MASTER')" tooltip="删除")
+
+                        button.fa.fa-floppy-o.dome-btn-none.icon-success-color(ng-if="loadBalanceCollection.isEdit" ng-click="saveModify(loadBalanceCollection);loadBalanceCollection.isEdit = false" tooltip="保存")
+                        button.fa.fa-times.dome-btn-none.icon-cancel-color(ng-if="loadBalanceCollection.isEdit" ng-click="cancelModify();loadBalanceCollection.isEdit = false" tooltip="取消")
+                .dome-list-item-content
+                    .item-content-block
+                        span 类型：
+                        span(ng-bind="loadBalanceCollection.type.toLowerCase()" ng-class="{'KUBE_PROXY': 'txt-bright', 'NGINX': 'txt-success'}[loadBalanceCollection.type]")
+                    .item-content-block.long-text-wrap(style="margin: -5px;")
+                        span(ng-if="!loadBalanceCollection.isEdit" ng-bind="loadBalanceCollection.description || '无描述信息'" title="{{ loadBalanceCollection.description }}")
+                        input.ui-input-fill(ng-if="loadBalanceCollection.isEdit" ng-model="loadBalanceCollection.description")
+                .dome-list-item-footer
+                    .item-footer-block
+                        | 实例数：
+                        span.txt-bright(ng-bind="loadBalanceCollection.loadBalancerCount")
+                    .item-footer-block
+                        | 成员数：
+                        span.txt-success(ng-bind="loadBalanceCollection.memberCount")
+                    .item-footer-block
+                        | 创建时间：
+                        span(ng-bind="loadBalanceCollection.createTime | day")
+                    .item-footer-block-other(style="display:inline-block")
+                        | 创建者：
+                        span(ng-bind="loadBalanceCollection.creatorName")

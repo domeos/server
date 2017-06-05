@@ -1,0 +1,220 @@
+.mirror-custom.mod-deploy
+	loading(ng-if="isLoading")
+	tabset.mod-tab
+		tab(heading="定制镜像"  active="tabActive[0].active" ui-sref="mirrorCustom")
+			ul.com-list-info(ng-form name="mirrorInfoForm" ng-class="{'need-valid':needValid}" novalidate="novalidate")
+				li.has-border
+					span.info-name 定制类型
+					.info-content
+						.line-short.com-chose-repository
+							span.repository(ng-click="toggleCustomType('dockerfile');needValid=false;mirrorInfoForm.$setPristine();" ng-class="{active:customtype=='dockerfile'}")
+								.mirror-content
+									span Dockerfile定制
+									span.txt-prompt.txt-describe 直接在页面上编写Dockerfile并执行构建
+							span.repository(ng-click="toggleCustomType('configfile');needValid=false;mirrorInfoForm.$setPristine();" ng-class="{active:customtype=='configfile'}")
+								.mirror-content
+									span 配置文件定制
+									span.txt-prompt.txt-describe 选择镜像仓库中的镜像，编写配置文件，系统自动生成Dockerfile并构建
+				li.has-border(ng-if="customtype=='configfile'")
+					span.info-name 选择基础镜像
+					.info-content
+						.line-short
+							span.child-name 选择镜像仓库
+							.line-element.com-select-con(select-con)
+								button.ui-btn.ui-btn-white.ui-btn-select
+									i.icon-down
+									| {{config.sourceImage.thirdParty===0?'DomeOS私有镜像仓库':'第三方镜像仓库'}}
+								ul.select-list
+									li.select-item
+										a(ng-click="toggleMirrorHub(0)") DomeOS私有镜像仓库
+									li.select-item
+										a(ng-click="toggleMirrorHub(1)") 第三方镜像仓库
+						.line-long(ng-if="config.sourceImage.thirdParty===0")
+							span.child-name 选择镜像
+							.line-element.com-select-con(select-con)
+								button.ui-btn.ui-btn-white.ui-btn-select.img-select
+									i.icon-down
+									| {{img.mirror||'无私有镜像'}}
+								ul.select-list
+									li(ng-if="img.length===0")
+										a 无相关镜像
+									li.select-item
+										a(ng-click="selectMirror('baseImages')" ng-show="img.baseImages.length!==0") 基础镜像
+									li.select-item
+										a(ng-click="selectMirror('projectImages')" ng-show="img.projectImages.length!==0") 项目镜像
+									li.select-item
+										a(ng-click="selectMirror('otherImages')" ng-show="img.otherImages.length!==0") 非项目镜像
+							.line-element.com-select-con.tool-next(select-con)
+								button.ui-btn.ui-btn-white.ui-btn-select.img-select
+									i.icon-down
+									| {{config.sourceImage.imageName||'选择镜像名称'}}
+								ul.select-list
+									li(ng-if="img.mirrorNameList.length===0")
+										a 无相关镜像名称
+									li.select-item(ng-repeat="imagenamelist in img.mirrorNameList  track by $index")
+										a(ng-click="selectMirrorName(imagenamelist.imageName,imagenamelist.registry)" ng-bind="imagenamelist.imageName")
+							.line-element.com-select-con.tool-next(select-con)
+								button.ui-btn.ui-btn-white.ui-btn-select.img-select
+									i.icon-down
+									| {{config.sourceImage.imageTag||'选择镜像版本'}}
+								ul.select-list
+									li(ng-if="img.mirrorTagList.length===0")
+										a 无相关镜像版本
+									li.select-item(ng-repeat="imgtag in img.mirrorTagList")
+										a(ng-click="config.sourceImage.imageTag=imgtag" ng-bind="imgtag")
+						.line-long(ng-if="config.sourceImage.thirdParty===1")
+							span.child-name 选择镜像
+							.line-element
+								input.ui-input-white.full(placeholder="镜像仓库地址" ng-model="config.sourceImage.registryUrl" required)
+							.line-element.tool-next
+								input.ui-input-white.full(placeholder="镜像名称" ng-model="config.sourceImage.imageName" required)
+							.line-element.tool-next
+								input.ui-input-white.full(placeholder="镜像版本" ng-model="config.sourceImage.imageTag" required)
+				li.has-border(ng-if="customtype=='configfile'")
+					span.info-name 添加配置文件
+					.info-content
+						button.ui-btn.ui-btn-sm.ui-btn-bright.add-log(ng-click="mirror.addFileDefault()") 添加
+						table.log-item.ui-table-primary(ng-repeat="fileInfo in config.files" ng-class="{'edit-form':showFile&&showContent}" file-collapse)
+							tr
+								td.td-small
+									p.con-num(ng-bind="$index+1")
+								td
+									input.ui-input-white(placeholder="文件名" ng-model="fileInfo.fileName" ng-click="toggleFile()" ng-class="{'ui-input-fill':showFile}" is-required param1="{{fileInfo.filePath}}")
+								td.txt-prompt.vertical(ng-if="!showFile") |
+								td
+									input.ui-input-white(placeholder="文件存放路径" ng-model="fileInfo.filePath" ng-click="toggleFile()" ng-class="{'ui-input-fill':showFile}" is-required param1="{{fileInfo.fileName}}")
+								td.td-small
+									a.icon-cancel(ng-click="mirror.deleteArrItem('files',$index)")
+							tr
+								td.td-edit(colspan="5" ng-if="!showContent")
+									a(ng-click="toggleContent()") 编辑
+								td(ng-if="showContent")
+								td.td-edit(colspan="2" ng-if="showContent")
+									textarea.ui-input-fill(ng-model="fileInfo.content")
+								td(ng-if="showContent")
+							tr(ng-if="showContent")
+								td.td-edit(colspan="4")
+									button.ui-btn.ui-btn-sm.ui-btn-cancel(ng-click="toggleContent();mirror.clearFileWrite($index)") 取消
+									button.ui-btn.ui-btn-sm.ui-btn-active(ng-click="toggleContent()") 保存
+				li.has-border(ng-if="customtype=='dockerfile'")
+					span.info-name 编辑Dockerfile
+					.info-content
+						p.line-word.txt-prompt ADD指令只能通过URL获取文件；COPY指令无效
+						.line-long
+							textarea.ui-input-fill(placeholder="请输入Dockerfile" type="text" required ng-model="config.dockerfileContent" )
+						.line-long
+							button.ui-btn.ui-btn-sm.ui-btn-bright(ng-click="config.dockerfileContent=''") 清空
+				li.has-border(ng-if="customtype=='configfile'")
+					span.info-name 输入环境变量
+					.info-content
+						.line-long(ng-repeat="envConfDefault in config.envSettings")
+							.line-element
+								input.ui-input-fill.full(placeholder="环境变量名" ng-model="envConfDefault.key" ng-focus="$last&&mirror.addEnvConfDefault()" is-required param1="{{envConfDefault.value}}")
+							.line-element.tool-next
+								input.ui-input-fill.full(placeholder="环境变量值" ng-model="envConfDefault.value" is-required param1="{{envConfDefault.key}}")
+							.line-element.tool-next
+								input.ui-input-fill.full(placeholder="环境变量描述" ng-model="envConfDefault.description")
+							a.txt-wrap.icon-delete(ng-if="config.envSettings.length>1" ng-click="mirror.deleteArrItem('envSettings',$index)")
+				li.has-border
+					span.info-name 发布镜像
+					.info-content
+						p.line-word.txt-prompt 是否作为基础镜像
+						.line-long
+							span.com-check-con
+								input#isbasic.ui-radio(type="radio" value="1" name="netWork" ng-model="config.publish")
+								label(for="isbasic") 是
+							span.com-check-con
+								input#nobasic.ui-radio(type="radio" value="0" name="netWork" ng-model="config.publish")
+								label(for="nobasic") 否
+						p.line-word.txt-prompt 给指定的镜像添加描述
+						.line-long
+							input.ui-input-fill.line-element(placeholder="镜像描述" ng-model="config.description")
+
+						p.line-word.txt-prompt 可以把定制镜像指定为特定编程语言的编译镜像或运行镜像
+						.line-word
+							input.ui-check(id="SpecificImg" ng-model="specificImg.isSelected" type="checkbox" name="SpecificImg" ng-click="assigImgName(specificImg.isSelected);")
+							label(for="SpecificImg") 启用
+						.line-long
+							.line-element.com-select-con(select-con)
+								button.ui-btn.ui-btn-white.ui-btn-select(ng-disabled="!specificImg.isSelected" )
+									i.icon-down
+									| {{specificImg.language}}
+								ul.select-list
+									li.select-item
+										a(ng-click="specificImg.language='java';assigImgName(true)") java
+							.line-element.com-select-con.tool-next(select-con)
+								button.ui-btn.ui-btn-white.ui-btn-select(ng-disabled="!specificImg.isSelected" )
+									i.icon-down
+									| {{specificImg.imgType=='compileimage'?'编译镜像':'运行镜像'}}
+								ul.select-list
+									li.select-item
+										a(ng-click="specificImg.imgType='compileimage';assigImgName(true)") 编译镜像
+									li.select-item
+										a(ng-click="specificImg.imgType='runimage';assigImgName(true)") 运行镜像
+						p.line-word.txt-prompt 请指定定制镜像的名称和版本号，不能和镜像仓库中已有的镜像重复
+						.line-long
+							.line-element.com-select-con(select-con)
+								input.ui-input-fill.ui-btn-select(placeholder="镜像名称" type="text" required ng-model="config.imageName" ng-disabled="specificImg.isSelected" ng-class="{'txt-disable':specificImg.isSelected}")
+							.line-element.com-select-con.tool-next(select-con)
+								input.ui-input-fill.ui-btn-select(placeholder="镜像版本" type="text" required ng-model="config.imageTag")
+							span.txt-wrap
+								a.link-safe(ng-click="nameTest()") 重名检测
+			.com-bottom-option
+				span.com-bottom-option-con
+					button.ui-btn.ui-btn-md.ui-btn-bright(ng-click="needValid=true;mirrorInfoForm.$valid&&creatBuild()") 开始构建
+					span.txt-error(ng-if="needValid&&mirrorInfoForm.$invalid") 存在不合法数据，请修改后提交！
+		tab(heading="定制记录" ng-click="getImgList()" active="tabActive[1].active" ui-sref="mirrorCustom.log")
+			.chose-row
+				.chose-item
+					span.chose-title 状态筛选
+					.chose-options
+						em(ng-class="{'active':selectOption.state.All}" ng-click="toggleAll('state')") 全部
+						//- em(ng-class="{'active':selectOption.state.Preparing}" ng-click="toggleSelect('state','Preparing')") 创建成功
+						em(ng-class="{'active':selectOption.state.Building}" ng-click="toggleSelect('state','Building')") 构建中
+						em(ng-class="{'active':selectOption.state.Success}" ng-click="toggleSelect('state','Success')") 成功
+						em(ng-class="{'active':selectOption.state.Fail}" ng-click="toggleSelect('state','Fail')") 失败
+						em.txt-prompt |
+				.chose-item
+					span.chose-title 构建者筛选
+					.chose-options
+						em(ng-class="{'active':selectOption.builduser.All}" ng-click="toggleAll('builduser')") 所有人
+						em(ng-class="{'active':selectOption.builduser.own}" ng-click="toggleSelect('builduser','own')") 仅自己
+			.chose-row
+				.chose-item
+					span.chose-title 定制类型筛选
+					.chose-options
+						em(ng-class="{'active':selectOption.type.All}" ng-click="toggleAll('type')") 全部
+						em(ng-class="{'active':selectOption.type.dockerfile}" ng-click="toggleSelect('type','dockerfile')") Dockerfile
+						em(ng-class="{'active':selectOption.type.configfile}" ng-click="toggleSelect('type','configfile')") 配置文件
+						em.txt-prompt |
+					span.chose-title 镜像名筛选
+					.chose-options
+						input.ui-input-search.ui-input-fill(type="text" placeholder="输入部署名称查询" ng-model="mirKeyword")
+			.mod-list
+				customlist
+					table.ui-table-dome
+						tbody
+							tr(ng-if="buildListFilter&&buildListFilter.length===0")
+								td(colspan="9") 无相关信息
+							tr(ng-repeat="custom in buildListFilter=(customImgList|filter:{'imageName':mirKeyword}|mirrorOptions:selectOption.state:selectOption.builduser:selectOption.type:loginUser.username)" ng-click="showDetail($index,custom.id)")
+								td(ng-bind="custom.imageName")
+								td
+									i.icon-label(tooltip="镜像版本")
+									| {{custom.imageTag}}
+								td
+									i.icon-config(tooltip="定制类型")
+									| {{custom.type}}
+								td
+									i.icon-user(tooltip="构建者")
+									| {{custom.username}}
+								td(ng-switch="custom.state")
+									span.txt-normal(ng-switch-when="Building") 构建中
+									span.txt-normal(ng-switch-when="Preparing") 等待中
+									span.txt-success(ng-switch-when="Success") 成功
+									span.txt-warning(ng-switch-when="Fail") 失败
+								td(ng-bind="custom.createTime")
+								td(ng-bind="custom.interval")
+								td
+									a.link-safe(href="{{custom.logHref}}" target="_blank") 日志
+								td
+									a.icon-down.up(ng-class="{'up':$index!==currentIndex}")

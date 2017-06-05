@@ -1,0 +1,202 @@
+.mod-appstore.app-detail.mod-deploy(ng-form role="form" name="deployForm" ng-class="{'need-valid':needValid}")
+	loading(ng-if="deployIns.loadingIns.isLoading||isLoading")
+	ul.com-list-info
+		li(ng-if="!deployConfig.stateful")
+			span.info-name 实例个数
+			.info-content.container-info
+				input.ui-input-fill.ui-input-sm.container-txt(ng-model="deployConfig.replicas" name="replicas" ng-pattern="/^[1-9]\\d*$/" is-over max="999" min="1")
+				span.container-unit 个
+				span.txt-error(ng-if="(needValid||deployForm.replicas.$dirty)&&deployForm.replicas.$invalid") 请填写0~999范围内的数字
+		li
+			span.info-name.not-align-input 镜像仓库
+			span.info-content(ng-bind="deployConfig.containerDrafts[0].registry")
+		li
+			span.info-name.not-align-input 镜像名称
+			span.info-content(ng-bind="deployConfig.containerDrafts[0].image")
+		li
+			span.info-name.not-align-input 镜像版本
+			span.info-content(ng-bind="deployConfig.containerDrafts[0].tag")
+		li
+			span.info-name 容器大小
+			.info-content
+				| CPU(个)
+				input.ui-input-sm.ui-input-fill.container-cpu(ng-model="deployConfig.containerDrafts[0].cpu" name="cpu" required ng-pattern="/^(\\d*\\.)?\\d+$/")
+				| 内存(MB)
+				input.ui-input-sm.ui-input-fill(ng-model="deployConfig.containerDrafts[0].mem" name="mem" required ng-pattern="/^(\\d*\\.)?\\d+$/")
+				span.txt-error(ng-if="(needValid||deployForm.cpu.$dirty)&&deployForm.cpu.$invalid||(needValid||deployForm.mem.$dirty)&&deployForm.mem.$invalid") 请填写数字
+		li
+			span.info-name(ng-class="{'not-align-input':!hasEnv}") 运行过程环境变量
+			.info-content
+				.line-longer
+					span(ng-if="!hasEnv") 无
+					table.ui-table-primary.full.ui-table-env(ng-if="hasEnv=deployConfig.containerDrafts[0].envs")
+						thead
+							tr
+								th 环境变量名
+								th 环境变量值
+								th 描述
+						tbody
+							tr(ng-repeat="env in deployConfig.containerDrafts[0].envs")
+								td(ng-bind="env.key")
+								td
+									input.ui-input-fill.ui-input-full(ng-model="env.value" name="envValue" diy-pattern="deployConfig.containerDrafts[0].envChecker[env.key]")
+								td(ng-bind="env.description")
+		li(ng-if="deployConfig.stateful")
+			span.info-name.not-align-input 网络模式
+			.info-content
+				span.com-check-con
+					input.ui-radio(type="radio" id="default" name="networkmode" ng-model="deployConfig.networkMode" value="DEFAULT")
+					label(for="default") 默认
+				span.com-check-con
+					input.ui-radio(type="radio" id="host" name="networkmode" ng-model="deployConfig.networkMode" value="HOST" ng-change="deployIns.changeNetworkmode()")
+					label(for="host") Host
+		li
+			span.info-name 负载均衡
+			.info-content.log-content
+				span(ng-if="deployConfig.loadBalanceDrafts.length===1" style="display:inline-block;margin-top:24px;") 无
+				div.log-item(ng-form ng-repeat="loadbalance in deployConfig.loadBalanceDrafts" name="childForm" ng-if="!$last")
+					.line-full
+						span.log-title.not-align-input   端口映射名称
+						span(ng-bind="loadbalance.name")
+					.line-full
+						span.log-title 程序服务端口
+						input.ui-input-fill.line-element(placeholder="请输入端口号" name="targetPort" ng-model="loadbalance.targetPort" required ng-pattern="/^[0-9]+$/" ng-change="deployIns.changeTargetPort($index)")
+						.txt-error(ng-if="(childForm.targetPort.$dirty||needValid)&&childForm.targetPort.$error.pattern") 请填写数字
+					.line-full
+						span.log-title(ng-class="{'not-align-input':deployConfig.networkMode=='HOST'}")  对外访问端口
+						input.ui-input-fill.line-element(placeholder="请输入端口号" name="port" ng-model="loadbalance.port" ng-if="deployConfig.networkMode!='HOST'" required ng-pattern="/^[0-9]+$/")
+						.txt-error(ng-if="(childForm.port.$dirty||needValid)&&childForm.port.$error.pattern") 请填写数字
+						span(ng-bind="loadbalance.port" ng-if="deployConfig.networkMode=='HOST'")
+					.line-full(ng-if="!deployConfig.stateful")
+						span.log-title  对外访问IP
+						.line-element
+							div.ips(ng-repeat="ips in deployConfig.loadBalanceDrafts[$index].externalIPs")
+								input.ui-input-fill.full(placeholder="请输入对外访问IP" name="externalIPs" ng-focus="$last&&deployIns.addExternalIPs($parent.$index)" ng-model="ips.ip")
+								a.txt-wrap.icon-delete(ng-show="loadbalance.externalIPs.length>1" ng-click="deployIns.deleteExternalIPs($parent.$index,$index)")
+		li
+			span.info-name 部署节点
+			.info-content
+				.line-longer
+					.line-element.com-select-con(select-con)
+						button.ui-btn.ui-btn-white.ui-btn-select
+							i.icon-down
+							| {{deployIns.clusterListIns.cluster.name||'选择集群'}}
+						ul.select-list
+							li(ng-if="deployIns.clusterList.length===0")
+								a 无相关信息
+							li.select-item(ng-repeat="cluster in deployIns.clusterListIns.clusterList")
+								a(ng-click="deployIns.toggleCluster($index)" ng-bind="cluster.name")
+					.line-element.com-select-con.tool-next(select-con)
+						button.ui-btn.ui-btn-white.ui-btn-select(ng-cloak)
+							i.icon-down
+							| {{deployIns.envText}}
+						ul.select-list
+							li.select-item(ng-repeat="env in deployIns.envList")
+								a(ng-bind="env.text" ng-click="deployIns.toggleEnv(env)")
+				p.host-desciption(ng-if="deployConfig.stateful") 系统在每台所选主机上运行一个实例
+				.line-longer(ng-if="deployConfig.stateful")
+					ul.host-info
+						li
+							input.ui-check(type="checkbox" id="hostAll" ng-model="deployIns.nodeListIns.isCheckAll" ng-change="deployIns.nodeListIns.checkAllNode()")
+							label(for="hostAll")
+							span 全选
+						li(ng-repeat="node in deployIns.nodeListIns.nodeList|filter:{'labelFilter':true}")
+							input.ui-check(type="checkbox" id="host{{$index}}" ng-model="node.isSelected" ng-change="deployIns.nodeListIns.toggleNodeCheck(node)")
+							label(for="host{{$index}}")
+							span(ng-bind="node.name")
+				.line-longer(ng-if="!deployConfig.stateful")
+					.ui-input-white.host-txt-con.com-select-con(select-con label="true")
+						ul.selected-labels
+							li.select-label(ng-repeat="(label,value) in deployIns.nodeListIns.labelsInfo|search:'isSelected':true|search:'isShow':true" ng-cloak)
+								//- | {{label}}
+								//- a.icon-cancel(ng-click="deployIns.nodeListIns.toggleLabel(label,false)")
+								a.icon-cancle.icon-cancle-former(ng-click="deployIns.nodeListIns.toggleLabel(label,false)")
+								| {{label}}
+							li.select-input
+								input.line-element.ui-btn-select(placeholder="选择主机标签" ng-model="labelKey.key" ng-keydown="labelKeyDown($event,labelKey.key,labelsInfoFiltered);" ng-focus="selectFocus()")
+						ul.select-list
+							li(ng-if="Object.keys(labelsInfoFiltered).length===0")
+								a 无相关信息
+							li.select-item(ng-repeat="(label,value) in labelsInfoFiltered=(deployIns.nodeListIns.labelsInfo| searchKey:labelKey.key|search:'isShow':true)")
+								a(ng-bind="label" ng-click="deployIns.nodeListIns.toggleLabel(label,true);labelKey.key='';")
+					span.txt-wrap
+						a.link-safe(ng-click="deployIns.nodeListIns.showHost()") 查看选中主机
+		li
+			span.info-name namespace
+			.info-content
+				.com-select-con.line-longer(select-con ng-if="!deployIns.isNewNamespace")
+					button.ui-btn.ui-btn-white.ui-btn-select
+						i.icon-down
+						| {{deployConfig.namespace||'选择已有namespace'}}
+					ul.select-list
+						li(ng-if="deployIns.namespaceList.length===0")
+							a 无相关信息
+						li.select-item(ng-repeat="namespace in deployIns.namespaceList")
+							a(ng-bind="namespace.name" ng-click="deployIns.toggleNamespace(namespace.name)")
+					span.txt-wrap
+						a.link-safe(ng-click="deployIns.toggleIsNewNamespace()") 新建namespace
+					input(type="hidden" name="selectNamespace" ng-model="deployConfig.namespace" required)
+				.line-longer(ng-if="deployIns.isNewNamespace")
+					input.ui-input-white.ui-input-full(placeholder="新建namespace" ng-model="config.namespace" name="namespace" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" required ng-pattern="/^[a-zA-Z][a-zA-Z0-9_-]*$/" is-namespace-exist clusterid="{{deployIns.clusterListIns.cluster.id}}")
+					span.txt-wrap
+						a.link-safe(ng-click="deployIns.toggleIsNewNamespace()") 选择已有namespace
+				span.txt-error(ng-if="needValid&&deployForm.selectNamespace.$invalid") 请选择namespace
+				span.txt-error(ng-if="(needValid||deployForm.namespace.$dirty)&&deployForm.namespace.$error.required") 请填写namespace
+				span.txt-error(ng-if="(needValid||deployForm.namespace.$dirty)&&!deployForm.namespace.$error.required&&deployForm.namespace.$error.pattern") 非法的namespace
+				span.txt-error(ng-if="(needValid||deployForm.namespace.$dirty)&&!deployForm.namespace.$error.required&&deployForm.namespace.$error.isNamespaceExist") namespace已存在
+		li
+			span.info-name 部署名称
+			.info-content
+				input.line-longer.ui-input-fill(ng-model="deployConfig.deployName" name="deployName" ng-pattern="/^[0-9a-z]([-.]*[0-9a-z]+)*$/" ng-maxlength="20" is-deploy-exist namespace="{{deployConfig.namespace}}" clustername="{{deployIns.clusterListIns.cluster.name}}" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" required)
+				span.txt-error(ng-if="(needValid||deployForm.deployName.$dirty)&&deployForm.deployName.$error.required") 必填
+				span.txt-error(ng-if="(needValid||deployForm.deployName.$dirty)&&!deployForm.deployName.$error.required&&deployForm.deployName.$error.isDeployExist") 部署名已存在
+				span.txt-error(ng-if="(needValid||deployForm.deployName.$dirty)&&!deployForm.deployName.$error.required&&deployForm.deployName.$error.pattern") 非法的名称
+				span.txt-error(ng-if="(needValid||deployForm.deployName.$dirty)&&!deployForm.deployName.$error.required&&deployForm.deployName.$error.maxlength") 长度超出限制
+		li
+			span.info-name 创建者
+			.info-content
+				creator-selection(change-event="deployIns.toggleCreator(user)")
+				input(type="hidden" name="creatorName" ng-model="deployIns.creator.id" required)
+				span.txt-error(ng-show="needValid&&deployForm.creatorName.$invalid") 请选择创建者
+				//- .line-longer
+					.line-element.com-select-con(select-con)
+						button.ui-btn.ui-btn-white.ui-btn-select
+							i.icon-down
+							| {{deployIns.userGroupListIns.userGroup.name}}
+						ul.select-list
+							li.select-item(ng-repeat="group in deployIns.userGroupListIns.userGroupList")
+								a(ng-bind="group.name" ng-click="deployIns.userGroupListIns.toggle($index)")
+					input(type="hidden" name="creatorName" ng-model="deployIns.userGroupListIns.userGroup.name" required)
+				//- span.txt-error(ng-show="needValid&&deployForm.creatorName.$invalid") 请选择创建者
+		li
+			span.info-name 日志
+			.info-content.log-content
+				span(ng-if="deployConfig.logDraft.logItemDrafts.length===1" style="display:inline-block;margin-top:24px;") 无
+				div.log-item(ng-form ng-repeat="log in deployConfig.logDraft.logItemDrafts" name="childForm" ng-if="!$last")
+					a.icon-cancel.cancel-log(ng-click="deployIns.deleteLogDraft($index)")
+					.line-full.log-path
+						span.log-title 日志卷路径：
+						span.log-detail-txt {{log.logPath}}
+					div.log-check
+						input.ui-check(id="autoCollect{{$index}}" type="checkbox" name="autoCollect" ng-model="log.autoCollect")
+						label(for="autoCollect{{$index}}") 自动收集日志
+					.line-full(ng-if="log.autoCollect")
+						span.log-title  日志topic
+						input.ui-input-fill.line-element(placeholder="请输入日志topic" name="logTopic" ng-model="log.logTopic" required)
+					.line-full(ng-if="log.autoCollect")
+						span.log-title  预处理命令
+						span.log-detail-txt {{log.processCmd||'无'}}
+							a.icon-help(popover="对收集到的日志做进一步处理，比如筛选或增减字段等，可以用grep和awk命令完成，命令以管道形式执行，因此必须以“|”开始，比如一个典型的处理命令为：   | grep \"ERROR\\\\|WARN\\\\| EXCEPTION\\\\| statistic\" | awk -vnhost=\"$HOSTNAME\" '{print \"[\"nhost\"]--\"$0}'，该命令将只筛选包含四个对应关键字的行，并且会在行首添加\"[hostname]--\"的字符串，参照可完成其他复杂的处理方式")
+					div.log-check
+						input.ui-check(id="autoDelete{{$index}}" type="checkbox" name="autoDelete" ng-model="log.autoDelete")
+						label(for="autoDelete{{$index}}") 自动删除日志
+					.line-full(ng-if="log.autoDelete")
+						span.log-title  过期时间
+						input.ui-input-fill(placeholder="过期则自动删除" name="logExpired" ng-model="log.logExpired" required ng-pattern="/^[1-9]\\d*$/" )
+						span.unit 小时
+					.txt-error.log-error(ng-if="(needValid||deployForm.logExpired.$dirty)&&deployForm.logExpired.$invalid") 请输入大于0的整数
+	.com-bottom-option
+		span.com-bottom-option-con
+			a.ui-btn-white.ui-btn.ui-btn-lg.ui-btn-link(ui-sref="appStore") 取消
+			button.ui-btn-bright.ui-btn.ui-btn-lg(ng-disabled="deployIns.loadingIns.isLoading||isLoading" ng-click="needValid=true;deployForm.$valid&&createDeploy()") 创建部署
+			span.txt-error(ng-if="needValid&&deployForm.$invalid") 存在不合法数据，请修改后提交！

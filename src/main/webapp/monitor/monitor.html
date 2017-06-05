@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html ng-app="monitorApp">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>DomeOS-监控</title>
+    <link rel="stylesheet" href="../lib/css/bootstrap.css" type="text/css">
+    <link rel="stylesheet" href="../common/css/base.css" type="text/css">
+    <link rel="stylesheet" href="css/monitor.css">
+    <link rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="../common/css/ng-cloak.css" type="text/css">
+  </head>
+  <body ng-controller="MonitorCtr">
+    <loading ng-if="isLoading"></loading>
+    <div class="monitor-header" ng-cloak>DomeOS {{monitorTypeName}}监控</div>
+    <div class="monitor-container">
+      <div class="datepicker-component" datepicker-component date-options="[{interval:'1h',text:'实时',isDefault:true},{interval:'24h',text:'1天'}]"></div>
+      <ul class="monitor-options">
+        <li ng-cloak>集群：{{clusterName}}</li>
+        <li ng-cloak ng-if="singleItem!==false">{{monitorTypeName}}：{{singleItem}}</li>
+        <li>采样方法
+          <div class="com-select-con" select-con>
+            <button class="ui-btn ui-btn-white ui-btn-select" ng-cloak>{{currentSampleType.text}}<i class="icon-down"></i></button>
+            <ul class="select-list">
+              <li class="select-item" ng-repeat="sampleType in sampleTypes"><a ng-bind="sampleType.text" ng-click="toggleSampleType($index)"></a></li>
+            </ul>
+          </div>
+        </li>
+      </ul>
+      <div class="monitor-con" chart-height="{{monitorItem&amp;&amp;monitorItem.length}}">
+        <div class="monitor-line" ng-if="monitorsInfo.cpu.tableData" ng-style="getFullChartStyle()">
+          <div class="monitor-chart">
+            <amchart ng-model="monitorsInfo.cpu.chartData" type="serial"></amchart>
+          </div>
+          <div class="monitor-table">
+            <table class="ui-table">
+              <thead>
+                <tr>
+                  <th ng-repeat="head in monitorsInfo.cpu.tableData.head"><span tooltip="{{monitorsInfo.keyMap[head]}}" tooltip-placement="{{$last?'left':'top'}}" ng-bind="head"></span></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr ng-repeat="body in monitorsInfo.cpu.tableData.body">
+                  <td ng-repeat="item in monitorsInfo.cpu.tableData.item"><span popover-trigger="mouseenter" popover="{{body[item].tip}}" ng-bind="body[item].text"></span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="monitor-line" ng-if="monitorsInfo.mem.tableData" ng-style="getFullChartStyle()">
+          <div class="monitor-chart">
+            <amchart ng-model="monitorsInfo.mem.chartData" type="serial"></amchart>
+          </div>
+          <div class="monitor-table">
+            <table class="ui-table">
+              <thead>
+                <tr>
+                  <th ng-repeat="head in monitorsInfo.mem.tableData.head" ng-bind="head"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr ng-repeat="body in monitorsInfo.mem.tableData.body">
+                  <td ng-repeat="item in monitorsInfo.mem.tableData.item"><span popover-trigger="mouseenter" popover="{{body[item].tip}}" ng-bind="body[item].text"></span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="monitor-line" ng-if="monitorsInfo.diskUsedMult&amp;&amp;monitorsInfo.diskUsedMult.length&gt;0" ng-style="getFullChartStyle()">
+          <div class="monitor-chart">
+            <div class="monitor-chart-title"><span class="chart-title">磁盘占用率(%) 分区：</span>
+              <div class="com-select-con" select-con>
+                <button class="ui-btn ui-btn-select ui-btn-white" ng-cloak>{{selectedMonitor.diskUsedMult.name}}<i class="icon-down"></i></button>
+                <ul class="select-list">
+                  <li class="select-item" ng-repeat="monitor in monitorsInfo.diskUsedMult"><a ng-bind="monitor.name" ng-click="toggleSelectedMonitor('diskUsedMult',$index)"></a></li>
+                </ul>
+              </div>
+            </div>
+            <div class="monitor-chart-child" ng-style="getShortChatStyle()">
+              <amchart ng-model="selectedMonitor.diskUsedMult.chartData" type="serial"></amchart>
+            </div>
+          </div>
+          <div class="monitor-table">
+            <table class="ui-table">
+              <thead>
+                <tr>
+                  <th ng-repeat="head in selectedMonitor.diskUsedMult.tableData.head" ng-bind="head"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr ng-repeat="body in selectedMonitor.diskUsedMult.tableData.body">
+                  <td ng-repeat="item in selectedMonitor.diskUsedMult.tableData.item"><span popover-trigger="mouseenter" popover="{{body[item].tip}}" ng-bind="body[item].text"></span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="monitor-line" ng-if="monitorsInfo.diskReadMult&amp;&amp;monitorsInfo.diskReadMult.length&gt;0" ng-style="getFullChartStyle()">
+          <div class="monitor-chart">
+            <div class="monitor-chart-title"><span class="chart-title">磁盘读取(KB/s) 设备：</span>
+              <div class="com-select-con" select-con>
+                <button class="ui-btn ui-btn-select ui-btn-white" ng-cloak>{{selectedMonitor.diskReadMult.name}}<i class="icon-down"></i></button>
+                <ul class="select-list">
+                  <li class="select-item" ng-repeat="monitor in monitorsInfo.diskReadMult"><a ng-bind="monitor.name" ng-click="toggleSelectedMonitor('diskReadMult',$index)"></a></li>
+                </ul>
+              </div>
+            </div>
+            <div class="monitor-chart-child" ng-style="getShortChatStyle()">
+              <amchart ng-model="selectedMonitor.diskReadMult.chartData" type="serial"></amchart>
+            </div>
+          </div>
+          <div class="monitor-table">
+            <table class="ui-table">
+              <thead>
+                <tr>
+                  <th ng-repeat="head in selectedMonitor.diskReadMult.tableData.head" ng-bind="head"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr ng-repeat="body in selectedMonitor.diskReadMult.tableData.body">
+                  <td ng-repeat="item in selectedMonitor.diskReadMult.tableData.item"><span popover-trigger="mouseenter" popover="{{body[item].tip}}" ng-bind="body[item].text"></span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="monitor-line" ng-if="monitorsInfo.diskWriteMult&amp;&amp;monitorsInfo.diskWriteMult.length&gt;0" ng-style="getFullChartStyle()">
+          <div class="monitor-chart">
+            <div class="monitor-chart-title"><span class="chart-title">磁盘写入(KB/s) 设备：</span>
+              <div class="com-select-con" select-con>
+                <button class="ui-btn ui-btn-select ui-btn-white" ng-cloak>{{selectedMonitor.diskWriteMult.name}}<i class="icon-down"></i></button>
+                <ul class="select-list">
+                  <li class="select-item" ng-repeat="monitor in monitorsInfo.diskWriteMult"><a ng-bind="monitor.name" ng-click="toggleSelectedMonitor('diskWriteMult',$index)"></a></li>
+                </ul>
+              </div>
+            </div>
+            <div class="monitor-chart-child" ng-style="getShortChatStyle()">
+              <amchart ng-model="selectedMonitor.diskWriteMult.chartData" type="serial"></amchart>
+            </div>
+          </div>
+          <div class="monitor-table">
+            <table class="ui-table">
+              <thead>
+                <tr>
+                  <th ng-repeat="head in selectedMonitor.diskWriteMult.tableData.head" ng-bind="head"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr ng-repeat="body in selectedMonitor.diskWriteMult.tableData.body">
+                  <td ng-repeat="item in selectedMonitor.diskWriteMult.tableData.item"><span popover-trigger="mouseenter" popover="{{body[item].tip}}" ng-bind="body[item].text"></span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="monitor-line" ng-if="monitorsInfo.netIn.tableData" ng-style="getFullChartStyle()">
+          <div class="monitor-chart">
+            <amchart ng-model="monitorsInfo.netIn.chartData" type="serial"></amchart>
+          </div>
+          <div class="monitor-table">
+            <table class="ui-table">
+              <thead>
+                <tr>
+                  <th ng-repeat="head in monitorsInfo.netIn.tableData.head" ng-bind="head"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr ng-repeat="body in monitorsInfo.netIn.tableData.body">
+                  <td ng-repeat="item in monitorsInfo.netIn.tableData.item"><span popover-trigger="mouseenter" popover="{{body[item].tip}}" ng-bind="body[item].text"></span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="monitor-line" ng-if="monitorsInfo.netOut.tableData" ng-style="getFullChartStyle()">
+          <div class="monitor-chart">
+            <amchart ng-model="monitorsInfo.netOut.chartData" type="serial"></amchart>
+          </div>
+          <div class="monitor-table">
+            <table class="ui-table">
+              <thead>
+                <tr>
+                  <th ng-repeat="head in monitorsInfo.netOut.tableData.head" ng-bind="head"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr ng-repeat="body in monitorsInfo.netOut.tableData.body">
+                  <td ng-repeat="item in monitorsInfo.netOut.tableData.item"><span popover-trigger="mouseenter" popover="{{body[item].tip}}" ng-bind="body[item].text"></span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="monitor-line" ng-if="monitorsInfo.netInMult&amp;&amp;monitorsInfo.netInMult.length&gt;0" ng-style="getFullChartStyle()">
+          <div class="monitor-chart">
+            <div class="monitor-chart-title"><span class="chart-title">网络流入(KB/s) 网卡：</span>
+              <div class="com-select-con" select-con>
+                <button class="ui-btn ui-btn-select ui-btn-white" ng-cloak>{{selectedMonitor.netInMult.name}}<i class="icon-down"></i></button>
+                <ul class="select-list">
+                  <li class="select-item" ng-repeat="monitor in monitorsInfo.netInMult"><a ng-bind="monitor.name" ng-click="toggleSelectedMonitor('netInMult',$index)"></a></li>
+                </ul>
+              </div>
+            </div>
+            <div class="monitor-chart-child" ng-style="getShortChatStyle()">
+              <amchart ng-model="selectedMonitor.netInMult.chartData" type="serial"></amchart>
+            </div>
+          </div>
+          <div class="monitor-table">
+            <table class="ui-table">
+              <thead>
+                <tr>
+                  <th ng-repeat="head in selectedMonitor.netInMult.tableData.head" ng-bind="head"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr ng-repeat="body in selectedMonitor.netInMult.tableData.body">
+                  <td ng-repeat="item in selectedMonitor.netInMult.tableData.item"><span popover-trigger="mouseenter" popover="{{body[item].tip}}" ng-bind="body[item].text"></span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="monitor-line" ng-if="monitorsInfo.netOutMult&amp;&amp;monitorsInfo.netOutMult.length&gt;0" ng-style="getFullChartStyle()">
+          <div class="monitor-chart">
+            <div class="monitor-chart-title"><span class="chart-title">网络流出(KB/s) 网卡：</span>
+              <div class="com-select-con" select-con>
+                <button class="ui-btn ui-btn-select ui-btn-white" ng-cloak>{{selectedMonitor.netOutMult.name}}<i class="icon-down"></i></button>
+                <ul class="select-list">
+                  <li class="select-item" ng-repeat="monitor in monitorsInfo.netOutMult"><a ng-bind="monitor.name" ng-click="toggleSelectedMonitor('netOutMult',$index)"></a></li>
+                </ul>
+              </div>
+            </div>
+            <div class="monitor-chart-child" ng-style="getShortChatStyle()">
+              <amchart ng-model="selectedMonitor.netOutMult.chartData" type="serial"></amchart>
+            </div>
+          </div>
+          <div class="monitor-table">
+            <table class="ui-table">
+              <thead>
+                <tr>
+                  <th ng-repeat="head in selectedMonitor.netOutMult.tableData.head" ng-bind="head"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr ng-repeat="body in selectedMonitor.netOutMult.tableData.body">
+                  <td ng-repeat="item in selectedMonitor.netOutMult.tableData.item"><span popover-trigger="mouseenter" popover="{{body[item].tip}}" ng-bind="body[item].text"></span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script type="text/ng-template" id="warningModal.html">
+      <div class="d-modal-header">警告</div>
+      <div class="modal-body">
+        <p class="txt-error" ng-bind="titleInfo" ng-class="{'font-size-16':detailInfo}"></p>
+        <p class="txt-error tool-wrap-break" ng-bind="detailInfo"></p>
+      </div>
+      <div class="modal-footer">
+        <button class="ui-btn ui-btn-error ui-btn-sm" ng-click="cancel()">确定</button>
+      </div>
+    </script>
+    <div></div>
+    <script type="text/javascript" src="../lib/js/jquery.min.js"></script>
+    <script type="text/javascript" src="../lib/js/angular.min.js"></script>
+    <script type="text/javascript" src="../lib/js/angular-locale_zh-cn.js"></script>
+    <script type="text/javascript" src="../lib/js/ui-bootstrap-tpls.min.js"></script>
+    <script type="text/javascript" src="../lib/js/angular-animate.min.js"></script>
+    <script type="text/javascript" src="../lib/js/amcharts.js"></script>
+    <script type="text/javascript" src="../lib/js/serial.js"></script>
+    <script type="text/javascript" src="../common/angularAmchartsModule/amchartsModule.js"></script>
+    <script type="text/javascript" src="../common/publicModule/publicModule.js"></script>
+    <script type="text/javascript" src="../common/publicModule/directive/publicDirective.js"></script>
+    <script type="text/javascript" src="../common/domeModule/domeModule.js"></script>
+    <script type="text/javascript" src="../common/commonFilters/commonFilters.js"></script>
+    <script type="text/javascript" src="../common/constant/constant.js"></script>
+    <script type="text/javascript" src="../common/backendApi/backendApi.js"></script>
+    <script type="text/javascript" src="../common/pageLayout/pageLayout.js"></script>
+    <script type="text/javascript" src="js/monitor.js"></script>
+  </body>
+</html>

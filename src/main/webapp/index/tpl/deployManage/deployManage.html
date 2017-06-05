@@ -1,0 +1,106 @@
+
+<tabset class="mod-tab">
+  <div class="tab-border"></div>
+  <tab class="first" heading="部署" active="tabActive[0].active" ui-sref="deployManage.deploy">
+    <div class="mod-deploy deploy-manage">
+      <div class="mod-option">
+        <!--button.ui-btn.ui-btn-lg.ui-btn-bright(ui-sref="createDeployCommon({'collectionId':collectionId, 'collectionName':collectionName})" ng-class="{'ui-btn-lg-disabled':!mayCreate()}" ng-disabled="!mayCreate()")-->
+        <!--    span.btn-txt 新建部署-->
+        <!--    i.fa.fa-plus-->
+        <button class="ui-btn ui-btn-lg ui-btn-bright" ui-sref="createDeploy({'collectionId':collectionId, 'collectionName':collectionName})" ng-class="{'ui-btn-lg-disabled':!mayCreate()}" ng-disabled="!mayCreate()"><span class="btn-txt">新建部署</span><i class="fa fa-plus"></i></button>
+        <div class="pull-right right-option"><span ng-cloak="ng-cloak">共{{deployListFilter.length}}个部署</span>
+          <input class="ui-input-search ui-input-fill" type="text" placeholder="输入部署名称查询" ng-model="depKeyword"/><a class="deploy-list-btn" ng-click="toggleShowSelect()"><i class="fa fa-filter fa-lg" title="筛选"></i></a>
+        </div>
+      </div>
+      <div class="mod-tips-info">
+        <p class="txt-prompt"><i class="fa fa-info-circle icon-algin-right"></i>部署定义了运行在集群上的一组实例，可以对这些实例进行统一管理。</p>
+      </div>
+      <div class="chose-lists" ng-if="showSelect">
+        <div class="chose-item"><span class="chose-title">部署环境：</span>
+          <div class="chose-options"><em ng-class="{'active':selectOption.env.ALL}" ng-click="toggleAll('env')">全部</em><em ng-class="{'active':selectOption.env.PROD}" ng-click="toggleSelect('env','PROD')">生产环境</em><em ng-class="{'active':selectOption.env.TEST}" ng-click="toggleSelect('env','TEST')">测试环境</em></div>
+        </div>
+        <div class="chose-item"><span class="chose-title">集群：</span>
+          <div class="chose-options"><em ng-class="{'active':selectOption.cluster.ALL}" ng-click="toggleAll('cluster')">全部</em><em ng-repeat="(opt,isSelect) in selectOption.cluster track by $index" ng-bind="opt" ng-class="{'active':isSelect}" ng-if="opt!=='ALL'" ng-click="toggleSelect('cluster',opt)"></em></div>
+        </div>
+        <div class="chose-item"><span class="chose-title">namespace：</span>
+          <div class="chose-options"><em ng-class="{'active':selectOption.namespace.ALL}" ng-click="toggleAll('namespace')">全部</em><em ng-repeat="(opt,isSelect) in selectOption.namespace track by $index" ng-bind="opt" ng-class="{'active':isSelect}" ng-if="opt!=='ALL'" ng-click="toggleSelect('namespace',opt)"></em></div>
+        </div>
+        <div class="chose-item"><span class="chose-title">部署类型：</span>
+          <div class="chose-options"><em ng-class="{'active':selectOption.deployTypeShow.ALL}" ng-click="toggleAll('deployTypeShow')">全部</em><em ng-class="{'active':selectOption.deployTypeShow.RC}" ng-click="toggleSelect('deployTypeShow','RC')">RC</em><em ng-class="{'active':selectOption.deployTypeShow.Deployment}" ng-click="toggleSelect('deployTypeShow','Deployment')">Deployment</em><em ng-class="{'active':selectOption.deployTypeShow.DaemonSet}" ng-click="toggleSelect('deployTypeShow','DaemonSet')">DaemonSet</em></div>
+        </div>
+        <div class="chose-item"><span class="chose-title">状态：</span>
+          <div class="chose-options"><em ng-class="{'active':selectOption.status.ALL}" ng-click="toggleAll('status')">全部</em><em ng-class="{'active':selectOption.status.DEPLOYING}" ng-click="toggleSelect('status','DEPLOYING')">部署中</em><em ng-class="{'active':selectOption.status.RUNNING}" ng-click="toggleSelect('status','RUNNING')">运行中</em><em ng-class="{'active':selectOption.status.STOP}" ng-click="toggleSelect('status','STOP')">停止</em><em ng-class="{'active':selectOption.status.ERROR}" ng-click="toggleSelect('status','ERROR')">异常</em><em ng-class="{'active':selectOption.status.STOPPING}" ng-click="toggleSelect('status','STOPPING')">停止中</em><em ng-class="{'active':selectOption.status.UPDATING}" ng-click="toggleSelect('status','UPDATING')">升级中</em><em ng-class="{'active':selectOption.status.BACKROLLING}" ng-click="toggleSelect('status','BACKROLLING')">回滚中</em><em ng-class="{'active':selectOption.status.UPSCALING}" ng-click="toggleSelect('status','UPSCALING')">扩容中</em><em ng-class="{'active':selectOption.status.DOWNSCALING}" ng-click="toggleSelect('status','DOWNSCALING')">缩容中</em><em ng-class="{'active':selectOption.status.ABORTING}" ng-click="toggleSelect('status','ABORTING')">中断中</em><em ng-class="{'active':selectOption.status.BACKROLL_ABORTED}" ng-click="toggleSelect('status','BACKROLL_ABORTED')">回滚已中断</em><em ng-class="{'active':selectOption.status.UPDATE_ABORTED}" ng-click="toggleSelect('status','UPDATE_ABORTED')">升级已中断</em></div>
+        </div>
+      </div>
+      <div class="mod-list">
+        <loading ng-if="isLoading"></loading>
+        <table class="ui-table-dome" style="word-break: break-all;">
+          <thead>
+            <tr>
+              <th><span class="tool-enable-click" ng-click="toggleOrderBy('deployName')" ng-class="{'active':orderBy.item=='deployName'}"> 部署名称<i class="icon-order" ng-show="orderBy.item!='deployName'"></i><i class="icon-down" ng-show="orderBy.item=='deployName'" ng-class="{'up':!orderBy.isReverse}"></i></span></th>
+              <th><span class="tool-enable-click" ng-click="toggleOrderBy('deploymentStatus')" ng-class="{'active':orderBy.item=='deploymentStatus'}">状态<i class="icon-order" ng-show="orderBy.item!='deploymentStatus'"></i><i class="icon-down" ng-show="orderBy.item=='deploymentStatus'" ng-class="{'up':!orderBy.isReverse}"></i></span></th>
+              <th><span class="tool-enable-click" ng-click="toggleOrderBy('clusterName')" ng-class="{'active':orderBy.item=='clusterName'}">所在集群<i class="icon-order" ng-show="orderBy.item!='clusterName'"></i><i class="icon-down" ng-show="orderBy.item=='clusterName'" ng-class="{'up':!orderBy.isReverse}"></i></span></th>
+              <th>namespace</th>
+              <th>部署类型</th>
+              <th><span class="tool-enable-click" ng-click="toggleOrderBy('comparePercentSort')" ng-class="{'active':orderBy.item=='comparePercentSort'}">资源占用比<i class="icon-order" ng-show="orderBy.item!='comparePercentSort'"></i><i class="icon-down" ng-show="orderBy.item=='comparePercentSort'" ng-class="{'up':!orderBy.isReverse}"></i></span></th>
+              <th><span class="tool-enable-click" ng-click="toggleOrderBy('lastUpdateTime')" ng-class="{'active':orderBy.item=='lastUpdateTime'}">升级时间<i class="icon-order" ng-show="orderBy.item!='lastUpdateTime'"></i><i class="icon-down" ng-show="orderBy.item=='lastUpdateTime'" ng-class="{'up':!orderBy.isReverse}"></i></span></th>
+              <th>迁移</th>
+              <th style="width: 10%;">内网域名</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr ng-if="deployListFilter&amp;&amp;deployListFilter.length===0">
+              <td class="text-center" colspan="9">无相关信息</td>
+            </tr>
+            <tr ng-repeat="deploy in deployListFilter=(deloyList|filter:{'deployName':depKeyword}|deployOptions:selectOption.env:selectOption.namespace:selectOption.cluster:selectOption.status:selectOption.deployTypeShow |orderBy:(orderBy.isReverse ? '-' + orderBy.item : orderBy.item))">
+              <td><a class="ui-table-link" ng-bind="deploy.deployName" ui-sref="deployDetail({'id':deploy.deployId, 'collectionId':collectionId, 'collectionName':collectionName})"></a></td>
+              <td ng-switch="deploy.deploymentStatus"><span class="txt-success" ng-switch-when="RUNNING">运行中</span><span class="txt-normal" ng-switch-when="DEPLOYING">部署中</span><span class="txt-warning" ng-switch-when="STOP">停止</span><span class="txt-warning" ng-switch-when="ERROR">异常</span><span class="txt-normal" ng-switch-when="BACKROLLING">回滚中</span><span class="txt-normal" ng-switch-when="STOPPING">停止中</span><span class="txt-normal" ng-switch-when="UPDATING">升级中</span><span class="txt-normal" ng-switch-when="UPSCALING">扩容中</span><span class="txt-normal" ng-switch-when="DOWNSCALING">缩容中</span><span class="txt-normal" ng-switch-when="ABORTING">中断中</span><span class="txt-warning" ng-switch-when="BACKROLL_ABORTED">回滚已中断</span><span class="txt-warning" ng-switch-when="UPDATE_ABORTED">升级已中断</span></td>
+              <td ng-bind="deploy.clusterName"></td>
+              <td ng-bind="deploy.namespace"></td>
+              <td ng-bind="deploy.deployTypeShow"></td>
+              <td ng-cloak="ng-cloak" ng-class="{'txt-normal':deploy.comparePercent&lt;30,'txt-success':deploy.comparePercent&gt;=30&amp;&amp;deploy.comparePercent&lt;70,'txt-warning':deploy.comparePercent&gt;=70}"><i class="icon-cpu" ng-if="deploy.compare=='cpu'" tooltip="CPU：{{deploy.cpuUsed}} / {{deploy.cpuTotal}}（个）"></i><i class="icon-memory" ng-if="deploy.compare=='memory'" tooltip="内存：{{deploy.memoryUsed}} / {{deploy.memoryTotal}}"></i>{{deploy.comparePercent}}%</td>
+              <td ng-bind="(deploy.lastUpdateTime | day)"></td>
+              <td>
+                <button class="fa fa-share-square-o ui-btn-none icon-edit-color" ng-click="openMigrateDeployModal(deploy.deployId,deploy.deployName)" ng-class="{'icon-fa-disabled':!mayMigrate()}" ng-disabled="!mayMigrate()" tooltip="迁移"></button>
+              </td>
+              <td>
+                <div style="display: flex;" ng-repeat="dns in deploy.dnsName track by $index">
+                  <div class="long-text-wrap" style="max-width: 90%;" ng-bind="dns" title="{{ dns }}"></div>
+                  <button class="dome-btn-none" ng-if="dns !== '无'" type="button" ngclipboard="ngclipboard" data-clipboard-text="{{ dns }}" tooltip="复制" ngclipboard-success="onSuccess(e, dns)" ngclipboard-error="onError(e)"><i class="fa fa-clipboard"></i></button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </tab>
+  <tab heading="成员" active="tabActive[1].active" ui-sref="deployManage.user">
+    <form-container left-column-width="0">
+      <form>
+        <collection-member-table collection-id="resourceId" collection-type="resourceType" on-role-change="setRole(role)" on-no-permission="exitToList()" help-text="有MASTER权限的成员可以查看、修改、删除服务，可以在服务中添加、查看、修改、删除部署；有DEVELOPER权限的成员可以查看、修改服务，可以在项目中添加、查看、修改部署；有REPORTER权限的成员可以查看服务，可以查看项目中的部署。迁移部署需要同时在两个服务中拥有MASTER权限。添加、修改或删除服务成员需要MASTER权限。"></collection-member-table>
+      </form>
+    </form-container>
+  </tab>
+</tabset>
+<script type="text/ng-template" id="migrateDeployModal.html">
+  <div class="d-modal-header">手动迁移部署 {{migrateDeployName}}</div>
+  <div class="d-modal-full">
+    <loading ng-if="isLoading"></loading>
+    <div class="migrate-operation">
+      <div class="migrate-select-list"><span class="text-content">迁移至</span>
+        <div class="com-select-con deploy-migrate" select-con="select-con">
+          <button class="ui-btn ui-btn-white ui-btn-select" ng-cloak="ng-cloak"><i class="icon-down"></i>{{migrateCollectionName || '选择镜像版本'}}</button>
+          <ul class="select-list select-list-migrate">
+            <li class="select-item" ng-repeat="deployCollection in deployCollectionList"><a ng-click="toggleCollectionName($parent.$index,deployCollection.name,deployCollection.id)"><span ng-bind="deployCollection.name"></span></a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="migrate-content txt-prompt">部署迁移后将不再属于这个服务</div>
+    </div>
+  </div>
+  <div class="modal-footer text-right">
+    <button class="ui-btn ui-btn-sm ui-btn-white" ng-click="cancel()">取消</button>
+    <button class="ui-btn ui-btn-sm ui-btn-bright" ng-click="save()">确定</button>
+  </div>
+</script>

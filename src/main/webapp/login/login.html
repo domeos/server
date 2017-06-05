@@ -1,0 +1,193 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>登录 - DomeOS</title>
+  <style>
+    html, body, dl, dt, dd, p, h1, h2, h3, ol, ul, li { margin: 0; padding: 0; border: none; font-weight: normal; font-size: 100%; display: block; }
+    html, body, #main { width: 100%; height: 100%; line-height: 1.5; color: #888; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Segoe UI", "Microsoft YaHei", "wenquanyi micro hei","Hiragino Sans GB", "Hiragino Sans GB W3", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", Helvetica, Arial, sans-serif; }
+    a, a:hover, a:visited, a:focus, a:active { color: #5dabf3; text-decoration: none; }
+    #main { position: relative; overflow: hidden; background: url("background.png") no-repeat center center transparent; background: url("background.png"), linear-gradient(to right, white 0%, white 36.7%, rgba(178, 222, 246) 71.4%, rgba(163, 251, 231) 100%) no-repeat center center transparent; background-size: cover; min-width: 550px; min-height: 400px; }
+    :root { font-size: 2.25vmin; font-size: 16px; /* they just like the smaller font size, do not ask me why */ }
+    @media screen and (max-width: 711px), screen and (max-height: 711px) { :root { font-size: 2.25vmin; } }
+    #container { width: 100vw; height: 100vh; margin: auto; position: relative; }
+    #info, #login { box-sizing: border-box; width: 40rem; max-width: 50vw; overflow: hidden; padding: 1em; position: absolute; top: 20%; left: 50%; } 
+    #info { transform: translate(-100%, -20%); }
+    #login { transform: translate(0, -20%); position: relative; }
+    #login::before { content: " "; background: linear-gradient(to right, #5dabf3, #4ed6b2); width: 20rem; max-width: 45vw; height: 0.25em; border-radius: 0.2em 0.2em 0 0; position: absolute; top: 1em; left: 50%; transform: translate(-50%, -100%); }
+    #info h1 { font-size: 350%; font-weight: bold; margin: 0 0 0.2em 0; }
+    #info h2 { color: #2994e7; font-size: 120%; margin: 0.6em 0; }
+    #info dl { color: #999; }
+    #info dt { color: #2994e7; padding-left: 1em; position: relative; }
+    #info dt::before { content: " "; width: 0.13em; height: 1em; position: absolute; left: 0; top: 50%; transform: translateY(-50%); }
+    #info .dt1::before { background-color: #77bf4f; }
+    #info .dt2::before { background-color: #ffab00; }
+    #info .dt3::before { background-color: #ec6d51; }
+    p, dl div { margin: 1em 0; }
+    #form { height: 28rem; width: 20rem; max-width: 45vw; margin: 0 auto; display: table; background: white; }
+    #form_header, #form_body, #form_footer { display: table-row; }
+    #form_header { height: 4em; }
+    #form_header ol { display: table; height: 3em; table-layout: fixed; padding: 1em 0 0; }
+    #form_header li { display: none; position: relative; vertical-align: middle; text-align: center; padding: 0 1em; }
+    #form_header.ldap li.ldap, #form_header.user li.user { display: table-cell; }
+    #form_header label { cursor: pointer; display: block; width: 100%; line-height: 3; padding: 0 1em; }
+    #form_header input { position: absolute; top: 200%; }
+    #form_header input ~ span { display: block; border-bottom: 0.2em solid transparent; }
+    #form_header input:focus ~ span { outline: dotted 1px #ccc; outline-offset: 4px; }
+    #form_header input:checked ~ span { border-bottom-color: #a1d2ff; color: #a1d2ff; }
+    #form_header label:hover span { color: #a1d2ff; }
+    #form_body { vertical-align: middle; position: relative; }
+    #form_area { display: table; width: 18rem; max-width: 40vw; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+    #form_area .input-line { padding: 0.1em 0;  }
+    #form_area .button-line { padding: 1em 0; text-align: center; }
+    #form_area input { box-sizing: border-box; width: 100%; height: 3.4em; border: 1px solid #ddd; border-radius: 100em; font-size: 80%; padding: 0.6em 1.5em; background-color: white; color: black; outline: none; }
+    #form_area input:-webkit-autofill { background-color: white; color: #888; }
+    #form_area input:invalid { box-shadow: none; }
+    #form_area .error_msg { font-size: 80%; padding: 0.5em 1.5em; line-height: 1.5; height: 1.5em; overflow: hidden; color: #ec6d51; text-align: left; }
+    #form_area .error_msg div { height: 1.5em; margin: 0 0 1em; display: none; }
+    #form_area button { width: 8em; height: 3em;   font-size: inherit; text-align: center; color: #fff; background-color: #188ae2; border: none; border-radius: 0.2em; cursor: pointer; }
+    #form_footer { height: 4em; text-align: center; line-height: 5; white-space: nowrap; font-size: 80%; color: #999; }
+  </style>
+</head>
+<body>
+  <noscript>您需要启用 JavaScript 才能正常访问本网站。</noscript>
+  <div id="main" style="display: none;">
+    <div id="container">
+      <div id="info">
+        <h1>DomeOS</h1>
+        <h2>欢迎来到DomeOS！</h2>
+        <p>DomeOS是基于docker的企业级应用编排运维管理系统，为企业级用户打造持续集成、持续交付和自动运维平台。</p>
+        <p>在DomeOS上，您可以：</p>
+        <dl>
+          <div>
+            <dt class="dt1">创建项目并构建</dt>
+            <dd>
+              支持不同的代码仓库，可实现持续集成，支持代码push自动构建。<br />
+              私有registry存储构建的镜像，升级回滚简单易行。
+            </dd>
+          </div>
+          <div>
+            <dt class="dt2">进行全方位应用部署管理</dt>
+            <dd>
+              通过简单的配置即可快速实现项目部署。<br />
+              支持升级/回滚、灰度发布、扩容/缩容等运维管理功能。
+            </dd>
+          </div>
+          <div>
+            <dt class="dt3">全方位监控服务和物理资源</dt>
+            <dd>
+              容器和主机级别的完整监控，灵活的日志系统和事件记录，运行状况一目了然。
+            </dd>
+          </div>
+        </dl>
+        <p>想了解更多，请查看<a href="http://doc.domeos.org" target="_blank">用户文档</a></p>
+      </div>
+      <div id="login">
+        <form method="POST" action="/api/user/login" onsubmit="actLogin(); event.preventDefault();">
+          <div id="form">
+            <div class="" id="form_header">
+              <ol>
+                <li class="ldap"><label><input type="radio" name="loginType" value="LDAP" checked /><span>LDAP 登录</span></label></li>
+                <li class="user"><label><input type="radio" name="loginType" value="USER" /><span>普通账户</span></label></li>
+              </ol>
+            </div>
+            <div id="form_body">
+              <div id="form_area">
+                <div class="input-line">
+                  <input id="username" class="login-input" type="text" name="username" placeholder="用户名" required oninvalid="username_required.style.display = username.value ? 'none' : 'block'; event.preventDefault();" oninput="username_required.style.display = 'none'; password_wrong.style.display = 'none';" />
+                  <div class="error_msg">
+                    <div id="username_required">请填写用户名</div>
+                  </div>
+                </div>
+                <div class="input-line">
+                  <input id="password" class="login-input" type="password" name="password" placeholder="密码" required oninvalid="password_required.style.display = password.value ? 'none' : 'block'; event.preventDefault();"  oninput="password_required.style.display = 'none'; password_wrong.style.display = 'none';" />
+                  <div class="error_msg">
+                    <div id="password_wrong">用户名或密码错误</div>
+                    <div id="password_required">请填写密码</div>
+                  </div>
+                </div>
+                <div class="button-line">
+                  <button class="login-submit" type="submit">登录</button>
+                </div>
+              </div>
+            </div>
+            <div id="form_footer">
+              提示：申请新账户或找回账户密码请联系管理员。
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <script>
+    var loginSuccess = function () {
+      location.href = '/';
+    };
+    var request = function (details) {
+      var xhr = new XMLHttpRequest();
+      xhr.open(details.method || 'GET', details.url);
+      if (details.method === 'POST') {
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.send(JSON.stringify(details.data));
+      } else {
+        xhr.send();
+      }
+      xhr.onreadystatechange = function (event) {
+        if (xhr.readyState !== XMLHttpRequest.DONE) return;
+        if (xhr.status === 200) details.onload(xhr);
+        else (details.onerror || function () { })(xhr);
+      };
+    };
+    var actLogin = function () {
+      var inputs = form.querySelectorAll([
+        'input[type="text"]',
+        'input[type="password"]',
+        'input[type="radio"]:checked'
+      ].join(','));
+      var data = {};
+      [].slice.call(inputs).forEach(function (input) { data[input.name] = input.value; });
+      request({
+        method: 'POST',
+        url: '/api/user/login',
+        data: data,
+        onload: function (resp) {
+          var data = JSON.parse(resp.responseText);
+          if (data.resultCode === 200) loginSuccess();
+          else password_wrong.style.display = 'block';
+        },
+      });
+    };
+    var gotoSsoLogin = function () {
+      location.href = '/api/ssologin?from=' + encodeURIComponent(location.protocol + '//' + location.host);
+    };
+    var markLoginMethodValid = function (type) {
+      document.getElementById('form_header').className += ' ' + type.toLowerCase();
+    };
+    var choseLoginMethod = function (type) {
+      var input = document.querySelector('#form_header ol .' + type + ' input');
+      if (input) input.checked = true;
+    };
+    request({
+      url: '/api/global/loginoption',
+      onload: function (resp) {
+        var data = JSON.parse(resp.responseText).result;
+        var method = { sso: data.ssoLogin, user: data.normalLogin, ldap: data.ldapLogin };
+        var valid = ['user', 'ldap', 'sso'].filter(function (type) { return method[type]; });
+        var prefer = null;
+        valid.forEach(function (type) { markLoginMethodValid(type); prefer = type; });
+        var chosen = location.hash.slice(1).toLowerCase();
+        if (valid.indexOf(chosen) !== -1) prefer = chosen;
+        if (prefer !== null) {
+          if (prefer === 'sso') gotoSsoLogin();
+          else {
+            choseLoginMethod(prefer);
+            main.style.display = 'block';
+            username.focus();
+          }
+        }
+      },
+    });
+  </script>
+</body>
+</html>

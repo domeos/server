@@ -1,0 +1,44 @@
+
+<div class="mod-group group-manage">
+  <div class="mod-option">
+    <div class="com-btn-group">
+      <input class="ui-input ui-input-white" placeholder="请输入用户组名称" ng-model="newUserGroupName"/>
+      <button class="ui-btn ui-btn-lg ui-btn-bright" ng-disabled="vm.permission.role == null || vm.permission.role === 'REPORTER' || !newUserGroupName" ng-click="createUserGroup()" ng-class="{'ui-btn-lg-disabled': vm.permission.role ==null ||vm.permission.role === 'REPORTER'}"><span class="btn-txt">创建用户组</span></button>
+      <div class="pull-right right-option"><span ng-cloak="ng-cloak">共{{groupListFiltered.length}}个用户组</span>
+        <input class="ui-input-search ui-input-fill" type="text" placeholder="输入组名称查询" ng-model="groupKey"/>
+      </div>
+    </div>
+  </div>
+  <div class="mod-tips-info">
+    <p class="txt-prompt"><i class="fa fa-info-circle icon-algin-right"></i>用户组是接收报警信息的一组用户，DEVELOPER及以上权限的报警组成员可以创建用户组。</p>
+  </div>
+  <div class="mod-list-alarm">
+    <loading ng-if="isLoading"></loading>
+    <table class="ui-table-dome">
+      <thead>
+        <tr>
+          <th>组名称</th>
+          <th>成员数</th>
+          <th>创建时间</th>
+          <th>更新时间</th>
+          <th ng-if="vm.permission.role&amp;&amp;vm.permission.role!='REPORTER'">操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-if="!userGroupList||groupListFiltered.length===0">
+          <td colspan="4" ng-if="!(vm.permission.role&amp;&amp;vm.permission.role!='REPORTER')">无相关组信息</td>
+          <td colspan="5" ng-if="vm.permission.role&amp;&amp;vm.permission.role!='REPORTER'">无相关组信息</td>
+        </tr>
+        <tr ng-repeat="group in groupListFiltered=(userGroupList|filter:{'userGroupName':groupKey})">
+          <td><a class="ui-table-link" ui-sref="alarmUserGroupDetail({'id':group.id})" ng-bind="group.userGroupName"></a></td>
+          <td ng-bind="group.userList.length || 0"></td>
+          <td ng-bind="group.createTime|date:'yyyy-MM-dd'"></td>
+          <td ng-bind="group.updateTime|date:'yyyy-MM-dd'"></td>
+          <td ng-if="vm.permission.role&amp;&amp;vm.permission.role!='REPORTER'">
+            <button class="fa fa-trash-o ui-btn-none icon-trash-color" ng-click="deleteUserGroup(group.id)" tooltip="删除"></button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

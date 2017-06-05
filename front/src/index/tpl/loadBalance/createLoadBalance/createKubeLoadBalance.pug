@@ -1,0 +1,59 @@
+//
+   Created by haozhou on 2017/3/15.
+form-container(left-column-width="100px")
+    form(name="createKubeLB")
+        loading(ng-if="isCreating")
+        form-config-group
+            form-config-item(config-title="名称" required)
+                form-input-container
+                    input(ng-model="loadBalanceDraft.name" type="text" name="name" placeholder="不能有大写字母，不能以中横线开头和结尾" ng-pattern="/^[0-9a-z](-*[0-9a-z]+)*$/" required is-loadBalance-unique clustername="{{ loadBalanceDraft.cluster.name }}" namespace="{{ loadBalanceDraft.namespace.namespace }}" ng-model-options="{updateOn:'default blur',debounce:{default:1000,blur:0}}")
+                    form-error-message(form="createKubeLB" target="name" type="required") 名称不能为空
+                    form-error-message(form="createKubeLB" target="name" type="isLoadBalanceUnique") 名称重复，请修改
+                    form-error-message(form="createKubeLB" target="name" type="pattern") 输入格式错误，不能有大写字母，不能以中横线开头和结尾，请修改！
+        form-config-group
+            form-config-item(config-title="描述")
+                form-input-container
+                    textarea(ng-model="loadBalanceDraft.description")
+        form-config-group
+            form-config-item(config-title="运行集群" required)
+                form-input-container
+                    cluster-selector(ng-model="loadBalanceDraft.cluster" name="cluster" required="true")
+                    form-error-message(form="createKubeLB" target="cluster" type="required") 集群不能为空
+        form-config-group
+            form-config-item(config-title="namespace" required)
+                form-input-container
+                    namespace-selector(ng-model="loadBalanceDraft.namespace" name="namespace" cluster="loadBalanceDraft.cluster" form-name="createKubeLB")
+        form-config-group
+            form-config-item(config-title="服务配置" required)
+                form-input-container(help-text="利用主机IP，创建集群外访问的负载均衡。")
+                    sub-form-container(left-column-width="60px")
+                        form-config-group
+                            form-config-item(config-title="访问IP")
+                                form-input-container
+                                     form-multiple-select-list(ng-model="loadBalanceDraft.externalIPs" name="externalIP" parameters="{clusterId:loadBalanceDraft.cluster.id}" form-name="createKubeLB" placeholder="访问IP不能为空，可选择多个IP" loading-text="正在获取主机IP" empty-text="无相关信息" error-message="访问IP不能为空" get-list-fn="{{'foreignServiceIPByClusterId'}}")
+                        form-config-group
+                            form-config-item(config-title="端口配置")
+                                form-input-container
+                                    form-array-container(ng-model="loadBalanceDraft.serviceDraft.lbPorts" name="lbPorts" on-add="addPortSetting()" template="_loadBalanceDraftPortItem" max-length="100" min-length="1" type="simple")
+                                    script(type="text/ng-template" id="_loadBalanceDraftPortItem")
+                                        form-multiple-inline
+                                            form-multiple-inline-item(style="margin-right: 6px; flex: 1;")
+                                                input(type="number" ng-model="$ctrl.ngModel[$index].port" name="port" placeholder="主机上对外访问端口" min="1" max="65535"  required style="width:100%;")
+                                            form-multiple-inline-item(style="margin-right: 6px; flex: 1;")
+                                                input(type="number" ng-model="$ctrl.ngModel[$index].targetPort" name="targetPort" placeholder="容器内程序服务端口" min="1" max="65535"  required style="width:100%;")
+                                            form-multiple-inline-item(style="flex: .5;")
+                                                form-select(ng-model="$ctrl.ngModel[$index].protocol" options="[{value: 'TCP', text: 'TCP'}, {value: 'UDP', text: 'UDP'}]" show-search-input="never")
+        form-config-group
+            form-config-item(config-title="粘性会话" required)
+                form-input-container
+                    form-input-radio-group(ng-model="loadBalanceDraft.serviceDraft.sessionAffinity" name="sessionAffinity" fallback-value="'false'" options="[{value: 'false', text: '关闭（默认）'}, {value: 'true', text: '开启'}]" required)
+        form-config-group
+            form-config-item(config-title="关联部署" required)
+                form-input-container(help-text="只能关联相同集群、相同namespace且非Host网络模式的部署")
+                    form-select-list(ng-model="loadBalanceDraft.serviceDraft.deployment" name="createKubeRelatedDeployment" form-name="createKubeLB" parameters="{clusterId:loadBalanceDraft.cluster.id,namespace:loadBalanceDraft.namespace.namespace,loadBalanceType:loadBalanceDraft.type}" loading-text="正在获取部署信息" empty-text="无相关信息" placeholder="请选择部署" get-list-fn="{{'loadBalanceDeployment'}}" error-message="关联部署不能为空")
+                    //form-select-with-backend(ng-model="loadBalanceDraft.serviceDraft.deployment" name="createKubeRelatedDeployment" form-name="createKubeLB" param="{clusterId:loadBalanceDraft.cluster.id,namespace:loadBalanceDraft.namespace.namespace,loadBalanceType:loadBalanceDraft.type}" loading-text="正在获取部署信息" empty-text="无相关信息" placeholder="请选择部署" backend="{{'loadBalanceDeployment'}}" error-message="关联部署不能为空")
+        form-config-group
+            form-config-item
+                form-input-container
+                    button(type="button" ng-click="cancel()" style="margin-right:15px;") 取消
+                    form-submit-button(form="createKubeLB" on-submit="createKubeLoadBalance()" is-waiting="isCreating") 提交

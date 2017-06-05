@@ -1,0 +1,128 @@
+
+<div class="mod-project project-detail">
+  <loading ng-if="isLoading"></loading>
+  <div class="detail-header">
+    <div class="detail-item"><em class="item-name">工程名称</em><b class="item-content" ng-bind="config.name"></b></div><i class="detail-sep"></i>
+    <div class="detail-item"><em class="item-name">创建时间</em><b class="item-content" ng-bind="(config.createTime | time)"></b></div>
+    <div class="pull-right">
+      <button class="ui-btn ui-btn-sm ui-btn-bright" ng-click="openBuild(config.projectId,!!config.codeInfo)">构建</button>
+      <button class="ui-btn ui-btn-sm ui-btn-bright" ng-class="{'ui-btn-lg-disabled':!isDeleteProject}" ng-disabled="!isDeleteProject" ng-click="deleteProject()">删除</button>
+    </div>
+  </div>
+  <tabset>
+    <tab heading="基本信息" active="tabActive[0].active" ui-sref="projectDetail.info">
+      <div class="project-creator">
+        <p class="txt-prompt edit-creator"><i class="fa fa-info-circle icon-algin-right"></i>admin和创建者本人可以更改创建者，当工程关联代码仓库时，会验证新的创建者是否在代码仓库上拥有该工程的master权限。</p>
+        <div>创建者：<span ng-if="!isEditCreator">{{creatorInfo.name}}</span><span class="edit-creator" ng-if="isEditCreator">
+            <div class="com-select-con image-select-con" select-con="select-con" event-type="focus">
+              <input class="ui-input-search ui-input-fill ui-btn-select ui-input-full" placeholder="{{selectedCreator.username?'当前选择：'+selectedCreator.username:'搜索成员'}}" name="mirKey" ng-model="mirKey"/>
+              <ul class="select-list">
+                <li class="select-item" ng-if="!creatorUserList||userListFilter.length===0"><a>无相关成员</a></li>
+                <li class="select-item" ng-repeat="user in userListFilter=(creatorUserList|filter:{'username':mirKey})"><a ng-cloak="ng-cloak" ng-click="toggleCreator(user);$parent.mirKey=''">{{user.username}}</a></li>
+              </ul>
+            </div></span><span class="txt-wrap" ng-if="isCreator">
+            <button class="fa fa-pencil ui-btn-none icon-edit-color enlarge-foucs" ng-if="!isEditCreator" ng-click="modifyCreator()" tooltip="修改"></button>
+            <button class="fa fa-floppy-o ui-btn-none icon-success-color enlarge-foucs" ng-if="isEditCreator" ng-click="saveEditCreator()" tooltip="保存"></button>
+            <button class="fa fa-times ui-btn-none icon-cancel-color enlarge-foucs" ng-if="isEditCreator" ng-click="toggleIsEditCreator()" tooltip="取消"></button></span></div>
+      </div>
+      <div class="code-origin">代码源：<a href="{{config.codeInfo.codeHttpUrl}}" target="_blank" ng-bind="config.codeInfo.codeHttpUrl"></a>
+        <button class="ui-btn-none fa fa-pencil icon-edit-color enlarge-foucs" ng-click="modifyCodeInfo()" ng-if="isEditProject&amp;&amp;config.codeInfo"></button><span ng-if="!config.codeInfo">该工程没有关联代码仓库</span>
+      </div>
+      <markdown source="{{ markdown }}"></markdown>
+    </tab>
+    <tab heading="工程配置" active="tabActive[1].active" ui-sref="projectDetail.config">
+      <div name="projectForm" ng-form="ng-form" ng-class="{'need-valid':valid.needValid}">
+        <div class="dockerfile-options">
+          <button class="ui-btn ui-btn-sm ui-btn-bright" ng-class="{'ui-btn-lg-disabled':!isEditProject}" ng-disabled="!isEditProject" ng-click="checkEdit()" ng-if="!edit">编辑</button>
+          <button class="ui-btn ui-btn-sm ui-btn-bright" ng-click="checkEdit();valid.needValid = false;" ng-if="edit">取消</button>
+          <button class="ui-btn ui-btn-sm ui-btn-safe" ng-click="getDockerfile()" ng-disabled="isLoading" ng-if="!edit">查看Dockerfile</button>
+        </div>
+        <ng-include src="'index/tpl/tplProjectSetting/projectSettingInfoTpl.html'" ng-if="!edit"></ng-include>
+        <ng-include src="'index/tpl/tplProjectSetting/projectSettingTpl.html'" ng-if="edit"></ng-include>
+        <div class="com-bottom-option" ng-if="edit" style="text-align:left;padding-left:190px;"><span class="com-bottom-option-con">
+            <button class="ui-btn ui-btn-sm ui-btn-bright" ng-click="valid.needValid=true;validCreatedFileStoragePath();projectForm.$valid&amp;&amp;valid.createdFileStoragePath&amp;&amp;submitModify()" ng-disabled="isWaitingForModify" ng-class="{'ui-btn-lg-disabled':isWaitingForModify}">保存</button>
+            <button class="ui-btn ui-btn-sm ui-btn-safe" ng-click="valid.needValid=true;validCreatedFileStoragePath();projectForm.$valid&amp;&amp;valid.createdFileStoragePath&amp;&amp;getDockerfile()">预览</button><span class="txt-error" ng-if="valid.needValid&amp;&amp;(!valid.createdFileStoragePath||projectForm.$invalid)">存在不合法数据，请修改后提交！</span></span></div>
+      </div>
+    </tab>
+    <tab heading="构建配置" active="tabActive[2].active" ui-sref="projectDetail.autobuild">
+      <p class="tool-noinfo" ng-if="!config.codeInfo">该工程未关联代码仓库，无法持续集成</p>
+      <div class="ci-con" ng-if="config.codeInfo"><span class="ci-title">runners-token</span>
+        <div class="ci-content">
+          <p class="txt-prompt">CI/CD pipeline的runners token，该项配置时采用该token clone代码，否则使用用户token clone代码</p>
+          <input class="ui-input-fill input-md" ng-model="config.codeInfo.runnersToken" ng-readonly="!isEditProject"/>
+        </div>
+      </div>
+      <div class="ci-con" ng-if="config.codeInfo"><span class="ci-title">自动构建</span>
+        <div class="ci-content">
+          <p class="txt-prompt">当所选分支更新或出现新tag时，会自动触发构建，生成新的工程镜像。请不要在频繁push的分支上开启自动构建，以免频繁触发构建，造成资源浪费。</p><span class="branch-check">
+            <input class="ui-check" id="buildMaster" type="checkbox" name="buildBranch" ng-model="config.autoBuildInfo.master"/>
+            <label for="buildMaster">master</label></span><span class="branch-check">
+            <input class="ui-check" id="buildTag" type="checkbox" name="buildBranch" ng-true-value="1" ng-false-value="0" ng-model="config.autoBuildInfo.tag"/>
+            <label for="buildTag">tag</label></span><span class="branch-check">
+            <input class="ui-check" id="buildOther" type="checkbox" name="buildBranch" ng-model="config.autoBuildInfo.other"/>
+            <label for="buildOther" ng-if="!config.autoBuildInfo.other">指定其他分支</label>
+            <label for="buildOther" ng-if="config.autoBuildInfo.other"></label>
+            <input class="ui-input-white" ng-model="config.autoBuildInfo.branches" ng-show="config.autoBuildInfo.other" placeholder="请输入分支名称，用逗号分隔 e.g. dev,fix-bug"/></span>
+        </div>
+      </div>
+      <div class="com-bottom-option" ng-show="config.codeInfo">
+        <button class="ui-btn ui-btn-lg ui-btn-bright" ng-click="modifyCI()" ng-disabled="isWaitingForModify||!isEditProject" ng-class="{'ui-btn-lg-disabled':!isEditProject}">保存修改</button>
+      </div>
+    </tab>
+    <tab heading="构建记录" ng-click="getBuildList()" active="tabActive[3].active" ui-sref="projectDetail.buildlog">
+      <div class="chose-log"><span class="chose-title">按状态筛选</span><a class="txt-chose" ng-class="{'active':statusKey==''}" ng-click="toggleStatus('')">全部</a><a class="txt-chose" ng-class="{'active':statusKey=='Success'}" ng-click="toggleStatus('Success')">成功</a><a class="txt-chose" ng-class="{'active':statusKey=='Fail'}" ng-click="toggleStatus('Fail')">失败</a><a class="txt-chose" ng-class="{'active':statusKey=='Building'}" ng-click="toggleStatus('Building')">构建中</a><a class="txt-chose" ng-class="{'active':statusKey=='Preparing'}" ng-click="toggleStatus('Preparing')">准备中</a><i class="sep">|</i><span class="chose-title">按构建模式筛选</span><a class="txt-chose" ng-class="{'active':autoBuildKey===''}" ng-click="toggleAutoBuild('')">全部</a><a class="txt-chose" ng-class="{'active':autoBuildKey===0}" ng-click="toggleAutoBuild(0)">手动构建</a><a class="txt-chose" ng-class="{'active':autoBuildKey===1}" ng-click="toggleAutoBuild(1)">自动构建</a></div>
+      <div class="build-log">
+        <div class="ui-table-dome">
+          <div class="tb-tr-group" ng-if="!isLoadingBuildInfo&amp;&amp;(!buildList||logFilterList.length===0)">
+            <div class="tb-tr">无相关信息</div>
+          </div>
+          <div class="tb-tr-group" ng-repeat="log in logFilterList = (buildList|filter:{'autoBuild':autoBuildKey,'state':statusKey})">
+            <div class="tb-tr" ng-click="showDetail($index)">
+              <div class="tb-td" style="flex-basis:25%;" ng-cloak="ng-cloak"><i class="icon-label" tooltip="镜像版本"></i>{{isNull(log.imageInfo.imageTag)}}</div>
+              <div class="tb-td" style="flex-basis:25%;" ng-cloak="ng-cloak" ng-if="log.autoBuild!==1"><i class="icon-user" tooltip="构建者"></i>{{log.userInfo.userName}}</div>
+              <div class="tb-td" ng-if="log.autoBuild==1" style="flex-basis:25%;">自动构建</div>
+              <div class="tb-td" ng-switch="log.state" style="flex-basis:10%;"><span class="txt-success" ng-switch-when="Success">成功</span><span class="txt-warning" ng-switch-when="Fail">失败</span><span class="txt-normal" ng-switch-when="Preparing">准备中</span><span class="txt-normal" ng-switch-when="Send">准备中</span><span class="txt-error" ng-switch-when="Stopped">已停止</span><span class="txt-normal" ng-switch-default="ng-switch-default">构建中</span></div>
+              <div class="tb-td" style="flex-basis:20%;" ng-bind="log.createTime"></div>
+              <div class="tb-td" style="flex-basis:15%;" ng-bind="log.interval"></div>
+              <div class="tb-td" style="flex-basis:10%;"><a class="link-safe" href="{{log.logHref}}" target="_blank">日志</a></div>
+              <div class="tb-td" ng-if="isEditProject">
+                <button class="ui-btn-none fa fa-stop icon-trash-color" type="button" ng-click="stopBuild(log)" ng-class="{'Success':'icon-fa-disabled','Fail':'icon-fa-disabled', 'Stopped': 'icon-fa-disabled'}[log.state]" ng-disabled="log.state ==='Success' || log.state === 'Fail' || log.state === 'Stopped'" tooltip="停止构建"></button>
+              </div>
+              <div class="tb-td"><i class="icon-down" ng-if="buildList[$index].active"></i><i class="icon-down up" ng-if="!buildList[$index].active"></i></div>
+            </div>
+            <div class="tb-tr log-detail" ng-if="buildList[$index].active">
+              <ul class="detail-list">
+                <li class="detail-row"><span class="detail-title">镜像创建时间</span><span class="detail-content">{{log.imageInfo.createTime|formateDate }}</span></li>
+                <li class="detail-row"><span class="detail-title">镜像大小</span><span class="detail-content">{{log.imageInfo.imageSize + 'MB'}}</span></li>
+                <li class="detail-row" ng-if="log.state == 'Success'"><span class="detail-title">拉取命令</span><span class="detail-content"> 
+                    <input class="cmd-txt ui-input-white" readonly="true" ng-value="'docker pull '+log.imageInfo.registry + '/' + log.imageInfo.imageName + ':' + log.imageInfo.imageTag" id="{{'input'+$index}}"/><a class="link-safe link-copy" id="'btn'+ $index" data-clipboard-target="{{'#input'+ $index}}" data-text="{{'docker pull ' + log.imageInfo.registry + '/' + log.imageInfo.imageName + ':' + log.imageInfo.imageTag}}">复制</a>
+                    <p class="cmd-prompt" ng-if="log.isLogin">拉取镜像前请登录: docker login {{log.imageInfo.registry}}</p></span></li>
+                <li class="detail-row" ng-if="log.codeInfo &amp;&amp; log.commitInfo"><span class="detail-title">Branch名称</span><span class="detail-content">{{log.codeInfo.codeBranch}}</span></li>
+                <li class="detail-row" ng-if="log.codeInfo &amp;&amp; log.commitInfo"><span class="detail-title">author</span><span class="detail-content">{{log.commitInfo.authorName || '无'}}</span></li>
+                <li class="detail-row" ng-if="log.codeInfo &amp;&amp; log.commitInfo"><span class="detail-title">author email</span><span class="detail-content">{{log.commitInfo.authorEmail || '无'}}</span></li>
+                <li class="detail-row" ng-if="log.codeInfo &amp;&amp; log.commitInfo"><span class="detail-title">commit time</span><span class="detail-content">{{log.commitInfo.createdAt|formateDate }}</span></li>
+                <li class="detail-row" ng-if="log.codeInfo &amp;&amp; log.commitInfo"><span class="detail-title">commit id</span><span class="detail-content">{{log.commitInfo.id }}	</span></li>
+                <li class="detail-row" ng-if="log.codeInfo &amp;&amp; log.commitInfo"><span class="detail-title">commit info</span><span class="detail-content">{{log.commitInfo.message}}</span></li>
+                <li class="detail-row"><span class="detail-title">Dockerfile</span><span class="detail-content" ng-bind-html="dockerfile"></span></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="build-log-pagination">
+        <div class="pagination-per-page"><span>每页</span>
+          <div class="com-select-con" select-con="select-con">
+            <button class="ui-btn ui-btn-white ui-btn-select" ng-cloak="ng-cloak">{{itemsPerPage}}<i class="icon-down"></i></button>
+            <ul class="select-list" ng-init="perPageCountList = [10,25,50,100]">
+              <li class="select-item" ng-repeat="perPageCount in perPageCountList"><a ng-click="togglePerPageCount(perPageCount)">{{perPageCount}}</a></li>
+            </ul>
+          </div><span> 行</span>
+        </div>
+        <div class="pagination-info"><span ng-cloak="ng-cloak">共 {{totalItems}} 个</span></div>
+        <div class="pagination-navigation">
+          <pagination class="pagination-sm" total-items="totalItems" ng-model="pagination.currentPage" ng-change="pageChanged()" max-size="maxSize" items-per-page="itemsPerPage" rotate="false" num-pages="numPages" previous-text="上一页" next-text="下一页"></pagination>
+        </div>
+      </div>
+    </tab>
+  </tabset>
+</div>

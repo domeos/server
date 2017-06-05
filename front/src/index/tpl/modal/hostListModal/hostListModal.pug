@@ -1,0 +1,21 @@
+.d-modal-header
+	| 选择主机列表
+	span.model-prompt(ng-cloak) 共{{hostList.length}}台
+.d-modal-full.d-modal-container
+	table.ui-table-dome
+		thead
+			tr
+				th 主机名
+				th IP
+				th 实例个数
+				th 状态
+		tbody
+			tr(ng-if="hostList.length===0")
+				td 无已选主机
+			tr(ng-repeat="host in hostList|filter:{'labelFilter':true}")
+				td(ng-bind="host.name")
+				td(ng-bind="host.ip")
+				td(ng-bind="host.runningPods")
+				td(ng-bind="host.status")
+.d-modal-footer.text-right
+		button.ui-btn.ui-btn-sm.ui-btn-white(ng-click="cancel()") 取消

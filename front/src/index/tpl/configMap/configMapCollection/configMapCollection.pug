@@ -1,0 +1,47 @@
+//
+   Created by haozhou on 2017/2/9.
+.dome-config-map
+    page-title(page-title="配置管理")
+    loading(ng-if="isLoading")
+    .dome-option-container
+        button.ui-btn.ui-btn-lg.ui-btn-bright(ui-sref="createConfigMapCollection")
+            span.btn-txt 新建配置集合
+            i.fa.fa-plus
+        .option-right
+            span(ng-cloak) 共{{configMapCollectionFilter.length || 0}}个配置集合
+            input.ui-input-search.ui-input-fill(type="text" placeholder="输入名称" ng-model="proKeywords")
+    .dome-prompt-container
+        dome-prompt(content="配置集合用来控制一组配置的访问权限。")
+    .dome-list-container
+        ul
+            li.dome-list-item-no(ng-if="!isLoading&&(!configMapCollectionList||configMapCollectionFilter.length===0)")
+                span 暂无配置集合，可以
+                a.txt-bright(ui-sref="createConfigMapCollection") 新建一个
+            li.dome-list-item(ng-repeat="configMapCollection in configMapCollectionFilter=(configMapCollectionList|filter:{name:proKeywords})")
+
+                .dome-list-item-header
+                    a.item-header-name(ng-if="!configMapCollection.isEdit" ui-sref="configMapCollectionDetail({id:configMapCollection.id})" ng-bind="configMapCollection.name || '未设置'")
+                    input.ui-input-fill(ng-if="configMapCollection.isEdit" ng-model="configMapCollection.name")
+                    .item-header-option
+                        button.dome-fa-icon.fa.fa-pencil.dome-btn-none(ng-if="!configMapCollection.isEdit" ng-click="configMapCollection.isEdit = true" ng-class="{true:'icon-edit-color',false:'icon-fa-disabled'}[configMapCollection.role==='MASTER' || configMapCollection.role==='DEVELOPER']" ng-disabled="!(configMapCollection.role==='MASTER' || configMapCollection.role==='DEVELOPER')" tooltip="编辑")
+                        button.dome-fa-icon.fa.fa-trash-o.dome-btn-none(ng-if="!configMapCollection.isEdit" ng-click="delete(configMapCollection.id)" ng-class="{true:'icon-trash-color',false:'icon-fa-disabled'}[configMapCollection.role==='MASTER']" ng-disabled="!(configMapCollection.role==='MASTER')" tooltip="删除")
+
+                        button.fa.fa-floppy-o.dome-btn-none.icon-success-color(ng-if="configMapCollection.isEdit" ng-click="saveModify(configMapCollection);configMapCollection.isEdit = false" tooltip="保存")
+                        button.fa.fa-times.dome-btn-none.icon-cancel-color(ng-if="configMapCollection.isEdit" ng-click="cancelModify();configMapCollection.isEdit = false" tooltip="取消")
+                .dome-list-item-content
+                    .item-content-block
+                        span(ng-if="!configMapCollection.isEdit" ng-bind="configMapCollection.description || '无描述信息'")
+                        input.ui-input-fill(ng-if="configMapCollection.isEdit" ng-model="configMapCollection.description")
+                .dome-list-item-footer
+                    .item-footer-block
+                        | 配置数：
+                        span.txt-bright(ng-bind="configMapCollection.configMapCount")
+                    .item-footer-block
+                        | 成员数：
+                        span.txt-success(ng-bind="configMapCollection.memberCount")
+                    .item-footer-block
+                        | 创建时间：
+                        span(ng-bind="configMapCollection.createTime | date: 'yyyy-MM-dd'")
+                    .item-footer-block-other(style="display:inline-block")
+                        | 创建者:
+                        span(ng-bind="configMapCollection.creatorInfo.name")

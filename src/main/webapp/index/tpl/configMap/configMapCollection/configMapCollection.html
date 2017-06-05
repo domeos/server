@@ -1,0 +1,43 @@
+
+<!--Created by haozhou on 2017/2/9.
+-->
+<div class="dome-config-map">
+  <page-title page-title="配置管理"></page-title>
+  <loading ng-if="isLoading"></loading>
+  <div class="dome-option-container">
+    <button class="ui-btn ui-btn-lg ui-btn-bright" ui-sref="createConfigMapCollection"><span class="btn-txt">新建配置集合</span><i class="fa fa-plus"></i></button>
+    <div class="option-right"><span ng-cloak="ng-cloak">共{{configMapCollectionFilter.length || 0}}个配置集合</span>
+      <input class="ui-input-search ui-input-fill" type="text" placeholder="输入名称" ng-model="proKeywords"/>
+    </div>
+  </div>
+  <div class="dome-prompt-container">
+    <dome-prompt content="配置集合用来控制一组配置的访问权限。"></dome-prompt>
+  </div>
+  <div class="dome-list-container">
+    <ul>
+      <li class="dome-list-item-no" ng-if="!isLoading&amp;&amp;(!configMapCollectionList||configMapCollectionFilter.length===0)"><span>暂无配置集合，可以</span><a class="txt-bright" ui-sref="createConfigMapCollection">新建一个</a></li>
+      <li class="dome-list-item" ng-repeat="configMapCollection in configMapCollectionFilter=(configMapCollectionList|filter:{name:proKeywords})">
+        <div class="dome-list-item-header"><a class="item-header-name" ng-if="!configMapCollection.isEdit" ui-sref="configMapCollectionDetail({id:configMapCollection.id})" ng-bind="configMapCollection.name || '未设置'"></a>
+          <input class="ui-input-fill" ng-if="configMapCollection.isEdit" ng-model="configMapCollection.name"/>
+          <div class="item-header-option">
+            <button class="dome-fa-icon fa fa-pencil dome-btn-none" ng-if="!configMapCollection.isEdit" ng-click="configMapCollection.isEdit = true" ng-class="{true:'icon-edit-color',false:'icon-fa-disabled'}[configMapCollection.role==='MASTER' || configMapCollection.role==='DEVELOPER']" ng-disabled="!(configMapCollection.role==='MASTER' || configMapCollection.role==='DEVELOPER')" tooltip="编辑"></button>
+            <button class="dome-fa-icon fa fa-trash-o dome-btn-none" ng-if="!configMapCollection.isEdit" ng-click="delete(configMapCollection.id)" ng-class="{true:'icon-trash-color',false:'icon-fa-disabled'}[configMapCollection.role==='MASTER']" ng-disabled="!(configMapCollection.role==='MASTER')" tooltip="删除"></button>
+            <button class="fa fa-floppy-o dome-btn-none icon-success-color" ng-if="configMapCollection.isEdit" ng-click="saveModify(configMapCollection);configMapCollection.isEdit = false" tooltip="保存"></button>
+            <button class="fa fa-times dome-btn-none icon-cancel-color" ng-if="configMapCollection.isEdit" ng-click="cancelModify();configMapCollection.isEdit = false" tooltip="取消"></button>
+          </div>
+        </div>
+        <div class="dome-list-item-content">
+          <div class="item-content-block"><span ng-if="!configMapCollection.isEdit" ng-bind="configMapCollection.description || '无描述信息'"></span>
+            <input class="ui-input-fill" ng-if="configMapCollection.isEdit" ng-model="configMapCollection.description"/>
+          </div>
+        </div>
+        <div class="dome-list-item-footer">
+          <div class="item-footer-block">配置数：<span class="txt-bright" ng-bind="configMapCollection.configMapCount"></span></div>
+          <div class="item-footer-block">成员数：<span class="txt-success" ng-bind="configMapCollection.memberCount"></span></div>
+          <div class="item-footer-block">创建时间：<span ng-bind="configMapCollection.createTime | date: 'yyyy-MM-dd'"></span></div>
+          <div class="item-footer-block-other" style="display:inline-block;">创建者:<span ng-bind="configMapCollection.creatorInfo.name"></span></div>
+        </div>
+      </li>
+    </ul>
+  </div>
+</div>

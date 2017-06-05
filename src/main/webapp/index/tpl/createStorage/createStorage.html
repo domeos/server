@@ -1,0 +1,155 @@
+
+<div class="dome-storage">
+  <form-container left-column-width="66px">
+    <form name="createStorage">
+      <form-config-group>
+        <form-config-item config-title="存储名称" required="required">
+          <form-input-container>
+            <input name="storageName" type="text" placeholder="名称唯一，不可重复" ng-model="storage.name" required="required" is-storage-unique="is-storage-unique" ng-model-options="{updateOn:'default blur',debounce:{default:1000,blur:0}}"/>
+            <form-error-message form="createStorage" target="storageName" type="required">名称不能为空</form-error-message>
+            <form-error-message form="createStorage" target="storageName" type="isStorageUnique">名称重复</form-error-message>
+          </form-input-container>
+        </form-config-item>
+      </form-config-group>
+      <form-config-group>
+        <form-config-item config-title="存储描述">
+          <form-input-container>
+            <textarea ng-model="storage.description" style="padding: 6px 20px;line-height:20px;display: block;"></textarea>
+          </form-input-container>
+        </form-config-item>
+      </form-config-group>
+      <form-config-group>
+        <form-config-item config-title="存储成员">
+          <form-input-container style="line-height: initial;">
+            <div class="dome-line-long">
+              <div class="com-select-con dome-input-select full" select-con="select-con" label="true">
+                <ul class="selected-labels">
+                  <li class="select-label" ng-repeat="user in selectedUsers" ng-cloak="ng-cloak"><a class="icon-cancle icon-cancle-former" ng-click="cancelUser($index)"></a>{{user.username}}</li>
+                  <li class="select-input" style="line-height: 34px;">
+                    <input class="line-element ui-btn-select" placeholder="搜索成员" ng-model="userKey.key" ng-keydown="userKeyDown($event,userKey.key,userListFiltered[0])"/>
+                  </li>
+                </ul>
+                <ul class="select-list">
+                  <li class="select-item" ng-if="!userList||userListFiltered.length===0"><a>无相关用户信息</a></li>
+                  <li class="select-item" ng-repeat="user in userListFiltered=(userList| filter:{'username':userKey.key})"><a ng-bind="user.username" ng-click="selectUser(user.id,user.username);"></a></li>
+                </ul>
+              </div>
+            </div>
+            <div class="dome-line-long">
+              <div class="dome-inline-wrapper">
+                <div class="com-select-con full" select-con="select-con">
+                  <div class="ui-btn-select ui-btn ui-btn-white dome-select-btn" tabindex="1"><span class="pull-right" style="padding-right: 10px;"><i class="fa fa-angle-down"></i></span>{{currentRole}}</div>
+                  <ul class="select-list">
+                    <li class="select-item" ng-repeat="role in roleList"><a ng-click="toggleRole(role)">{{role}}</a></li>
+                  </ul>
+                </div>
+                <button class="dome-tool-align" ng-click="addUser()" type="button">添加</button>
+              </div>
+            </div>
+            <div class="dome-line-long">
+              <table class="ui-table-primary full">
+                <thead>
+                  <tr>
+                    <th style="width:40%;">成员名称</th>
+                    <th>存储权限</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td ng-bind="myself.username"></td>
+                    <td ng-bind="myself.role"></td>
+                    <td></td>
+                  </tr>
+                  <tr ng-repeat="user in selectedUsersList">
+                    <td ng-bind="user.username"></td>
+                    <td>
+                      <div class="com-select-con" select-con="select-con">
+                        <div class="ui-btn ui-btn-white ui-btn-select dome-select-btn" ng-cloak="ng-cloak" tabindex="1"><span class="pull-right" style="padding-right: 10px;"><i class="fa fa-angle-down"></i></span>{{user.role}}</div>
+                        <ul class="select-list">
+                          <li class="select-item" ng-repeat="role in roleList"><a ng-click="user.role=role">{{role}}</a></li>
+                        </ul>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="fa fa-trash-o icon-trash-color dome-enable-click" ng-click="deleteUser($index)"></div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </form-input-container>
+        </form-config-item>
+      </form-config-group>
+      <form-config-group>
+        <form-config-item config-title="存储类型" required="required">
+          <form-input-container help-text="从以下类型中选择所需存储类型，并填写相应系统配置。">
+            <form-input-radio-group ng-model="storage.storageType" fallback-value="'GLUSTERFS'" options="[{value: 'GLUSTERFS', text: 'glusterfs'},{value: 'CEPHFS', text: 'cephfs'}]" required="required"></form-input-radio-group>
+            <sub-form-container ng-if="storage.storageType === 'GLUSTERFS'" left-column-width="80px">
+              <form-config-group>
+                <form-config-item config-title="节点IP">
+                  <form-input-container help-text="请准确填写节点IP信息，以避免存储挂载失败。">
+                    <form-array-container ng-model="storage.storageInfo.ips" template="formArrayItemForIP" max-length="100" min-length="1" type="simple" placeholder="输入IP地址"></form-array-container>
+                  </form-input-container>
+                </form-config-item>
+              </form-config-group>
+            </sub-form-container>
+            <sub-form-container ng-if="storage.storageType === 'CEPHFS'" left-column-width="80px">
+              <form-config-group>
+                <form-config-item config-title="User" required="required">
+                  <form-input-container>
+                    <input type="text" placeholder="" ng-model="storage.storageInfo.cephUser" required="required"/>
+                  </form-input-container>
+                </form-config-item>
+                <form-config-item config-title="Keyring" required="required">
+                  <form-input-container>
+                    <input type="text" placeholder="" ng-model="storage.storageInfo.keyring" required="required"/>
+                  </form-input-container>
+                </form-config-item>
+                <form-config-item config-title="Monitor IP">
+                  <form-input-container help-text="请准确填写Monitor IP信息，以避免存储挂载失败。">
+                    <form-array-container ng-model="storage.storageInfo.cephMonitors" template="formArrayItemForIP" max-length="100" min-length="1" type="simple" placeholder="输入IP地址"></form-array-container>
+                  </form-input-container>
+                </form-config-item>
+              </form-config-group>
+            </sub-form-container>
+          </form-input-container>
+        </form-config-item>
+      </form-config-group>
+      <form-config-group>
+        <form-config-item config-title="管理器" required="required">
+          <form-input-container help-text="管理器负责在存储集群上创建、删除目录，并查询目录信息。">
+            <sub-form-container left-column-width="80px">
+              <form-config-group>
+                <form-config-item config-title="管理器地址">
+                  <form-input-container>
+                    <input type="text" name="storageManagerHost" ng-model="storage.storageManagerInfo.host" placeholder="请输入ip:port或者域名" required="required"/>
+                  </form-input-container>
+                </form-config-item>
+                <form-config-item config-title="access key">
+                  <form-input-container>
+                    <textarea type="text" name="storageManagerAccessKey" ng-model="storage.storageManagerInfo.accesskey" required="required"></textarea>
+                  </form-input-container>
+                </form-config-item>
+                <form-config-item config-title="secret key">
+                  <form-input-container>
+                    <textarea type="text" name="storageManagerSecretKey" ng-model="storage.storageManagerInfo.secretkey" required="required"></textarea>
+                  </form-input-container>
+                </form-config-item>
+              </form-config-group>
+            </sub-form-container>
+          </form-input-container>
+        </form-config-item>
+      </form-config-group>
+      <form-config-group>
+        <form-config-item>
+          <button type="button" ui-sref="storageManage" style="margin-right:15px;">取消</button>
+          <form-submit-button form="createStorage" on-submit="createStorageSubmit()" ng-disabled="isWaitingCreate">提交</form-submit-button>
+        </form-config-item>
+      </form-config-group>
+    </form>
+  </form-container>
+</div>
+<script type="text/ng-template" id="formArrayItemForIP">
+  <input type="text" ng-model="$ctrl.ngModel[$index]" required="required"/>
+</script>

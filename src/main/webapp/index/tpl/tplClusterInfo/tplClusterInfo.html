@@ -1,0 +1,51 @@
+
+<ul class="com-list-info">
+  <div class="mod-tips-info">
+    <p class="txt-prompt"><i class="fa fa-info-circle icon-algin-right"></i>DomeOS支持通过flume镜像进行日志收集。</p>
+  </div>
+  <li class="has-border"><span class="info-name">集群名称</span>
+    <div class="info-content info-content-lg-height" ng-bind="config.name"></div>
+  </li>
+  <li class="has-border"><span class="info-name">集群https访问</span>
+    <div class="info-content info-content-lg-height" ng-bind="config.isHttps?'On':'Off'"></div>
+  </li>
+  <li ng-if="config.isHttps"><span class="info-name">用户名</span>
+    <div class="info-content info-content-lg-height" ng-bind="config.username||'未设置'"></div>
+  </li>
+  <li class="has-border" ng-if="config.isHttps"><span class="info-name">密码</span>
+    <div class="info-content info-content-lg-height" ng-bind="config.password||'未设置'"></div>
+  </li>
+  <li class="has-border"><span class="info-name">api server</span>
+    <div class="info-content info-content-lg-height" ng-bind="config.isHttps?'https://'+config.api:config.api"></div>
+  </li>
+  <li class="has-border"><span class="info-name">dns服务器</span>
+    <div class="info-content info-content-lg-height" ng-bind="(config.dns || '未设置')"></div>
+  </li>
+  <li class="has-border"><span class="info-name">etcd</span>
+    <div class="info-content">
+      <div class="line-single" ng-hide="$last" ng-repeat="etcd in config.etcd"><span class="ui-input-white ui-input-txt single-element" ng-bind="etcd.name"></span></div>
+    </div>
+  </li>
+  <li class="has-border"><span class="info-name">domain</span>
+    <div class="info-content info-content-lg-height"><span ng-bind="(config.domain || '未设置')"></span></div>
+  </li>
+  <li><span class="info-name">日志自动收集</span>
+    <div class="info-content info-content-lg-height" ng-switch="config.logConfig"><span ng-switch-when="1">On</span><span ng-switch-default="ng-switch-default">Off</span></div>
+  </li>
+  <li ng-if="config.logConfig===1"><span class="info-name">kafka</span>
+    <div class="info-content">
+      <div class="line-single" ng-hide="$last" ng-repeat="kafka in config.clusterLog.kafka"><span class="ui-input-white ui-input-txt single-element" ng-bind="kafka.name"></span></div><span ng-if="config.clusterLog.kafka.length&lt;=1">未设置</span>
+    </div>
+  </li>
+  <li ng-if="config.logConfig===1"><span class="info-name">zookeeper</span>
+    <div class="info-content">
+      <div class="line-single" ng-hide="$last" ng-repeat="zookeeper in config.clusterLog.zookeeper"><span class="ui-input-white ui-input-txt single-element" ng-bind="zookeeper.name"></span></div><span ng-if="config.clusterLog.zookeeper.length&lt;=1">未设置</span>
+    </div>
+  </li>
+  <li ng-if="config.logConfig===1"><span class="info-name">日志容器</span>
+    <div class="info-content info-content-lg-height">
+      <div class="line-singgle"><span>镜像名 :</span><span class="cluster-log" ng-bind="config.clusterLog.imageName"></span></div>
+      <div class="line-singgle"><span>镜像版本 :</span><span class="cluster-log" ng-bind="(config.clusterLog.imageTag || '未设置')"></span></div>
+    </div>
+  </li>
+</ul>

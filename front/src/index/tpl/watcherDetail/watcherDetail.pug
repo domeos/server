@@ -1,0 +1,98 @@
+div.mod-deploy.deploy-detail.watcher-detail
+    div.detail-header
+        .detail-item.cluster-name
+            em.item-name 所在集群
+            b.item-content(ng-bind="config.clusterName" title="{{config.clusterName}}")
+        i.detail-sep
+        .detail-item
+            em.item-name namespace
+            b.item-content(ng-bind="config.namespace")
+        i.detail-sep
+        .detail-item
+            em.item-name 部署类型
+            b.item-content(ng-bind="config.deployTypeShow")
+        i.detail-sep
+        .detail-item
+            em.item-name 上次升级时间
+            b.item-content(ng-bind="(config.lastUpdateTime | time)")
+        i.detail-sep
+        .detail-item
+            em.item-name 实例个数
+            b.item-content(ng-bind="config.currentReplicas")
+        i.detail-sep
+        .detail-item
+            em.item-name 当前版本
+            b.item-content(ng-if="!config.currentVersions||config.currentVersions.length===0") 无
+            b.item-content(ng-repeat="version in config.currentVersions" ng-cloak) version{{version.version}}
+        i.detail-sep
+        .detail-item
+            em.item-name 状态
+            b.item-content(ng-switch="config.deploymentStatus")
+                span.txt-success(ng-switch-when="RUNNING") 运行中
+                span.txt-error(ng-switch-when="STOP") 停止
+                span.txt-primary(ng-switch-when="DEPLOYING") 部署中
+                span.txt-warning(ng-switch-when="ERROR") 异常
+                //- span.txt-default(ng-switch-when="AB_TEST") 灰度发布
+                span.txt-primary(ng-switch-when="STOPPING") 停止中
+                span.txt-primary(ng-switch-when="UPDATING") 升级中
+                span.txt-primary(ng-switch-when="BACKROLLING") 回滚中
+                span.txt-warning(ng-switch-when="ABORTING") 中断中
+                span.txt-warning(ng-switch-when="BACKROLL_ABORTED") 回滚已中断
+                span.txt-warning(ng-switch-when="UPDATE_ABORTED") 升级已中断
+        i.detail-sep
+        .deploy-option.pull-right.tool-align-input(ng-switch="config.deploymentStatus" ng-if="isEdit")
+            span(ng-switch-when="RUNNING")
+                button.ui-btn.ui-btn-bright.ui-btn-lg(ng-disabled="isWaitingUpVersion" ng-click="operate('update')" ng-if="!config.stateful") 升级/回滚
+                button.ui-btn.ui-btn-bright.ui-btn-sm(ng-disabled="isWaitingStop" ng-click="operate('stop')") 停止
+            span(ng-switch-when="STOP")
+                button.ui-btn.ui-btn-bright.ui-btn-sm(ng-disabled="isWaitingStart" ng-click="operate('start')") 启动
+                button.ui-btn.ui-btn-bright.ui-btn-sm(ng-class="{'ui-btn-lg-disabled':!isDelete}" ng-disabled="!isDelete" ng-click="deleteDeploy()") 删除
+            span(ng-if="config.deploymentStatus=='ERROR'||config.deploymentStatus=='BACKROLL_ABORTED'||config.deploymentStatus=='UPDATE_ABORTED'")
+                button.ui-btn.ui-btn-bright.ui-btn-sm(ng-if="!config.stateful" ng-disabled="isWaitingRecover" ng-click="operate('recover')") 恢复
+                button.ui-btn.ui-btn-bright.ui-btn-sm(ng-disabled="isWaitingStop" ng-click="operate('stop')") 停止
+            button.ui-btn.ui-btn-bright.ui-btn-lg(ng-switch-when="DEPLOYING" ng-disabled="isWaitingOperation" ng-click="operate('abort','DEPLOYING')" ng-if="config.deploymentType !== 'DAEMONSET'") 中断启动
+            button.ui-btn.ui-btn-bright.ui-btn-lg(ng-switch-when="UPDATING" ng-disabled="isWaitingOperation" ng-click="operate('abort','UPDATING')" ng-if="config.deploymentType !== 'DAEMONSET'") 中断升级
+            button.ui-btn.ui-btn-bright.ui-btn-lg(ng-switch-when="BACKROLLING" ng-disabled="isWaitingOperation" ng-click="operate('abort','BACKROLLING')" ng-if="config.deploymentType !== 'DAEMONSET'") 中断回滚
+            button.ui-btn.ui-btn-bright.ui-btn-lg(ng-switch-when="DEPLOYING"  ng-disabled="isWaitingOperation" ng-click="operate('stop')" ng-if="config.deploymentType === 'DAEMONSET'") 停止部署
+            button.ui-btn.ui-btn-bright.ui-btn-lg(ng-switch-when="UPDATING" ng-disabled="isWaitingOperation" ng-click="operate('stop')" ng-if="config.deploymentType === 'DAEMONSET'") 停止部署
+            button.ui-btn.ui-btn-bright.ui-btn-lg(ng-switch-when="BACKROLLING"  ng-disabled="isWaitingOperation" ng-click="operate('stop')" ng-if="config.deploymentType === 'DAEMONSET'") 停止部署
+            button.ui-btn.ui-btn-bright.ui-btn-lg(ng-switch-when="UPSCALING"  ng-disabled="isWaitingOperation" ng-click="operate('stop')" ng-if="config.deploymentType === 'DAEMONSET'") 停止部署
+            button.ui-btn.ui-btn-bright.ui-btn-lg(ng-switch-when="DOWNSCALING"  ng-disabled="isWaitingOperation" ng-click="operate('stop')" ng-if="config.deploymentType === 'DAEMONSET'") 停止部署
+    loading(ng-if="isLoading=(loadingsIns.isLoading||(tabActive[0].active&&deployIns.loadingIns.isLoading && loadingsIns.isLoading)||(tabActive[1].active&&deployIns.loadingIns.isLoading))")
+    tabset
+        tab(heading="监听器详情" active="tabActive[0].active" ui-sref="watcherDetail.detail")
+            ng-include(src="'index/tpl/tplWatcher/watcherDetail.html'")
+        tab(heading="升级" active="tabActive[1].active" ng-if="!config.stateful"  ui-sref="watcherDetail.update")
+            ng-include(src="'index/tpl/tplWatcher/watcherUpdate.html'")
+        tab(heading="事件" active="tabActive[2].active" ng-click="getEvents()" ui-sref="watcherDetail.event")
+            ng-include(src="'index/tpl/tplWatcher/watcherEvent.html'")
+script(type="text/ng-template" id="versionListModal.html")
+    .d-modal-header 选择版本
+    form.modal-body(name="versionFrom" ng-class="{'need-valid':needValid}")
+        ul.modal-item
+            li
+                span.modal-label 当前版本
+                div(style="display:inline-block;")
+                    span(style="display:inline-block; height:36px;line-height:36px;" ng-if="!currentVersions||currentVersions.length===0") 无
+                    span(style="display:inline-block; height:36px;line-height:36px;" ng-repeat="version in currentVersions" ng-cloak) version{{version.version}}
+            li
+                span.modal-label 选择version
+                .com-select-con.modal-info(select-con)
+                    button.ui-btn.ui-btn-white.ui-btn-select
+                        i.icon-down
+                        | {{versionData.versionId?'version'+versionData.versionId:'选择version'}}
+                    ul.select-list
+                        li.select-item(ng-repeat="version in versionList")
+                                a(ng-click="checkVersion(version.version)" ng-cloak) version{{version.version}}
+                    input(type="hidden" ng-model="versionData.versionId" name="currentVersionId" required)
+                    .txt-error(ng-if="needValid&&versionFrom.currentVersionId.$invalid") 请选择版本
+    .modal-footer
+        button.ui-btn.ui-btn-sm.ui-btn-white(ng-click="cancel()") 取消
+        button.ui-btn.ui-btn-bright.ui-btn-sm(ng-click="needValid=true;versionFrom.$valid&&submit()") 确定
+script(type="text/ng-template" id="createVersionModal.html")
+    .d-modal-header 升级版本
+    .modal-body(style="display: table;margin: 0 auto;text-align: left;" name="replicasForm")
+        div(style="margin-bottom:15px;") 成功新建部署版本，本次是否升级？
+    .modal-footer
+        button.ui-btn.ui-btn-sm.ui-btn-white(ng-click="submitUpdateVersion()") 继续升级
+        button.ui-btn.ui-btn-bright.ui-btn-sm.pull-right(type="submit" ng-click="cancel()") 暂不升级

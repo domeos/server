@@ -1,0 +1,304 @@
+
+<!--Created on 2016/12/22.
+-->
+<div class="dome-mod-content-container">
+  <div class="dome-container-header">
+    <div class="dome-header-detail">
+      <div class="detail-item"><em class="item-name">存储名称</em><b class="item-content" ng-bind="storageInstance.name"></b></div><i class="detail-sep"></i>
+      <div class="detail-item"><em class="item-name">存储类型</em><b class="item-content" ng-bind="storageInstance.storageType.toLowerCase()"></b></div><i class="detail-sep"></i>
+      <div class="detail-item"><em class="item-name">创建时间</em><b class="item-content" ng-bind="(storageInstance.createTime | time)"></b></div>
+      <div class="pull-right"><span style="line-height:44px;">
+          <button class="ui-btn ui-btn-bright ui-btn-sm" ng-if="mayDelete()" style="line-height:34px;" ng-click="deleteStorage(storageInstance.id)">删除</button></span></div>
+    </div>
+  </div>
+  <div class="dome-container-body" style="min-height: 540px;">
+    <tabset class="mod-tab" style="display: table;width: 100%;">
+      <div class="tab-border"></div>
+      <tab class="first" heading="数据卷" active="tabActive[0].active" ui-sref="storageVolumeDetail.volume">
+        <div class="dome-option-container">
+          <button class="ui-btn ui-btn-lg ui-btn-bright" ng-class="{'ui-btn-lg-disabled':!mayPost()}" ng-disabled="!mayPost()" ui-sref="createStorageVolume({id:storageInstance.id})"><span class="btn-txt">新建数据卷</span><i class="fa fa-plus"></i></button>
+          <div class="option-right"><span ng-cloak="ng-cloak">共{{volumeListFilter.length || 0}}个数据卷</span>
+            <input class="ui-input-search ui-input-fill" type="text" placeholder="输入名称查询" ng-model="keywords"/>
+          </div>
+        </div>
+        <div class="dome-prompt-container">
+          <dome-prompt content="数据卷是在创建在集群上可以被部署实例挂载的存储服务，创建数据卷会在集群内增加一条关联到该存储集群的记录，数据卷可以在部署模块中挂载。"></dome-prompt>
+        </div>
+        <div class="dome-list-container">
+          <loading ng-if="isVolumeLoading"></loading>
+          <table class="ui-table-dome">
+            <thead>
+              <tr>
+                <th>名称</th>
+                <th>状态</th>
+                <th>集群</th>
+                <th>namespace</th>
+                <th>访问模式</th>
+                <th>创建时间</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-if="!volumeList || volumeListFilter.length===0">
+                <td class="text-center" colspan="7">暂无相关数据卷</td>
+              </tr>
+              <tr ng-repeat="volume in volumeListFilter = (volumeList|filter:{storageVolumeDraft:{name: keywords}})">
+                <td><a class="ui-table-link" ng-click="volumeDetail(volume)" ng-bind="volume.storageVolumeDraft.name"></a></td>
+                <td ng-bind="volume.status"></td>
+                <td ng-bind="volume.storageVolumeDraft.clusterName"></td>
+                <td ng-bind="volume.storageVolumeDraft.namespace"></td>
+                <td ng-bind="formatAccessMode[volume.storageVolumeDraft.accessMode]"></td>
+                <td ng-bind="(volume.storageVolumeDraft.createTime | time)"></td>
+                <td>
+                  <button class="dome-btn-none fa fa-list-alt icon-edit-color" ng-click="listRelatedDeploy(volume.storageVolumeDraft)" tooltip="部署列表"></button>
+                  <button class="dome-btn-none fa fa-trash-o icon-trash-color" ng-class="{'icon-fa-disabled':!mayDelete()}" ng-disabled="!mayDelete()" ng-click="deleteVolume(volume.storageVolumeDraft)" tooltip="删除"></button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </tab>
+      <tab class="first" heading="存储详情" active="tabActive[1].active" ui-sref="storageVolumeDetail.storage" ng-show="mayDelete()">
+        <div class="dome-option-container" style="margin-bottom:0;">
+          <button class="ui-btn ui-btn-bright ui-btn-sm" ng-if="!isEditStorage" ng-click="toggleIsEditStorage('edit')" ng-disabled="!mayPost()" ng-class="{'ui-btn-lg-disabled':!mayPost()}">编辑</button>
+          <button class="ui-btn ui-btn-bright ui-btn-sm" ng-if="isEditStorage" ng-click="toggleIsEditStorage()" ng-disabled="isRunning">取消</button>
+        </div>
+        <div class="dome-prompt-container">
+          <dome-prompt content="当该存储集群已存在数据卷时，仅支持修改存储名称和描述信息"></dome-prompt>
+        </div>
+        <form-container left-column-width="80px">
+          <form-config-group ng-if="!isEditStorage">
+            <form-config-item config-title="存储名称">
+              <form-input-container><span ng-bind="storageInstance.name"></span></form-input-container>
+            </form-config-item>
+            <form-config-item config-title="存储描述">
+              <form-input-container><span ng-bind="storageInstance.description || '无描述信息'"></span></form-input-container>
+            </form-config-item>
+            <form-config-item config-title="存储类型">
+              <form-input-container><span ng-bind="storageInstance.storageType.toLowerCase()"></span>
+                <sub-form-container left-column-width="80px" ng-if="storageInstance.storageType === 'GLUSTERFS'">
+                  <form-config-group>
+                    <form-config-item config-title="节点IP">
+                      <form-input-container ng-repeat=" ip in storageInstance.storageInfo.ips track by $index"><span ng-bind="ip"></span></form-input-container>
+                    </form-config-item>
+                  </form-config-group>
+                </sub-form-container>
+                <sub-form-container left-column-width="80px" ng-if="storageInstance.storageType === 'CEPHFS'">
+                  <form-config-group>
+                    <form-config-item config-title="User">
+                      <form-input-container><span ng-bind="storageInstance.storageInfo.cephUser"></span></form-input-container>
+                    </form-config-item>
+                    <form-config-item config-title="Keyring">
+                      <form-input-container><span ng-bind="storageInstance.storageInfo.keyring"></span></form-input-container>
+                    </form-config-item>
+                    <form-config-item config-title="Monitor IP">
+                      <form-input-container ng-repeat=" ip in storageInstance.storageInfo.cephMonitors track by $index"><span ng-bind="ip"></span></form-input-container>
+                    </form-config-item>
+                  </form-config-group>
+                </sub-form-container>
+              </form-input-container>
+            </form-config-item>
+            <form-config-item config-title="管理器">
+              <form-input-container>
+                <sub-form-container left-column-width="80px">
+                  <form-config-group>
+                    <form-config-item config-title="管理器地址">
+                      <form-input-container><span ng-bind="storageInstance.storageManagerInfo.host || '无'"></span></form-input-container>
+                    </form-config-item>
+                    <form-config-item config-title="access key">
+                      <form-input-container>
+                        <textarea ng-model="storageInstance.storageManagerInfo.accesskey" readonly="readonly"></textarea>
+                      </form-input-container>
+                    </form-config-item>
+                    <form-config-item config-title="secret key">
+                      <form-input-container>
+                        <textarea ng-model="storageInstance.storageManagerInfo.secretkey" readonly="readonly"></textarea>
+                      </form-input-container>
+                    </form-config-item>
+                  </form-config-group>
+                </sub-form-container>
+              </form-input-container>
+            </form-config-item>
+          </form-config-group>
+          <form name="storageDetail" ng-if="isEditStorage">
+            <loading ng-if="isRunning"></loading>
+            <form-config-group>
+              <form-config-item config-title="存储名称">
+                <form-input-container>
+                  <input name="storage-name" type="text" placeholder="名称唯一，不可重复" ng-model="storageInstance.name" required="required"/>
+                  <form-error-message form="storageDetail" target="storage-name">名称不能为空</form-error-message>
+                </form-input-container>
+              </form-config-item>
+              <form-config-item config-title="存储描述">
+                <form-input-container>
+                  <textarea ng-model="storageInstance.description" style="padding: 6px 20px;line-height:20px;display: block;"></textarea>
+                </form-input-container>
+              </form-config-item>
+              <form-config-item config-title="存储类型">
+                <form-input-container ng-if="!hasVolume"><span ng-bind="storageInstance.storageType.toLowerCase()"></span>
+                  <sub-form-container left-column-width="80px" ng-if="storageInstance.storageType === 'GLUSTERFS'">
+                    <form-config-group>
+                      <form-config-item config-title="节点IP" required="required">
+                        <form-input-container help-text="请准确填写节点IP信息，以避免存储挂载失败。">
+                          <form-array-container ng-model="storageInstance.storageInfo.ips" template="formArrayItemForIP" max-length="100" min-length="1" type="simple"></form-array-container>
+                        </form-input-container>
+                      </form-config-item>
+                    </form-config-group>
+                  </sub-form-container>
+                  <sub-form-container left-column-width="80px" ng-if="storageInstance.storageType === 'CEPHFS'">
+                    <form-config-group>
+                      <form-config-item config-title="User" required="required">
+                        <form-input-container>
+                          <input type="text" placeholder="" ng-model="storageInstance.storageInfo.cephUser" required="required"/>
+                        </form-input-container>
+                      </form-config-item>
+                      <form-config-item config-title="Keyring" required="required">
+                        <form-input-container>
+                          <input type="text" placeholder="" ng-model="storageInstance.storageInfo.keyring" required="required"/>
+                        </form-input-container>
+                      </form-config-item>
+                      <form-config-item config-title="Monitor IP" required="required">
+                        <form-input-container help-text="请准确填写Monitor IP信息，以避免存储挂载失败。">
+                          <form-array-container ng-model="storageInstance.storageInfo.cephMonitors" template="formArrayItemForIP" max-length="100" min-length="1" type="simple"></form-array-container>
+                        </form-input-container>
+                      </form-config-item>
+                    </form-config-group>
+                  </sub-form-container>
+                </form-input-container>
+                <form-input-container ng-if="hasVolume"><span ng-bind="storageInstance.storageType.toLowerCase()"></span>
+                  <sub-form-container left-column-width="80px" ng-if="storageInstance.storageType === 'GLUSTERFS'">
+                    <form-config-group>
+                      <form-config-item config-title="节点IP">
+                        <form-input-container ng-repeat=" ip in storageInstance.storageInfo.ips track by $index"><span ng-bind="ip"></span></form-input-container>
+                      </form-config-item>
+                    </form-config-group>
+                  </sub-form-container>
+                  <sub-form-container left-column-width="80px" ng-if="storageInstance.storageType === 'CEPHFS'">
+                    <form-config-group>
+                      <form-config-item config-title="User">
+                        <form-input-container><span ng-bind="storageInstance.storageInfo.cephUser"></span></form-input-container>
+                      </form-config-item>
+                      <form-config-item config-title="Keyring">
+                        <form-input-container><span ng-bind="storageInstance.storageInfo.keyring"></span></form-input-container>
+                      </form-config-item>
+                      <form-config-item config-title="Monitor IP">
+                        <form-input-container ng-repeat=" ip in storageInstance.storageInfo.cephMonitors track by $index"><span ng-bind="ip"></span></form-input-container>
+                      </form-config-item>
+                    </form-config-group>
+                  </sub-form-container>
+                </form-input-container>
+              </form-config-item>
+              <form-config-item config-title="管理器" required="required">
+                <form-input-container help-text="管理器负责在存储集群上创建、删除目录，并查询目录信息。">
+                  <sub-form-container left-column-width="80px">
+                    <form-config-group>
+                      <form-config-item config-title="管理器地址">
+                        <form-input-container>
+                          <input type="text" name="storageManagerHost" ng-model="storageInstance.storageManagerInfo.host" placeholder="请输入ip:port或者域名" required="required"/>
+                        </form-input-container>
+                      </form-config-item>
+                      <form-config-item config-title="access key">
+                        <form-input-container>
+                          <textarea type="text" name="storageManagerAccessKey" ng-model="storageInstance.storageManagerInfo.accesskey" required="required"></textarea>
+                        </form-input-container>
+                      </form-config-item>
+                      <form-config-item config-title="secret key">
+                        <form-input-container>
+                          <textarea type="text" name="storageManagerSecretKey" ng-model="storageInstance.storageManagerInfo.secretkey" required="required"></textarea>
+                        </form-input-container>
+                      </form-config-item>
+                    </form-config-group>
+                  </sub-form-container>
+                </form-input-container>
+              </form-config-item>
+              <form-config-item>
+                <form-input-container>
+                  <form-submit-button form="storageDetail" on-submit="saveEditStorage()" ng-disabled="isRunning">保存</form-submit-button>
+                </form-input-container>
+              </form-config-item>
+            </form-config-group>
+          </form>
+        </form-container>
+      </tab>
+      <tab class="first" heading="成员" active="tabActive[2].active" ui-sref="storageVolumeDetail.user">
+        <form-container left-column-width="0">
+          <form>
+            <collection-member-table collection-id="resourceId" collection-type="resourceType" on-role-change="setRole(role)" on-no-permission="exitToList()" help-text="MASTER权限的成员可以关联、查看、修改、删除存储；可以在存储中添加、查看、删除数据卷；有DEVELOPER权限的成员可以关联、查看、修改存储，可以在存储中添加、查看数据卷；有REPORTER权限的成员可以查看存储。添加、修改或删除存储成员需要MASTER权限。"></collection-member-table>
+          </form>
+        </form-container>
+      </tab>
+    </tabset>
+  </div>
+</div>
+<script type="text/ng-template" id="volumeDetailModal.html">
+  <div class="d-modal-header" style="height:40px;line-height:54px;">数据卷详情</div>
+  <div class="modal-body storage-detail-modal" style="padding:0;">
+    <form-container left-column-width="150px">
+      <form-config-group>
+        <form-config-item config-title="配置类型">
+          <form-input-container><span ng-bind="storageIns.storageType.toLowerCase()"></span></form-input-container>
+        </form-config-item>
+        <form-config-item config-title="集群">
+          <form-input-container><span ng-bind="volumeInstance.clusterName"></span></form-input-container>
+        </form-config-item>
+        <form-config-item config-title="namespace">
+          <form-input-container><span ng-bind="volumeInstance.namespace"></span></form-input-container>
+        </form-config-item>
+        <form-config-item config-title="容量">
+          <form-input-container><span ng-bind="volumeInstance.capacity"></span>G</form-input-container>
+        </form-config-item>
+        <form-config-item config-title="使用量">
+          <form-input-container><span ng-bind="bToGb(volumeInstance.usage)"></span>G</form-input-container>
+        </form-config-item>
+        <form-config-item config-title="路径信息">
+          <form-input-container><span ng-bind="volumeInstance.cephfsDraft.cephPath" ng-if="volumeInstance.cephfsDraft" style="width:320px; display:inline-block;word-break: break-all;"></span><span ng-bind="volumeInstance.glusterfsDraft.path" ng-if="volumeInstance.glusterfsDraft" style="width:320px; display:inline-block;word-break: break-all;"></span></form-input-container>
+        </form-config-item>
+        <form-config-item config-title="描述信息">
+          <form-input-container>
+            <div style="display:inline-block;"><span ng-if="!isEditDesc" ng-bind="volumeInstance.description || '无描述信息'"></span>
+              <textarea class="ui-input-fill" ng-if="isEditDesc" ng-model="editDescription.text" style="resize: vertical;"></textarea>
+            </div>
+            <div ng-if="isEditAuth" style="margin-left: 10px;display:inline-block;position: absolute;width: 48px;"><i class="fa fa-pencil icon-edit-color dome-enable-click" ng-if="!isEditDesc&amp;&amp;isEditAuth" ng-click="toggleIsEditDesc()" tooltip="修改" style="padding:0 5px !important;"></i><i class="fa fa-floppy-o ui-btn-none icon-success-color dome-enable-click" ng-if="isEditDesc" ng-click="saveDescription()" tooltip="保存" style="padding:0 5px !important;"></i><i class="fa fa-times icon-cancel-color dome-enable-click" ng-if="isEditDesc&amp;&amp;isEditAuth" ng-click="toggleIsEditDesc()" tooltip="取消" style="padding:0 5px !important;"></i></div>
+          </form-input-container>
+        </form-config-item>
+      </form-config-group>
+    </form-container>
+  </div>
+  <div class="modal-footer text-right" style="padding: 0 15px 15px;">
+    <button class="ui-btn ui-btn-sm ui-btn-bright" ng-click="cancel()">关闭</button>
+  </div>
+</script>
+<script type="text/ng-template" id="relatedDeployModal.html">
+  <div class="d-modal-header">已挂载{{volume.name}}数据卷的部署列表</div>
+  <div class="modal-body" style="padding:0;">
+    <div class="table-container" style="padding:0 20px;">
+      <table class="ui-table-dome">
+        <thead>
+          <tr>
+            <th>服务名称</th>
+            <th>部署名称</th>
+            <th>部署版本</th>
+            <th>创建时间</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-if="!relatedDeployList || relatedDeployList.length===0">
+            <td class="text-center" colspan="5">暂无相关信息</td>
+          </tr>
+          <tr ng-repeat="deploy in relatedDeployList">
+            <td ng-bind="deploy.deployCollectionName"></td>
+            <td><a class="ui-table-link" ng-click="deployDetail(deploy)" ng-bind="deploy.deployName"></a></td>
+            <td>{{'version'+deploy.versionIdInDeploy}}</td>
+            <td ng-bind="(deploy.deployCreateTime | time)"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="modal-footer text-right">
+    <button class="ui-btn ui-btn-sm ui-btn-bright" ng-click="cancel()">关闭</button>
+  </div>
+</script>
+<script type="text/ng-template" id="formArrayItemForIP">
+  <input type="text" ng-model="$ctrl.ngModel[$index]" required="required"/>
+</script>

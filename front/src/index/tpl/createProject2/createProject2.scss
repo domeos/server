@@ -1,0 +1,40 @@
+@import "compass/css3";
+@import "common/css/common.scss";
+.project-create2{
+	padding:0 $page-padding 100px $page-padding;
+	.ui-btn-copy{
+		margin: 20px 0;
+	}
+	.project-new{
+		// padding: 14px 0 0 $page-padding;
+	}
+	.tool-algin-input{
+		margin-top: 10px;
+	}
+}
+.modal-projects{
+	max-height: 540px;
+  min-height: 400px;
+	overflow: auto;
+	.filter-con{
+		padding: 16px $page-padding 16px $page-padding;
+		.tool-align-input{
+			display: inline-block;
+		}
+		.ui-input-search{
+			float: right;
+		}
+	}
+	td,th{
+		&:first-child{
+			// padding-left: 0;
+		}
+		&:last-child{
+			padding-right: 0;
+		}
+	}
+	.table-container{
+		padding: 0 20px 20px 20px;
+	}
+
+}

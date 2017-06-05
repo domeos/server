@@ -1,0 +1,445 @@
+ng-controller(ng-controller="GlobalSettingCtr")
+  page-title(page-title="全局配置")
+  page-container
+      page-content-box(tabs=
+       `[
+        { text: "用户管理", page: "user", html: 'globalSettingUser.html' },
+        { text: "登录管理", page: "login", html: 'globalSettingLogin.html' },
+        { text: "代码仓库", page: "code", html: 'globalSettingCodeSource.html' },
+        { text: "镜像仓库", page: "registry", html: 'globalSettingRegistery.html' },
+        { text: "服务器", page: "server", html: 'globalSettingServer.html' },
+        { text: "监控报警", page: "monitor", html: 'globalSettingMonitor.html' },
+        { text: "Web SSH", page: "webssh", html: 'globalSettingWebSSH.html' },
+        { text: "构建集群", page: "build", html: 'globalSettingBuild.html' },
+       ]`
+      )
+
+script(type="text/ng-template" id="globalSettingUser.html")
+  ng-controller(ng-controller="GlobalSettingUserCtr")
+    .mod-global.global-setting
+      .user-list-title
+        input.ui-input-fill.ui-input-search.pull-right(placeholder="输入用户名称查找" ng-model="vm.key.userKey")
+        h3 用户列表
+        .com-select-con(select-con)
+          button.old-button.ui-btn.ui-btn-select.ui-btn-white(ng-cloak)
+            i.icon-down
+            | {{vm.currentUserType.type=='USER'?'普通用户':vm.currentUserType.type}}
+          ul.select-list
+            li.select-item
+              a(ng-click="vm.toggleUserType('LDAP');") LDAP
+            li.select-item
+              a(ng-click="vm.toggleUserType('USER');") 普通用户
+        .to-add(ng-if="vm.currentUserType.type=='USER'")
+          button.old-button.ui-btn.ui-btn-bright.ui-btn-lg(ng-if="!vm.isShowAdd" ng-click="vm.toggleShowAdd()") 创建用户
+            i.icon-down-white.up
+          button.old-button.ui-btn.ui-btn-bright.ui-btn-sm(ng-if="vm.isShowAdd" ng-click="vm.toggleShowAdd()") 取消
+            i.icon-down-white
+      .mod-tips-info
+        p.txt-prompt
+          i.fa.fa-info-circle.icon-algin-right
+          | 用户的邮箱和电话用于接收报警信息，如果需要该用户接收报警，请提示用户配置。
+      ul.com-list-info.add-user(ng-form name="userForm" role="form" ng-class="{'need-valid':vm.needValidUser.valid}" ng-show="vm.isShowAdd")
+        li
+          span.info-name 用户名
+          .info-content
+            input.ui-input-white.line-single(placeholder="由小写字母和数字组成" name="newuser" ng-model="vm.newUser.username" is-user-exist="vm.userList" required ng-pattern="/^[0-9a-z]+$/")
+            span.txt-error(ng-if="(vm.needValidUser.valid||userForm.newuser.$dirty)&&userForm.newuser.$error.pattern") 非法的名称
+            span.txt-error(ng-if="(vm.needValidUser.valid||userForm.newuser.$dirty)&&userForm.newuser.$error.isUserExist") 用户已存在
+        li
+          span.info-name 密码
+          .info-content
+            input.ui-input-white.line-single(placeholder="8-20位" type="password" ng-model="vm.newUser.password" name="newpw"  ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" required ng-minlength="8" ng-maxlength="20")
+            span.txt-error(ng-if="(vm.needValidUser.valid||userForm.newpw.$dirty)&&(userForm.newpw.$error.minlength||userForm.newpw.$error.maxlength)") 长度必须为8-20位
+        li
+          span.info-name 再次输入密码
+          .info-content
+            input.ui-input-white.line-single(placeholder="重新输入密码" type="password" ng-model="vm.newUser.rePassword" name="password"  ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" required equal="newUser.password")
+            span.txt-error(ng-if="(vm.needValidUser.valid||userForm.password.$dirty)&&userForm.password.$error.equal") 两次密码不一致
+        li
+          span.info-name 邮箱
+          .info-content
+            input.ui-input-white.line-single( ng-model="vm.newUser.email" name="email" required)
+        li
+          span.info-name 电话
+          .info-content
+            input.ui-input-white.line-single( ng-model="vm.newUser.phone" name="phone")
+        li
+          span.info-name
+          .info-content
+            button.old-button.ui-btn.ui-btn-bright.ui-btn-lg(ng-click="vm.needValidUser.valid=true;userForm.$valid&&vm.addUser(userForm);") 确认创建
+
+      //- table.ui-table-dome.full.table-userlist(ng-if="currentUserType.type=='LDAP'")
+        thead
+          tr
+            th 用户名
+        tbody
+          tr(ng-if="!ldapUserList||userListFiltered1.length===0")
+            td 无相关用户信息
+          tr(ng-repeat="user in userListFiltered1=(ldapUserList|filter:{'username':userKey.key})")
+            td(ng-bind="user.username")
+      .table-container
+        table.ui-table-dome.full.table-userlist
+          thead
+            tr
+              th 用户名
+              th 邮箱
+              th 电话
+              th(style="width:15%;") 操作
+          tbody
+            tr(ng-if="!vm.userList||userFiltered.length===0")
+              td(colspan="3") 无相关用户信息
+            tr(ng-repeat="user in userFiltered=(vm.userList|filter:{'username':vm.key.userKey,'loginType':vm.currentUserType.type})")
+              td(ng-bind="user.username")
+              td
+                span.useremail.tool-nowrap(ng-bind="user.email||'未设置'")
+              td
+                span.useremail.tool-nowrap(ng-bind="user.phone||'未设置'")
+                //- span(ng-if="!user.isEdit")
+                  span.useremail.tool-nowrap(ng-bind="user.email")
+                  a.icon-edit(ng-click="vm.userListIns.toggleEdit(user,true)")
+                //- span(ng-if="user.isEdit")
+                  input.useremail.ui-input-white(ng-model="vm.user.newEmail")
+                  button.old-button.ui-btn.ui-btn-primary.ui-btn-sm(ng-click="vm.userListIns.saveSingle(user)") 保存
+                  button.old-button.ui-btn.ui-btn-white.ui-btn-sm(ng-click="vm.userListIns.toggleEdit(user,false)") 取消
+              td
+                button.old-button.fa.fa-key.fa-flip-horizontal.ui-btn-none.icon-success-color.icon-none-padding(ng-click="vm.modifyPw(user)" ng-if="vm.currentUserType.type=='USER'" tooltip="修改密码")
+                button.old-button.fa.fa-pencil.ui-btn-none.icon-edit-color(ng-click="vm.modifyUserInfo(user)" tooltip="修改资料")
+                button.old-button.fa.fa-trash-o.ui-btn-none.icon-trash-color(ng-click="vm.deleteUser(user)" ng-if="user.username!='admin'" tooltip="删除")
+
+script(type="text/ng-template" id="globalSettingLogin.html")
+  ng-controller(ng-controller="GlobalSettingLoginCtr")
+    form-container
+      form(name="loginManageForm")
+        form-config-group
+          loading(ng-if="isLoading")
+          form-config-item(config-title="LDAP 登录设置")
+            form-input-container(help-text="")
+              form-multiple-inline
+                form-multiple-inline-item
+                  form-input-checkbox(name="loginLdapEnabled" value="true" value-false="false" ng-model="loginConfig.ldapConfig.enabled" text="启用 LDAP")
+                form-multiple-inline-item
+                  form-input-checkbox(name="loginSsoEnabled" value="true" value-false="false" ng-model="loginConfig.ssoConfig.enabled" text="启用 SSO")
+              sub-form-container(left-column-width="200px" ng-if="loginConfig.ldapConfig.enabled")
+                form-config-group
+                  form-config-item(config-title="OpenLDAP 服务器地址" required)
+                    form-input-container(help-text="ldap服务器地址，带端口号" help-text-position="top")
+                      input(type="text" placeholder="ldap://ldap.example.com:389" name="loginLdapServer" ng-model="loginConfig.ldapConfig.server" required)
+                  form-config-item(config-title="E-mail 后缀" required)
+                    form-input-container(help-text="E-mail 后缀请以 @ 开头" help-text-position="top")
+                      input(type="text" placeholder="@example.com" name="loginLdapEmail" ng-model="loginConfig.ldapConfig.suffix" required)
+              sub-form-container(left-column-width="200px" ng-if="loginConfig.ssoConfig.enabled")
+                form-config-group
+                  form-config-item(config-title="CAS 服务器地址" required)
+                    form-input-container(help-text="CAS服务器地址前缀" help-text-position="top")
+                      input(type="text" placeholder="http://cas.server.com/cas" name="loginSsoServer" ng-model="loginConfig.ssoConfig.server" required)
+                  form-config-item(config-title="登录 URL")
+                    form-input-container(help-text="login请求相对地址，请以/开头" help-text-position="top")
+                      input(type="text" placeholder="/login" name="loginSsoLogin" ng-model="loginConfig.ssoConfig.login")
+                  form-config-item(config-title="登出 URL")
+                    form-input-container(help-text="logout请求相对地址，请以/开头" help-text-position="top")
+                      input(type="text" placeholder="/logout" name="loginSsoLogout" ng-model="loginConfig.ssoConfig.logout")
+        form-button-group
+          form-config-item
+            form-submit-button(form="loginManageForm" on-submit="saveLoginConfig()") 保存配置
+
+script(type="text/ng-template" id="globalSettingCodeSource.html")
+  ng-controller(ng-controller="GlobalSettingCodeSourceCtr")
+    .mod-global.global-setting
+      .code-repertory(ng-form name="gitForm" ng-class="{'need-valid':vm.needValidGit}")
+        .repertory-header
+          button.old-button.ui-btn.ui-btn-bright.ui-btn-sm(ng-click="vm.operateGitInfo()")
+            span.btn-txt 添加
+            i.fa.fa-plus
+          .pull-right
+            span(ng-cloak) 共{{gitInfoFilter.length}}个仓库
+            input.ui-input-search.ui-input-fill(type="text" placeholder="输入名称查询" ng-model="keyword" style="width: 274px; padding-left: 34px;")
+        .mod-tips-info
+          p.txt-prompt
+            i.fa.fa-info-circle.icon-algin-right
+            | DomeOS可以关联gitlab，支持http和https两种，请填写完整的代码仓库地址。
+        .table-container
+          table.ui-table-dome.full.table-userlist
+            thead
+              tr
+                th 仓库名称
+                th 仓库地址
+                th 仓库类型
+                th(style="width:15%;") 操作
+            tbody
+              tr(ng-if="!vm.gitInfos || gitInfoFilter.length === 0")
+                td(colspan="4") 无仓库信息
+              tr(ng-repeat="gitInfo in gitInfoFilter=(vm.gitInfos|filter:{description:keyword})")
+                td(ng-bind="gitInfo.description")
+                td(ng-bind="gitInfo.url")
+                td(ng-switch="gitInfo.type")
+                  i.fa.fa-gitlab.icon-git-color(ng-switch-when="GITLAB" title="{{gitInfo.type}}")
+                  i.fa.fa-github.icon-git-color(ng-switch-when="GITHUB" title="{{gitInfo.type}}")
+                  | {{gitInfo.type}}
+                td
+                  button.old-button.fa.fa-pencil.btn-none.icon-edit-color(ng-click="vm.operateGitInfo(gitInfo)")
+                  button.old-button.fa.fa-trash-o.btn-none.icon-trash-color(ng-click="vm.deleteGitInfo(gitInfo)")
+
+script(type="text/ng-template" id="globalSettingRegistery.html")
+  ng-controller(ng-controller="GlobalSettingRegisteryCtr")
+    .mod-global.global-setting
+      ul.com-list-info(ng-form name="registryForm" ng-class="{'need-valid':vm.needValidRegistry}")
+        .mod-tips-info-global
+          p.txt-prompt
+            i.fa.fa-info-circle.icon-algin-right
+            | docker私有镜像仓库需要用户自行启动，并配置仓库信息到DomeOS中。如果私有仓库使用了自签名证书，需要将证书信息配置到DomeOS中。
+        li.has-border
+          span.info-name 私有仓库地址
+          .info-content
+            input.ui-input-white.line-single(ng-model="vm.registryInfo.url" name="registryUrl" required ng-pattern="/^[^\\s]*$/" style="display:inline-block")
+            span
+              input.ui-check(type="checkbox" name="isHttps" id="isHttps" ng-model="vm.registryInfo.status" ng-true-value="1" ng-false-value="0")
+              label(for="isHttps") https
+        li.has-border
+          span.info-name 描述
+          .info-content
+            input.ui-input-white.line-single(ng-model="vm.registryInfo.description")
+        li.has-border(ng-if="vm.registryInfo.status===1")
+          span.info-name 证书信息
+          .info-content
+            textarea.ui-input-white.line-single.certification-txt(ng-model="vm.registryInfo.certification" placeholder="请将证书文本粘贴至文本框")
+        li.has-border
+          span.info-name token验证配置
+          .info-content.txt-prompt.fixed-top.info-content-lg-height 以下三项配置用于请求registry的token验证，请和启动registry时的配置保持一致
+        li.has-border
+          span.info-name ISSUER
+          .info-content
+            input.ui-input-white.line-single(ng-model="vm.registryInfo.tokenInfo.issuer")
+        li.has-border
+          span.info-name SERVICE
+          .info-content
+            input.ui-input-white.line-single(ng-model="vm.registryInfo.tokenInfo.service")
+        li
+          span.info-name PRIVATE KEY
+          .info-content
+            textarea.ui-input-white.line-single.certification-txt(ng-model="vm.registryInfo.tokenInfo.private_key" placeholder="ROOTCERTBUNDLE所使用的密钥")
+      .com-bottom-option
+        button.old-button.ui-btn.ui-btn-bright.ui-btn-lg(ng-click="vm.needValidRegistry=true;registryForm.$valid&&vm.saveRegistry()") 保存配置
+
+script(type="text/ng-template" id="globalSettingServer.html")
+  ng-controller(ng-controller="GlobalSettingServerCtr")
+    .mod-global.global-setting
+      ul.com-list-info(ng-form name="serverForm" ng-class="{'need-valid':vm.needValidServer}")
+        li
+          span.info-name 服务器地址
+          .info-content.info-content-lg-height
+            span.txt-prompt DomeOS API服务器访问地址
+            input.ui-input-white.line-single(placeholder="https协议url请用“https://”开头" ng-model="vm.serverInfo.url" name="serverUrl" required ng-pattern="/^[^\\s]*$/")
+      .com-bottom-option
+        button.old-button.ui-btn.ui-btn-bright.ui-btn-lg(ng-click="vm.needValidServer=true;serverForm.$valid&&vm.saveServer()") 保存配置
+
+script(type="text/ng-template" id="globalSettingMonitor.html")
+  ng-controller(ng-controller="GlobalSettingMonitorCtr")
+    .mod-global.global-setting
+      ul.com-list-info(ng-form name="monitorForm" ng-class="{'need-valid':vm.needValidMonitor}")
+        .mod-tips-info-global
+          p.txt-prompt
+            i.fa.fa-info-circle.icon-algin-right
+            | DomeOS融合了open-falcon和cadvisor对主机和容器进行监控，详细介绍请参考
+            a(href='http://book.open-falcon.org/zh/index.html' target='_blank') http://book.open-falcon.org/zh/index.html
+        //- li
+        //-     span.info-name 监控控制台地址
+        //-     .info-content
+        //-         input.ui-input-white.line-single(placeholder="https协议url请用“https://”开头" name="serverUrl" ng-model="vm.monitorConfig.url" required ng-pattern="/^[^\\s]*$/")
+        li.has-border
+          span.info-name transfer
+          .info-content.info-content-lg-height
+            span.txt-prompt 监控数据转发组件，rpc端口
+            .line-single(ng-repeat="tansfer in vm.monitorConfig.transfer")
+              input.ui-input-white.full(placeholder="请输入ip：port" name="serverUrl" ng-model="tansfer.text" ng-focus="$last&&vm.monitorIns.addItem('transfer')")
+              .txt-wrap(ng-if="vm.monitorConfig.transfer.length>1")
+                button.old-button.fa.fa-trash-o.ui-btn-none.icon-trash-color(ng-click="vm.monitorIns.deleteArrItem('transfer',$index)")
+        li.has-border
+          span.info-name graph
+          .info-content.info-content-lg-height
+            span.txt-prompt 监控数据存储组件，rpc端口
+            .line-single(ng-repeat="graph in vm.monitorConfig.graph")
+              input.ui-input-white.full(placeholder="请输入ip：port" name="serverUrl" ng-model="graph.text" ng-focus="$last&&vm.monitorIns.addItem('graph')")
+              .txt-wrap(ng-if="vm.monitorConfig.graph.length>1")
+                button.old-button.fa.fa-trash-o.ui-btn-none.icon-trash-color(ng-click="vm.monitorIns.deleteArrItem('graph',$index)")
+        li.has-border
+          span.info-name query
+          .info-content.info-content-lg-height
+            span.txt-prompt 监控数据查询组件，http端口
+            .line-single
+              input.ui-input-white.full(placeholder="请输入ip：port" name="query" ng-model="vm.monitorConfig.query")
+        li.has-border
+          span.info-name hbs
+          .info-content.info-content-lg-height
+            span.txt-prompt 监控心跳服务器组件，rpc端口
+            .line-single
+              input.ui-input-white.full(placeholder="请输入ip：port" name="hbs" ng-model="vm.monitorConfig.hbs")
+        li.has-border
+          span.info-name judge
+          .info-content.info-content-lg-height
+            span.txt-prompt 报警判断组件，rpc端口
+            .line-single(ng-repeat="judge in vm.monitorConfig.judge")
+              input.ui-input-white.full(placeholder="请输入ip：port" name="judge" ng-model="judge.text" ng-focus="$last&&vm.monitorIns.addItem('judge')")
+              .txt-wrap(ng-if="vm.monitorConfig.judge.length>1")
+                button.old-button.fa.fa-trash-o.ui-btn-none.icon-trash-color(ng-click="vm.monitorIns.deleteArrItem('judge',$index)")
+        li.has-border
+          span.info-name alarm
+          .info-content.info-content-lg-height
+            span.txt-prompt 报警事件处理组件，http端口
+            .line-single
+              input.ui-input-white.full(placeholder="请输入ip：port" name="alarm" ng-model="vm.monitorConfig.alarm")
+        li.has-border
+          span.info-name sender
+          .info-content.info-content-lg-height
+            span.txt-prompt 报警发送组件，http端口
+            .line-single
+              input.ui-input-white.full(placeholder="请输入ip：port" name="sender" ng-model="vm.monitorConfig.sender")
+        li.has-border
+          span.info-name nodata
+          .info-content.info-content-lg-height
+            span.txt-prompt 报警假数据填充组件，http端口
+            .line-single
+              input.ui-input-white.full(placeholder="请输入ip：port" name="nodata" ng-model="vm.monitorConfig.nodata")
+        li.has-border
+          span.info-name redis
+          .info-content.info-content-lg-height
+            span.txt-prompt 报警redis组件
+            .line-single
+              input.ui-input-white.full(placeholder="请输入ip：port" name="redis" ng-model="vm.monitorConfig.redis")
+        li.has-border
+          span.info-name apiSms
+          .info-content.info-content-lg-height
+            span.txt-prompt 报警短信发送接口。请和使用的短信发送平台保持一致
+            .line-single
+              input.ui-input-white.full(placeholder="请输入url" name="apiSms" ng-model="vm.monitorConfig.apiSms")
+        li
+          span.info-name apiMail
+          .info-content.info-content-lg-height
+            span.txt-prompt 报警邮件发送接口。请和使用的邮件发送平台保持一致
+            .line-single
+              input.ui-input-white.full(placeholder="请输入url" name="apiMail" ng-model="vm.monitorConfig.apiMail")
+      .com-bottom-option
+        button.old-button.ui-btn.ui-btn-bright.ui-btn-lg(ng-click="vm.needValidMonitor=true;monitorForm.$valid&&vm.saveMonitor()") 保存配置
+
+script(type="text/ng-template" id="globalSettingWebSSH.html")
+  ng-controller(ng-controller="GlobalSettingWebSSHCtr")
+    .mod-global.global-setting
+      ul.com-list-info(ng-form name="sshForm" ng-class="{'need-valid':vm.needValidSsh}")
+        .mod-tips-info-global
+          p.txt-prompt
+            i.fa.fa-info-circle.icon-algin-right
+            | DomeOS通过shellinabox实现容器的浏览器控制台访问，DomeOS提供了镜像pub.domeos.org/domeos/shellinabox:1.1，请在此配置shellinabox的访问地址。
+        li
+          span.info-name.webssh-txt Web SSH服务地址
+          .info-content.info-content-lg-height
+            span.txt-prompt Web SSH登录服务访问地址（对应容器的访问地址）
+            input.ui-input-white.line-single(placeholder="请输入ip：port" name="sshUrl" ng-model="vm.sshInfo.url" required)
+      .com-bottom-option
+        button.old-button.ui-btn.ui-btn-bright.ui-btn-lg(ng-click="vm.needValidSsh=true;sshForm.$valid&&vm.saveSsh()") 保存配置
+
+script(type="text/ng-template" id="globalSettingBuild.html")
+  ng-controller(ng-controller="GlobalSettingBuildCtr")
+    .mod-global.global-setting
+      loading(ng-if="vm.clusterLoadingIns.isLoading")
+      .cluster-list-title.mod-tips-info-global
+        .cluster-detail
+          p.txt-prompt 
+            i.fa.fa-info-circle.icon-algin-right
+            | DomeOS的构建任务都在构建集群上运行。
+        //- button.old-button.ui-btn.ui-btn-bright.ui-btn-lg.btn-cluster-save(ng-click="vm.needValidCluster=true;clusterForm.$valid&&vm.saveCluster()" ng-disabled="vm.clusterLoadingIns.isLoading") 保存配置
+      ul.com-list-info(ng-form name="clusterForm" ng-class="{'need-valid':vm.needValidCluster}")
+        li.has-border
+          span.info-name 选择集群
+          .info-content.info-content-lg-height
+            span.txt-prompt 列表展示了“集群管理”中的所有集群，选择一个作为构建集群。如果没有集群信息，请在“运维管理->集群”中创建集群。
+            .com-select-con.line-single(select-con)
+              button.old-button.ui-btn-select.ui-btn.ui-btn-white
+                i.icon-down
+                | {{vm.clusterInfo.clusterName + ((vm.clusterList | filter:({id: vm.clusterInfo.clusterId}))[0].buildConfig ? '（构建集群）' : '') || '选择集群'}}
+              ul.select-list
+                li.select-item(ng-repeat="cluster in vm.clusterList")
+                  a(ng-bind="cluster.name + (cluster.buildConfig ? '（构建集群）' : '')" ng-click="vm.toggleCluster(cluster)")
+            input(type="hidden" ng-model="vm.clusterInfo.clusterName" required name="clusterName")
+            span.txt-error(ng-if="vm.needValidCluster&&clusterForm.clusterName.$invalid") 请选择集群
+        li
+          span.info-name 选择namespace
+          .info-content.info-content-lg-height
+            span.txt-prompt 在集群的namespace中选择一个，用于启动构建任务。
+            .com-select-con.line-single(select-con)
+              button.old-button.ui-btn-select.ui-btn.ui-btn-white
+                i.icon-down
+                | {{vm.clusterInfo.namespace||'选择namespace'}}
+              ul.select-list
+                li.select-item(ng-repeat="namespace in vm.namespaceList")
+                  a(ng-bind="namespace.name" ng-click="vm.clusterInfo.namespace = namespace.name")
+            input(type="hidden" ng-model="vm.clusterInfo.namespace" required name="namespace")
+            span.txt-error(ng-if="vm.needValidCluster&&clusterForm.namespace.$invalid") 请选择namespace
+        li.has-border
+          span.info-name
+          .info-content
+            button.old-button.ui-btn.ui-btn-bright.ui-btn-lg(ng-click="vm.needValidCluster=true;clusterForm.$valid&&vm.saveCluster()" ng-disabled="vm.clusterLoadingIns.isLoading") 保存配置
+      .node-option
+        span.host-right
+          | 共有{{nodelistFiltered.length}}台主机
+          input.ui-input.ui-input-search.ui-input-fill.input-right(placeholder="输入主机名查询" ng-model="vm.key.nodeKey")
+        span.host-detail.mod-tips-info-global
+          p.txt-prompt
+            i.fa.fa-info-circle.icon-algin-right
+            | 请确保构建集群有至少一台主机可用于构建。
+      .table-container
+        table.ui-table.ui-table-dome.table-hostlist
+          thead
+            tr
+              th 主机名称
+              th IP
+              th CPU总量（个）
+              th 内存总量（MB）
+              th 运行实例（个）
+              th 状态
+              th 是否用于构建
+          tbody
+            tr(ng-if="!vm.nodeList||nodelistFiltered.length===0")
+              td(colspan="7") 无相关信息
+            tr(ng-repeat="node in nodelistFiltered=(vm.nodeList|filter:{name:vm.key.nodeKey})")
+              td(ng-bind="node.name")
+              td(ng-bind="node.ip")
+              td(ng-bind="node.capacity.cpu")
+              td(ng-bind="node.capacity.memory")
+              td(ng-bind="node.runningPods")
+              td(ng-switch="node.status")
+                span(ng-switch-when="Ready").txt-safe 在线
+                span(ng-switch-default).txt-prompt 离线
+              td
+                dome-toggle(ng-class="{'on':node.isUsedByBuild}" ng-click="vm.toggleNodeLabel(node)")
+
+script(type="text/ng-template" id="newPasswdModal.html")
+  .d-modal-header 修改密码
+  .modal-body.text-center
+    ul.modal-info(ng-form role="form" name="pwForm")
+      li
+        span.info-name 新密码
+        .info-content.text-left
+          input.ui-input-white.full(placeholder="8-20位" type="password" name="newPassword" ng-model="vmPw.passwd" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" required ng-minlength="8" ng-maxlength="20")
+          span.txt-error(ng-if="pwForm.newPassword.$dirty&&(pwForm.newPassword.$error.minlength||pwForm.newPassword.$error.maxlength)") 长度必须为8-20位
+  .modal-footer
+    button.old-button.ui-btn.ui-btn-sm.ui-btn-white(ng-click="vmPw.cancel()") 取消
+    button.old-button.ui-btn.ui-btn-sm.ui-btn-bright(ng-click="pwForm.$valid&&vmPw.subPw()") 确定
+
+script(type="text/ng-template" id="gitLabInfoModal.html")
+  .d-modal-header 配置GITLAB
+  .modal-body.code-info-modal
+    ul.modal-info(ng-form name="gitForm" ng-class="{'need-valid':needValidGit}")
+      .mod-tips-info-global(style="text-align: left;")
+        p.txt-prompt
+          i.fa.fa-info-circle.icon-algin-right
+          | 请填写完整的仓库名称和地址，仓库地址支持http和https两种协议。
+      li
+        .info-name 仓库名称
+        .info-txt.text-left
+          input.ui-input-white.full(ng-model="gitInfo.description" name="gitName" required maxlength="7" placeholder="支持中文，不超过7个字符")
+      li
+        .info-name 仓库地址
+        .info-txt.text-left
+          input.ui-input-white.full(ng-model="gitInfo.url" name="gitUrl" required ng-pattern="/^[^\\s]*$/")
+  .modal-footer
+    button.old-button.ui-btn.ui-btn-white.ui-btn-sm(type="button" ng-click="cancel()") 取消
+    button.old-button.ui-btn.ui-btn-bright.ui-btn-sm(type="submit" ng-click="needValidGit=true;gitForm.$valid&&submit()") 确定

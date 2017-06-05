@@ -1,0 +1,38 @@
+
+<div class="mod-option">
+  <div class="pull-right right-option"><span ng-cloak="ng-cloak">共{{templatesListFiltered.length}}个模板</span>
+    <input class="ui-input-search ui-input-fill" type="text" placeholder="输入模板名称查询" ng-model="vmTemplate.keywords"/>
+  </div>
+  <button class="ui-btn ui-btn-lg ui-btn-link ui-btn-bright btn-newtemplate" ui-sref="createAlarmTemplate" ng-disabled="vm.permission.role == null || vm.permission.role === 'REPORTER'" ng-class="{'ui-btn-lg-disabled': vm.permission.role==null||vm.permission.role === 'REPORTER'}"><span class="btn-txt">新建模板</span><i class="fa fa-plus"></i></button>
+</div>
+<div class="mod-tips-info">
+  <p class="txt-prompt"><i class="fa fa-info-circle icon-algin-right"></i>报警模板用于关联报警接收用户组，并配置报警信息。</p>
+</div>
+<div class="mod-list-alarm">
+  <loading ng-if="vmTemplate.isLoading"></loading>
+  <table class="ui-table-dome">
+    <thead>
+      <tr>
+        <th>模板名称</th>
+        <th>创建者</th>
+        <th>报警类型</th>
+        <th>创建时间</th>
+        <th ng-if="vm.permission.role&amp;&amp;vm.permission.role!='REPORTER'">操作</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-if="templatesListFiltered.length==0">
+        <td colspan="5">无相关信息</td>
+      </tr>
+      <tr ng-repeat="tpl in templatesListFiltered=(vmTemplate.templatesList|filter:{'templateName':vmTemplate.keywords})">
+        <td><a class="ui-table-link" ng-bind="tpl.templateName" ui-sref="alarmTemplateDetail({id:tpl.id})"></a></td>
+        <td ng-bind="tpl.creatorName"></td>
+        <td ng-bind="tpl.templateTypeName"></td>
+        <td ng-bind="(tpl.createTime) | day"></td>
+        <td ng-if="vm.permission.role&amp;&amp;vm.permission.role!='REPORTER'">
+          <button class="fa fa-trash-o ui-btn-none icon-trash-color" ng-click="vmTemplate.deleteTpl(tpl.id)"></button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

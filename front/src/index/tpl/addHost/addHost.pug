@@ -1,0 +1,48 @@
+.mod-cluster.add-host
+	loading(ng-if="isLoading")
+	ul.host-info
+		li
+			span.num-con
+				em.info-num 1
+			span.info-con.com-chose-repository
+				p.info-descrip 请选择主机操作系统类型
+				span.repository(ng-class="{'active':selectedOS=='centos'}" ng-click="toggleOS('centos')")
+					i.icon-centos
+					| CentOS
+				span.repository(ng-class="{'active':selectedOS=='ubuntu'}" ng-click="toggleOS('ubuntu')")
+					i.icon-ubuntu
+					| Ubuntu
+		li
+			span.num-con
+				em.info-num 2
+			span.info-con
+				p.info-descrip 请选择主机的工作场景
+				span.env-check
+					input#prodEnv.ui-check(type="checkbox" name="env" ng-model="hostInfo.env.prod" ng-change="getCmdLabels()")
+					label(for="prodEnv") 生产环境
+				span.env-check
+					input#testEnv.ui-check(type="checkbox" name="env" ng-model="hostInfo.env.test" ng-change="getCmdLabels()")
+					label(for="testEnv") 测试环境
+		li
+			span.num-con
+				em.info-num 3
+			span.info-con
+				p.info-descrip 根据您的自身需求为主机打上标签
+				input.info-line.ui-input-white(placeholder="请输入主机标签,以空格分隔" ng-model="hostInfo.labels" ng-change="getCmdLabels()")
+		li
+			span.num-con
+				em.info-num 4
+			span.info-con
+				p 保证主机名符合DNS命名规则，或在这里指定一个符合规则的别名。DNS命名规则：只能包含数字、字母、点和横线。
+				input.info-line.ui-input-white(placeholder="请输入符合规则的主机别名" ng-model="hostname" ng-change="changeHostName()" name="hostname")
+		li
+			span.num-con
+				em.info-num 5
+			span.info-con
+				p.info-descrip 执行以下命令，将主机添加到集群中
+				.info-line.info-cmd
+					textarea.ui-input-white(ng-model="hostCmd")
+					span.cmd-copy(btn-copy="hostCmd")
+						i.icon-copy
+						br/
+						span +复制

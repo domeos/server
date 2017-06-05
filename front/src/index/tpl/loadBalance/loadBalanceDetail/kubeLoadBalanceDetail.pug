@@ -1,0 +1,104 @@
+//
+   Created by haozhou on 2017/3/30.
+loading(ng-if="isUpdating")
+form-container(left-column-width="100px" ng-if="!isEditing")
+    form(name="loadBalanceDetail")
+        div(ng-if="hasUpdatePermission")
+            button(type="button" ng-click="toggleEdit('edit')") 编辑
+        form-config-group
+            form-config-item(config-title="名称")
+                form-input-container
+                    div(ng-bind="loadBalanceDraft.name")
+            form-config-item(config-title="描述")
+                form-input-container
+                    div(ng-bind="loadBalanceDraft.description || '暂无描述'")
+            form-config-item(config-title="运行集群")
+                form-input-container
+                    div(ng-bind="loadBalanceDraft.clusterName")
+            form-config-item(config-title="namespace")
+                form-input-container
+                    div(ng-bind="loadBalanceDraft.namespace")
+            form-config-item(config-title="服务配置")
+                form-input-container(help-text="利用主机IP,创建集群外访问的负载均衡。")
+                    sub-form-container(left-column-width="60px")
+                        form-config-group
+                            form-config-item(config-title="访问IP")
+                                form-input-container
+                                    div(ng-bind="loadBalanceDraft.externalIPs.toString()")
+                            form-config-item(config-title="端口配置")
+                                form-input-container
+                                    table
+                                        thead
+                                            tr
+                                                td(style="padding-right: 10px;") 访问端口
+                                                td(style="padding-right: 10px;") 程序服务端口
+                                                td(style="padding-right: 10px;") 端口协议
+                                            tr(ng-repeat="portDraft in loadBalanceDraft.serviceDraft.lbPorts")
+                                                td(ng-bind="portDraft.port")
+                                                td(ng-bind="portDraft.targetPort")
+                                                td(ng-bind="portDraft.protocol")
+            form-config-item(config-title="粘性会话")
+                form-input-container
+                    div(ng-bind="({true: '已开启', false: '已关闭'}[loadBalanceDraft.serviceDraft.sessionAffinity])")
+            form-config-item(config-title="内网域名")
+                form-input-container
+                    div(ng-bind="loadBalanceDraft.dnsName")
+            form-config-item(config-title="关联部署")
+                form-input-container(help-text="只关联相同集群、相同命名空间且非HOST网络模式的部署")
+                    div(style="display: inline-block; margin-right: 20px;")
+                        span 部署名称：
+                        a.txt-bright(ui-sref="deployDetail({id: loadBalanceDraft.serviceDraft.deployId, collectionId: 0, collectionName: 'all-deploy'})" ng-bind="loadBalanceDraft.serviceDraft.deployName" tooltip="部署详情")
+                    div(style="display: inline-block;")
+                        span 状态：
+                        span(ng-bind="({'RUNNING': '运行中', 'STOP': '停止', 'DEPLOYING': '部署中', 'ERROR': '异常', 'AB_TEST': '灰度发布', 'STOPPING': '停止中', 'UPDATING': '升级中', 'BACKROLLING': '回滚中', 'UPSCALING': '扩容中', 'DOWNSCALING': '缩容中', 'ABORTING': '中断中', 'BACKROLL_ABORTED': '回滚已中断', 'UPDATE_ABORTED': '升级已中断', 'DELETED': '已删除'}[loadBalanceDraft.serviceDraft.deployStatus])")
+        //  修改页面
+form-container(left-column-width="100px" ng-if="isEditing")
+    form(name="loadBalanceDetail")
+        div(ng-if="hasUpdatePermission")
+            button(type="button" ng-click="toggleEdit('cancel')") 取消
+        form-config-group(ng-if="isEditing")
+            form-config-item(config-title="名称")
+                form-input-container
+                    div(ng-bind="loadBalanceDraft.name")
+            form-config-item(config-title="描述")
+                form-input-container
+                    textarea(ng-model="loadBalanceDraft.description")
+            form-config-item(config-title="运行集群")
+                form-input-container
+                    div(ng-bind="loadBalanceDraft.clusterName")
+            form-config-item(config-title="namespace")
+                form-input-container
+                    div(ng-bind="loadBalanceDraft.namespace")
+            form-config-item(config-title="服务配置")
+                form-input-container(help-text="利用主机IP,创建集群外访问的负载均衡。")
+                    sub-form-container(left-column-width="60px")
+                        form-config-group
+                            form-config-item(config-title="访问IP")
+                                form-input-container
+                                    form-multiple-select(ng-model="loadBalanceDraft.externalIPs" name="externalIP" options="nodeIPListSelector" placeholder="请选择主机IP,不能为空" is-loading="isLoadingNodeIP" loading-text="正在获取主机IP" empty-text="无相关信息" required="true")
+                                    form-error-message(form="createKubeLB" target="externalIP" type="required") 访问IP不能为空
+                        form-config-group
+                            form-config-item(config-title="端口配置")
+                                form-input-container
+                                    form-array-container(ng-model="loadBalanceDraft.serviceDraft.lbPorts" name="lbPorts" template="_loadBalanceDraftPortItem" max-length="100" min-length="1" type="simple" on-add="addPortSetting()" )
+                                    script(type="text/ng-template" id="_loadBalanceDraftPortItem")
+                                        form-multiple-inline
+                                            form-multiple-inline-item(style="margin-right: 6px; flex: 1;")
+                                                input(type="number" ng-model="$ctrl.ngModel[$index].port" name="port" placeholder="主机上对外访问端口"  required min="1" max="65535" style="width:100%;")
+                                            form-multiple-inline-item(style="margin-right: 6px; flex: 1;")
+                                                input(type="number" ng-model="$ctrl.ngModel[$index].targetPort" name="targetPort" placeholder="容器内程序服务端口" min="1" max="65535" required style="width:100%;")
+                                            form-multiple-inline-item(style="flex: .5;")
+                                                form-select(ng-model="$ctrl.ngModel[$index].protocol" options="[{value: 'TCP', text: 'TCP'}, {value: 'UDP', text: 'UDP'}]" show-search-input="never")
+            form-config-item(config-title="粘性会话" required)
+                form-input-container
+                    form-input-radio-group(ng-model="loadBalanceDraft.serviceDraft.sessionAffinity" name="sessionAffinity" fallback-value="'false'" options="[{value: 'false', text: '关闭（默认）'}, {value: 'true', text: '开启'}]" required)
+            form-config-item(config-title="内部域名")
+                form-input-container
+                    div(ng-bind="loadBalanceDraft.dnsName")
+            form-config-item(config-title="关联部署" required)
+                form-input-container(help-text="只能关联相同集群、相同namespace且非Host网络模式的部署")
+                    form-select-list(ng-model="loadBalanceDraft.serviceDraft.deployment" name="updateKubeRelatedDeployment" form-name="loadBalanceDetail" parameters="{clusterId:loadBalanceDraft.clusterId,namespace:loadBalanceDraft.namespace,loadBalanceType:loadBalanceDraft.type}" loading-text="正在获取部署信息" empty-text="无相关信息" placeholder="请选择部署" get-list-fn="{{'loadBalanceDeployment'}}" error-message="关联部署不能为空" fallback-options="{value:loadBalanceDraft.serviceDraft.deployment,text:loadBalanceDraft.serviceDraft.deployment.deployName,match:{deployName:loadBalanceDraft.serviceDraft.deployment.deployName}}")
+            form-config-item
+                form-input-container
+                    form-submit-button(form="loadBalanceDetail" on-submit="updateLoadBalance()" is-waiting="isUpdating") 保存
+

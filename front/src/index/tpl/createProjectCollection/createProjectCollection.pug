@@ -1,0 +1,89 @@
+.mod-group.create-project-collection(ng-form name="projectCollectionFrom" ng-class="{'need-valid':needValid}" novalidate)
+	loading(ng-if="isWaitingCreate")
+	ul.info-list.group-info.com-list-info
+		li.has-border
+			span.info-name 项目名称 
+				span.require-domain *
+			.info-content.info-content-lg-height
+				p.txt-prompt 项目名称会作为docker镜像的一部分，创建后不可修改，请慎重选择项目名称。
+				.line-long
+					input.ui-input-fill.line-element(ng-model="projectCollection.name" name="projectCollectionName" placeholder="不能有大写字母，不能以中横线开头和结尾" required ng-pattern="/^[a-z0-9]+([._-][a-z0-9]+)*$/" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" is-project-collection-exist)
+				span.txt-error(ng-if="(needValid||projectCollectionFrom.projectCollectionName.$dirty)&&projectCollectionFrom.projectCollectionName.$error.required") 必填
+				span.txt-error(ng-if="(needValid||projectCollectionFrom.projectCollectionName.$dirty)&&!projectCollectionFrom.projectCollectionName.$error.required&&projectCollectionFrom.projectCollectionName.$error.pattern") 非法的名称
+				span.txt-error(ng-if="(needValid||projectCollectionFrom.projectCollectionName.$dirty)&&!projectCollectionFrom.projectCollectionName.$error.required&&!projectCollectionFrom.projectCollectionName.$error.pattern&&projectCollectionFrom.projectCollectionName.$invalid&&projectCollectionFrom.projectCollectionName.$error.isProjectCollectionExist") 项目名已存在
+		li.has-border
+			span.info-name.info-name-sm 项目描述
+			.info-content
+				.line-long
+					textarea.info-txt.ui-input-fill.line-element(ng-model="projectCollection.description" name="projectDescription" placeholder="输入项目描述")
+		li.has-border
+			span.info-name 公开项目
+			.info-content
+				dome-toggle(ng-class="{'on':isPublic}" ng-click="isPublic=!isPublic")
+				span.tip.txt-prompt 项目公开后对所有用户可见
+				span.tool-next
+					a.icon-help(tooltip="项目公开后所有用户均能查看项目信息和该项目下工程信息，并启动工程构建，但无法编辑或者删除项目和该项目下的工程")
+		li
+			span.info-name 项目成员
+			.info-content
+				.line-long
+					.com-select-con.line-element(select-con label="true")
+						ul.selected-labels
+							li.select-label(ng-repeat="user in selectedUsers" ng-cloak)
+								//- | {{user.username}}
+								//- a.icon-cancel(ng-click="cancelUser($index)")
+								a.icon-cancle.icon-cancle-former(ng-click="cancelUser($index)")
+								| {{user.username}}
+							li.select-input
+								input.line-element.ui-btn-select(placeholder="搜索成员" ng-model="userKey.key" ng-keydown="userKeyDown($event,userKey.key,userListFiltered[0])")
+						ul.select-list
+							li(ng-if="!userList||userListFiltered.length===0")
+								a 无相关用户信息
+							li.select-item(ng-repeat="user in userListFiltered=(userList| filter:{'username':userKey.key})")
+								a(ng-bind="user.username" ng-click="selectUser(user.id,user.username);")
+				.line-long.line-member
+					.com-select-con.line-element(select-con)
+						button.ui-btn.ui-btn-select.ui-btn-white.line-element-sm(ng-cloak)
+							i.icon-down
+							| {{role}}
+						ul.select-list
+							li.select-item
+								a(ng-click="toggleRole('MASTER')") MASTER
+							li.select-item
+								a(ng-click="toggleRole('DEVELOPER')") DEVELOPER
+							li.select-item
+								a(ng-click="toggleRole('REPORTER')") REPORTER
+					button.ui-btn.ui-btn-sm.ui-btn-bright.ui-btn-add(ng-click="addUser()") 添加
+				.line-long
+					table.ui-table-primary
+						thead
+							tr
+								th(style="width:40%") 成员名称
+								th 项目权限
+								th
+						tbody
+							tr
+								td(ng-bind="myself.username")
+								td(ng-bind="myself.role")
+								td
+							tr(ng-repeat="user in selectedUsersList")
+								td(ng-bind="user.username")
+								td
+									.com-select-con(select-con)
+										button.ui-btn.ui-btn-white.ui-btn-select(ng-cloak)
+											i.icon-down
+											| {{user.role}}
+										ul.select-list
+											li.select-item
+												a(ng-click="user.role='MASTER'") MASTER
+											li.select-item
+												a(ng-click="user.role='DEVELOPER'") DEVELOPER
+											li.select-item
+												a(ng-click="user.role='REPORTER'") REPORTER											
+								td
+									button.ui-btn-none.fa.fa-trash-o.icon-trash-color(ng-click="deleteUser($index)")
+	.com-bottom-option
+		span.com-bottom-option-con
+			button.ui-btn.ui-btn-sm.ui-btn-bright(ui-sref="projectCollectionManage") 取消
+			button.ui-btn.ui-btn-lg.ui-btn-bright(ng-disabled="isWaitingCreate" ng-click="needValid=true;projectCollectionFrom.$valid&&createProjectCollection()") 完成创建
+			span.txt-error(ng-if="needValid&&projectCollectionFrom.$invalid") 您有不合法数据，请修改后重试。

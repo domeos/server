@@ -1,0 +1,38 @@
+
+<div class="dome-storage">
+  <loading ng-if="isLoading"></loading>
+  <div class="dome-option-container">
+    <button class="ui-btn ui-btn-lg ui-btn-bright" ui-sref="createStorage"><span class="btn-txt">关联存储</span><i class="fa fa-plus"></i></button>
+    <div class="option-right"><span ng-cloak="ng-cloak">共{{storageFilter.length || 0}}个存储</span>
+      <input class="ui-input-search ui-input-fill" type="text" placeholder="输入存储名称查询" ng-model="proKeywords"/>
+    </div>
+  </div>
+  <div class="dome-prompt-container">
+    <dome-prompt content="DomeOS系统支持关联已有共享存储服务，并配置用户使用权限。"></dome-prompt>
+  </div>
+  <div class="dome-list-container">
+    <ul>
+      <li class="dome-list-item-no" ng-if="!isLoading&amp;&amp;(!storageList||storageFilter.length===0)"><span>暂无存储，可以</span><a class="txt-bright" ui-sref="createStorage">新建一个</a></li>
+      <li class="dome-list-item" ng-repeat="storage in storageFilter=(storageList|filter:{name:proKeywords})">
+        <div class="dome-list-item-header"><a class="item-header-name" ng-if="!storage.isEdit" ui-sref="storageVolumeDetail({id:storage.id})" ng-bind="storage.name || '未设置'"></a>
+          <input class="ui-input-fill" ng-if="storage.isEdit" ng-model="storage.name"/>
+          <div class="item-header-option">
+            <button class="dome-fa-icon fa fa-trash-o dome-btn-none" ng-if="!storage.isEdit" ng-click="deleteStorage(storage)" ng-class="{true:'icon-trash-color',false:'icon-fa-disabled'}[storage.role==='MASTER']" ng-disabled="!(storage.role==='MASTER')" tooltip="删除"></button>
+          </div>
+        </div>
+        <div class="dome-list-item-content">
+          <div class="item-content-block">存储类型：{{storage.storageType.toLowerCase()}}</div>
+          <div class="item-content-block"><span ng-if="!storage.isEdit" ng-bind="storage.description || '无描述信息'"></span>
+            <input class="ui-input-fill" ng-if="storage.isEdit" ng-model="storage.description"/>
+          </div>
+        </div>
+        <div class="dome-list-item-footer">
+          <div class="item-footer-block">数据卷：<span class="txt-bright">{{storage.storageCount}}</span></div>
+          <div class="item-footer-block">成员数：<span class="txt-success">{{storage.memberCount}}</span></div>
+          <div class="item-footer-block">创建时间：{{(storage.createTime | day)}}</div>
+          <div class="item-footer-block-other" style="display:inline-block;">创建者：{{storage.creatorInfo.name}}</div>
+        </div>
+      </li>
+    </ul>
+  </div>
+</div>

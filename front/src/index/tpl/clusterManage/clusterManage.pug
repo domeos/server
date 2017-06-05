@@ -1,0 +1,43 @@
+.mod-cluster.cluster-manage
+    .mod-option
+        button.ui-btn.ui-btn-lg.ui-btn-bright(ui-sref="createCluster")
+            span.btn-txt 新建集群
+            i.fa.fa-plus
+        .pull-right.right-option
+            span.info-count(ng-cloak) 共{{clusterListFilter.length}}个集群
+            input.ui-input-fill.ui-input-white.ui-input-search(placeholder="输入集群名查找" ng-model="clusterKey")
+    loading(ng-if="isLoading")
+    .mod-tips-info
+        p.txt-prompt
+            i.fa.fa-info-circle.icon-algin-right
+            | 集群记录了每个kubernetes集群的信息。
+    ul.cluster-list
+        li.no-cluster(ng-if="!isLoading && (!clusterList||clusterList.length===0)")
+            span 暂无集群，可以新建一个
+        li(ng-repeat="cluster in clusterListFilter=(clusterList|filter:{name:clusterKey}|orderBy:'createTime':true)")
+            .cluster-item.text-center
+                .cluster-header
+                    .btn-menu.btn-group.pull-right
+                        button.ui-btn-none.btn-icon.dropdown-toggle(data-toggle="dropdown")
+                            .ui-li-link
+                                i.fa.fa-ellipsis-v.icon-fa
+                        ul.dropdown-menu(role="menu")
+                            li(ng-if="cluster.role !== 'REPORTER'")
+                                a(ui-sref="addHost({id:cluster.id})") 添加主机
+                            li(ng-class="{'disabled':cluster.role !== 'MASTER'}")
+                                a.deleteCluster(ng-click="cluster.role === 'MASTER'&&deleteCluster(cluster.id)") 删除集群
+
+                    a.cluster-name(ng-bind="cluster.name" ui-sref="clusterDetail({'id':cluster.id})")
+                    span.build-cluster-title(ng-if="cluster.buildConfig===1")
+                        em 构建集群
+                    span.watcherStatus
+                        em.txt-warning(ng-bind="cluster.watcherStatus | watcherStatusFilter")
+                    //- a.ui-btn.ui-btn-lg.ui-btn-primary.addhost(ui-sref="addHost({id:cluster.id})") 添加主机
+                .cluster-content.content-last
+                    //- span.no-host(ng-if="cluster.nodeNum===0") 暂无主机，您可以：
+                    span.cluster-info.col 主机数：
+                        span.txt-bright(ng-cloak) {{cluster.nodeNum}}
+                    span.cluster-info.col 运行中实例数：
+                        span.txt-safe(ng-cloak) {{cluster.podNum}}
+                    span.cluster-info.create-time-size 创建时间：{{cluster.createTime|date:'yyyy-MM-dd'}}
+                    span.cluster-info 创建者：{{cluster.ownerName}}

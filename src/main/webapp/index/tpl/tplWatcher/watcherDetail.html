@@ -1,0 +1,46 @@
+
+<div class="deploy-info">
+  <div class="deploy-rollback"><span class="mod-title-name" ng-if="!config.stateful">部署版本</span><span class="mod-title-name" ng-if="config.stateful">该部署是有状态服务，只有一个部署版本</span>
+    <div class="com-select-con" select-con="select-con">
+      <button class="ui-btn ui-btn-select ui-btn-white"><i class="icon-down"></i>{{deployIns.config.version?'version'+deployIns.config.version:'选择版本'}}</button>
+      <ul class="select-list">
+        <li class="select-item" ng-repeat="version in deployIns.versionList"><a ng-click="toggleVersion(version.version)" ng-cloak="ng-cloak">version{{version.version}}</a></li>
+      </ul>
+    </div>
+  </div>
+  <ul class="com-list-info mirror-con" ng-repeat="containerDraft in config.containerDrafts" ng-show="config.version">
+    <li><span class="info-name">镜像名称</span>
+      <div class="info-content info-content-lg-height"><span class="first-info" ng-bind="containerDraft.image" style="font-weight:bold;"></span></div>
+    </li>
+    <li><span class="info-name">镜像仓库</span>
+      <div class="info-content info-content-lg-height"><span class="first-info" ng-bind="containerDraft.registry"></span></div>
+    </li>
+    <li><span class="info-name">镜像版本</span>
+      <div class="info-content info-content-lg-height"><span class="first-info" ng-bind="containerDraft.tag"></span></div>
+    </li>
+    <li><span class="info-name">筛选主机</span>
+      <div class="info-content info-content-lg-height">
+        <div ng-cloak="ng-cloak"><span class="tool-align-input">部署环境：{{deployIns.envText}}</span></div>
+        <div class="line-long" ng-if="!config.stateful &amp;&amp; (showdeploy.versionType || 'CUSTOM') === 'CUSTOM'"><span class="tool-align-input">主机标签：</span>
+          <div class="host-txt-con line-element com-select-con" select-con="select-con">
+            <ul class="selected-labels">
+              <li class="select-label" ng-repeat="(label,value) in deployIns.nodeListIns.labelsInfo|search:'isSelected':true|search:'isShow':true" ng-cloak="ng-cloak">{{label}}</li>
+            </ul>
+          </div><span class="txt-wrap"><a class="link-safe" ng-click="deployIns.nodeListIns.showHost()">查看选中主机</a></span>
+        </div>
+      </div>
+    </li>
+  </ul>
+  <h4 class="mod-title">实例配置</h4>
+  <ul class="com-list-info mirror-con">
+    <li><span class="info-name">实例状态</span>
+      <div class="info-content info-content-lg-height"><span class="first-info" ng-class="{true: 'txt-success', false: 'txt-warning'}[instanceList[0].status=='Running']" ng-if="instanceList[0].status">{{instanceList[0].status}}</span><span class="first-info" ng-if="!instanceList[0].status">-</span></div>
+    </li>
+    <li><span class="info-name">实例信息</span>
+      <div class="info-content info-content-lg-height">
+        <div class="instance-info-row"><span class="cell">名称：{{instanceList[0].instanceName || '-'}}</span><span class="cell">版本：{{instanceList[0].versionId ? 'version'+instanceList[0].versionId : '-'}}</span></div>
+        <div class="instance-info-row"><span class="cell">所在主机：{{instanceList[0].hostIp || '-'}}</span><span class="cell">启动时间：{{instanceList[0].startTime?(instanceList[0].startTime | time):'-'}}</span></div>
+      </div>
+    </li>
+  </ul>
+</div>

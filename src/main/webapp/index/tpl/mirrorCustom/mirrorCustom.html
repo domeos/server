@@ -1,0 +1,211 @@
+
+<div class="mirror-custom mod-deploy">
+  <loading ng-if="isLoading"></loading>
+  <tabset class="mod-tab">
+    <tab heading="定制镜像" active="tabActive[0].active" ui-sref="mirrorCustom">
+      <ul class="com-list-info" ng-form="ng-form" name="mirrorInfoForm" ng-class="{'need-valid':needValid}" novalidate="novalidate">
+        <li class="has-border"><span class="info-name">定制类型</span>
+          <div class="info-content">
+            <div class="line-short com-chose-repository"><span class="repository" ng-click="toggleCustomType('dockerfile');needValid=false;mirrorInfoForm.$setPristine();" ng-class="{active:customtype=='dockerfile'}">
+                <div class="mirror-content"><span>Dockerfile定制</span><span class="txt-prompt txt-describe">直接在页面上编写Dockerfile并执行构建</span></div></span><span class="repository" ng-click="toggleCustomType('configfile');needValid=false;mirrorInfoForm.$setPristine();" ng-class="{active:customtype=='configfile'}">
+                <div class="mirror-content"><span>配置文件定制</span><span class="txt-prompt txt-describe">选择镜像仓库中的镜像，编写配置文件，系统自动生成Dockerfile并构建</span></div></span></div>
+          </div>
+        </li>
+        <li class="has-border" ng-if="customtype=='configfile'"><span class="info-name">选择基础镜像</span>
+          <div class="info-content">
+            <div class="line-short"><span class="child-name">选择镜像仓库</span>
+              <div class="line-element com-select-con" select-con="select-con">
+                <button class="ui-btn ui-btn-white ui-btn-select"><i class="icon-down"></i>{{config.sourceImage.thirdParty===0?'DomeOS私有镜像仓库':'第三方镜像仓库'}}</button>
+                <ul class="select-list">
+                  <li class="select-item"><a ng-click="toggleMirrorHub(0)">DomeOS私有镜像仓库</a></li>
+                  <li class="select-item"><a ng-click="toggleMirrorHub(1)">第三方镜像仓库</a></li>
+                </ul>
+              </div>
+            </div>
+            <div class="line-long" ng-if="config.sourceImage.thirdParty===0"><span class="child-name">选择镜像</span>
+              <div class="line-element com-select-con" select-con="select-con">
+                <button class="ui-btn ui-btn-white ui-btn-select img-select"><i class="icon-down"></i>{{img.mirror||'无私有镜像'}}</button>
+                <ul class="select-list">
+                  <li ng-if="img.length===0"><a>无相关镜像</a></li>
+                  <li class="select-item"><a ng-click="selectMirror('baseImages')" ng-show="img.baseImages.length!==0">基础镜像</a></li>
+                  <li class="select-item"><a ng-click="selectMirror('projectImages')" ng-show="img.projectImages.length!==0">项目镜像</a></li>
+                  <li class="select-item"><a ng-click="selectMirror('otherImages')" ng-show="img.otherImages.length!==0">非项目镜像</a></li>
+                </ul>
+              </div>
+              <div class="line-element com-select-con tool-next" select-con="select-con">
+                <button class="ui-btn ui-btn-white ui-btn-select img-select"><i class="icon-down"></i>{{config.sourceImage.imageName||'选择镜像名称'}}</button>
+                <ul class="select-list">
+                  <li ng-if="img.mirrorNameList.length===0"><a>无相关镜像名称</a></li>
+                  <li class="select-item" ng-repeat="imagenamelist in img.mirrorNameList  track by $index"><a ng-click="selectMirrorName(imagenamelist.imageName,imagenamelist.registry)" ng-bind="imagenamelist.imageName"></a></li>
+                </ul>
+              </div>
+              <div class="line-element com-select-con tool-next" select-con="select-con">
+                <button class="ui-btn ui-btn-white ui-btn-select img-select"><i class="icon-down"></i>{{config.sourceImage.imageTag||'选择镜像版本'}}</button>
+                <ul class="select-list">
+                  <li ng-if="img.mirrorTagList.length===0"><a>无相关镜像版本</a></li>
+                  <li class="select-item" ng-repeat="imgtag in img.mirrorTagList"><a ng-click="config.sourceImage.imageTag=imgtag" ng-bind="imgtag"></a></li>
+                </ul>
+              </div>
+            </div>
+            <div class="line-long" ng-if="config.sourceImage.thirdParty===1"><span class="child-name">选择镜像</span>
+              <div class="line-element">
+                <input class="ui-input-white full" placeholder="镜像仓库地址" ng-model="config.sourceImage.registryUrl" required="required"/>
+              </div>
+              <div class="line-element tool-next">
+                <input class="ui-input-white full" placeholder="镜像名称" ng-model="config.sourceImage.imageName" required="required"/>
+              </div>
+              <div class="line-element tool-next">
+                <input class="ui-input-white full" placeholder="镜像版本" ng-model="config.sourceImage.imageTag" required="required"/>
+              </div>
+            </div>
+          </div>
+        </li>
+        <li class="has-border" ng-if="customtype=='configfile'"><span class="info-name">添加配置文件</span>
+          <div class="info-content">
+            <button class="ui-btn ui-btn-sm ui-btn-bright add-log" ng-click="mirror.addFileDefault()">添加</button>
+            <table class="log-item ui-table-primary" ng-repeat="fileInfo in config.files" ng-class="{'edit-form':showFile&amp;&amp;showContent}" file-collapse="file-collapse">
+              <tr>
+                <td class="td-small">
+                  <p class="con-num" ng-bind="$index+1"></p>
+                </td>
+                <td>
+                  <input class="ui-input-white" placeholder="文件名" ng-model="fileInfo.fileName" ng-click="toggleFile()" ng-class="{'ui-input-fill':showFile}" is-required="is-required" param1="{{fileInfo.filePath}}"/>
+                </td>
+                <td class="txt-prompt vertical" ng-if="!showFile">|</td>
+                <td>
+                  <input class="ui-input-white" placeholder="文件存放路径" ng-model="fileInfo.filePath" ng-click="toggleFile()" ng-class="{'ui-input-fill':showFile}" is-required="is-required" param1="{{fileInfo.fileName}}"/>
+                </td>
+                <td class="td-small"><a class="icon-cancel" ng-click="mirror.deleteArrItem('files',$index)"></a></td>
+              </tr>
+              <tr>
+                <td class="td-edit" colspan="5" ng-if="!showContent"><a ng-click="toggleContent()">编辑</a></td>
+                <td ng-if="showContent"></td>
+                <td class="td-edit" colspan="2" ng-if="showContent">
+                  <textarea class="ui-input-fill" ng-model="fileInfo.content"></textarea>
+                </td>
+                <td ng-if="showContent"></td>
+              </tr>
+              <tr ng-if="showContent">
+                <td class="td-edit" colspan="4">
+                  <button class="ui-btn ui-btn-sm ui-btn-cancel" ng-click="toggleContent();mirror.clearFileWrite($index)">取消</button>
+                  <button class="ui-btn ui-btn-sm ui-btn-active" ng-click="toggleContent()">保存</button>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </li>
+        <li class="has-border" ng-if="customtype=='dockerfile'"><span class="info-name">编辑Dockerfile</span>
+          <div class="info-content">
+            <p class="line-word txt-prompt">ADD指令只能通过URL获取文件；COPY指令无效</p>
+            <div class="line-long">
+              <textarea class="ui-input-fill" placeholder="请输入Dockerfile" type="text" required="required" ng-model="config.dockerfileContent"></textarea>
+            </div>
+            <div class="line-long">
+              <button class="ui-btn ui-btn-sm ui-btn-bright" ng-click="config.dockerfileContent=''">清空</button>
+            </div>
+          </div>
+        </li>
+        <li class="has-border" ng-if="customtype=='configfile'"><span class="info-name">输入环境变量</span>
+          <div class="info-content">
+            <div class="line-long" ng-repeat="envConfDefault in config.envSettings">
+              <div class="line-element">
+                <input class="ui-input-fill full" placeholder="环境变量名" ng-model="envConfDefault.key" ng-focus="$last&amp;&amp;mirror.addEnvConfDefault()" is-required="is-required" param1="{{envConfDefault.value}}"/>
+              </div>
+              <div class="line-element tool-next">
+                <input class="ui-input-fill full" placeholder="环境变量值" ng-model="envConfDefault.value" is-required="is-required" param1="{{envConfDefault.key}}"/>
+              </div>
+              <div class="line-element tool-next">
+                <input class="ui-input-fill full" placeholder="环境变量描述" ng-model="envConfDefault.description"/>
+              </div><a class="txt-wrap icon-delete" ng-if="config.envSettings.length&gt;1" ng-click="mirror.deleteArrItem('envSettings',$index)"></a>
+            </div>
+          </div>
+        </li>
+        <li class="has-border"><span class="info-name">发布镜像</span>
+          <div class="info-content">
+            <p class="line-word txt-prompt">是否作为基础镜像</p>
+            <div class="line-long"><span class="com-check-con">
+                <input class="ui-radio" id="isbasic" type="radio" value="1" name="netWork" ng-model="config.publish"/>
+                <label for="isbasic">是</label></span><span class="com-check-con">
+                <input class="ui-radio" id="nobasic" type="radio" value="0" name="netWork" ng-model="config.publish"/>
+                <label for="nobasic">否</label></span></div>
+            <p class="line-word txt-prompt">给指定的镜像添加描述</p>
+            <div class="line-long">
+              <input class="ui-input-fill line-element" placeholder="镜像描述" ng-model="config.description"/>
+            </div>
+            <p class="line-word txt-prompt">可以把定制镜像指定为特定编程语言的编译镜像或运行镜像</p>
+            <div class="line-word">
+              <input class="ui-check" id="SpecificImg" ng-model="specificImg.isSelected" type="checkbox" name="SpecificImg" ng-click="assigImgName(specificImg.isSelected);"/>
+              <label for="SpecificImg">启用</label>
+            </div>
+            <div class="line-long">
+              <div class="line-element com-select-con" select-con="select-con">
+                <button class="ui-btn ui-btn-white ui-btn-select" ng-disabled="!specificImg.isSelected"><i class="icon-down"></i>{{specificImg.language}}</button>
+                <ul class="select-list">
+                  <li class="select-item"><a ng-click="specificImg.language='java';assigImgName(true)">java</a></li>
+                </ul>
+              </div>
+              <div class="line-element com-select-con tool-next" select-con="select-con">
+                <button class="ui-btn ui-btn-white ui-btn-select" ng-disabled="!specificImg.isSelected"><i class="icon-down"></i>{{specificImg.imgType=='compileimage'?'编译镜像':'运行镜像'}}</button>
+                <ul class="select-list">
+                  <li class="select-item"><a ng-click="specificImg.imgType='compileimage';assigImgName(true)">编译镜像</a></li>
+                  <li class="select-item"><a ng-click="specificImg.imgType='runimage';assigImgName(true)">运行镜像</a></li>
+                </ul>
+              </div>
+            </div>
+            <p class="line-word txt-prompt">请指定定制镜像的名称和版本号，不能和镜像仓库中已有的镜像重复</p>
+            <div class="line-long">
+              <div class="line-element com-select-con" select-con="select-con">
+                <input class="ui-input-fill ui-btn-select" placeholder="镜像名称" type="text" required="required" ng-model="config.imageName" ng-disabled="specificImg.isSelected" ng-class="{'txt-disable':specificImg.isSelected}"/>
+              </div>
+              <div class="line-element com-select-con tool-next" select-con="select-con">
+                <input class="ui-input-fill ui-btn-select" placeholder="镜像版本" type="text" required="required" ng-model="config.imageTag"/>
+              </div><span class="txt-wrap"><a class="link-safe" ng-click="nameTest()">重名检测</a></span>
+            </div>
+          </div>
+        </li>
+      </ul>
+      <div class="com-bottom-option"><span class="com-bottom-option-con">
+          <button class="ui-btn ui-btn-md ui-btn-bright" ng-click="needValid=true;mirrorInfoForm.$valid&amp;&amp;creatBuild()">开始构建</button><span class="txt-error" ng-if="needValid&amp;&amp;mirrorInfoForm.$invalid">存在不合法数据，请修改后提交！</span></span></div>
+    </tab>
+    <tab heading="定制记录" ng-click="getImgList()" active="tabActive[1].active" ui-sref="mirrorCustom.log">
+      <div class="chose-row">
+        <div class="chose-item"><span class="chose-title">状态筛选</span>
+          <div class="chose-options"><em ng-class="{'active':selectOption.state.All}" ng-click="toggleAll('state')">全部</em><em ng-class="{'active':selectOption.state.Building}" ng-click="toggleSelect('state','Building')">构建中</em><em ng-class="{'active':selectOption.state.Success}" ng-click="toggleSelect('state','Success')">成功</em><em ng-class="{'active':selectOption.state.Fail}" ng-click="toggleSelect('state','Fail')">失败</em><em class="txt-prompt">|</em></div>
+        </div>
+        <div class="chose-item"><span class="chose-title">构建者筛选</span>
+          <div class="chose-options"><em ng-class="{'active':selectOption.builduser.All}" ng-click="toggleAll('builduser')">所有人</em><em ng-class="{'active':selectOption.builduser.own}" ng-click="toggleSelect('builduser','own')">仅自己</em></div>
+        </div>
+      </div>
+      <div class="chose-row">
+        <div class="chose-item"><span class="chose-title">定制类型筛选</span>
+          <div class="chose-options"><em ng-class="{'active':selectOption.type.All}" ng-click="toggleAll('type')">全部</em><em ng-class="{'active':selectOption.type.dockerfile}" ng-click="toggleSelect('type','dockerfile')">Dockerfile</em><em ng-class="{'active':selectOption.type.configfile}" ng-click="toggleSelect('type','configfile')">配置文件</em><em class="txt-prompt">|</em></div><span class="chose-title">镜像名筛选</span>
+          <div class="chose-options">
+            <input class="ui-input-search ui-input-fill" type="text" placeholder="输入部署名称查询" ng-model="mirKeyword"/>
+          </div>
+        </div>
+      </div>
+      <div class="mod-list">
+        <customlist>
+          <table class="ui-table-dome">
+            <tbody>
+              <tr ng-if="buildListFilter&amp;&amp;buildListFilter.length===0">
+                <td colspan="9">无相关信息</td>
+              </tr>
+              <tr ng-repeat="custom in buildListFilter=(customImgList|filter:{'imageName':mirKeyword}|mirrorOptions:selectOption.state:selectOption.builduser:selectOption.type:loginUser.username)" ng-click="showDetail($index,custom.id)">
+                <td ng-bind="custom.imageName"></td>
+                <td><i class="icon-label" tooltip="镜像版本"></i>{{custom.imageTag}}</td>
+                <td><i class="icon-config" tooltip="定制类型"></i>{{custom.type}}</td>
+                <td><i class="icon-user" tooltip="构建者"></i>{{custom.username}}</td>
+                <td ng-switch="custom.state"><span class="txt-normal" ng-switch-when="Building">构建中</span><span class="txt-normal" ng-switch-when="Preparing">等待中</span><span class="txt-success" ng-switch-when="Success">成功</span><span class="txt-warning" ng-switch-when="Fail">失败</span></td>
+                <td ng-bind="custom.createTime"></td>
+                <td ng-bind="custom.interval"></td>
+                <td><a class="link-safe" href="{{custom.logHref}}" target="_blank">日志</a></td>
+                <td><a class="icon-down up" ng-class="{'up':$index!==currentIndex}"></a></td>
+              </tr>
+            </tbody>
+          </table>
+        </customlist>
+      </div>
+    </tab>
+  </tabset>
+</div>

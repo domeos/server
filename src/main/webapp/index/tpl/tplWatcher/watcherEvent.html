@@ -1,0 +1,16 @@
+
+<div class="events-con">
+  <ul class="events-list">
+    <li class="event-success" ng-if="eventList.length===0">无事件信息</li>
+    <li ng-repeat="event in eventList" ng-class="{'START':'event-building','PROCESSING':'event-building','SUCCESS':'event-success','FAILED':'event-failed','KUBERNETES':'event-system','ABORTED':'event-system','null':'event-system','undefined':'event-system'}[event.eventStatus]"><span class="icon-dot"><i class="dot-line"></i></span><span class="event-name" ng-bind="event.operation | eventOperation"></span><span class="event-result" ng-bind="event.eventStatus | eventStatus"></span><span class="event-date" ng-bind="event.startTime| time"></span><span class="event-author" ng-cloak="ng-cloak"><i class="icon-user" tooltip="操作者"></i>{{event.userName}}</span><span class="event-process" ng-if="event.operation!='KUBERNETES'"><span class="event-process-item" tooltip="起始状态" tooltip-placement="left"><i class="icon-process-dot start"></i>
+          <div class="event-process-detail"><span class="sig-event-process" ng-bind="'无状态'+' , '+'0实例'" ng-if="!event.primarySnapshot.length"></span><span class="sig-event-process" ng-repeat="status in event.primarySnapshot" ng-bind="'version'+status.version+' , '+status.replicas+'实例'"></span></div></span><span class="event-process-item" tooltip="目标状态" tooltip-placement="left"><i class="icon-process-dot origin"></i>
+          <div class="event-process-detail"><span class="sig-event-process" ng-bind="'无状态'+' , '+'0实例'" ng-if="!event.targetSnapshot.length"></span><span class="sig-event-process" ng-repeat="status in event.targetSnapshot" ng-bind="'version'+status.version+' , '+status.replicas+'实例'"></span></div></span><span class="event-process-item" tooltip="完成状态" tooltip-placement="left"><i class="icon-process-dot current"></i>
+          <div class="event-process-detail"><span class="sig-event-process" ng-bind="'无状态'+' , '+'0实例'" ng-if="!event.currentSnapshot.length"></span><span class="sig-event-process" ng-repeat="status in event.currentSnapshot" ng-bind="'version'+status.version+' , '+status.replicas+'实例'"></span></div></span></span><span class="event-process tool-nowrap" ng-if="event.operation=='KUBERNETES'" ng-bind="event.message" hoverable-popover="hoverable-popover" content="event.message"></span><span class="txt-warning event-info" ng-show="event.eventStatus=='FAILED'" tooltip="点击打开/关闭" tooltip-placement="left" style="position:relative;user-select:none;" ng-click="showWrong(event.eid)">错误信息
+        <div class="popover top toggle" ng-show="event.eventStatus=='FAILED' &amp;&amp; wrongMessageList[event.eid]" ng-class="animation">
+          <div class="arrow"></div>
+          <div class="popover-inner">
+            <div class="popover-content" ng-bind="event.message"></div>
+          </div>
+        </div></span></li>
+  </ul>
+</div>

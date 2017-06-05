@@ -1,0 +1,56 @@
+
+<div class="mod-project project-create2" role="form" ng-form="ng-form" name="projectForm" ng-class="{'need-valid':valid.needValid}">
+  <button class="ui-btn ui-btn-bright ui-btn-lg ui-btn-copy" ng-click="toCopy()">复制已有工程</button>
+  <div class="project-new">
+    <ng-include src="'index/tpl/tplProjectSetting/projectSettingTpl.html'"></ng-include>
+  </div>
+  <div class="com-bottom-option"><span class="com-bottom-option-con">
+      <button class="ui-btn ui-btn-bright ui-btn-md ui-btn-last" ng-click="toLastPage();">上一步</button>
+      <button class="ui-btn ui-btn-bright ui-btn-md" ng-click="valid.needValid=true;validCreatedFileStoragePath();projectForm.$valid&amp;&amp;valid.createdFileStoragePath&amp;&amp;createProject()">完成创建</button>
+      <button class="ui-btn ui-btn-safe ui-btn-md" ng-click="valid.needValid=true;validCreatedFileStoragePath();projectForm.$valid&amp;&amp;valid.createdFileStoragePath&amp;&amp;getDockerfile()">预览Dockerfile</button><span class="txt-error" ng-if="valid.needValid&amp;&amp;(!valid.createdFileStoragePath||projectForm.$invalid)">存在不合法数据，请修改后提交！</span></span></div>
+  <script type="text/ng-template" id="projectListModal.html">
+    <div class="d-modal-header">选择复制的工程</div>
+    <div class="modal-projects">
+      <loading ng-if="loading"></loading>
+      <div class="filter-con">
+        <p class="txt-prompt"><i class="fa fa-info-circle icon-algin-right"></i>此处只可选择与您上一步所选择的“工程构建类型”相匹配的项目</p><span>所属项目</span>
+        <div class="com-select-con" select-con="select-con">
+          <button class="ui-btn ui-btn-white ui-btn-select"><i class="icon-down"></i>{{selectedCollection.name}}</button>
+          <ul class="select-list" style="max-height: 200px;">
+            <li class="select-item" ng-repeat="collection in collectionList track by $index"><a ng-click="selectCollection(collection)">{{ collection.name }}</a></li>
+          </ul>
+        </div>
+        <input class="ui-input ui-input-fill ui-input-search" ng-model="key.searchKey" placeholder="输入工程名称搜索"/><span class="tool-align-input" ng-cloak="ng-cloak" style="float: right; padding-right: 10px;">共{{ (projectList|filter:{name:key.searchKey}).length }}个工程</span>
+      </div>
+      <div class="table-container">
+        <table class="ui-table-dome">
+          <thead>
+            <tr>
+              <th>工程名称</th>
+              <th>构建类型</th>
+              <th>构建时间</th>
+              <th>构建状态</th>
+              <th>代码源</th>
+              <th>复制工程</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="text-center" colspan="6" ng-if="!projectList||projectListFiltered.length===0">暂无相关工程</td>
+            </tr>
+            <tr ng-repeat="project in projectListFiltered=(projectList|filter:{name:key.searchKey})">
+              <td><a ng-bind="project.name"></a></td>
+              <td ng-switch="project.projectType"><span ng-switch-default="ng-switch-default">未知配置</span><span ng-switch-when="java">Java专属配置</span><span ng-switch-when="dockerfileuserdefined">定制化配置</span><span ng-switch-when="commonconfig">通用配置</span><span ng-switch-when="dockerfileincode">代码内Dockerfile</span></td>
+              <td ng-bind="project.buildTime ? (project.buildTime | time) : '无'"></td>
+              <td ng-switch="project.buildStatus"><span class="txt-success" ng-switch-when="Success">成功</span><span class="txt-warning" ng-switch-when="Fail">失败</span><span class="txt-normal" ng-switch-when="Building">构建中</span><span class="txt-normal" ng-switch-when="Preparing">准备中</span><span class="txt-normal" ng-switch-when="Send">准备中</span><span ng-switch-default="ng-switch-default">未启动</span></td>
+              <td ng-cloak="ng-cloak" ng-switch="project.codeManager"><span ng-if="!project.nameWithNamespace">无</span><a href="{{project.codeHttpUrl}}" target="_blank" ng-show="project.nameWithNamespace" title="{{project.nameWithNamespace}}"><i class="fa fa-gitlab icon-git-color" ng-switch-when="gitlab"></i><i class="fa fa-github icon-git-color" ng-switch-when="github"></i></a></td>
+              <td>
+                <button class="ui-btn ui-btn-sm ui-btn-bright" ng-click="copy(project.id)">复制</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </script>
+</div>

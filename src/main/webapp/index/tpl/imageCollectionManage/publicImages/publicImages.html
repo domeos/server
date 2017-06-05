@@ -1,0 +1,19 @@
+
+<div ng-controller="ImageCollectionMangePublicImages">
+  <loading ng-if="loading"></loading>
+  <form-container left-column-width="0">
+    <form>
+      <form-multiple-inline content-type="search">
+        <form-multiple-inline-item>
+          <help-line>
+            <icon-info></icon-info>DomeOS官方仓库中镜像信息
+          </help-line>
+        </form-multiple-inline-item>
+        <form-multiple-inline-item>
+          <form-search-box-with-count text-prefix="共" text-suffix="条镜像信息" ng-model="imageInfo.searchText" total="{{ imageInfo.imageList.length }}" match="{{ imageInfo.filteredImageList.length }}" on-change="filter()"></form-search-box-with-count>
+        </form-multiple-inline-item>
+      </form-multiple-inline>
+      <image-list image-list="imageInfo.filteredImageList"></image-list>
+    </form>
+  </form-container>
+</div>

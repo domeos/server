@@ -1,0 +1,179 @@
+
+<div class="mod-monitor monitor-manage">
+  <loading ng-if="loadingsIns.isLoading"></loading>
+  <div class="monitor-options">
+    <div class="monitor-option"><span class="option-title">集群</span>
+      <div class="com-select-con" select-con="select-con">
+        <button class="ui-btn ui-btn-white ui-btn-select" sg-cloak="sg-cloak">{{clusterListIns.cluster.name||'选择集群'}}<i class="icon-down"></i></button>
+        <ul class="select-list">
+          <li class="select-item" ng-if="!clusterListIns.clusterList || clusterListIns.clusterList.length===0"><a>无相关信息</a></li>
+          <li class="select-item" ng-repeat="cluster in clusterListIns.clusterList"><a ng-bind="cluster.name" ng-click="toggleCluster($index)"></a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="monitor-option"><span class="option-title">监控类型</span>
+      <div class="com-select-con" select-con="select-con">
+        <button class="ui-btn ui-btn-white ui-btn-select" ng-cloak="ng-cloak">{{monitorType}}<i class="icon-down"></i></button>
+        <ul class="select-list">
+          <li class="select-item"><a ng-click="toggleMonitorType('部署实例')">部署实例</a></li>
+          <li class="select-item"><a ng-click="toggleMonitorType('负载均衡')">负载均衡</a></li>
+          <li class="select-item"><a ng-click="toggleMonitorType('主机')">主机</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="monitor-option"><span class="option-title">环境</span>
+      <div class="com-select-con" select-con="select-con">
+        <button class="ui-btn ui-btn-white ui-btn-select" ng-cloak="ng-cloak" ng-disabled="loadingsIns.loadingItems.deploy">{{currentEnv.text}}<i class="icon-down"></i></button>
+        <ul class="select-list">
+          <li class="select-item"><a ng-click="toggleEnv('生产')">生产</a></li>
+          <li class="select-item"><a ng-click="toggleEnv('测试')">测试</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="monitor-line" ng-if="monitorType=='部署实例'"><span class="option-title">部署</span>
+      <div class="com-select-con host-label" select-con="select-con">
+        <input class="ui-input-search ui-input-fill ui-btn-select input-btn-size" placeholder="{{deployListIns.deploy.name?'当前选择：'+deployListIns.deploy.name:'搜索部署'}}" ng-model="keywords.deployName"/>
+        <ul class="select-list">
+          <li class="select-item" ng-if="!deployListIns.deployList||deployFiltered.length===0"><a>无相关部署</a></li>
+          <li class="select-item" ng-repeat="deploy in deployFiltered=(deployListIns.deployList|filter:{'clusterFilter':true,'hostEnv':currentEnv.value,'deployName':keywords.deployName})"><a ng-click="toggleDeploy(deploy.deployId,deploy.deployName,deploy.namespace);"><span ng-cloark="ng-cloark">{{deploy.deployName}}</span><span class="item-right txt-prompt" ng-cloak="ng-cloak">namespace:{{deploy.namespace}}</span></a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="monitor-line" ng-if="monitorType=='负载均衡'"><span class="option-title">负载均衡</span>
+      <div class="com-select-con host-label" select-con="select-con">
+        <input class="ui-input-search ui-input-fill ui-btn-select input-btn-size" placeholder="{{deployListIns.deploy.name?'当前选择：'+deployListIns.deploy.name:'搜索负载均衡'}}" ng-model="keywords.deployName"/>
+        <ul class="select-list">
+          <li class="select-item" ng-if="!deployListIns.deployList||deployFiltered.length===0"><a>无相关负载均衡</a></li>
+          <li class="select-item" ng-repeat="deploy in deployFiltered=(deployListIns.deployList|filter:{'clusterFilter':true,'hostEnv':currentEnv.value,'deployName':keywords.deployName})"><a ng-click="toggleDeploy(deploy.deployId,deploy.deployName,deploy.namespace);"><span ng-cloark="ng-cloark">{{deploy.deployName}}</span><span class="item-right txt-prompt" ng-cloak="ng-cloak">namespace:{{deploy.namespace}}</span></a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="monitor-line" ng-if="monitorType=='主机'"><span class="option-title">主机标签</span>
+      <div class="ui-input-white com-select-con host-label" label="true" select-con="select-con">
+        <ul class="selected-labels">
+          <li class="select-label" ng-repeat="(label,value) in nodeListIns.labelsInfo|search:'isShow':true|search:'isSelected':true" ng-cloak="ng-cloak"><a class="icon-cancle icon-cancle-former" ng-click="nodeListIns.toggleLabel(label,false)"></a>{{label}}</li>
+          <li class="select-input">
+            <input class="line-element ui-btn-select" placeholder="选择主机标签" ng-model="labelKey.key" ng-keydown="labelKeyDown($event,labelKey.key,labelsInfoFiltered)"/>
+          </li>
+        </ul>
+        <ul class="select-list">
+          <li class="select-item" ng-if="Object.keys(labelsInfoFiltered).length===0"><a>无相关信息</a></li>
+          <li class="select-item" ng-repeat="(label,value) in labelsInfoFiltered=(nodeListIns.labelsInfo| searchKey:labelKey.key|search:'isShow':true)"><a ng-bind="label" ng-click="nodeListIns.toggleLabel(label,true);labelKey.key=''"></a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="monitor-info mod-option" ng-if="monitorType=='主机'"><a class="ui-btn ui-btn-bright ui-btn-link ui-btn-lg" target="_blank" ng-click="toMonitorDetail('node')">查看详情 </a>&nbsp;<span class="selected-count" ng-cloak="ng-cloak">已选中{{nodeListIns.selectedCount}}个</span>
+    <div class="pull-right right-option"><span ng-bind="calcFilterdNodeListLength()" ng-cloak="ng-cloak"></span>
+      <input class="ui-input-fill ui-input-search" placeholder="输入主机名称查询" ng-model="keywords.node" ng-change="nodeListIns.filterWithKey(keywords.node)"/>
+    </div>
+  </div>
+  <div class="monitor-info mod-option" ng-if="monitorType=='实例'"><a class="ui-btn ui-btn-bright ui-btn-link ui-btn-lg" target="_blank" ng-click="toMonitorDetail('pod')">查看详情</a>&nbsp;<span class="selected-count" ng-cloak="ng-cloak">已选中{{deployListIns.deployInstanceListIns.selectedCount}}个</span>
+    <div class="pull-right right-option"><span ng-cloak="ng-cloak">共{{deployListIns.deployInstanceListIns.instanceList.length||0}}个实例</span>
+      <input class="ui-input-fill ui-input-search" placeholder="输入实例名称查询" ng-model="keywords.instance" ng-change="deployListIns.deployInstanceListIns.filterWithKey(keywords.instance)"/>
+    </div>
+  </div>
+  <div class="mod-list">
+    <table class="ui-table-dome" ng-if="monitorType=='主机'">
+      <thead ondragstart="return false" onselectstart="return false" onselect="document.selection.empty()" oncopy="document.selection.empty()" onbeforecopy="return false">
+        <tr>
+          <th><span>
+              <input class="ui-check" id="checkAllNode" type="checkbox" ng-model="nodeListIns.isCheckAll" ng-change="nodeListIns.checkAllNode()"/>
+              <label for="checkAllNode"></label></span>主机</th>
+          <th>状态</th>
+          <th class="tool-enable-click" ng-click="toggleOrderBy('node','cpuBusyCount')" ng-class="{'active':orderBy.node=='cpuBusyCount'}">CPU占用<i class="icon-order" ng-show="orderBy.node!='cpuBusyCount'"></i><i class="icon-down" ng-show="orderBy.node=='cpuBusyCount'" ng-class="{'up':!orderBy.isReverse}"></i></th>
+          <th class="tool-enable-click" ng-click="toggleOrderBy('node','memPercentCount')" ng-class="{'active':orderBy.node=='memPercentCount'}">内存占用<i class="icon-order" ng-show="orderBy.node!='memPercentCount'"></i><i class="icon-down" ng-show="orderBy.node=='memPercentCount'" ng-class="{'up':!orderBy.isReverse}"></i></th>
+          <th class="tool-enable-click" ng-click="toggleOrderBy('node','diskUsedCount')" ng-class="{'active':orderBy.node=='diskUsedCount'}">磁盘占用<i class="icon-order" ng-show="orderBy.node!='diskUsedCount'"></i><i class="icon-down" ng-show="orderBy.node=='diskUsedCount'" ng-class="{'up':!orderBy.isReverse}"></i></th>
+          <th class="tool-enable-click" ng-click="toggleOrderBy('node','diskReadCount')" ng-class="{'active':orderBy.node=='diskReadCount'}">磁盘读总量(KB/s)<i class="icon-order" ng-show="orderBy.node!='diskReadCount'"></i><i class="icon-down" ng-show="orderBy.node=='diskReadCount'" ng-class="{'up':!orderBy.isReverse}"></i></th>
+          <th class="tool-enable-click" ng-click="toggleOrderBy('node','diskWriteCount')" ng-class="{'active':orderBy.node=='diskWriteCount'}">磁盘写总量(KB/s)<i class="icon-order" ng-show="orderBy.node!='diskWriteCount'"></i><i class="icon-down" ng-show="orderBy.node=='diskWriteCount'" ng-class="{'up':!orderBy.isReverse}"></i></th>
+          <th class="tool-enable-click" ng-click="toggleOrderBy('node','netInCount')" ng-class="{'active':orderBy.node=='netInCount'}">网络流入总量(KB/s)<i class="icon-order" ng-show="orderBy.node!='netInCount'"></i><i class="icon-down" ng-show="orderBy.node=='netInCount'" ng-class="{'up':!orderBy.isReverse}"></i></th>
+          <th class="tool-enable-click" ng-click="toggleOrderBy('node','netOutCount')" ng-class="{'active':orderBy.node=='netOutCount'}">网络流出总量(KB/s)<i class="icon-order" ng-show="orderBy.node!='netOutCount'"></i><i class="icon-down" ng-show="orderBy.node=='netOutCount'" ng-class="{'up':!orderBy.isReverse}"></i></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-if="!nodeListIns.nodeList||filteredNodes.length===0">
+          <td colspan="9">无主机信息</td>
+        </tr>
+        <tr ng-repeat="node in filteredNodes=(nodeListIns.nodeList|filter:{'labelFilter':true,'keyFilter':true}|orderBy:orderBy.node:orderBy.isReverse)">
+          <td ng-cloak="ng-cloak"><span>
+              <input class="ui-check" id="{{'node'+$index}}" type="checkbox" ng-model="node.isSelected" ng-change="nodeListIns.toggleNodeCheck(node)"/>
+              <label for="{{'node'+$index}}"></label></span><a class="ui-table-link" target="_blank" ng-click="toMonitorDetail('node',node)">{{node.name}}</a></td>
+          <td class="txt-safe" ng-if="node.status=='Ready'">在线</td>
+          <td class="txt-prompt" ng-if="node.status=='NotReady'">离线</td>
+          <td ng-cloak="ng-cloak">{{isNaN(node.cpuBusyCount)?node.cpuBusyCount:(node.cpuBusyCount+'%')}}</td>
+          <td ng-cloak="ng-cloak">{{isNaN(node.memPercentCount)?node.memPercentCount:(node.memPercentCount+'%')}}</td>
+          <td><a class="link-tooltip" ng-mouseenter="modifyTooltip('diskUsed',node.diskUsedData)" tooltip-template="'detailTooltip.html'" tooltip-placement="left" ng-cloak="ng-cloak">{{isNaN(node.diskUsedCount)?node.diskUsedCount:(node.diskUsedCount+'%')}}</a></td>
+          <td><a class="link-tooltip" ng-bind="node.diskReadCount" ng-mouseenter="modifyTooltip('diskRead',node.diskReadData)" tooltip-template="'detailTooltip.html'" tooltip-placement="left"></a></td>
+          <td><a ng-bind="node.diskWriteCount" ng-mouseenter="modifyTooltip('diskWrite',node.diskWriteData)" tooltip-template="'detailTooltip.html'" tooltip-placement="left"></a></td>
+          <td><a ng-bind="node.netInCount" ng-mouseenter="modifyTooltip('netIn',node.netInData)" tooltip-template="'detailTooltip.html'" tooltip-placement="left"></a></td>
+          <td><a ng-bind="node.netOutCount" ng-mouseenter="modifyTooltip('netOut',node.netOutData)" tooltip-template="'detailTooltip.html'" tooltip-placement="left"></a></td>
+        </tr>
+      </tbody>
+    </table>
+    <table class="ui-table-dome" ng-if="monitorType=='部署实例' || monitorType=='负载均衡'">
+      <thead ondragstart="return false" onselectstart="return false" onselect="document.selection.empty()" oncopy="document.selection.empty()" onbeforecopy="return false">
+        <tr>
+          <th><span>
+              <input class="ui-check" id="checkAllInstance" type="checkbox" ng-model="deployListIns.deployInstanceListIns.isCheckAll" ng-change="deployListIns.deployInstanceListIns.checkAllInstance()"/>
+              <label for="checkAllInstance"></label></span>实例</th>
+          <th class="tool-enable-click" ng-click="toggleOrderBy('pod','cpuBusyCount')" ng-class="{'active':orderBy.pod=='cpuBusyCount'}">CPU占用<i class="icon-order" ng-show="orderBy.pod!='cpuBusyCount'"></i><i class="icon-down" ng-show="orderBy.pod=='cpuBusyCount'" ng-class="{'up':!orderBy.isReverse}"></i></th>
+          <th class="tool-enable-click" ng-click="toggleOrderBy('pod','memPercentCount')" ng-class="{'active':orderBy.pod=='memPercentCount'}">内存占用<i class="icon-order" ng-show="orderBy.pod!='memPercentCount'"></i><i class="icon-down" ng-show="orderBy.pod=='memPercentCount'" ng-class="{'up':!orderBy.isReverse}"></i></th>
+          <th class="tool-enable-click" ng-click="toggleOrderBy('pod','netInCount')" ng-class="{'active':orderBy.pod=='netInCount'}">网络流入总量(KB/s)<i class="icon-order" ng-show="orderBy.pod!='netInCount'"></i><i class="icon-down" ng-show="orderBy.pod=='netInCount'" ng-class="{'up':!orderBy.isReverse}"></i></th>
+          <th class="tool-enable-click" ng-click="toggleOrderBy('pod','netOutCount')" ng-class="{'active':orderBy.pod=='netOutCount'}">网络流出总量(KB/s)<i class="icon-order" ng-show="orderBy.pod!='netOutCount'"></i><i class="icon-down" ng-show="orderBy.pod=='netOutCount'" ng-class="{'up':!orderBy.isReverse}"></i></th>
+          <th>容器</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-if="!deployListIns.deployInstanceListIns.instanceList||instanceListFiltered.length===0">
+          <td colspan="6">无实例信息</td>
+        </tr>
+        <tr ng-repeat="instance in instanceListFiltered = (deployListIns.deployInstanceListIns.instanceList|filter:{keyFilter:true}|orderBy:orderBy.pod:orderBy.isReverse)">
+          <td ng-cloak="ng-cloak"><span>
+              <input class="ui-check" id="{{'instance'+$index}}" type="checkbox" ng-model="instance.isSelected" ng-change="deployListIns.deployInstanceListIns.toggleCheck(instance)"/>
+              <label for="{{'instance'+$index}}"></label></span><a class="ui-table-link" ng-click="toMonitorDetail('pod',instance)">{{instance.instanceName}}</a></td>
+          <td ng-cloak="ng-cloak">{{isNaN(instance.cpuBusyCount)?instance.cpuBusyCount:(instance.cpuBusyCount+'%')}}</td>
+          <td ng-cloak="ng-cloak">{{isNaN(instance.memPercentCount)?instance.memPercentCount:(instance.memPercentCount+'%')}}</td>
+          <td ng-bind="instance.netInCount"></td>
+          <td ng-bind="instance.netOutCount"></td>
+          <td><a class="link-safe" ng-click="showContainer(instance)">查看</a></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<script type="text/ng-template" id="detailTooltip.html">
+  <div ng-bind-html="toolTipText"></div>
+</script>
+<script type="text/ng-template" id="containersModal.html">
+  <div class="d-modal-header">查看容器</div>
+  <div class="d-modal-full mod-monitor">
+    <table class="ui-table-dome">
+      <thead ondragstart="return false" onselectstart="return false" onselect="document.selection.empty()" oncopy="document.selection.empty()" onbeforecopy="return false">
+        <tr>
+          <th>容器ID</th>
+          <th>镜像名称</th>
+          <th>镜像版本</th>
+          <th class="tool-enable-click" ng-click="toggleOrderBy('cpuBusyCount')" ng-class="{'active':orderBy.container=='cpuBusyCount'}">CPU占用<i class="icon-order" ng-show="orderBy.container!='cpuBusyCount'"></i><i class="icon-down" ng-show="orderBy.container=='cpuBusyCount'" ng-class="{'up':!orderBy.isReverse}"></i></th>
+          <th class="tool-enable-click" ng-click="toggleOrderBy('memPercentCount')" ng-class="{'active':orderBy.container=='memPercentCount'}">内存占用<i class="icon-order" ng-show="orderBy.container!='memPercentCount'"></i><i class="icon-down" ng-show="orderBy.container=='memPercentCount'" ng-class="{'up':!orderBy.isReverse}"></i></th>
+          <th class="tool-enable-click" ng-click="toggleOrderBy('netInCount')" ng-class="{'active':orderBy.container=='netInCount'}">网络流入总量(KB/s)<i class="icon-order" ng-show="orderBy.container!='netInCount'"></i><i class="icon-down" ng-show="orderBy.container=='netInCount'" ng-class="{'up':!orderBy.isReverse}"></i></th>
+          <th class="tool-enable-click" ng-click="toggleOrderBy('netOutCount')" ng-class="{'active':orderBy.container=='netOutCount'}">网络流出总量(KB/s)<i class="icon-order" ng-show="orderBy.container!='netOutCount'"></i><i class="icon-down" ng-show="orderBy.container=='netOutCount'" ng-class="{'up':!orderBy.isReverse}"></i></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-if="instanceIns.containerList.length===0">
+          <td>无Container信息</td>
+        </tr>
+        <tr ng-repeat="container in instanceIns.containerList|orderBy:orderBy.container:orderBy.isReverse">
+          <td class="container-name" ng-cloak="ng-cloak"><a class="ui-table-link" ng-click="toMonitorDetail(container)">{{container.shortContainerId}}</a></td>
+          <td class="container-image" ng-bind="container.image"></td>
+          <td ng-bind="container.imageTag"></td>
+          <td ng-cloak="ng-cloak">{{isNaN(container.cpuBusyCount)?container.cpuBusyCount:(container.cpuBusyCount+'%')}}</td>
+          <td ng-cloak="ng-cloak">{{isNaN(container.memPercentCount)?container.memPercentCount:(container.memPercentCount+'%')}}</td>
+          <td ng-bind="container.netInCount"></td>
+          <td ng-bind="container.netOutCount"></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="d-modal-footer"><a class="ui-btn ui-btn-bright ui-btn-sm ui-btn-link pull-right" href="" target="_blank" ng-click="toMonitorDetail()">查看监控详情</a></div>
+</script>

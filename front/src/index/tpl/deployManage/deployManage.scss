@@ -1,0 +1,86 @@
+@import "compass/css3";
+@import "common/css/common.scss";
+.deploy-manage{
+	.deploy-list-btn{
+		padding-left: 20px;
+	}
+	.right-option-all-deploy{
+		text-align: right;
+	}
+	.chose-lists{
+		// padding: 0 0 16px 0;
+		margin: 0 20px 20px 20px;
+		border-top: $deep-border;
+		.chose-item{
+			display: table;
+			width: 100%;
+			border-bottom: $deep-border;
+			height: 45px;
+			.chose-title{
+				display: table-cell;
+				width: 128px;
+				padding: 8px;
+				font-weight: bold;
+				vertical-align: middle;
+			}
+			.chose-options{
+				display: table-cell;
+				border-left: $deep-border;
+				padding: 8px;
+				vertical-align: middle;
+				em{
+					display: inline-block;
+					margin:0 24px 0 0;
+					font-style: normal;
+					&:hover{
+						color: #666;
+						cursor: pointer;
+					}
+					&.active{
+						color: dome-color(dome,active-font);
+					}
+				}
+				padding-bottom: 8px;
+			}
+		}
+	}
+	.mod-list{
+		padding:0 20px 20px 20px;
+	}
+	.dns-name{
+		width: 200px;
+	}
+	span.active, th.active{
+		color: dome-color(dome,bright);
+	}
+	.icon-down{
+		margin-left:4px;
+		&.up{
+			@include rotate(180deg);
+		}
+	}
+	.selected-count{
+		font-weight: 700;
+		color: dome-color(dome,primary);
+	}
+}
+.migrate-operation{
+	min-height: 150px;
+	.migrate-content{
+		margin-top: 20px;
+		margin-left: 156px;
+	}
+	.migrate-select-list{
+		margin-left: 100px;
+		margin-top: 20px;
+		.text-content{
+			margin-right: 10px;
+		}
+	}
+	.deploy-migrate{
+		width: 70%;
+		.select-list-migrate{
+			max-height: 100px;
+		}
+	}
+}

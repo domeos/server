@@ -1,0 +1,205 @@
+@import "compass/css3";
+@import "common/css/common.scss";
+.global-setting{
+    .table-container{
+        padding: 0 20px 20px 20px;
+    }
+    .txt-prompt{
+        a{
+            color: #bbb;
+        }
+        a:hover{
+            color: #188ae2;
+        }
+        a:link {
+            text-decoration: none;
+        }
+    }
+    .com-list-info{
+        padding-top: 0;
+        .info-name{
+            text-align: right;
+            width: 125px;
+        }
+    }
+    .ldap-info .info-name{
+        width: 162px;
+    }
+    .mod-tips-info-global{
+        margin-top: 20px;
+        p{
+            padding-left: 8px;
+            margin-bottom: 0;
+        }
+    }
+    .certification-txt{
+        min-height: 300px;
+    }
+    .webssh-txt{
+        width: 135px !important;
+    }
+    .add-user{
+        .info-name{
+            padding-top: 14px;
+        }
+        .info-content{
+            position: relative;
+            padding-top: 10px;
+            padding-bottom: 10px;
+            .line-single{
+                width: 50%;
+            }
+            .txt-wrap{
+                left: 52%;
+                top: 10px;
+            }
+        }
+    }
+    .btn-cluster-save{
+        float: right;
+        margin-top: -8px;
+    }
+    .cluster-detail{
+        display: inline-block;
+        // margin: 28px 0 0 42px;
+    }
+    @media (max-width:1200px){
+        .cluster-detail{
+            width: 732px;
+            margin-top: 20px;
+        }
+    }
+    .cluster-list-title{
+        padding: 0 20px;
+    }
+    .user-list-title{
+        padding: $page-padding;
+        // border-bottom: $light-border;
+        // height: 69px;
+        .ui-input-search{
+            // margin-top: 14px;
+        }
+        h3{
+            display: inline-block;
+            font-size: 14px;
+            margin-right: 16px;
+            // line-height: 70px;
+        }
+        .com-select-con{
+            display: inline-block;
+            font-size: 14px;
+        }
+        .to-add{
+            display: inline-block;
+            padding: 0 0 0 20px;
+            .icon-down-white{
+                margin-left: 4px;
+            }
+        }
+    }
+    .node-option{
+        // margin-top: 20px;
+        padding: 0 20px 20px 20px;
+        // border-top: $light-border;
+        overflow: hidden;
+        .host-right{
+            float: right;
+        }
+        .input-right{
+            margin-left: 34px;
+        }
+        .host-detail {
+            display: inline-block;
+            margin-top: 6px;
+        }
+        @media (max-width: 1270px){
+            .host-detail {
+                width: 674px;
+            }
+        }
+         @media (max-width: 1190px){
+            .host-detail {
+                width: 530px;
+            }
+        }
+    }
+    .table-hostlist{
+        td,th{
+            &:first-child{
+                padding-left: 8px;
+            }
+        }
+    }
+    .table-userlist{
+        td,th{
+            &:first-child{
+                padding-left: 8px;
+            }
+        }
+        .btn-distance{
+            padding-left: 10px !important;
+        }
+        .icon-none-padding{
+            padding-right: 0px !important;
+            padding-left: 10px !important;
+        }
+    }
+    .table-userlist{
+        table-layout: fixed;
+        .useremail{
+            display: inline-block;
+            width: 210px;
+            margin-right: 12px;
+            vertical-align: middle;
+        }
+        .icon-delete,.icon-edit{
+            margin-left: 22px;
+            &:first-child{
+                margin-left:0;
+            }
+        }
+        th:last-child,td:last-child{
+            min-width: 250px;
+        }
+    }
+  .code-repertory{
+    .multi-container{
+      position: relative;
+      margin: 20px;
+      height: auto;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+    }
+    .delete-git{
+      position: absolute;
+      right: 18px;
+      top: 6px;
+      width: 52px;
+    }
+    .repertory-header{
+      padding: 20px;
+      .ui-input-search{
+        margin-left: 34px;
+      }
+    }
+    .btn-none{
+      border: none;
+      background: none;
+    }
+    .com-list-info{
+      padding: 0;
+      .info-name{
+        padding-top: 20px;
+      }
+    }
+  }
+}
+
+.dialog-box.dialog-warning{
+    .warn-container{
+        width: 310px;
+    }
+    .font-big{
+        font-size: 20px;
+    }
+}

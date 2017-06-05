@@ -1,0 +1,52 @@
+.mod-alarm.alarm-add-host.left-wrap
+	.line-wrap
+		em.info-name 选择集群
+		.info-content.com-select-con(select-con)
+			button.ui-btn.ui-btn-select.ui-btn-white(ng-cloak)
+				i.icon-down
+				| {{vm.cluster.name}}
+			ul.select-list
+				li.select-item(ng-repeat="cluster in vm.clusterList track by cluster.id")
+					a(ng-bind="cluster.name" ng-click="vm.toggleCluster(cluster.id,cluster.name)")
+	.line-wrap
+		em.info-name  选择主机
+		p.txt-prompt.info-content 勾选要添加的主机,之后可在所选主机列表中查看。
+	span.pull-right.host-count 共{{nodeListFilterd.length}}台主机
+	input.ui-input-search-white(placeholder="输入主机名称查询" ng-model="vm.nodeKey" ng-change="vm.nodeListIns.filterWithKey(vm.nodeKey)")
+	ul.list-host
+		li.list-header
+			span.col.col1
+				dome-check(ng-model="vm.nodeListIns.isCheckAll" d-id="allHost" name="allHost" d-change="vm.nodeListIns.checkAllItem(model)" )
+				| 主机 
+			span.col.col2 IP
+		li(ng-if="nodeListFilterd.length===0")
+			span.col 无主机信息
+		li(ng-repeat="node in nodeListFilterd = (vm.nodeListIns.nodeList|filter:{keyFilter:true})")
+			span.col.col1
+				dome-check(ng-model="node.isSelected" d-change="vm.nodeListIns.toggleCheck(node,model)" d-id="host{{$index}}" name="host{{$index}}")
+				| {{node.name}}
+			span.col.col2(ng-bind="node.ip")
+.mod-alarm.alarm-add-host.right-wrap
+	.pull-right
+		| 共{{vm.nodeListIns.selectedList.length}}台主机
+		input.ui-input-search.ui-input-fill(placeholder="输入主机名称查询" ng-model="vm.selectedNodeKey")
+	.line-wrap.selected-title
+		em.info-name 所选主机
+		p.info-content.txt-prompt 展示上一步勾选的所有主机。
+	ul.list-host
+		li.list-header
+			span.col 主机
+			span.col IP
+			span.col 集群
+			span.col 操作
+		li(ng-if="nodeSelectedListFiltered.length===0")
+			span.col 无主机信息
+		li(ng-repeat="node in nodeSelectedListFiltered=(vm.nodeListIns.selectedList|filter:{name:vm.selectedNodeKey})")
+			span.col(ng-bind="node.name")
+			span.col(ng-bind="node.ip")
+			span.col(ng-bind="node.cluster")
+			span.col 
+				button.fa.fa-trash-o.icon-trash-color.ui-btn-none(ng-click="vm.nodeListIns.deleteSelectedNode(node);")
+	.com-bottom-option
+		button.ui-btn.ui-btn-sm.ui-btn-bright(ng-click="vm.cancelModify()") 取消
+		button.ui-btn.ui-btn-lg.ui-btn-bright(ng-click="vm.saveModify()") 保存修改

@@ -1,0 +1,124 @@
+
+<div class="mod-image image-manage">
+  <tabset class="mod-tab">
+    <tab heading="基础镜像" active="tabActive[0].active" ui-sref="imageCollectionManage.baseimages">
+      <loading ng-if="isLoadingBaseImage"></loading>
+      <div class="image-option">
+        <button class="ui-btn ui-btn-bright ui-btn-sm" ng-disabled="!baseImageDeleteAuth" ng-class="{'ui-btn-lg-disabled':!baseImageDeleteAuth}" ng-if="!isShowAdd" ng-click="toggleShowAdd(true)">添加</button>
+        <button class="ui-btn ui-btn-bright ui-btn-sm" ng-if="isShowAdd" ng-click="toggleShowAdd(false)">取消</button>
+        <div class="pull-right right-option"><span ng-cloak="ng-cloak">共{{baseImagesFiltered.length}}个镜像</span>
+          <input class="ui-input-fill ui-input-search" placeholder="输入镜像名称查找" ng-model="baseImageKey"/>
+        </div>
+      </div>
+      <p class="txt-prompt" ng-if="!isShowAdd"><i class="fa fa-info-circle icon-algin-right"></i>只有管理员才能添加基础镜像。添加完成后可以作为工程通用配置里的基础镜像使用，也可以直接部署。</p>
+      <ul class="add-image" ng-form="ng-form" ng-class="{'need-valid':needValid.value}" name="imageForm" ng-show="isShowAdd">
+        <p class="txt-prompt"><i class="fa fa-info-circle icon-algin-right"></i>DomeOS会验证镜像的存在性，请通过浏览器访问“镜像仓库/v2/镜像名称/tags/list”确认存在该镜像版本。可以通过浏览器访问“镜像仓库/v2/_catalog”查看该仓库中存在的镜像。</p>
+        <li><span class="info-name">镜像所在仓库</span>
+          <input class="ui-input-info ui-input-white" ng-model="newImageInfo.registry" ng-pattern="/^[^\s]*$/" name="registry" required="required"/>
+        </li>
+        <li><span class="info-name">镜像名称</span>
+          <input class="ui-input-info ui-input-white" ng-model="newImageInfo.imageName" ng-pattern="/^[^\s]*$/" name="imageName" required="required"/>
+        </li>
+        <li><span class="info-name">镜像版本号</span>
+          <input class="ui-input-info ui-input-white" ng-model="newImageInfo.imageTag" is-tag-exist="is-tag-exist" baseimages="baseImages" imagename="newImageInfo.imageName" ng-pattern="/^[^\s]*$/" name="imageTag" required="required"/><span class="tool-inline-error" ng-if="imageForm.imageTag.$error.isTagExist">已存在</span>
+        </li>
+        <li><span class="info-name">镜像描述</span>
+          <input class="ui-input-info ui-input-white" ng-model="newImageInfo.description" name="description"/>
+          <button class="ui-btn ui-btn-bright ui-btn-lg" ng-disabled="isLoading" ng-click="needValid.value=true;imageForm.$valid&amp;&amp;createImage(imageForm);">添加镜像</button>
+        </li>
+      </ul>
+      <table class="ui-table-dome">
+        <thead>
+          <tr>
+            <th>镜像名称</th>
+            <th style="width:25%;">拉取命令</th>
+            <th>镜像版本</th>
+            <th>仓库地址</th>
+            <th>镜像描述</th>
+            <th ng-show="baseImageDeleteAuth" style="width:5%;">操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-if="!isLoadingBaseImage&amp;&amp;(!baseImages||baseImagesFiltered.length===0)">
+            <td colspan="5">无相关镜像信息</td>
+          </tr>
+          <tr ng-repeat="img in baseImagesFiltered=(baseImages|filter:{'imageName':baseImageKey})|orderBy:'imageName'">
+            <td ng-bind="img.imageName"></td>
+            <td>
+              <input class="cmd-txt ui-input-white" id="foo{{$index}}" readonly="true" value="docker pull {{img.registry|urlProtocolFilter}}/{{img.imageName}}:{{img.imageTag}}" title="docker pull {{img.registry|urlProtocolFilter}}/{{img.imageName}}:{{img.imageTag}}"/>
+              <button class="ui-btn btn-copy" ngclipboard="ngclipboard" data-clipboard-target="#foo{{$index}}" tooltip="复制"><i class="fa fa-clipboard copy-cmd-logo"></i></button>
+            </td>
+            <td ng-bind="img.imageTag"></td>
+            <td ng-bind="img.registry"></td>
+            <td ng-bind="img.description"></td>
+            <td ng-show="baseImageDeleteAuth">
+              <button class="fa fa-trash-o ui-btn-none icon-trash-color" ng-click="deleteBaseImage(img.id)"></button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </tab>
+    <tab heading="官方仓库" active="tabActive[1].active" ui-sref="imageCollectionManage.publicimages">
+      <div ng-if="tabActive[1].active" style="margin: 0 -20px;">
+        <div ng-include="'index/tpl/imageCollectionManage/publicImages/publicImages.html'"></div>
+      </div>
+    </tab>
+    <tab heading="项目镜像" active="tabActive[2].active" ui-sref="imageCollectionManage.proimages">
+      <loading ng-if="isLoading"></loading>
+      <div class="image-option"><span class="registry-address">仓库地址：{{projectRegistry}}</span>
+        <div class="pull-right right-option"><span ng-cloak="ng-cloak">共{{projectImagesFiltered.length}}个镜像</span>
+          <input class="ui-input-fill ui-input-search" placeholder="输入镜像名称查找" ng-model="projectImageKey"/>
+        </div>
+      </div>
+      <div class="mod-tips-info-image">
+        <p class="txt-prompt"><i class="fa fa-info-circle icon-algin-right"></i>私有镜像仓库中存在的镜像如下，DomeOS按照项目名对镜像进行了分类，方便查看。</p>
+      </div>
+      <div class="image-project-collection">
+        <ul class="image-project-collection-list">
+          <li class="no-image-project-collection" ng-if="!isLoading&amp;&amp;(!imageProjectCollections||projectImagesFiltered.length===0)"><span>暂无项目镜像</span></li>
+          <li ng-repeat="imgProjectCollection in projectImagesFiltered=(imageProjectCollections|filter:{'projectCollectionName':projectImageKey})|orderBy:'projectCollectionName'">
+            <div class="image-project-collection-item text-center">
+              <div class="image-project-collection-header"><a class="image-project-collection-name" ng-click="gotoProjectImageDetail(imgProjectCollection)" ng-bind="imgProjectCollection.projectCollectionName"></a></div>
+              <div class="image-project-collection-content">
+                <div class="image-project-collection-info-description" title="{{imgProjectCollection.description}}">{{imgProjectCollection.description || '无描述信息'}}</div>
+              </div>
+              <div class="image-project-collection-content content-last"><span class="image-project-collection-info embed">镜像数：<span class="txt-bright">{{imgProjectCollection.projectImages.length}}</span></span><span class="image-project-collection-info creat-time">创建时间：{{imgProjectCollection.createTime|date:'yyyy-MM-dd'}}</span><span class="image-project-collection-info creator">创建者：{{imgProjectCollection.creator}}</span></div>
+            </div>
+          </li>
+          <li class="not-project-image-list">
+            <div class="image-project-collection-item text-center">
+              <div class="image-project-collection-header"><a class="not-project-image-name image-project-collection-name" ng-click="gotoNotProjectImageDetail(otherImages)">其他镜像</a></div>
+              <div class="image-project-collection-content">
+                <div class="image-project-collection-info-description">DomeOS在私有镜像仓库中读取到的，无法分类的镜像信息</div>
+              </div>
+              <div class="image-project-collection-content not-project-image-bottom"><span class="image-project-collection-info embed">镜像数：<span class="txt-bright" ng-cloak="ng-cloak">{{otherImages.length}}</span></span></div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </tab>
+  </tabset>
+</div>
+<script type="text/ng-template" id="imageTagModal.html">
+  <div class="d-modal-header" ng-bind="imageName"></div>
+  <div class="d-modal-full">
+    <loading ng-if="isLoading"></loading>
+    <table class="ui-table-dome modal-full-table">
+      <thead>
+        <tr>
+          <th>版本名</th>
+          <th>创建时间</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-if="tagInfo.length===0">
+          <td colspan="2">无版本信息</td>
+        </tr>
+        <tr ng-repeat="tag in tagInfo">
+          <td ng-bind="tag.tag"></td>
+          <td ng-bind="(tag.createTime | time)"></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</script>

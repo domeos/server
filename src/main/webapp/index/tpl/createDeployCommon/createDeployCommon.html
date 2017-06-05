@@ -1,0 +1,162 @@
+
+<div class="mod-deploy create-deploy-common" ng-form="ng-form" role="form" name="deployForm" ng-class="{'need-valid':needValid}" novalidate="novalidate">
+  <loading ng-if="loadingsIns.isLoading||deployIns.loadingIns.isLoading"></loading>
+  <ul class="com-list-info">
+    <li class="has-border"><span class="info-name">部署名称 <span class="require-domain">*</span></span>
+      <div class="info-content info-content-lg-height">
+        <p class="txt-prompt">部署名称会作为部署内部域名的一部分，创建后不可修改。</p>
+        <div class="line-long">
+          <input class="ui-input-fill line-element" ng-model="config.deployName" name="deployName" required="required" is-deploy-exist="is-deploy-exist" collection="collectionInfo.collectionId" namespace="{{config.namespace}}" ng-maxlength="20" clustername="{{deployIns.clusterListIns.cluster.name}}" ng-pattern="/^[0-9a-z](-*[0-9a-z]+)*$/" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" placeholder="不能有大写字母，不能以中横线开头和结尾"/>
+        </div>
+        <div class="txt-error" ng-if="(needValid||deployForm.deployName.$dirty)&amp;&amp;deployForm.deployName.$error.required">必填</div>
+        <div class="txt-error" ng-if="(needValid||deployForm.deployName.$dirty)&amp;&amp;!deployForm.deployName.$error.required&amp;&amp;deployForm.deployName.$error.isDeployExist">部署名已存在</div>
+        <div class="txt-error" ng-if="(needValid||deployForm.deployName.$dirty)&amp;&amp;!deployForm.deployName.$error.required&amp;&amp;deployForm.deployName.$error.pattern">非法的名称</div><span class="txt-error" ng-if="(needValid||deployForm.deployName.$dirty)&amp;&amp;!deployForm.deployName.$error.required&amp;&amp;deployForm.deployName.$error.maxlength">长度超出限制</span>
+      </div>
+    </li>
+    <li class="has-border">
+      <div class="info-name info-name-sm">部署描述</div>
+      <div class="info-content">
+        <div class="line-long">
+          <textarea class="info-txt ui-input-fill line-element" ng-model="config.description" name="deployDescription" placeholder="输入部署描述信息">       </textarea>
+        </div>
+      </div>
+    </li>
+    <li class="has-border"><span class="info-name">部署类型</span>
+      <div class="info-content info-name-content-for-label info-content-lg-height">
+        <p class="txt-prompt" ng-if="config.deploymentType === 'REPLICATIONCONTROLLER'">以replicas的形式保证pod的实例个数，部署的升级/回滚/扩容/缩容由DomeOS负责维护处理。</p>
+        <p class="txt-prompt" ng-if="config.deploymentType === 'DAEMONSET'">DaemonSet保证在所选的每一个节点上都且只有一个pod运行，部署的升级/回滚/扩容/缩容由k8s维护处理，这些操作不能被中断，只能停止当前部署。</p>
+        <p class="txt-prompt" ng-if="config.deploymentType === 'DEPLOYMENT'">Deployment是升级版的Replication Controller，它以replica set的形式维护pod的个数，部署的升级/回滚/扩容/缩容由k8s负责维护处理。</p><span class="com-check-con" ng-click="deployIns.changeVisitModeToValid()">
+          <input class="ui-radio" id="deploymentTypeDeployment" type="radio" value="DEPLOYMENT" name="deploymentType" ng-model="config.deploymentType"/>
+          <label for="deploymentTypeDeployment">Deployment （默认）</label></span><span class="com-check-con" ng-click="deployIns.changeVisitModeToValid()">
+          <input class="ui-radio" id="deploymentTypeRC" type="radio" value="REPLICATIONCONTROLLER" name="deploymentType" ng-model="config.deploymentType"/>
+          <label for="deploymentTypeRC">ReplicationController</label></span><span class="com-check-con" ng-click="deployIns.changeVisitModeToValid()">
+          <input class="ui-radio" id="deploymentTypeDaemonSet" type="radio" value="DAEMONSET" name="deploymentType" ng-model="config.deploymentType"/>
+          <label for="deploymentTypeDaemonSet">DaemonSet</label></span>
+      </div>
+    </li>
+    <li class="has-border"><span class="info-name info-name-content-for-label">配置类型</span>
+      <div class="info-content info-name-content-for-label"><span class="com-check-con">
+          <input class="ui-radio" id="defaultType" type="radio" value="CUSTOM" name="versionType" ng-model="config.versionType"/>
+          <label for="defaultType">默认类型</label></span><span class="com-check-con">
+          <input class="ui-radio" id="yamlType" type="radio" value="YAML" name="versionType" ng-model="config.versionType"/>
+          <label for="yamlType">YAML</label></span><span class="com-check-con">
+          <input class="ui-radio" id="jsonType" type="radio" value="JSON" name="versionType" ng-model="config.versionType"/>
+          <label for="jsonType">JSON</label></span><span class="txt-error" ng-show="needValid&amp;&amp;deployForm.versionType.$invalid">请选择创建类型</span></div>
+    </li>
+    <li class="has-border" ng-if="config.deploymentType !== 'DAEMONSET'"><span class="info-name">实例个数</span>
+      <div class="info-content info-content-lg-height">
+        <p class="txt-prompt">实例在集群内启动副本数</p>
+        <div class="line-short">
+          <input class="ui-input-fill ui-input-sm container-txt" ng-model="config.replicas" name="replicas" ng-pattern="/^[1-9]\d*$/" is-over="is-over" max="999" min="1"/><span class="container-unit">&nbsp;个</span>
+        </div><span class="txt-error" ng-if="(needValid||deployForm.replicas.$dirty)&amp;&amp;deployForm.replicas.$invalid">请填写0~999范围内的数字</span>
+      </div>
+    </li>
+    <li class="has-border"><span class="info-name">集群</span>
+      <div class="info-content info-content-lg-height">
+        <p class="txt-prompt">请选择部署启动的集群，选定后可以点击查看选中主机，以确保后台有资源启动该部署。如果无可选集群，请在“运维管理->集群”中添加集群或联系管理员添加已有集群部署权限</p>
+        <div class="line-short">
+          <div class="com-select-con line-element" select-con="select-con">
+            <button class="ui-btn ui-btn-white ui-btn-select"><i class="icon-down"></i>{{deployIns.clusterListIns.cluster.name||'选择集群'}}</button>
+            <ul class="select-list">
+              <li ng-if="deployIns.clusterListIns.clusterList.length===0"><a>无相关信息</a></li>
+              <li class="select-item" ng-repeat="cluster in deployIns.clusterListIns.clusterList"><a ng-click="deployIns.toggleCluster($index)" ng-bind="cluster.name"></a></li>
+            </ul>
+            <input type="hidden" ng-model="deployIns.clusterListIns.cluster.name" name="clusterName"/><span class="txt-error" ng-if="(needValid||validHost)&amp;&amp;deployForm.clusterName.$invalid">请选择集群</span>
+          </div>
+        </div>
+      </div>
+    </li>
+    <li class="has-border"><span class="info-name info-name-content-for-label">工作场景</span>
+      <div class="info-content info-name-content-for-label"><span class="com-check-con" ng-repeat="env in deployIns.envList">
+          <input class="ui-radio" id="{{env.value}}EnvType" type="radio" value="{{env.value}}" name="hostEnv" ng-model="deployIns.hostEnv" ng-change="deployIns.toggleEnv(env)"/>
+          <label for="{{env.value}}EnvType" ng-bind="env.text"></label></span></div>
+    </li>
+    <li class="has-border" ng-if="config.versionType === 'CUSTOM'"><span class="info-name">主机标签</span>
+      <div class="info-content">
+        <div class="line-short">
+          <div class="ui-input-white host-txt-con com-select-con" select-con="select-con" label="true">
+            <ul class="selected-labels">
+              <li class="select-label" ng-repeat="(label,value) in deployIns.nodeListIns.labelsInfo|search:'isSelected':true|search:'isShow':true" ng-cloak="ng-cloak"><a class="icon-cancle icon-cancle-former" ng-click="deployIns.nodeListIns.toggleLabel(label,false)"></a>{{label}}</li>
+              <li class="select-input">
+                <input class="line-element ui-btn-select" placeholder="选择主机标签" ng-model="labelKey.key" ng-keydown="labelKeyDown($event,labelKey.key,labelsInfoFiltered);" ng-focus="selectFocus()"/>
+              </li>
+            </ul>
+            <ul class="select-list">
+              <li ng-if="Object.keys(labelsInfoFiltered).length===0"><a>无相关信息</a></li>
+              <li class="select-item" ng-repeat="(label,value) in labelsInfoFiltered=(deployIns.nodeListIns.labelsInfo| searchKey:labelKey.key|search:'isShow':true)"><a ng-bind="label" ng-click="deployIns.nodeListIns.toggleLabel(label,true);labelKey.key='';"></a></li>
+            </ul>
+          </div><span class="txt-wrap"><a class="link-safe" ng-click="deployIns.nodeListIns.showHost()">查看选中主机</a></span>
+        </div>
+      </div>
+    </li>
+    <li class="has-border"><span class="info-name">namespace</span>
+      <div class="info-content">
+        <div class="line-short" ng-if="!deployIns.isNewNamespace">
+          <div class="line-element com-select-con" select-con="select-con">
+            <button class="ui-btn ui-btn-white ui-btn-select"><i class="icon-down"></i>{{config.namespace||'选择已有namespace'}}</button>
+            <ul class="select-list">
+              <li ng-if="deployIns.namespaceList.length===0"><a>无相关信息</a></li>
+              <li class="select-item" ng-repeat="namespace in deployIns.namespaceList"><a ng-bind="namespace.name" ng-click="deployIns.toggleNamespace(namespace.name)"></a></li>
+            </ul>
+          </div><span class="txt-wrap"><a class="link-safe" ng-click="deployIns.toggleIsNewNamespace()">新建namespace</a></span>
+          <input type="hidden" name="selectNamespace" ng-model="config.namespace" required="required"/>
+        </div>
+        <div class="line-short" ng-if="deployIns.isNewNamespace">
+          <input class="ui-input-white line-element" placeholder="新建namespace" ng-model="config.namespace" name="namespace" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" required="required" ng-pattern="/^[a-zA-Z][a-zA-Z0-9_-]*$/" is-namespace-exist="is-namespace-exist" clusterid="{{deployIns.clusterListIns.cluster.id}}"/><span class="txt-wrap"><a class="link-safe" ng-click="deployIns.toggleIsNewNamespace()">选择已有namespace</a></span>
+        </div><span class="txt-error" ng-if="needValid&amp;&amp;deployForm.selectNamespace.$invalid">请选择namespace</span><span class="txt-error" ng-if="(needValid||deployForm.namespace.$dirty)&amp;&amp;deployForm.namespace.$error.required">请填写namespace</span><span class="txt-error" ng-if="(needValid||deployForm.namespace.$dirty)&amp;&amp;!deployForm.namespace.$error.required&amp;&amp;deployForm.namespace.$error.pattern">非法的namespace</span><span class="txt-error" ng-if="(needValid||deployForm.namespace.$dirty)&amp;&amp;!deployForm.namespace.$error.required&amp;&amp;deployForm.namespace.$error.isNamespaceExist">namespace已存在</span>
+      </div>
+    </li>
+    <li class="has-border" ng-if="config.versionType === 'CUSTOM'"><span class="info-name">网络模式</span>
+      <div class="info-content info-name-content-for-label info-content-lg-height">
+        <p class="txt-prompt">Overlay模式下采用flannel管理容器网络，Host模式下容器网络配置与宿主机一致</p><span class="com-check-con" ng-click="deployIns.changeVisitModeToValid()">
+          <input class="ui-radio" id="checkOverlay" type="radio" value="DEFAULT" name="netWork" ng-model="config.networkMode"/>
+          <label for="checkOverlay">Overlay</label></span><span class="com-check-con" ng-click="deployIns.changeVisitModeToValid();config.healthCheckerDraft.type='NONE'">
+          <input class="ui-radio" id="checkHost" type="radio" value="HOST" name="netWork" ng-model="config.networkMode" ng-change="deployIns.validIps();"/>
+          <label for="checkHost">Host</label><span class="txt-prompt" ng-if="config.networkMode=='HOST'">Host网络模式下不能使用健康检查</span></span>
+      </div>
+    </li>
+    <li><span class="info-name info-name-content-for-label">访问设置</span>
+      <div class="info-content info-name-content-for-label"><span class="com-check-con">
+          <input class="ui-radio" id="noAccess" type="radio" value="noAccess" name="visitMode" ng-model="deployIns.visitMode" ng-change="deployIns.validIps();"/>
+          <label for="noAccess">禁止访问</label></span><span class="com-check-con" ng-if="config.networkMode === 'HOST'">
+          <input class="ui-radio" id="access" type="radio" value="access" name="visitMode" ng-model="deployIns.visitMode" ng-change="deployIns.validIps();"/>
+          <label for="access">允许访问</label></span><span class="com-check-con" ng-if="config.networkMode === 'DEFAULT'">
+          <input class="ui-radio" id="internal" type="radio" value="internal" name="visitMode" ng-model="deployIns.visitMode" ng-change="deployIns.validIps();"/>
+          <label for="internal">对内服务</label></span><span class="com-check-con" ng-if="config.networkMode === 'DEFAULT'">
+          <input class="ui-radio" id="foreign" type="radio" value="foreign" name="visitMode" ng-model="deployIns.visitMode" ng-change="deployIns.validIps();"/>
+          <label for="foreign">对外服务</label></span><span ng-switch="deployIns.visitMode"><span class="txt-prompt" ng-switch-when="noAccess">该部署不需要被其他应用发现时请选择禁止访问。</span><span class="txt-prompt" ng-switch-when="internal">建集群内可访问的虚拟ip实现多个实例的负载均衡。</span><span class="txt-prompt" ng-switch-when="foreign">利用主机ip，创建集群外访问的负载均衡。</span></span></div>
+    </li>
+    <li ng-if="deployIns.visitMode!='noAccess'"><span class="info-name"></span>
+      <div class="info-content">
+        <div class="log-item" ng-form="ng-form" name="childForm" ng-if="config.networkMode=='DEFAULT'">
+          <div ng-if="deployIns.visitMode=='foreign'" ng-repeat="loadbalance in config.loadBalanceDrafts">
+            <div class="line-full"><span class="log-title"> 程序服务端口</span>
+              <input class="ui-input-fill line-element" placeholder="请输入容器内部端口" name="targetPort" ng-model="loadbalance.targetPort" is-required="is-required" param1="loadbalance.port"/>
+            </div>
+            <div class="line-full"><span class="log-title"> 对外访问端口</span>
+              <input class="ui-input-fill line-element" placeholder="请输入端口号" name="port" ng-model="loadbalance.port" is-required="is-required" param1="loadbalance.targetPort"/>
+            </div>
+            <div class="line-full"><span class="log-title"> 对外访问IP</span>
+              <div class="line-element">
+                <select-input class="select-input-wrap" d-placeholder="搜索ip" option-list="deployIns.nodeListForIps" show-key="ip" d-click="deployIns.validIps()">{{item.ip}}<span class="item-right txt-prompt" ng-bind="'状态：'+item.status"></span><span class="item-right txt-prompt" ng-bind="'主机：'+item.name"></span></select-input><span class="txt-error" ng-if="needValid&amp;&amp;!deployIns.valid.ips">至少选择一个IP</span>
+              </div>
+            </div>
+          </div>
+          <div ng-if="deployIns.visitMode=='internal'" ng-repeat="innerService in config.innerServiceDrafts">
+            <div class="line-full"><span class="log-title"> 程序服务端口</span>
+              <input class="ui-input-fill line-element" placeholder="请输入容器内部端口" name="targetPort" ng-model="innerService.port" required="required"/>
+            </div><span class="txt-prompt tool-align-input">集群内部访问端口和程序服务端口相同</span>
+          </div>
+        </div>
+        <div class="log-item" ng-form="ng-form" name="openHostForm" ng-if="config.networkMode=='HOST'">
+          <div class="line-full"><span class="serlog-title">对外暴露端口个数:</span>
+            <input class="ui-input-fill line-element" name="hostNum" ng-model="config.exposePortNum" required="required" ng-pattern="/^[1-9]\d*$/"/>
+          </div><span class="txt-prompt tool-align-input">Host网络下，系统会给每个实例分配若干个端口，用于对外服务和实例间通信。此外，在Host网络下，实例ip和宿主机ip一致。</span>
+        </div>
+      </div>
+    </li>
+  </ul>
+  <div class="com-bottom-option"><span class="com-bottom-option-con">
+      <button class="ui-btn ui-btn-sm ui-btn-bright" ui-sref="deployManage({'id':collectionInfo.collectionId,'name':collectionInfo.collectionName})">取消</button>
+      <button class="ui-btn ui-btn-lg ui-btn-bright" ng-disabled="loadingsIns.isLoading||deployIns.loadingIns.isLoading" ng-click="needValid=true;deployIns.validIps();deployForm.$valid&amp;&amp;deployIns.valid.ips&amp;&amp;toNext()">下一步</button><span class="txt-error" ng-if="needValid&amp;&amp;(!deployIns.valid.ips||deployForm.$invalid)">存在不合法数据，请修改后提交！</span></span></div>
+</div>

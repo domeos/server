@@ -1,0 +1,445 @@
+
+<div class="mod-deploy deploy-detail">
+  <div class="detail-header">
+    <div class="detail-item"><em class="item-name">所在集群</em><b class="item-content" ng-bind="config.clusterName"></b></div><i class="detail-sep"></i>
+    <div class="detail-item"><em class="item-name">namespace</em><b class="item-content" ng-bind="config.namespace"></b></div><i class="detail-sep"></i>
+    <div class="detail-item"><em class="item-name">部署类型</em><b class="item-content" ng-bind="config.deployTypeShow"></b></div><i class="detail-sep"></i>
+    <div class="detail-item"><em class="item-name">上次升级时间</em><b class="item-content" ng-bind="(config.lastUpdateTime | time)"></b></div><i class="detail-sep"></i>
+    <div class="detail-item"><em class="item-name">实例个数</em><b class="item-content" ng-bind="config.currentReplicas"></b></div><i class="detail-sep"></i>
+    <div class="detail-item"><em class="item-name">当前版本</em><b class="item-content" ng-if="!config.currentVersions||config.currentVersions.length===0">无</b><b class="item-content" ng-repeat="version in config.currentVersions" ng-cloak="ng-cloak">version{{version.version}}</b></div><i class="detail-sep"></i>
+    <div class="detail-item"><em class="item-name">状态</em><b class="item-content" ng-switch="config.deploymentStatus"><span class="txt-success" ng-switch-when="RUNNING">运行中</span><span class="txt-error" ng-switch-when="STOP">停止</span><span class="txt-primary" ng-switch-when="DEPLOYING">部署中</span><span class="txt-warning" ng-switch-when="ERROR">异常</span><span class="txt-primary" ng-switch-when="STOPPING">停止中</span><span class="txt-primary" ng-switch-when="UPDATING">升级中</span><span class="txt-primary" ng-switch-when="BACKROLLING">回滚中</span><span class="txt-primary" ng-switch-when="UPSCALING">扩容中</span><span class="txt-primary" ng-switch-when="DOWNSCALING">缩容中</span><span class="txt-warning" ng-switch-when="ABORTING">中断中</span><span class="txt-warning" ng-switch-when="BACKROLL_ABORTED">回滚已中断</span><span class="txt-warning" ng-switch-when="UPDATE_ABORTED">升级已中断</span></b></div>
+    <div class="deploy-option pull-right tool-align-input" ng-switch="config.deploymentStatus" ng-if="mayUpdate"><span ng-switch-when="RUNNING">
+        <button class="ui-btn ui-btn-bright ui-btn-lg" ng-disabled="isWaitingUpVersion" ng-click="operate('update')" ng-if="!config.stateful">升级/回滚</button>
+        <button class="ui-btn ui-btn-bright ui-btn-lg" ng-disabled="isWaitingScale" ng-click="operate('scale')" ng-if="!config.stateful">扩容/缩容</button>
+        <button class="ui-btn ui-btn-bright ui-btn-sm" ng-disabled="isWaitingStop" ng-click="operate('stop')">停止</button></span><span ng-switch-when="STOP">
+        <button class="ui-btn ui-btn-bright ui-btn-sm" ng-disabled="isWaitingStart" ng-click="operate('start')">启动</button>
+        <button class="ui-btn ui-btn-bright ui-btn-sm" ng-class="{'ui-btn-lg-disabled':!mayDelete}" ng-disabled="!mayDelete" ng-click="deleteDeploy()">删除</button></span><span ng-if="config.deploymentStatus=='ERROR'||config.deploymentStatus=='BACKROLL_ABORTED'||config.deploymentStatus=='UPDATE_ABORTED'">
+        <button class="ui-btn ui-btn-bright ui-btn-sm" ng-if="!config.stateful" ng-disabled="isWaitingRecover" ng-click="operate('recover')">恢复</button>
+        <button class="ui-btn ui-btn-bright ui-btn-sm" ng-disabled="isWaitingStop" ng-click="operate('stop')">停止</button></span>
+      <button class="ui-btn ui-btn-bright ui-btn-lg" ng-switch-when="DEPLOYING" ng-disabled="isWaitingOperation" ng-click="operate('abort','DEPLOYING')" ng-if="config.deploymentType !== 'DAEMONSET'">中断启动</button>
+      <button class="ui-btn ui-btn-bright ui-btn-lg" ng-switch-when="UPDATING" ng-disabled="isWaitingOperation" ng-click="operate('abort','UPDATING')" ng-if="config.deploymentType !== 'DAEMONSET'">中断升级</button>
+      <button class="ui-btn ui-btn-bright ui-btn-lg" ng-switch-when="BACKROLLING" ng-disabled="isWaitingOperation" ng-click="operate('abort','BACKROLLING')" ng-if="config.deploymentType !== 'DAEMONSET'">中断回滚</button>
+      <button class="ui-btn ui-btn-bright ui-btn-lg" ng-switch-when="UPSCALING" ng-disabled="isWaitingOperation" ng-click="operate('abort','UPSCALING')" ng-if="config.deploymentType !== 'DAEMONSET'">中断扩容</button>
+      <button class="ui-btn ui-btn-bright ui-btn-lg" ng-switch-when="DOWNSCALING" ng-disabled="isWaitingOperation" ng-click="operate('abort','DOWNSCALING')" ng-if="config.deploymentType !== 'DAEMONSET'">中断缩容</button>
+      <button class="ui-btn ui-btn-bright ui-btn-lg" ng-switch-when="DEPLOYING" ng-disabled="isWaitingOperation" ng-click="operate('stop')" ng-if="config.deploymentType === 'DAEMONSET'">停止部署</button>
+      <button class="ui-btn ui-btn-bright ui-btn-lg" ng-switch-when="UPDATING" ng-disabled="isWaitingOperation" ng-click="operate('stop')" ng-if="config.deploymentType === 'DAEMONSET'">停止部署</button>
+      <button class="ui-btn ui-btn-bright ui-btn-lg" ng-switch-when="BACKROLLING" ng-disabled="isWaitingOperation" ng-click="operate('stop')" ng-if="config.deploymentType === 'DAEMONSET'">停止部署</button>
+      <button class="ui-btn ui-btn-bright ui-btn-lg" ng-switch-when="UPSCALING" ng-disabled="isWaitingOperation" ng-click="operate('stop')" ng-if="config.deploymentType === 'DAEMONSET'">停止部署</button>
+      <button class="ui-btn ui-btn-bright ui-btn-lg" ng-switch-when="DOWNSCALING" ng-disabled="isWaitingOperation" ng-click="operate('stop')" ng-if="config.deploymentType === 'DAEMONSET'">停止部署</button>
+    </div>
+  </div>
+  <loading ng-if="(tabActive[0].active &amp;&amp; isLoadingDetail) || (tabActive[2].active &amp;&amp; isLoadingEvent)"></loading>
+  <tabset>
+    <tab heading="部署详情" active="tabActive[0].active" ui-sref="deployDetail.detail">
+      <div class="deploy-info">
+        <div class="deploy-rollback"><span class="mod-title-name" ng-if="!config.stateful">部署版本</span><span class="mod-title-name" ng-if="config.stateful">该部署是有状态服务，只有一个部署版本</span>
+          <div class="com-select-con" select-con="select-con">
+            <button class="ui-btn ui-btn-select ui-btn-white"><i class="icon-down"></i>{{currentVersionId?'version'+ currentVersionId:'选择版本'}}</button>
+            <ul class="select-list">
+              <li class="select-item" ng-repeat="version in versionList"><a ng-click="toggleVersion(version.version)" ng-cloak="ng-cloak">version{{version.version}}</a></li>
+            </ul>
+          </div><span style="margin-left:15px;" ng-if="mayUpdate">
+            <button class="ui-btn ui-btn-bright ui-btn-sm" ng-if="!deployVersionDraft.deprecate" ng-disabled="isWaitingDeprecate" ng-click="deprecateVersion(currentVersionId)">废弃</button><span class="txt-prompt" ng-if="!deployVersionDraft.deprecate" style="margin-left:15px;">版本废弃后会解除配置挂载，从而可以删除该配置，废弃的版本不能再运行</span>
+            <button class="ui-btn ui-btn-bright ui-btn-sm" ng-if="deployVersionDraft.deprecate" ng-disabled="isWaitingDeprecate" ng-click="recoverDeprecateVersion(currentVersionId)">还原</button><span class="txt-prompt" ng-if="deployVersionDraft.deprecate" style="margin-left:15px;">还原废弃版本会检查该版本中挂载的配置是否存在，配置不存在时无法还原</span><a class="link-safe" ng-if="storageId" ng-click="goBackStorage()" style="margin-left:15px;">返回存储</a></span>
+        </div>
+        <div class="com-list-info mirror-con" ng-repeat="containerDraft in deployVersionDraft.containerConsoles" ng-show="config.versionType === 'CUSTOM'">
+          <form>
+            <form-container>
+              <form-config-group>
+                <form-config-item config-title="镜像名称">
+                  <form-input-container><span ng-bind="containerDraft.name"></span></form-input-container>
+                </form-config-item>
+                <form-config-item config-title="镜像仓库">
+                  <form-input-container><span ng-bind="containerDraft.registry"></span></form-input-container>
+                </form-config-item>
+                <form-config-item config-title="镜像版本">
+                  <form-input-container><span ng-bind="containerDraft.tag"></span></form-input-container>
+                </form-config-item>
+                <form-config-item config-title="自动部署">
+                  <form-input-container><span ng-bind="({true: '已开启', false: '未开启'}[containerDraft.autoDeploy])"></span></form-input-container>
+                </form-config-item>
+                <form-config-item config-title="是否已废弃">
+                  <form-input-container><span ng-bind="deployVersionDraft.deprecate?'是':'否'"></span></form-input-container>
+                </form-config-item>
+                <form-config-item config-title="存储挂载">
+                  <form-input-container>
+                    <div class="line-long" ng-if="!containerDraft.volumeMountConsoles || containerDraft.volumeMountConsoles.length === 0">未设置</div>
+                    <div class="line-long" ng-if="containerDraft.volumeMountConsoles &amp;&amp; containerDraft.volumeMountConsoles.length &gt; 0">
+                      <table class="ui-table-primary full">
+                        <thead>
+                          <tr>
+                            <th>名称</th>
+                            <th>类型</th>
+                            <th>权限</th>
+                            <th>容器内路径</th>
+                            <th>主机内路径</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr ng-repeat="volumeMount in containerDraft.volumeMountConsoles">
+                            <td ng-bind="volumeMount.name"></td>
+                            <td ng-bind="({'HOSTPATH': '主机目录', 'EMPTYDIR': '实例内目录'}[volumeMount.volumeType])"></td>
+                            <td ng-bind="({false:'读写', true:'只读'}[volumeMount.readonly])"></td>
+                            <td ng-bind="volumeMount.containerPath"></td>
+                            <td ng-bind="volumeMount.volumeType === 'HOSTPATH'? volumeMount.hostPath : '-'"></td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </form-input-container>
+                </form-config-item>
+                <form-config-item config-title="配置管理">
+                  <form-input-container>
+                    <div class="line-long" ng-if="!containerDraft.configConsoles || containerDraft.configConsoles.length === 0">未设置</div>
+                    <div class="line-long" ng-if="containerDraft.configConsoles &amp;&amp; containerDraft.configConsoles.length &gt; 0">
+                      <table class="ui-table-primary full">
+                        <thead>
+                          <tr>
+                            <th style="width: 30%;">名称</th>
+                            <th style="width: 30%;">容器内路径</th>
+                            <th style="width: 40%;">配置文件</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr ng-repeat="volumeMountConfig in containerDraft.configConsoles">
+                            <td ng-bind="volumeMountConfig.name"></td>
+                            <td ng-bind="volumeMountConfig.containerPath"></td>
+                            <td>
+                              <div ng-if="!volumeMountConfig.volumeConfigMap.iterms">默认设置</div>
+                              <div ng-repeat="(key, value) in volumeMountConfig.volumeConfigMap.iterms">{{ key }}：{{ value || '未设置' }}</div>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </form-input-container>
+                </form-config-item>
+                <form-config-item config-title="启动命令">
+                  <form-input-container>
+                    <div class="line-long" ng-if="!containerDraft.commands">未设置</div>
+                    <div class="line-long" ng-if="containerDraft.commands"><span ng-bind="containerDraft.commands"></span></div>
+                  </form-input-container>
+                </form-config-item>
+                <form-config-item config-title="启动参数">
+                  <form-input-container>
+                    <div class="line-long" ng-if="!containerDraft.args">未设置</div>
+                  </form-input-container>
+                  <form-input-container ng-repeat="argsList in containerDraft.args">
+                    <div class="line-long" ng-if="containerDraft.args &amp;&amp; containerDraft.args.length &gt; 0"><span ng-bind="argsList"></span></div>
+                  </form-input-container>
+                </form-config-item>
+                <form-config-item config-title="运行过程环境变量">
+                  <form-input-container>
+                    <div class="line-long"><span ng-if="!containerDraft.newEnv||containerDraft.newEnv.length===0">未设置</span>
+                      <table class="ui-table-primary full" ng-hide="!containerDraft.newEnv||containerDraft.newEnv.length===0">
+                        <thead>
+                          <tr>
+                            <th style="width: 30%;">环境变量名</th>
+                            <th style="width: 30%;">环境变量值</th>
+                            <th style="width: 40%;">描述</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr ng-repeat="env in containerDraft.newEnv">
+                            <td ng-bind="env.key"></td>
+                            <td ng-bind="env.value"></td>
+                            <td ng-cloak="ng-cloak">{{env.description||'无'}}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </form-input-container>
+                </form-config-item>
+                <form-config-item config-title="容器大小">
+                  <form-input-container><span style="margin-right: 30px;">CPU：{{containerDraft.cpu}}个</span><span>内存：{{containerDraft.mem}}MB</span></form-input-container>
+                </form-config-item>
+                <form-config-item config-title="镜像拉取策略">
+                  <form-input-container><span ng-bind="({'Always': 'Always', 'Never': 'Never', 'IfNotPresent': 'If Not Present'}[containerDraft.imagePullPolicy])"></span></form-input-container>
+                </form-config-item>
+                <form-config-item config-title="健康检查">
+                  <form-input-container><span ng-bind="({'NONE': 'None', 'HTTP': 'HTTP检查', 'TCP': 'TCP检查'}[containerDraft.healthChecker.type])"></span>
+                    <div ng-if="containerDraft.healthChecker.type=='TCP'||containerDraft.healthChecker.type=='HTTP'"><span>检查端口:</span><span class="tool-next" ng-bind="containerDraft.healthChecker.port"></span></div>
+                    <div ng-if="containerDraft.healthChecker.type=='TCP'||containerDraft.healthChecker.type=='HTTP'"><span>超时时间（s）：</span><span class="tool-next" ng-cloak="ng-cloak">{{containerDraft.healthChecker.timeout}}</span></div>
+                    <div ng-if="containerDraft.healthChecker.type=='TCP'||containerDraft.healthChecker.type=='HTTP'"><span>首次检测延迟（s）：</span><span class="tool-next" ng-cloak="ng-cloak">{{containerDraft.healthChecker.delay}}</span></div>
+                    <div ng-if="containerDraft.healthChecker.type=='TCP'||containerDraft.healthChecker.type=='HTTP'"><span>检查周期（s）：</span><span class="tool-next" ng-cloak="ng-cloak">{{containerDraft.healthChecker.periodSeconds}}</span></div>
+                    <div ng-if="containerDraft.healthChecker.type=='TCP'||containerDraft.healthChecker.type=='HTTP'"><span>失败次数：</span><span class="tool-next" ng-cloak="ng-cloak">{{containerDraft.healthChecker.failureThreshold}}</span></div>
+                    <div ng-if="containerDraft.healthChecker.type=='TCP'||containerDraft.healthChecker.type=='HTTP'"><span>成功次数：</span><span class="tool-next" ng-cloak="ng-cloak">{{containerDraft.healthChecker.successThreshold}}</span></div>
+                    <div ng-if="containerDraft.healthChecker.type=='HTTP'"><span>检测URL：</span><span class="tool-next" ng-bind="containerDraft.healthChecker.url"></span></div>
+                    <div ng-if="containerDraft.healthChecker.type=='HTTP'"><span>允许返回值：</span><span class="tool-next">200-400(不包含400)</span></div>
+                  </form-input-container>
+                </form-config-item>
+                <form-config-item config-title="就绪性检查">
+                  <form-input-container>
+                    <div class="line-long" ng-if="!containerDraft.readinessChecker">未设置</div><span ng-bind="({'NONE': 'None', 'HTTP': 'HTTP检查', 'TCP': 'TCP检查'}[containerDraft.readinessChecker.type])"></span>
+                    <div ng-if="containerDraft.readinessChecker.type=='TCP'||containerDraft.readinessChecker.type=='HTTP'"><span>检查端口:</span><span class="tool-next" ng-bind="containerDraft.readinessChecker.port"></span></div>
+                    <div ng-if="containerDraft.readinessChecker.type=='TCP'||containerDraft.readinessChecker.type=='HTTP'"><span>超时时间（s）：</span><span class="tool-next" ng-cloak="ng-cloak">{{containerDraft.readinessChecker.timeout}}</span></div>
+                    <div ng-if="containerDraft.readinessChecker.type=='TCP'||containerDraft.readinessChecker.type=='HTTP'"><span>首次检测延迟（s）：</span><span class="tool-next" ng-cloak="ng-cloak">{{containerDraft.readinessChecker.delay}}</span></div>
+                    <div ng-if="containerDraft.readinessChecker.type=='TCP'||containerDraft.readinessChecker.type=='HTTP'"><span>检查周期（s）：</span><span class="tool-next" ng-cloak="ng-cloak">{{containerDraft.readinessChecker.periodSeconds}}</span></div>
+                    <div ng-if="containerDraft.readinessChecker.type=='TCP'||containerDraft.readinessChecker.type=='HTTP'"><span>失败次数：</span><span class="tool-next" ng-cloak="ng-cloak">{{containerDraft.readinessChecker.failureThreshold}}</span></div>
+                    <div ng-if="containerDraft.readinessChecker.type=='TCP'||containerDraft.readinessChecker.type=='HTTP'"><span>成功次数：</span><span class="tool-next" ng-cloak="ng-cloak">{{containerDraft.readinessChecker.successThreshold}}</span></div>
+                    <div ng-if="containerDraft.readinessChecker.type=='HTTP'"><span>检测URL：</span><span class="tool-next" ng-bind="containerDraft.readinessChecker.url"></span></div>
+                    <div ng-if="containerDraft.readinessChecker.type=='HTTP'"><span>允许返回值：</span><span class="tool-next">200-400(不包含400)</span></div>
+                  </form-input-container>
+                </form-config-item>
+                <form-config-item config-title="日志">
+                  <form-input-container><span class="first-info" ng-if="!containerDraft.logItemDrafts || containerDraft.logItemDrafts.length===0">未设置</span>
+                    <ul class="log-info first-info" ng-cloak="ng-cloak">
+                      <li ng-repeat="logDraft in containerDraft.logItemDrafts">
+                        <div class="log-path">日志路径：{{logDraft.logPath}}</div>
+                        <div>自动收集日志：{{logDraft.autoCollect?'开启':'未开启'}}</div>
+                        <div ng-if="logDraft.autoCollect">
+                          <div>日志Topic：{{logDraft.logTopic}}</div>
+                          <div>预处理命令：{{logDraft.processCmd||'未设置'}}<a class="icon-help" style="margin-left:10px;" popover="对收集到的日志做进一步处理，比如筛选或增减字段等，可以用grep和awk命令完成，命令以管道形式执行，因此必须以“|”开始，比如一个典型的处理命令为：   | grep &quot;ERROR\\|WARN\\| EXCEPTION\\| statistic&quot; | awk -vnhost=&quot;$HOSTNAME&quot; '{print &quot;[&quot;nhost&quot;]--&quot;$0}'，该命令将只筛选包含四个对应关键字的行，并且会在行首添加&quot;[hostname]--&quot;的字符串，参照可完成其他复杂的处理方式"></a></div>
+                        </div>
+                        <div>自动删除日志：{{logDraft.autoDelete?'开启':'未开启'}}</div>
+                        <div ng-if="logDraft.autoDelete">过期时间：{{logDraft.logExpired}}小时</div>
+                      </li>
+                    </ul>
+                  </form-input-container>
+                </form-config-item>
+              </form-config-group>
+            </form-container>
+          </form>
+        </div>
+        <h4 class="mod-title">部署设置</h4>
+        <div class="com-list-info mirror-con">
+          <form>
+            <form-container>
+              <form-config-group>
+                <form-config-item ng-if="config.stateful" config-title="网络模式">
+                  <form-input-container><span ng-bind="({'HOST': 'Host', 'DEFAULT': '默认'}[config.networkMode])"></span></form-input-container>
+                </form-config-item>
+                <form-config-item config-title="部署类型">
+                  <form-input-container><span ng-bind="config.deployTypeShow"></span></form-input-container>
+                </form-config-item>
+                <form-config-item config-title="筛选主机">
+                  <form-input-container>
+                    <div ng-cloak="ng-cloak"><span style="margin-right: 30px;">集群：{{deployVersionDraft.clusterName}}</span><span style="margin-right: 30px;">namespace：{{config.namespace}}</span><span>工作场景：{{({'TEST': '测试环境', 'PROD': '生产环境'}[deployVersionDraft.hostEnv])}}</span></div>
+                    <div class="line-long" ng-if="config.stateful"><span class="tool-align-input">所选主机：</span>
+                      <div class="host-txt-con line-element com-select-con" select-con="select-con">
+                        <ul class="selected-labels">
+                          <li class="select-label" ng-repeat="host in config.hostList" ng-bind="host"></li>
+                        </ul>
+                      </div>
+                    </div>
+                    <div class="line-long" ng-if="!config.stateful &amp;&amp; (config.versionType || 'CUSTOM') === 'CUSTOM'"><span>主机标签：</span>
+                      <div class="host-txt-con line-element com-select-con" select-con="select-con">
+                        <ul class="selected-labels">
+                          <li ng-if="!deployVersionDraft.labelSelectors || deployVersionDraft.labelSelectors.length ===0">无</li>
+                          <li class="select-label" style="height: auto;" ng-repeat="label in deployVersionDraft.labelSelectors" ng-cloak="ng-cloak">{{label.name}}</li>
+                        </ul>
+                      </div><span class="txt-wrap"><a class="link-safe" ng-click="showHostByLabels()">查看选中主机</a></span>
+                    </div>
+                  </form-input-container>
+                </form-config-item>
+                <form-config-item ng-if="(config.versionType || 'CUSTOM') === 'CUSTOM'" config-title="网络模式">
+                  <form-input-container><span ng-bind="config.networkMode=='HOST'?'Host':'Overlay'"></span></form-input-container>
+                </form-config-item>
+                <form-config-item config-title="部署描述">
+                  <form-input-container>
+                    <div class="line-long">
+                      <div style="display: inline-block;"><span ng-if="!isEditDesc" ng-bind="config.description || '无描述信息'"></span>
+                        <textarea class="ui-input-fill" ng-if="isEditDesc" ng-model="editDescription.text" style="width: 450px; resize: vertical;"></textarea>
+                      </div>
+                      <div ng-if="mayUpdate" style="margin-left: 10px; display: inline-block;">
+                        <div class="fa fa-pencil icon-edit-color" ng-if="!isEditDesc" ng-click="toggleIsEditDesc()" tooltip="修改" style="padding:0 5px !important; cursor: pointer;"></div>
+                        <div class="fa fa-floppy-o icon-success-color" ng-if="isEditDesc" ng-click="saveDescription()" tooltip="保存" style="padding:0 5px !important; cursor: pointer;"></div>
+                        <div class="fa fa-times icon-cancel-color" ng-if="isEditDesc" ng-click="toggleIsEditDesc()" tooltip="取消" style="padding:0 5px !important; cursor: pointer;"></div>
+                      </div>
+                    </div>
+                  </form-input-container>
+                </form-config-item>
+                <form-config-item config-title="YAML配置" ng-if="config.versionType === 'YAML'">
+                  <form-input-container>
+                    <div class="info-content code-area" style="line-height: 20px;" ng-bind="deployVersionDraft.versionString.deploymentStr"></div>
+                  </form-input-container>
+                </form-config-item>
+                <form-config-item config-titel="JSON配置" ng-if="config.versionType === 'JSON'">
+                  <form-input-container>
+                    <div class="info-content code-area" style="line-height: 20px;" ng-bind="deployVersionDraft.versionString.deploymentStr"></div>
+                  </form-input-container>
+                </form-config-item>
+              </form-config-group>
+            </form-container>
+          </form>
+        </div>
+      </div>
+    </tab>
+    <tab heading="升级" active="tabActive[1].active" ng-if="!config.stateful" ui-sref="deployDetail.update">
+      <div class="deploy-info" ng-form="ng-form" role="form" name="deployForm" ng-class="{'need-valid':valid.needValid}">
+        <update-deployment-detail cluster-id="config.clusterId" cluster-log="config.clusterLog" namespace="config.namespace" deployment-id="config.deployId" version-id="currentVersionId" version-type="config.versionType" deployment-status="config.deploymentStatus" default-replicas="config.defaultReplicas" on-update-success="updateSuccess()" has-update-permission="mayUpdate"></update-deployment-detail>
+      </div>
+    </tab>
+    <tab heading="事件" active="tabActive[2].active" ng-click="getEvents()" ui-sref="deployDetail.event">
+      <div class="events-con">
+        <ul class="events-list">
+          <li class="event-success" ng-if="eventList.length===0">无事件信息</li>
+          <li ng-repeat="event in eventList" ng-class="{'START':'event-building','PROCESSING':'event-building','SUCCESS':'event-success','FAILED':'event-failed','KUBERNETES':'event-system','ABORTED':'event-system','null':'event-system','undefined':'event-system'}[event.eventStatus]"><span class="icon-dot"><i class="dot-line"></i></span><span class="event-name" ng-bind="event.operation | eventOperation"></span><span class="event-result" ng-bind="event.eventStatus | eventStatus"></span><span class="event-date" ng-bind="(event.startTime | time)"></span><span class="event-author" ng-cloak="ng-cloak"><i class="icon-user" tooltip="操作者"></i>{{event.userName}}</span><span class="event-process" ng-if="event.operation!='KUBERNETES'"><span class="event-process-item" tooltip="起始状态" tooltip-placement="left"><i class="icon-process-dot start"></i>
+                <div class="event-process-detail"><span class="sig-event-process" ng-bind="'无状态'+' , '+'0实例'" ng-if="!event.primarySnapshot.length"></span><span class="sig-event-process" ng-repeat="status in event.primarySnapshot" ng-bind="'version'+status.version+' , '+status.replicas+'实例'"></span></div></span><span class="event-process-item" tooltip="目标状态" tooltip-placement="left"><i class="icon-process-dot origin"></i>
+                <div class="event-process-detail"><span class="sig-event-process" ng-bind="'无状态'+' , '+'0实例'" ng-if="!event.targetSnapshot.length"></span><span class="sig-event-process" ng-repeat="status in event.targetSnapshot" ng-bind="'version'+status.version+' , '+status.replicas+'实例'"></span></div></span><span class="event-process-item" tooltip="完成状态" tooltip-placement="left"><i class="icon-process-dot current"></i>
+                <div class="event-process-detail"><span class="sig-event-process" ng-bind="'无状态'+' , '+'0实例'" ng-if="!event.currentSnapshot.length"></span><span class="sig-event-process" ng-repeat="status in event.currentSnapshot" ng-bind="'version'+status.version+' , '+status.replicas+'实例'"></span></div></span></span><span class="event-process tool-nowrap" ng-if="event.operation=='KUBERNETES'" ng-bind="event.message" hoverable-popover="hoverable-popover" content="event.message"></span><span class="txt-warning event-info" ng-show="event.eventStatus=='FAILED'" tooltip="点击打开/关闭" tooltip-placement="left" style="position:relative;user-select:none;" ng-click="showWrong(event.eid)">错误信息
+              <div class="popover top toggle" ng-show="event.eventStatus=='FAILED' &amp;&amp; wrongMessageList[event.eid]" ng-class="animation">
+                <div class="arrow"></div>
+                <div class="popover-inner">
+                  <div class="popover-content" ng-bind="event.message"></div>
+                </div>
+              </div></span></li>
+        </ul>
+      </div>
+    </tab>
+    <tab heading="实例" active="tabActive[3].active" ui-sref="deployDetail.instance">
+      <div class="instance-con">
+        <table class="ui-table-dome instance-list">
+          <thead>
+            <tr>
+              <th>实例名称</th>
+              <th>所在主机</th>
+              <th>部署版本</th>
+              <th>启动时间</th>
+              <th>实例状态</th>
+              <th>日志</th>
+              <th>容器控制台</th>
+              <th ng-if="mayUpdate">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr ng-if="!instanceList || instanceList.length===0">
+              <td colspan="8">无实例信息</td>
+            </tr>
+            <tr ng-repeat="ins in instanceList">
+              <td ng-bind="ins.instanceName"></td>
+              <td ng-if="!ins.hostIp || ins.hostIp.length===0">无</td>
+              <td ng-if="ins.hostIp">{{ins.hostIp}}</td>
+              <td ng-cloak="ng-cloak">version{{ins.versionId}}</td>
+              <td ng-bind="(ins.startTime | time)"></td>
+              <td ng-bind="ins.status"></td>
+              <td><a class="link-safe" ng-click="showLog(ins.instanceName,ins.containers)">查看</a></td>
+              <td><a class="link-safe" ng-click="toConsole($index)">进入</a></td>
+              <td ng-if="mayUpdate &amp;&amp; ins.status !== 'Pending' &amp;&amp; ins.status !== 'Terminating' &amp;&amp; ins.status !== 'ContainerCreating'"><a class="link-safe" ng-click="restart(ins.instanceName)">重启</a></td>
+              <td ng-if="mayUpdate &amp;&amp; ins.status === 'Pending' || ins.status === 'Terminating' || ins.status === 'ContainerCreating'"><a class="link-safe" style="color:#afafaf;cursor:default;pointer-events:none;">重启</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </tab>
+    <tab heading="网络/访问" active="tabActive[4].active" ui-sref="deployDetail.network">
+      <div class="health-con deploy-info">
+        <div class="txt-prompt" style="padding-top: 20px;"><i class="fa fa-info-circle">&nbsp;</i><span>创建部署时DomeOS会根据用户提供的程序访问端口创建一个对内服务，如果用户想对外暴露服务，可以到</span><a class="txt-bright" ui-sref="loadBalanceCollection">负载均衡</a><span>模块创建kube_proxy类型的对外服务(支持四层TCP/UDP)或者nginx类型的对外服务（支持七层HTTP）</span></div>
+        <form-container>
+          <form name="networkFrom" ng-class="{'need-valid':networkFrom.$submitted}">
+            <loading ng-if="isUpdatingLoadBalance || isgetingLoadBalance"></loading>
+            <form-config-group>
+              <form-config-item config-title="网络模式">
+                <form-input-container><span class="small-info" ng-bind="showDeployNet.networkMode === 'HOST'?'Host':'Overlay'"></span></form-input-container>
+              </form-config-item>
+            </form-config-group>
+            <form-config-group>
+              <form-config-item config-title="访问设置">
+                <form-input-container>
+                  <div ng-if="showDeployNet.networkMode === 'DEFAULT'">
+                    <div class="container-operation" ng-if="!showDeployNet.lbForDeploys">
+                      <div class="operation-button">
+                        <icon-edit ng-if="!isEditLoadBalance" ng-click="toggleEditLoadBalance('edit')"></icon-edit>
+                        <icon-save ng-if="isEditLoadBalance" ng-click="updateLoadBalance()"></icon-save>
+                        <icon-cancel ng-if="isEditLoadBalance" ng-click="toggleEditLoadBalance('cancel')"></icon-cancel>
+                      </div>
+                      <div class="operation-content" ng-if="!isEditLoadBalance">
+                        <div>服务类型：对内服务</div>
+                        <div>内网域名：未设置</div>
+                        <div>粘性会话：未设置</div>
+                        <div>程序服务端口：未设置</div>
+                      </div>
+                      <div class="operation-content" ng-if="isEditLoadBalance">
+                        <div>服务类型：对内服务</div>
+                        <div>内网域名：未设置</div>
+                        <div class="content-name">粘性会话</div>
+                        <div class="content-item">
+                          <form-input-radio-group ng-model="innerServiceUpdateDraft.sessionAffinity" fallback-value="'false'" name="sessionAffinity" options="[{value: 'false', text: '关闭(默认)'}, {value: 'true', text: '开启'}]" required="required"></form-input-radio-group>
+                        </div>
+                        <div class="content-name">程序服务端口</div>
+                        <div class="content-item">
+                          <form-array-container ng-model="innerServiceUpdateDraft.loadBalancerPorts" name="innerService" template="_innerService" max-length="1000" min-length="1" type="simple"></form-array-container>
+                          <script type="text/ng-template" id="_innerService">
+                            <input type="number" style="width: 100%;" min="1" max="65535" placeholder="容器内程序服务端口" ng-model="$ctrl.ngModel[$index].targetPort" required="required"/>
+                          </script>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="container-operation" ng-repeat="loadBalance in showDeployNet.lbForDeploys">
+                      <div class="operation-button" ng-if="loadBalance.lbType === 'INNER_SERVICE'">
+                        <icon-edit ng-if="!isEditLoadBalance" ng-click="toggleEditLoadBalance('edit')"></icon-edit>
+                        <icon-save ng-if="isEditLoadBalance" ng-click="updateLoadBalance()"></icon-save>
+                        <icon-cancel ng-if="isEditLoadBalance" ng-click="toggleEditLoadBalance('cancel')"></icon-cancel>
+                      </div>
+                      <div class="operation-content" ng-if="loadBalance.lbType === 'INNER_SERVICE'">
+                        <div>服务类型：对内服务</div>
+                        <div><span>内网域名：</span><span ng-bind="loadBalance.dnsName"></span></div>
+                        <div ng-if="!isEditLoadBalance"><span>粘性会话：</span><span ng-bind="({true: '已开启', 'false': '已关闭'}[loadBalance.serviceDraft.sessionAffinity]) || '未设置'"></span></div>
+                        <div ng-if="!isEditLoadBalance"><span>程序服务端口：</span><span ng-if="!loadBalance.serviceDraft || !loadBalance.serviceDraft.lbPorts || loadBalance.serviceDraft.lbPorts.length === 0">未设置</span><span ng-repeat="port in loadBalance.serviceDraft.lbPorts"><span style="margin-right: 20px;" ng-bind="port.targetPort"></span></span></div>
+                      </div>
+                      <div class="operation-content" ng-if="isEditLoadBalance &amp;&amp; loadBalance.lbType === 'INNER_SERVICE'">
+                        <div class="content-name">粘性会话</div>
+                        <div class="content-item">
+                          <form-input-radio-group ng-model="innerServiceUpdateDraft.sessionAffinity" fallback-value="'false'" name="sessionAffinity" options="[{value: 'false', text: '关闭(默认)'}, {value: 'true', text: '开启'}]" required="required"></form-input-radio-group>
+                        </div>
+                        <div class="content-name">程序服务端口</div>
+                        <div class="content-item">
+                          <form-array-container ng-model="innerServiceUpdateDraft.loadBalancerPorts" name="innerService" template="_updateInnerService" max-length="1000" min-length="1" type="simple"></form-array-container>
+                        </div>
+                        <script type="text/ng-template" id="_updateInnerService">
+                          <input type="number" style="width: 100%;" min="1" max="65535" placeholder="容器内程序服务端口" ng-model="$ctrl.ngModel[$index].targetPort" required="required"/>
+                        </script>
+                      </div>
+                      <div class="operation-content" ng-if="loadBalance.lbType === 'EXTERNAL_SERVICE'">
+                        <div>服务类型：kube_proxy对外服务<a class="txt-bright" style="margin-left: 20px;" ui-sref="kubeLoadBalanceDetail({'collectionId': loadBalance.lbcId, 'loadBalanceId': loadBalance.lbId})">查看详情</a></div>
+                        <div><span>内网域名：</span><span ng-bind="loadBalance.dnsName"></span></div>
+                        <div><span>对外访问IP：</span><span ng-repeat=" ip in loadBalance.externalIPs"><span style="margin-right: 20px;" ng-bind="ip"></span></span></div>
+                        <div><span>粘性会话：</span><span ng-bind="({true: '已开启', 'false': '已关闭'}[loadBalance.serviceDraft.sessionAffinity])"></span></div>
+                        <table class="full">
+                          <thead>
+                            <tr>
+                              <td>访问端口</td>
+                              <td>程序服务端口</td>
+                              <td>端口协议</td>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr ng-if="!loadBalance.serviceDraft.lbPorts||loadBalance.serviceDraft.lbPorts.length===0">
+                              <td colspan="3">无相关信息</td>
+                            </tr>
+                            <tr ng-repeat="lbPort in loadBalance.serviceDraft.lbPorts">
+                              <td ng-bind="lbPort.port"></td>
+                              <td ng-bind="lbPort.targetPort"></td>
+                              <td ng-bind="lbPort.protocol"></td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div class="operation-content" ng-if="loadBalance.lbType === 'NGINX'">
+                        <div>服务类型：nginx服务<a class="txt-bright" style="margin-left: 20px;" ui-sref="nginxLoadBalanceDetail({'collectionId': loadBalance.lbcId, 'loadBalanceId': loadBalance.lbId})">查看详情</a></div>
+                        <div><span>服务域名：</span><span ng-repeat="rule in loadBalance.nginxDraft.rules"><span style="margin-right: 20px;" ng-bind="rule.domain"></span></span></div>
+                        <div><span>服务端口：</span><span ng-bind="loadBalance.nginxDraft.listenPort"></span></div>
+                        <div><span>负载均衡策略：</span><span ng-bind="loadBalance.nginxDraft.lbMethod | lowercase"></span></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div ng-if="showDeployNet.networkMode === 'HOST'">
+                    <div ng-bind="showDeployNet.exposePortNum !== 0 ? '允许访问': '禁止访问'"></div>
+                    <div class="log-item-none-top log-item log-item-align" ng-if="showDeployNet.exposePortNum !== 0">
+                      <div class="line-full"><span>对外暴露端口个数：</span><strong ng-bind="showDeployNet.exposePortNum"></strong></div>
+                      <div class="txt-prompt" style="line-height: 25px;">Host网络下，系统会给每个实例分配若干个端口，用于对外服务和实例间通信。此外，在Host网络下，实例ip和宿主机ip一致。</div>
+                    </div>
+                  </div>
+                </form-input-container>
+              </form-config-item>
+            </form-config-group>
+            <!--form-config-group-->
+            <!--    form-config-item(config-title="内网域名")-->
+            <!--        form-input-container-->
+            <!--            span(ng-bind="showDeployNet.serviceDnsName")-->
+          </form>
+        </form-container>
+      </div>
+    </tab>
+  </tabset>
+</div>

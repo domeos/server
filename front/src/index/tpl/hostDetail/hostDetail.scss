@@ -1,0 +1,126 @@
+@import "compass/css3";
+@import "common/css/common.scss";
+.host-detail{
+	.host-info{
+		.info-options{
+			//padding : $wider-padding;
+			overflow: hidden;
+			.info-count{
+				text-align: left;
+			}
+		}
+	}
+	.detail-header{
+		.detail-item{
+			.item-name{
+				font-size: 14px;
+			}
+		}
+	}
+	.add-label{
+		margin-left: 16px;
+	}
+	.save-label{
+		margin-left: 21px;
+	}
+	.com-check-con{
+		margin-right: 40px;
+	}
+	.host-label-con{
+		width: 40%;
+	}
+	// cover index.scss
+	.com-label-list li{
+		margin-bottom: 0;
+		margin-top: 18px;
+	}
+	.table-wrap{
+		padding: 0 20px 20px 20px;
+		td,th:first-child{
+			padding-left: 8px !important;
+		}
+		td,th:last-child{
+			padding-right: 8px;
+		}
+		th.active, span.active{
+			color: dome-color(dome,bright);
+		}
+		.icon-down{
+			margin-left:4px;
+			&.up{
+				@include rotate(180deg);
+			}
+		}
+	}
+	.com-list-info{
+		&>li{
+			display: table;
+			.info-name{
+				//padding: 20px 20px 20px 8px;
+				height: 74px;
+				text-align: right;
+				width: 112px;
+			}
+		}
+	}
+	.item-name-next {
+		margin-left: 5px;
+	}
+	.detail-header-wrap{
+		display: flex;
+		align-items: center;
+		padding: 20px;
+		border-bottom: 20px solid #f0f2f5;
+		width: 100%;
+		.detail-item-logo {
+			margin-right: 14px;
+		}
+		.detail-item{
+			position: relative;
+			overflow: hidden;
+			padding: 0 20px;
+			white-space: nowrap;
+			max-width: 40%;
+			&:before {
+				content: " ";
+				display: block;
+				height: 20px;
+				width: 0;
+				border-left: 2px solid #ddd;
+				position: absolute;
+				left: 0;
+				top: 10px;
+			}
+			.item-name {
+				white-space: nowrap;
+				overflow: hidden;
+				text-overflow: ellipsis;
+			}
+			.item-name-content {
+				display: inline-flex;
+				.content-wrap {
+					text-overflow: ellipsis;
+					overflow: hidden;
+					white-space: nowrap;
+					//max-width: 200px;
+				}
+			}
+		}
+		.detail-item-line {
+			position: relative;
+			padding: 0 20px;
+			white-space: nowrap;
+			&:before {
+				content: " ";
+				display: block;
+				height: 20px;
+				width: 0;
+				border-left: 2px solid #ddd;
+				position: absolute;
+				left: 0;
+				top: 0;
+			}
+		}
+	}
+
+}

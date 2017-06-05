@@ -1,0 +1,79 @@
+.mod-cluster.create-watcher(ng-class="{'need-valid':needValid}" novalidate)
+    loading(ng-if="loadingsIns.isLoading")
+    form-container(left-column-width="120px")
+        form(name="createWatcher")
+            form-config-group
+                form-config-item(config-title="监听器名称" required)
+                    form-input-container
+                        input(name="watcherName" type="text" placeholder="不能有大写字母，不能以中横线开头和结尾" autocomplete="off" pattern = "^[0-9a-z](-*[0-9a-z]+)*$" ng-model="watcher.name" is-deploy-name-exist required ng-model-options="{updateOn:'default blur',debounce:{default:1000,blur:0}}")
+                        form-error-message(form="createWatcher" target="watcherName" type="required") 必填
+                        form-error-message(form="createWatcher" target="watcherName" type="isDeployNameExist") 部署名已存在
+                        form-error-message(form="createWatcher" target="watcherName" type="pattern") 非法的名称
+            form-config-group
+                form-config-item(config-title="描述")
+                    form-input-container
+                        textarea(ng-model="watcher.description" style="padding: 6px 20px;line-height:20px;display: block;" placeholder="输入监听器描述信息")
+            form-config-group
+                form-config-item(config-title="工作场景")
+                    form-input-container
+                        form-input-radio-group(ng-model="watcher.hostEnve" fallback-value="'TEST'" options="[{value: 'TEST', text: '测试环境'},{value: 'PROD', text: '生产环境(默认）'}]" required)
+            form-config-group
+                form-config-item(config-title="主机标签")
+                    form-input-container
+                        form-with-button(width="120px")
+                            content-area
+                                form-multiple-select(options="labelsOption" ng-model="watcher.labelSelectors" on-change="toggleLabels(watcher.labelSelectors)" name="labels" placeholder="选择主机标签")
+                            button-area
+                                span.txt-wrap(style="margin-left:10px")
+                                    a.link-safe(ng-click="nodeListIns.showHost()") 查看选中主机
+            form-config-group
+                form-config-item(config-title="namespace")
+                    form-input-container
+                        form-select(name="namespaceSelect" ng-model="watcher.namespace" options="namespaceOption" placeholder="选择namespace" required empty-text="无相关信息")
+            form-config-group
+                form-config-item(config-title="镜像信息") 
+                    form-input-container 
+                        span.info(ng-bind="watcher.containerDrafts[0].registry")
+                        span.info &nbsp;/&nbsp;
+                        span.info(ng-bind="watcher.containerDrafts[0].image")
+                        span.info &nbsp;:&nbsp;
+                        span.info(ng-bind="watcher.containerDrafts[0].tag")
+                        span.fa.fa-pencil.ui-btn-none.icon-edit-color(ng-click="modifyMirrorInfo()" style="padding: 0px 5px !important;cursor:pointer")
+            form-config-group
+                form-config-item
+                    button(type="button" ng-click="cancel()" style="margin-right:15px;") 取消
+                    form-submit-button(form="createWatcher" on-submit="createWatcherSubmit()") 提交
+    script(type="text/ng-template" id="modifyMirrorInfo.html")
+        .d-modal-header 编辑
+        .modal-body.edit-mirror-modal
+            form-container(left-column-width="60px")
+                form(name="mirrorInfoForm")
+                    form-config-group
+                        form-config-item(config-title="镜像仓库" required)
+                            form-input-container
+                                input.mid-input(type="text" placeholder="" required ng-model="containerDrafts.registry" name="registry")
+                                form-error-message(form="mirrorInfoForm" target="registry" type="required") 仓库名称不能为空
+                    form-config-group
+                        form-config-item(config-title="镜像名称" required)
+                            form-input-container
+                                input.mid-input(type="text" placeholder="" required ng-model="containerDrafts.image" name="image")
+                                form-error-message(form="mirrorInfoForm" target="image" type="required") 镜像名称不能为空
+                    form-config-group
+                        form-config-item(config-title="镜像版本" required)
+                            form-input-container
+                                input.mid-input(type="text" placeholder="" required ng-model="containerDrafts.tag" name="tag")
+                                form-error-message(form="mirrorInfoForm" target="tag" type="required") 镜像版本不能为空
+                    form-config-group
+                        form-config-item(config-title="容器大小")
+                            .item(style="width:50%;float:left;")
+                                label(style="margin-right:10px") cpu(个)
+                                input.ui-input-fill.ui-input-sm(ng-model="containerDrafts.cpu" name="cpu" ng-pattern="/^(\\d*\\.)?\\d+$/" required)
+                            .item(style="width:50%;float:left;")
+                                label(style="margin-right:10px") 内存(MB)
+                                input.ui-input-fill.ui-input-sm(ng-model="containerDrafts.mem" name="cpu" ng-pattern="/^(\\d*\\.)?\\d+$/" required)
+                    form-config-group
+                        form-config-item
+                            button(type="button" ng-click="cancel()" style="margin-right:15px;") 取消
+                            form-submit-button(form="mirrorInfoForm" on-submit="submit()") 提交
+        
+                

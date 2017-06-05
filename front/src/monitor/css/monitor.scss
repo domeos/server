@@ -1,0 +1,143 @@
+@import "compass/css3";
+@import "common/css/common.scss";
+.monitor-header{
+	height: 60px;
+	padding-left: $page-padding;
+	padding-top: 20px;
+	font-size: 16px;
+	color: #888;
+	background-color: dome-color(background,light);
+}
+.monitor-container{
+	background-color: #fff;
+	margin: 0 20px;
+}
+.icon-down{
+	@extend %vertical-middle;
+	width: 8px;
+	height: 5px;
+	background: url(/monitor/images/down.png) no-repeat 0 0;
+}
+.monitor-options{
+	height: 70px;
+	padding: 22px $page-padding 0 $page-padding;
+	&>li{
+		display: inline-block;
+		margin-right: 45px;
+	}
+	.com-select-con{
+		display: inline-block;
+	}
+}
+.monitor-con{
+	.monitor-line{
+		width: 100%;
+		height: 350px;
+		font-size: 0;
+		padding: 10px 0;
+		.monitor-chart{
+			display: inline-block;
+			width: 50.4%;
+			height: 100%;
+			font-size: 14px;
+			border: $deep-border;
+			border-radius: 3px;
+			margin: 0 10px 0 20px;
+			.monitor-chart-title{
+				height: 42px;
+				padding-top: 12px;
+				text-align: center;
+				.chart-title{
+					color: #000;
+					font-weight: bold;
+					font-size: 15px;
+				}
+				.com-select-con{
+					display: inline-block;
+					width: 138px;
+				}
+			}
+			.monitor-chart-child{
+				width: 100%;
+				height: 290px;
+			}
+		}
+		.monitor-table{
+			display: inline-block;
+			width: 44.955%;
+			height: 100%;
+			font-size: 14px;
+			border: $deep-border;
+			border-radius: 3px;
+			overflow-x:auto;
+			vertical-align: top;
+			margin: 0 0 0 10px;
+			table{
+				width: 100%;
+			}
+			th,td{
+				vertical-align: middle;
+				border-bottom: $deep-border
+			}
+			th{
+				height: 52px;
+			}
+			td{
+				height: 38px;
+			}
+			tr:nth-child(2n){
+				background-color: dome-color(background,light);
+			}
+			td,th{
+				&:first-child{
+					padding-left: 14px;
+					min-width: 160px;
+				}
+			}
+		}
+	}
+}
+.datepicker-component{
+	float: right;
+	position: relative;
+	margin-top: 24px;
+	margin-right: $page-padding;
+	text-align: right;
+	z-index: 10;
+	.datepicker-con{
+		position: absolute;
+		right: 0;
+		top: 40px;
+		width: 800px;
+		padding: 12px;
+		text-align: left;
+		border: $deep-border;
+		background-color: #fff;
+		.date-choose{
+			display: inline-block;
+			padding-right: 22px;
+			border-right: $deep-border;
+			.datepicker{
+				display: inline-block;
+				margin-left: 22px;
+				&:first-child{
+					margin-left: 0;
+				}
+			}
+		}
+		.date-result{
+			display: inline-block;
+			padding-left: 22px;
+			vertical-align: top;
+			.result-selected{
+				margin-top: 10px;
+				&:first-child{
+					margin-top: 0;
+				}
+			}
+			.btn-submit-date{
+				margin-top: 30px;
+			}
+		}
+	}
+}

@@ -1,0 +1,67 @@
+
+<div class="tab-hostsgroups">
+  <div class="com-btn-group mod-option">
+    <input class="ui-input ui-input-white" placeholder="请输入主机组名称" ng-model="vmHostGroup.newHostGroup"/>
+    <button class="ui-btn ui-btn-bright ui-btn-lg" ng-disabled="vm.permission.role == null || vm.permission.role === 'REPORTER' || !vmHostGroup.newHostGroup" ng-click="vmHostGroup.addHostGroup()" ng-class="{'ui-btn-lg-disabled': vm.permission.role == null || vm.permission.role === 'REPORTER'}">添加主机组</button>
+    <div class="pull-right right-option"><span ng-cloak="ng-cloak">共{{hostGroupFilter.length}}个主机组</span>
+      <input class="ui-input-search ui-input-fill" type="text" placeholder="输入主机组名称查询" ng-model="hostGroupKey"/>
+    </div>
+  </div>
+  <div class="mod-tips-info">
+    <p class="txt-prompt"><i class="fa fa-info-circle icon-algin-right"></i>通过配置主机组,可以对一批主机统一进行报警配置，DEVELOPER及以上权限的报警组成员可以添加主机组。</p>
+  </div>
+  <ul class="list-hostgroups mod-list-alarm">
+    <li class="hostgroup-wrap" ng-repeat="hostgroup in hostGroupFilter=(vmHostGroup.hostGroupList|filter:{'hostGroupName':hostGroupKey})">
+      <div class="hostgroup">
+        <div class="hostgroup-header">
+          <h4 class="hostgroup-name" ng-bind="hostgroup.hostGroupName"></h4><span class="hostgroup-detail txt-prompt" ng-clock="ng-clock">创建者：{{hostgroup.creatorName}} 创建时间：{{(hostgroup.createTime) | day}}</span>
+          <div class="hostgroup-opt" select-con="select-con" ng-if="vm.permission.role&amp;&amp;vm.permission.role!='REPORTER'">
+            <button class="ui-btn-none ui-btn-select"><i class="icon-down-round"></i></button>
+            <ul class="select-list">
+              <li class="select-item"><a ng-click="vmHostGroup.rename(hostgroup)">重命名</a></li>
+              <li class="select-item"><a ng-click="vmHostGroup.deleteHostGroup(hostgroup.id)">删除该组</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="hostgroup-body">
+          <div class="hostgroup-left">
+            <h5 class="hostgroup-left-header"><a class="link-addhost link-primary" ui-sref="alarmAddHosts({id:hostgroup.id,name:hostgroup.hostGroupName})" ng-if="vm.permission.role&amp;&amp;vm.permission.role!='REPORTER'">+添加主机</a><em class="txt-embed">主机</em></h5>
+            <div class="list-hosts-wrap">
+              <ul class="list-hosts">
+                <li class="sig-host" ng-repeat="host in hostgroup.hostList">
+                  <div class="sig-host-info-wrap" ng-mouseenter="hostGroupPopover.name=host.hostname;hostGroupPopover.ip=host.ip;" popover-template="'hostGroupPopover.html'" popover-trigger="mouseenter"><a class="icon-cancel" ng-if="vm.permission.role&amp;&amp;vm.permission.role!='REPORTER'" ng-click="vmHostGroup.deleteNode(hostgroup,$index)"></a><em class="txt-embed tool-nowrap" ng-bind="host.hostname"></em><span class="txt-prompt tool-nowrap" ng-bind="host.ip"></span></div>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div class="hostgroup-right">
+            <h5 class="hostgroup-right-header txt-embed">报警模板</h5>
+            <ul class="list-tpls">
+              <li ng-repeat="tpl in hostgroup.templateList">
+                <div class="tool-nowrap tpl-wrap" popover="{{tpl.templateName}}" popover-trigger="mouseenter"><a class="txt-primary" ng-bind="tpl.templateName" ui-sref="alarmTemplateDetail({id:tpl.id})"></a></div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </li>
+  </ul>
+</div>
+<script type="text/ng-template" id="hostGroupPopover.html">
+  <div class="text-center" ng-bind="hostGroupPopover.name"></div>
+  <div class="text-center" ng-bind="hostGroupPopover.ip"></div>
+</script>
+<script type="text/ng-template" id="renameHostGroupModal.html">
+  <div class="d-modal-header" ng-cloak="ng-cloak">{{vmRename.hostGroup.hostGroupName}}重命名</div>
+  <ul class="modal-branchcheck modal-info" role="form" ng-form="ng-form" name="hostGroupForm" ng-class="{'need-valid':needValid}">
+    <li><span class="info-name">输入新名称</span>
+      <div class="info-txt">
+        <input class="ui-input-fill full" is-hostgroup-exist="is-hostgroup-exist" name="hostGroupName" ng-model="vmRename.hostGroupName" hostgroup-list="vmRename.hostGroupList" is-required="is-required"/><span class="txt-error text-left" ng-if="(vmRename.needValid||hostGroupForm.hostGroupName.$dirty)&amp;&amp;hostGroupForm.hostGroupName.$error.isHostgroupExist"> 名称已存在</span>
+      </div>
+    </li>
+  </ul>
+  <div class="modal-footer">
+    <button class="ui-btn ui-btn-sm ui-btn-white" ng-click="vmRename.cancel()">取消</button>
+    <button class="ui-btn ui-btn-sm ui-btn-bright" ng-click="vmRename.needValid=true;hostGroupForm.$valid&amp;&amp;vmRename.submitName();">确定</button>
+  </div>
+</script>

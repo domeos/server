@@ -1,0 +1,32 @@
+.mod-option
+    .pull-right.right-option
+        span(ng-cloak) 共{{templatesListFiltered.length}}个模板
+        input.ui-input-search.ui-input-fill(type="text" placeholder="输入模板名称查询" ng-model="vmTemplate.keywords")
+    button.ui-btn.ui-btn-lg.ui-btn-link.ui-btn-bright.btn-newtemplate(ui-sref="createAlarmTemplate" ng-disabled="vm.permission.role == null || vm.permission.role === 'REPORTER'" ng-class="{'ui-btn-lg-disabled': vm.permission.role==null||vm.permission.role === 'REPORTER'}")
+        span.btn-txt 新建模板
+        i.fa.fa-plus
+.mod-tips-info
+    p.txt-prompt
+        i.fa.fa-info-circle.icon-algin-right
+        | 报警模板用于关联报警接收用户组，并配置报警信息。
+.mod-list-alarm
+    loading(ng-if="vmTemplate.isLoading")
+    table.ui-table-dome
+        thead
+            tr
+                th 模板名称
+                th 创建者
+                th 报警类型
+                th 创建时间
+                th(ng-if="vm.permission.role&&vm.permission.role!='REPORTER'") 操作
+        tbody
+            tr(ng-if="templatesListFiltered.length==0")
+                td(colspan="5") 无相关信息
+            tr(ng-repeat="tpl in templatesListFiltered=(vmTemplate.templatesList|filter:{'templateName':vmTemplate.keywords})")
+                td
+                    a.ui-table-link(ng-bind="tpl.templateName" ui-sref="alarmTemplateDetail({id:tpl.id})")
+                td(ng-bind="tpl.creatorName")
+                td(ng-bind="tpl.templateTypeName")
+                td(ng-bind="(tpl.createTime) | day")
+                td(ng-if="vm.permission.role&&vm.permission.role!='REPORTER'")
+                    button.fa.fa-trash-o.ui-btn-none.icon-trash-color(ng-click="vmTemplate.deleteTpl(tpl.id)")

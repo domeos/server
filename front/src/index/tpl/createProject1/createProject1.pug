@@ -1,0 +1,114 @@
+.mod-project.project-create1(ng-form role="form" name="projectNameForm" novalidate ng-class="{'need-valid':needValid}")
+    loading(ng-if="isLoading || isGitLabInfoLoading")
+    .pro-item.com-chose-repository.project-info
+        span.opt-title 选择代码仓库
+        .opt-content
+            p.txt-prompt.opt-descrip(style="margin-bottom:0") DomeOS可以直接从gitlab上下载代码并执行编译命令，关联gitlab项目后不可修改。
+            span.repository(ng-repeat="gitLab in gitLabList" ng-click="!isGitLabInfoLoading&&toggleCodeManager(gitLab,'gitlab')" ng-class="{active:currentGitLab.id===gitLab.id,'cursor-disabled':isGitLabInfoLoading}" tooltip="{{gitLab.url}}")
+                i.icon-gitlab
+                span(ng-bind="gitLab.description")
+            //-span.repository(ng-click="toggleCodeManager('github')" ng-class="{active:codeRepository=='github'}")
+            //-    i.icon-github
+            //-    | GitHub
+            span.repository.nohub(ng-click="!isGitLabInfoLoading&&toggleCodeManager(null,null)" ng-class="{active:!currentGitLab,'cursor-disabled':isGitLabInfoLoading}") 不使用代码仓库
+    .chose-account(ng-show="codeManager")
+        input.pull-right.ui-input-search.ui-input-fill(placeholder="请输入工程名称查询" ng-model="pronameKey")
+        ul(list-scroll width-offset="720")
+            li.nav-option(disabled="true")
+                span.tool-item-next
+                    a.icon-last.to-last
+                    a.icon-next.to-next
+            li(ng-repeat="user in gitLabInfo"  ng-class="{'active':currentUserId===user.id}")
+                a.link-list(ng-bind="user.userName" ng-click="setProjectList(user)")
+        span.related
+            a(ng-click="toRelated()")
+                span.tool-align-text 关联新账户
+                i.fa.fa-plus
+    ul.list-project(ng-show="codeManager")
+        li(ng-if="!projectListFilter||projectListFilter.length===0")
+            span.no-result 无工程信息
+        li(ng-repeat="pro in projectListFilter=(projectList|filter:{'nameWithNamespace':pronameKey}|orderBy:nameWithNamespace|listPage:pageSize:pageNo)" ng-class="{'active':currentProject.projectId===pro.projectId}")
+            span.project-name(ng-cloak ng-click="setCurrentProject(pro)" ng-mouseenter="modifyTooltip(pro)" tooltip-template="'detailTooltip.html'" tooltip-placement="top")
+                i.icon-check(ng-if="currentProject.projectId===pro.projectId")
+                | {{pro.nameWithNamespace}}
+            span.project-description(ng-bind="isDescriptionNull(pro.description)" ng-click="setCurrentProject(pro)")
+            span
+                button.fa.fa-pencil.ui-btn-none.enlarge-focus(ng-click="setCurrentProject(pro);modifyCodeInfo(pro)")
+    div.com-page-list(list-no length="projectList.length" pageno="pageNo" size="{{pageSize}}" ng-show="codeManager&&projectList.length>0")
+    .pro-item.project-info(ng-show="codeManager")
+        span.opt-title runners-token
+        div.opt-content
+            p.txt-prompt.opt-descrip CI/CD pipeline的runners token，该项配置时采用该token clone代码，否则使用用户token clone代码
+            input.ui-input-fill.input-md(ng-model="runnersToken" placeholder="输入token")
+    .pro-item.project-info(ng-show="codeManager")
+        span.opt-title 自动构建
+        div.opt-content
+            p.txt-prompt.opt-descrip  当所选分支更新或出现新tag时，会自动触发构建，生成新的工程镜像。请不要在频繁push的分支上开启自动构建，以免频繁触发构建，造成资源浪费。
+            span.branch
+                input#master.ui-check(type="checkbox" name="branches" ng-model="autoBuildInfo.master")
+                label(for="master") master
+            span.branch
+                input#tag.ui-check(type="checkbox" name="branches" ng-true-value="1"  ng-false-value="0" ng-model="autoBuildInfo.tag")
+                label(for="tag") tag
+            span.branch
+                input#other.ui-check(type="checkbox" name="branches" ng-model="autoBuildInfo.other")
+                label(for="other" ng-if="!autoBuildInfo.other") 指定其他分支
+                label(for="other" ng-if="autoBuildInfo.other")
+                input.ui-input-white.txt-branch(placeholder="请输入分支名称，用逗号分隔 e.g. dev,fix-bug"  ng-if="autoBuildInfo.other" ng-model="autoBuildInfo.branches" name="other" required)
+    .pro-item.project-info
+        span.opt-title 工程构建类型
+        div.opt-content
+            p.txt-prompt.opt-descrip 工程需要构建成Docker镜像，才能被部署到运行环境中。工程构建过程包含了代码编译、docker build等操作。您可以选择一种工程构建类型，并完成相应配置。
+            span.setting-type(ng-class="{'active':projectType=='commonconfig'}" ng-click="projectType = 'commonconfig'")
+                h4 通用配置
+                p 适合各种编程语言的工程，在页面上配置Dockerfile以及运行过程的相关信息。
+            span.setting-type(ng-class="{'active':projectType=='dockerfileuserdefined'}" ng-click="projectType = 'dockerfileuserdefined'")
+                h4 定制化配置
+                p 直接编写Dockerfile和配置文件。自定义构建流程。
+            span.setting-type(ng-class="{'active':projectType=='java'}" ng-click="projectType = 'java'" ng-show="codeManager")
+                h4 Java专属配置
+                p 专为Java工程打造，分离编译和构建过程，精简工程镜像。
+            span.setting-type(ng-class="{'active':projectType=='dockerfileincode'}" ng-click="projectType = 'dockerfileincode'" ng-show="codeManager")
+                h4 代码内Dockerfile
+                p 使用代码工程内的Dockerfile。请确保构建所用的代码分支或tag中存在可用的Dockerfile。
+    .pro-item.project-info
+        span.opt-title 工程名称 
+            span.require-domain *
+        .creator-info.opt-content
+            p.txt-prompt.opt-descrip 工程名称即构建后生成的镜像名，创建后不可修改，请慎重选择。
+            span.creator-name(ng-bind="projectCollectionName")
+            | /
+            input.ui-input-white(placeholder="输入工程名称" is-project-exist collection="projectCollectionId" group-name="{{projectCollectionName}}" name="proname" ng-pattern="/^[a-z0-9]+([._-][a-z0-9]+)*$/" ng-model="projectName" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" required)
+            span.tool-inline-error(ng-if="(needValid||projectNameForm.proname.$dirty)&&projectNameForm.proname.$error.required") 必填
+            span.tool-inline-error(ng-if="(needValid||projectNameForm.proname.$dirty)&&!projectNameForm.proname.$error.required&&projectNameForm.proname.$error.isProjectExist") 工程已存在
+            span.tool-inline-error(ng-if="(needValid||projectNameForm.proname.$dirty)&&!projectNameForm.proname.$error.required&&projectNameForm.proname.$error.pattern") 非法的名称
+    .com-bottom-option
+        button.ui-btn.ui-btn-bright.ui-btn-md(ng-click="needValid=true;projectNameForm.$valid&&toNext()") 下一步
+script(type="text/ng-template" id="loginModal.html")
+    .d-modal-header 关联Gitlab
+    .code-info-modal
+        ul.modal-body.modal-info.modal-gitlab(ng-form role="form" name="loginForm")
+            li
+                .info-name 仓库名称
+                .info-txt.text-left
+                    span(ng-bind="gitLab.description" style="line-height:34px;")
+            li
+                .info-name 仓库地址
+                .info-txt.text-left
+                    span(ng-bind="gitLab.url" style="line-height:34px;")
+            li
+                .info-name(for="username") 用户名
+                .info-txt.text-left
+                    input#username.full.ui-input-white(placeholder="用户名" name="username" ng-model="username" required)
+                    span.txt-error(ng-show="loginForm.username.$dirty&&loginForm.username.$invalid") 必填
+            li
+                .info-name(for="password") 密码
+                .info-txt.text-left
+                    input#password.full.ui-input-white(placeholder="密码" name="password" type="password" ng-model="password" required)
+                    span.txt-error(ng-show="loginForm.password.$dirty&&loginForm.password.$invalid") 必填
+            .txt-error.txt-failed(ng-bind="errorTxt")
+    .modal-footer.text-right
+        button.ui-btn.ui-btn-sm.ui-btn-white(ng-click="close()") 取消
+        button.ui-btn.ui-btn-sm.ui-btn-bright(ng-disabled="loginForm.$invalid||isWaiting" ng-click="toLogin()") 确定
+script(type="text/ng-template" id="detailTooltip.html")
+    div(ng-bind-html="toolTipText")

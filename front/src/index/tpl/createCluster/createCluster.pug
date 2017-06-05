@@ -1,0 +1,6 @@
+.mod-cluster.create-cluster(ng-form name="createClusterForm")
+	div.tab-cluster(ng-include="'index/tpl/tplClusterInfo/tplClusterInfoEdit.html'")
+	.com-bottom-option
+		span.com-bottom-option-con
+			button.ui-btn.ui-btn-lg.ui-btn-bright(ng-disabled="isWaingCreate" ng-click="valid.needValid=true;createClusterForm.$valid&&create()") 完成创建
+			span.txt-error(ng-if="valid.needValid&&(createClusterForm.$invalid||!clusterIns.etcdValid||!clusterIns.zookeeperValid||!clusterIns.kafkaValid)") 存在不合法数据，请修改后提交。

@@ -1,0 +1,202 @@
+@import "compass/css3";
+@import "common/css/common.scss";
+.cluster-detail {
+  .mod-option .icon-delete {
+    margin-left: 20px;
+  }
+  .cluster-info {
+    .selected-node-count {
+      padding-left: 20px;
+    }
+    .table-wrap {
+      padding: 0 20px;
+      td,
+      th:first-child {
+        padding-left: 8px;
+      }
+      td,
+      th:last-child {
+        padding-right: 8px;
+      }
+      th.active, span.active{
+        color: dome-color(dome,bright);
+      }
+      .icon-down{
+        margin-left:4px;
+        &.up{
+          @include rotate(180deg);
+        }
+      }
+    }
+    .instances-table{
+      table {
+        white-space: normal;
+        word-break: break-all;
+        word-wrap: break-word;
+        table-layout: fixed;
+      }
+    }
+    .info-options {
+      padding: 20px;
+      // overflow: hidden;
+      .info-right {
+        float: right;
+        .info-count {
+          padding-top: 8px;
+        }
+      }
+      .namespace-title {
+        display: block;
+        float: left;
+        margin-top: 20px;
+        margin-left: 20px;
+        font-weight: bold;
+        width: 150px;
+      }
+      .namespace-con {
+        float: left;
+        width: 50%;
+        margin-top: 20px;
+        .new-namespace {
+          @include display-flex;
+          .namespace-txt {
+            @include flex(1);
+            margin-right: 12px;
+          }
+        }
+        .namespace-description {
+          margin-bottom: 16px;
+        }
+        .namespace-list {
+          margin-top: 28px;
+        }
+      }
+    }
+  }
+  .mod-tips-info {
+    padding-left: 0px;
+  }
+  .edit-cluster {
+    margin: 16px 0 10px 58px;
+  }
+  .tab-cluster {
+    padding: 0 $page-padding;
+    .com-list-info {
+      padding: 0;
+    }
+  }
+  .border-info {
+    padding: 0;
+    margin-bottom: 20px;
+    li {
+      border-top: 0;
+    }
+  }
+  .com-list-info {
+    .info-name {
+      width: 150px;
+      text-align: right;
+    }
+    .info-name-content-for-label {
+      vertical-align: middle;
+    }
+    .info-content {
+      display: table-cell;
+      .delete-icon {
+        width: 20px;
+      }
+    }
+  }
+  .com-select-con{
+    width: 145px;
+    li{
+      margin: 10px;
+    }
+    label {
+      width: 100%;
+    }
+    .com-check-con {
+      margin-right: 0;
+    }
+  }
+  .com-list-info.watcherVersionInfo {
+    position: relative;
+    margin: 10px 20px 20px 20px;
+    height: auto;
+    padding: 0;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    .info-name {
+      width: 90px;
+    }
+    .info-content {
+      &>div {
+        margin-bottom: 20px;
+      }
+      &>div:last-child {
+        margin-bottom: 0px;
+      }
+      .show-host {
+        float: right;
+        margin-right: 220px;
+        margin-top: 9px;
+      }
+    }
+    .select-label {
+      margin: 4px 8px 4px 0;
+      padding: 4px;
+      width: auto;
+      background-color: #f0f2f5;
+      border-radius: 3px;
+      display: inline-block;
+    }
+  }
+  .info-options.watcher-option {
+    padding-bottom: 10px;
+    .title {
+      margin-left: 55px;
+      margin-right: 25px;
+      font-weight: bold;
+    }
+    .mod-tips-info {
+      margin-top: 20px;
+    }
+    .detail {
+      color: #169BD5;
+      float: right;
+      margin-right: 270px;
+    }
+    .txt-prompt{
+      margin:0;
+    }
+  }
+}
+
+.modal-addlabel {
+  padding-left: 40px;
+  .labels-wrap {
+    display: inline-block;
+    width: 448px;
+    margin-left: 34px;
+    vertical-align: top;
+  }
+  .label-name {
+    display: inline-block;
+    padding-top: 8px;
+  }
+  .ui-input {
+    width: 338px;
+  }
+  .ui-btn {
+    float: right;
+    &+.ui-btn {
+      margin-right: 16px;
+    }
+  }
+  p {
+    margin-top: 10px;
+  }
+  .label {
+    color: dome-color(font, default);
+  }
+}

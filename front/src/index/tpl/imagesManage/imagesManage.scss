@@ -1,0 +1,125 @@
+@import "compass/css3";
+@import "common/css/common.scss";
+.image-list-manage{
+	padding: 0 20px 0 20px;
+	.ui-btn-imgtool{
+		background-color: #4ed5b3;
+	}
+	.image-option{
+		padding:20px 0px 20px 0px;
+		// border-bottom: $light-border;
+		overflow: hidden;
+		.ui-input-search{
+			margin-left: 20px;
+		}
+		.registry-address{
+			display: inline-block;
+			margin-top: 6px;
+		}
+	}
+	.add-image{
+		padding: 4px 0 16px $wider-padding;
+		li{
+			padding-top: 14px;
+			.info-name {
+				display: inline-block;
+				width: 160px;
+				padding-top: 2px;
+				padding-left: 8px;
+			}
+			.ui-input-info{
+				width: 65%;
+			}
+			.ui-btn{
+				margin-left: 16px;
+			}
+		}
+	}
+	.ui-table-dome{
+		table-layout: fixed;
+		td,th{
+			&:first-child{
+				padding-left: $list-padding;
+			}
+		}
+		tbody tr{
+			&:last-child{
+				border-bottom:2px solid #fff; 
+			}
+		}
+	}
+	.tab-content{
+		padding: 0 20px 0 20px;
+	}
+	.image-no-project-collection{
+		padding-top: 20px;
+	}
+}
+
+.image-list{
+	.image-list-title{
+		cursor: pointer;
+		height: 60px;
+		width: 100%;
+		border: 1px solid  #ddd;
+		padding: 8px;
+		line-height: 44px;
+		margin-bottom: 20px;
+		span{
+			float:left;
+		}
+		.image-list-name{
+			width: 80%;
+			.image-list-icon{
+				margin-right: 10px;
+	    		margin-left: 10px;
+			}
+		}
+		.image-list-count{
+			width: 15%;
+			.image-list-nav{
+				border-right: 1px solid #ddd;
+    			padding-right: 20px;
+			}
+			.image-list-fold-icon{
+				padding: 0 20px 0 20px;
+			}
+		}
+		.image-list-operation{
+			width: 5%
+		}
+	}
+	.list-detail-container{
+		border-left: 1px solid #ddd;
+		border-right: 1px solid #ddd;
+		border-bottom: 1px solid #ddd;
+	}
+	.image-list-detail-container{
+		transition: all linear 0.5s;
+		margin-top: -20px;
+    	margin-bottom: 20px;
+    	.image-list-detail{
+    		padding: 0 20px 0 20px;
+    	}
+    	.cmd-txt{
+    		width: 80%;
+		    background-color: #fff;
+    	}
+    	.btn-copy{
+    		display: inline-block;
+			text-align: center;
+    		height: 34px;
+    		border-top-left-radius: 0px;
+		    border-bottom-left-radius: 0px;
+		    margin-left: -6px !important;
+		    background-color: dome-color(dome,bright);
+    	}
+    	.copy-logo{
+    		padding-left: 10px !important;
+    	}
+	}
+	.ng-hide {
+    	height: 0;
+	}
+}
+

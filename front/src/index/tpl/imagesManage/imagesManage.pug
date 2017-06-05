@@ -1,0 +1,44 @@
+.mod-image.image-list-manage
+	loading(ng-if="isLoading")
+	.image-option
+		span.registry-address 仓库地址：{{projectRegistry}}
+		.pull-right.right-option
+			span(ng-cloak) 共{{imageFilterd.length}}个镜像
+			input.ui-input-fill.ui-input-search(placeholder="输入镜像名称查找" ng-model="otherImageKey")
+	.mod-list.image-list
+		.image-list-title(ng-if="!isLoading&&(!imagesInfo||imageFilterd.length===0)")
+			span.image-list-name 
+				span.image-list-icon.icon-docker-image
+				|  无相关镜像
+			span.image-list-count
+				span.image-list-nav(ng-cloak) 版本数：0
+		.image-list-title(ng-repeat-start="img in imageFilterd=(imagesInfo|filter:{'imageName':otherImageKey})|orderBy:'imageName'" ng-class="" ng-click="isShowImageDetail!==$index&&getTagDetail(img);isShowImage($index)")
+			span.image-list-name 
+				span.image-list-icon.icon-docker-image
+				| {{img.imageName}}
+			span.image-list-count
+				span.image-list-nav(ng-cloak) 版本数：{{img.tags.length||0}}
+				span.image-list-fold-icon 
+					i.fa(ng-class="{'fa-angle-down':isShowImageDetail===$index,'fa-angle-right':isShowImageDetail!==$index}")
+		.image-list-detail-container.list-detail-container.project-group-detail-fold(ng-repeat-end="ng-repeat-end" ng-class="" ng-show="isShowImageDetail===$index" ng-init="formName='Form'+$index;")
+			loading(ng-if="isLoadingTagDetail")
+			.image-list-detail
+				table.ui-table-dome
+					thead
+						tr
+							th(style="width:25%") 版本名称
+							th(style="width:45%") 拉取命令
+							th(style="width:25%") 创建时间
+							th(style="width:5%") 操作
+					tbody
+						tr(ng-if="!isLoadingTagDetail&&(!img.tagsDetail||img.tagsDetail.length===0)")
+							td(colspan="3") 无相关版本信息
+						tr(ng-repeat="tagInfo in img.tagsDetail|orderBy:'createTime'")
+							td(ng-bind="tagInfo.tag")
+							td 
+								input.cmd-txt.ui-input-white(id="foo{{formName+$index}}" readonly="true" value="docker pull {{tagInfo.registry|urlProtocolFilter}}/{{img.imageName}}:{{tagInfo.tag}}" title="docker pull {{tagInfo.registry|urlProtocolFilter}}/{{img.imageName}}:{{tagInfo.tag}}")
+								button.ui-btn.btn-copy(ngclipboard data-clipboard-target="#foo{{formName+$index}}" tooltip="复制")
+									i.fa.fa-clipboard.copy-logo
+							td(ng-bind="(tagInfo.createTime | time)")
+							td 
+								button.button.fa.fa-trash-o.ui-btn-none(ng-click="deletePrivateImage(tagInfo.name,tagInfo.tag,tagInfo.registry)" ng-disabled="!isDelete" ng-class="{true:'icon-trash-color',false:'icon-fa-disabled'}[isDelete]" title="删除")

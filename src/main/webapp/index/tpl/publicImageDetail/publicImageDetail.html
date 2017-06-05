@@ -1,0 +1,47 @@
+
+<ng-controller ng-controller="publicImageDetailCtr">
+  <page-container>
+    <page-summary-box>
+      <page-summary-logo logo="{{ image.icon }}" fallback="index/images/lib/docker-image.png"></page-summary-logo>
+      <page-summary-item text="镜像名称"><span ng-bind="image.name"></span></page-summary-item>
+      <page-summary-item text="版本总数"><span><span ng-bind="image.tagList.length"></span>个</span></page-summary-item>
+      <page-summary-item text="下载次数"><span><span ng-bind="image.downloadCount"></span>次</span></page-summary-item>
+      <page-summary-item text="创建时间"><span ng-bind="image.createTime | time"></span></page-summary-item>
+    </page-summary-box>
+    <page-content-box tabs="[
+                { text: &quot;详细信息&quot;, page: &quot;&quot;, html: 'publicImageDetailInfo.html' },
+                { text: &quot;版本&quot;, page: &quot;tags&quot;, html: 'publicImageDetailTags.html' },
+              ]"></page-content-box>
+  </page-container>
+</ng-controller>
+<script type="text/ng-template" id="publicImageDetailInfo.html">
+  <form-container>
+    <markdown src="{{ image.readmeUrl }}" empty-text="暂无简介"></markdown>
+  </form-container>
+</script>
+<script type="text/ng-template" id="publicImageDetailTags.html">
+  <ng-controller ng-controller="publicImageDetailTagsCtr">
+    <form-container>
+      <form-table ng-model="image.tagList" template="publicImageDetailTagsTable" columns="[
+                    { text: '版本', key: 'name', width: '15%' },
+                    { text: '下载', key: 'imageUrl', width: '25%' },
+                    { text: '大小', key: 'size', width: '15%' },
+                    { text: '下载次数', key: 'downloadCount', width: '15%' },
+                    { text: '创建时间', key: 'createTime', width: '15%' },
+                    { text: '查看Dockerfile', key: 'dockerfileUrl', width: '15%' },
+                ]" param="{ showDockerfile: showDockerfile }"></form-table>
+      <script type="text/ng-template" id="publicImageDetailTagsTable">
+        <div ng-if="column.key === 'name'" ng-bind="value"></div>
+        <div ng-if="column.key === 'size'" ng-bind="value | byte"></div>
+        <div ng-if="column.key === 'downloadCount'" ng-bind="value"></div>
+        <div ng-if="column.key === 'createTime'" ng-bind="value | time "></div>
+        <div ng-if="column.key === 'imageUrl'" ng-init="row.imageUrlWithDockerPull = 'docker pull ' + row.imageUrl">
+          <input-with-copy ng-model="row.imageUrlWithDockerPull" readonly="readonly" style="width: 80%;"></input-with-copy>
+        </div>
+        <div ng-if="column.key === 'dockerfileUrl'">
+          <icon-file ng-click="param.showDockerfile(value)">dockerfile</icon-file>
+        </div>
+      </script>
+    </form-container>
+  </ng-controller>
+</script>

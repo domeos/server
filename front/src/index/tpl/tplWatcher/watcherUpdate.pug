@@ -1,0 +1,53 @@
+.mod-cluster.watcher-update
+    form-container(left-column-width="80px")
+        form(name="updateWatcher")
+            form-config-group
+                form-config-item(config-title="镜像信息")
+                    form-input-container 
+                        span.info(ng-bind="watcher.containerDrafts[0].registry")
+                        span.info /
+                        span.info(ng-bind="watcher.containerDrafts[0].image")
+                        span.info :
+                        span.info(ng-bind="watcher.containerDrafts[0].tag")
+                        span.fa.fa-pencil.ui-btn-none.icon-edit-color(ng-click="modifyMirrorInfo()" style="padding: 0px 5px !important;cursor:pointer")
+            form-config-group
+                form-config-item(config-title="主机标签")
+                    form-input-container
+                        form-with-button(width="120px")
+                            content-area
+                                form-multiple-select(options="labelsOption" ng-model="watcherlabels" placeholder="选择主机标签" on-change="toggleLabels(watcherlabels)" name="labels")
+                            button-area
+                                span.txt-wrap(style="margin-left:10px")
+                                    a.link-safe(ng-click="nodeListIns.showHost()") 查看选中主机
+            form-config-group
+                form-config-item
+                    form-submit-button(form="updateWatcher" on-submit="updateWatcherSubmit()") 保存升级设置
+    script(type="text/ng-template" id="modifyMirrorInfo.html")
+        .d-modal-header 编辑
+        .modal-body.edit-mirror-modal
+            form-container(left-column-width="60px")
+                form(name="mirrorInfoForm")
+                    form-config-group
+                        form-config-item(config-title="镜像仓库" required)
+                            form-input-container
+                                input.mid-input(type="text" placeholder="" required ng-model="containerDrafts.registry")
+                    form-config-group
+                        form-config-item(config-title="镜像名称" required)
+                            form-input-container
+                                input.mid-input(type="text" placeholder="" required ng-model="containerDrafts.image")
+                    form-config-group
+                        form-config-item(config-title="镜像版本" required)
+                            form-input-container
+                                input.mid-input(type="text" placeholder="" required ng-model="containerDrafts.tag")
+                    form-config-group
+                            form-config-item(config-title="容器大小")
+                                .item(style="width:50%;float:left;")
+                                    label(style="margin-right:10px") cpu(个)
+                                    input.ui-input-fill.ui-input-sm(ng-model="containerDrafts.cpu" name="cpu" ng-pattern="/^(\\d*\\.)?\\d+$/" required)
+                                .item(style="width:50%;float:left")
+                                    label(style="margin-right:10px") 内存(MB)
+                                    input.ui-input-fill.ui-input-sm(ng-model="containerDrafts.mem" name="cpu" ng-pattern="/^(\\d*\\.)?\\d+$/" required)
+                    form-config-group
+                        form-config-item
+                            button(type="button" ng-click="cancel()" style="margin-right:15px;") 取消
+                            form-submit-button(form="mirrorInfoForm" on-submit="submit()") 提交

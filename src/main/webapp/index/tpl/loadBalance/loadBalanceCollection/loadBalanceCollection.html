@@ -1,0 +1,46 @@
+
+<!--
+Created by haozhou on 2017/3/14.
+
+-->
+<div class="dome-load-balance">
+  <page-title page-title="负载均衡"></page-title>
+  <loading ng-if="isLoading"></loading>
+  <div class="dome-option-container">
+    <button class="ui-btn ui-btn-lg ui-btn-bright" ui-sref="createLoadBalanceCollection"><span class="btn-txt">新建负载均衡</span><i class="fa fa-plus"></i></button>
+    <div class="option-right"><span ng-cloak="ng-cloak">共{{loadBalanceCollectionFilter.length || 0}}个负载均衡</span>
+      <input class="ui-input-search ui-input-fill" type="text" placeholder="输入名称进行查询" ng-model="proKeywords"/>
+    </div>
+  </div>
+  <div class="dome-prompt-container">
+    <dome-prompt content="负载均衡用来控制一组负载均衡实例的访问权限。"></dome-prompt>
+  </div>
+  <div class="dome-list-container">
+    <ul>
+      <li class="dome-list-item-no" ng-if="!isLoading&amp;&amp;(!loadBalanceCollectionList||loadBalanceCollectionFilter.length===0)"><span>暂无负载均衡，可以</span><a class="txt-bright" ui-sref="createLoadBalanceCollection">新建一个</a></li>
+      <li class="dome-list-item" ng-repeat="loadBalanceCollection in loadBalanceCollectionFilter=(loadBalanceCollectionList|filter:{name:proKeywords})">
+        <div class="dome-list-item-header"><a class="item-header-name" ng-if="!loadBalanceCollection.isEdit" ui-sref="loadBalanceInfo({'id': loadBalanceCollection.id, 'type': loadBalanceCollection.type})" ng-bind="loadBalanceCollection.name || '未设置'"></a>
+          <input class="ui-input-fill" ng-if="loadBalanceCollection.isEdit" ng-model="loadBalanceCollection.name"/>
+          <div class="item-header-option">
+            <button class="dome-fa-icon fa fa-pencil dome-btn-none" ng-if="!loadBalanceCollection.isEdit" ng-click="loadBalanceCollection.isEdit = true" ng-class="{true:'icon-edit-color',false:'icon-fa-disabled'}[loadBalanceCollection.role==='MASTER' || loadBalanceCollection.role==='DEVELOPER']" ng-disabled="!(loadBalanceCollection.role==='MASTER' || loadBalanceCollection.role==='DEVELOPER')" tooltip="编辑"></button>
+            <button class="dome-fa-icon fa fa-trash-o dome-btn-none" ng-if="!loadBalanceCollection.isEdit" ng-click="delete(loadBalanceCollection)" ng-class="{true:'icon-trash-color',false:'icon-fa-disabled'}[loadBalanceCollection.role==='MASTER']" ng-disabled="!(loadBalanceCollection.role==='MASTER')" tooltip="删除"></button>
+            <button class="fa fa-floppy-o dome-btn-none icon-success-color" ng-if="loadBalanceCollection.isEdit" ng-click="saveModify(loadBalanceCollection);loadBalanceCollection.isEdit = false" tooltip="保存"></button>
+            <button class="fa fa-times dome-btn-none icon-cancel-color" ng-if="loadBalanceCollection.isEdit" ng-click="cancelModify();loadBalanceCollection.isEdit = false" tooltip="取消"></button>
+          </div>
+        </div>
+        <div class="dome-list-item-content">
+          <div class="item-content-block"><span>类型：</span><span ng-bind="loadBalanceCollection.type.toLowerCase()" ng-class="{'KUBE_PROXY': 'txt-bright', 'NGINX': 'txt-success'}[loadBalanceCollection.type]"></span></div>
+          <div class="item-content-block long-text-wrap" style="margin: -5px;"><span ng-if="!loadBalanceCollection.isEdit" ng-bind="loadBalanceCollection.description || '无描述信息'" title="{{ loadBalanceCollection.description }}"></span>
+            <input class="ui-input-fill" ng-if="loadBalanceCollection.isEdit" ng-model="loadBalanceCollection.description"/>
+          </div>
+        </div>
+        <div class="dome-list-item-footer">
+          <div class="item-footer-block">实例数：<span class="txt-bright" ng-bind="loadBalanceCollection.loadBalancerCount"></span></div>
+          <div class="item-footer-block">成员数：<span class="txt-success" ng-bind="loadBalanceCollection.memberCount"></span></div>
+          <div class="item-footer-block">创建时间：<span ng-bind="loadBalanceCollection.createTime | day"></span></div>
+          <div class="item-footer-block-other" style="display:inline-block;">创建者：<span ng-bind="loadBalanceCollection.creatorName"></span></div>
+        </div>
+      </li>
+    </ul>
+  </div>
+</div>

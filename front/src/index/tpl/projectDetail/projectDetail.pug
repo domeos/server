@@ -1,0 +1,167 @@
+.mod-project.project-detail
+	loading(ng-if="isLoading")
+	.detail-header
+		.detail-item
+			em.item-name 工程名称
+			b.item-content(ng-bind="config.name")
+		i.detail-sep
+		.detail-item
+			em.item-name 创建时间
+			b.item-content(ng-bind="(config.createTime | time)")
+		.pull-right
+			button.ui-btn.ui-btn-sm.ui-btn-bright(ng-click="openBuild(config.projectId,!!config.codeInfo)") 构建
+			button.ui-btn.ui-btn-sm.ui-btn-bright(ng-class="{'ui-btn-lg-disabled':!isDeleteProject}" ng-disabled="!isDeleteProject" ng-click="deleteProject()") 删除
+	tabset
+		tab(heading="基本信息" active="tabActive[0].active" ui-sref="projectDetail.info")
+			.project-creator
+				p.txt-prompt.edit-creator
+					i.fa.fa-info-circle.icon-algin-right
+					| admin和创建者本人可以更改创建者，当工程关联代码仓库时，会验证新的创建者是否在代码仓库上拥有该工程的master权限。
+				div 创建者：
+					span(ng-if="!isEditCreator") {{creatorInfo.name}}
+					span.edit-creator(ng-if="isEditCreator")
+						.com-select-con.image-select-con(select-con event-type="focus")
+							input.ui-input-search.ui-input-fill.ui-btn-select.ui-input-full(placeholder="{{selectedCreator.username?'当前选择：'+selectedCreator.username:'搜索成员'}}" name="mirKey" ng-model="mirKey")
+							ul.select-list
+								li.select-item(ng-if="!creatorUserList||userListFilter.length===0")
+									a 无相关成员
+								li.select-item(ng-repeat="user in userListFilter=(creatorUserList|filter:{'username':mirKey})")
+									a(ng-cloak ng-click="toggleCreator(user);$parent.mirKey=''")
+										| {{user.username}}
+					span.txt-wrap(ng-if="isCreator")
+						button.fa.fa-pencil.ui-btn-none.icon-edit-color.enlarge-foucs(ng-if="!isEditCreator" ng-click="modifyCreator()" tooltip="修改")
+						button.fa.fa-floppy-o.ui-btn-none.icon-success-color.enlarge-foucs(ng-if="isEditCreator" ng-click="saveEditCreator()" tooltip="保存")
+						button.fa.fa-times.ui-btn-none.icon-cancel-color.enlarge-foucs(ng-if="isEditCreator" ng-click="toggleIsEditCreator()" tooltip="取消")
+			.code-origin 代码源：
+				a(href="{{config.codeInfo.codeHttpUrl}}" target="_blank" ng-bind="config.codeInfo.codeHttpUrl")
+				button.ui-btn-none.fa.fa-pencil.icon-edit-color.enlarge-foucs(ng-click="modifyCodeInfo()" ng-if="isEditProject&&config.codeInfo")
+				span(ng-if="!config.codeInfo") 该工程没有关联代码仓库
+			markdown(source="{{ markdown }}")
+		tab(heading="工程配置" active="tabActive[1].active" ui-sref="projectDetail.config")
+			div(name="projectForm" ng-form ng-class="{'need-valid':valid.needValid}")
+				.dockerfile-options
+					button.ui-btn.ui-btn-sm.ui-btn-bright(ng-class="{'ui-btn-lg-disabled':!isEditProject}" ng-disabled="!isEditProject" ng-click="checkEdit()" ng-if="!edit") 编辑
+					button.ui-btn.ui-btn-sm.ui-btn-bright(ng-click="checkEdit();valid.needValid = false;" ng-if="edit") 取消
+					button.ui-btn.ui-btn-sm.ui-btn-safe(ng-click="getDockerfile()" ng-disabled="isLoading" ng-if="!edit") 查看Dockerfile
+				ng-include(src="'index/tpl/tplProjectSetting/projectSettingInfoTpl.html'" ng-if="!edit")
+				ng-include(src="'index/tpl/tplProjectSetting/projectSettingTpl.html'" ng-if="edit")
+				.com-bottom-option(ng-if="edit" style="text-align:left;padding-left:190px;")
+					span.com-bottom-option-con
+						button.ui-btn.ui-btn-sm.ui-btn-bright(ng-click="valid.needValid=true;validCreatedFileStoragePath();projectForm.$valid&&valid.createdFileStoragePath&&submitModify()" ng-disabled="isWaitingForModify" ng-class="{'ui-btn-lg-disabled':isWaitingForModify}") 保存
+						button.ui-btn.ui-btn-sm.ui-btn-safe(ng-click="valid.needValid=true;validCreatedFileStoragePath();projectForm.$valid&&valid.createdFileStoragePath&&getDockerfile()") 预览
+						span.txt-error(ng-if="valid.needValid&&(!valid.createdFileStoragePath||projectForm.$invalid)") 存在不合法数据，请修改后提交！
+		tab(heading="构建配置" active="tabActive[2].active" ui-sref="projectDetail.autobuild")
+			p.tool-noinfo(ng-if="!config.codeInfo") 该工程未关联代码仓库，无法持续集成
+			.ci-con(ng-if="config.codeInfo")
+				span.ci-title runners-token
+				.ci-content
+					p.txt-prompt CI/CD pipeline的runners token，该项配置时采用该token clone代码，否则使用用户token clone代码
+					input.ui-input-fill.input-md(ng-model="config.codeInfo.runnersToken" ng-readonly="!isEditProject")
+			.ci-con(ng-if="config.codeInfo")
+				span.ci-title 自动构建
+				.ci-content
+					p.txt-prompt 当所选分支更新或出现新tag时，会自动触发构建，生成新的工程镜像。请不要在频繁push的分支上开启自动构建，以免频繁触发构建，造成资源浪费。
+					span.branch-check
+						input#buildMaster.ui-check(type="checkbox" name="buildBranch" ng-model="config.autoBuildInfo.master")
+						label(for="buildMaster") master
+					span.branch-check
+						input#buildTag.ui-check(type="checkbox" name="buildBranch"  ng-true-value="1"  ng-false-value="0" ng-model="config.autoBuildInfo.tag")
+						label(for="buildTag") tag
+					span.branch-check
+						input#buildOther.ui-check(type="checkbox" name="buildBranch" ng-model="config.autoBuildInfo.other")
+						label(for="buildOther" ng-if="!config.autoBuildInfo.other") 指定其他分支
+						label(for="buildOther" ng-if="config.autoBuildInfo.other")
+						input.ui-input-white(ng-model="config.autoBuildInfo.branches" ng-show="config.autoBuildInfo.other" placeholder="请输入分支名称，用逗号分隔 e.g. dev,fix-bug"  )
+			.com-bottom-option(ng-show="config.codeInfo")
+				button.ui-btn.ui-btn-lg.ui-btn-bright(ng-click="modifyCI()" ng-disabled="isWaitingForModify||!isEditProject" ng-class="{'ui-btn-lg-disabled':!isEditProject}") 保存修改
+		tab(heading="构建记录" ng-click="getBuildList()" active="tabActive[3].active" ui-sref="projectDetail.buildlog")
+			.chose-log
+				span.chose-title 按状态筛选
+				a.txt-chose(ng-class="{'active':statusKey==''}" ng-click="toggleStatus('')") 全部
+				a.txt-chose(ng-class="{'active':statusKey=='Success'}" ng-click="toggleStatus('Success')") 成功
+				a.txt-chose(ng-class="{'active':statusKey=='Fail'}" ng-click="toggleStatus('Fail')") 失败
+				a.txt-chose(ng-class="{'active':statusKey=='Building'}" ng-click="toggleStatus('Building')") 构建中
+				a.txt-chose(ng-class="{'active':statusKey=='Preparing'}" ng-click="toggleStatus('Preparing')") 准备中
+				i.sep |
+				span.chose-title 按构建模式筛选
+				a.txt-chose(ng-class="{'active':autoBuildKey===''}" ng-click="toggleAutoBuild('')") 全部
+				a.txt-chose(ng-class="{'active':autoBuildKey===0}" ng-click="toggleAutoBuild(0)") 手动构建
+				a.txt-chose(ng-class="{'active':autoBuildKey===1}" ng-click="toggleAutoBuild(1)") 自动构建
+			.build-log
+					div.ui-table-dome
+						.tb-tr-group(ng-if="!isLoadingBuildInfo&&(!buildList||logFilterList.length===0)")
+							.tb-tr 无相关信息
+						.tb-tr-group(ng-repeat="log in logFilterList = (buildList|filter:{'autoBuild':autoBuildKey,'state':statusKey})")
+							.tb-tr(ng-click="showDetail($index)")
+								.tb-td(style="flex-basis:25%" ng-cloak)
+									i.icon-label( tooltip="镜像版本")
+									| {{isNull(log.imageInfo.imageTag)}}
+								.tb-td(style="flex-basis:25%" ng-cloak ng-if="log.autoBuild!==1")
+									i.icon-user(tooltip="构建者")
+									| {{log.userInfo.userName}}
+								.tb-td(ng-if="log.autoBuild==1" style="flex-basis:25%;") 自动构建
+								.tb-td(ng-switch="log.state" style="flex-basis:10%")
+									span(ng-switch-when="Success" class="txt-success") 成功
+									span(ng-switch-when="Fail" class="txt-warning") 失败
+									span(ng-switch-when="Preparing" class="txt-normal") 准备中
+									span(ng-switch-when="Send" class="txt-normal") 准备中
+									span(ng-switch-when="Stopped" class="txt-error") 已停止
+									span(ng-switch-default class="txt-normal") 构建中
+								.tb-td(style="flex-basis:20%" ng-bind="log.createTime")
+								.tb-td(style="flex-basis:15%" ng-bind="log.interval")
+								.tb-td(style="flex-basis:10%")
+									a.link-safe(href="{{log.logHref}}" target="_blank") 日志
+								.tb-td(ng-if="isEditProject")
+									button.ui-btn-none.fa.fa-stop.icon-trash-color(type="button" ng-click="stopBuild(log)" ng-class="{'Success':'icon-fa-disabled','Fail':'icon-fa-disabled', 'Stopped': 'icon-fa-disabled'}[log.state]" ng-disabled="log.state ==='Success' || log.state === 'Fail' || log.state === 'Stopped'" tooltip="停止构建")
+								.tb-td
+									i.icon-down(ng-if="buildList[$index].active")
+									i.icon-down.up(ng-if="!buildList[$index].active")
+							.tb-tr.log-detail(ng-if="buildList[$index].active")
+								ul.detail-list
+									li.detail-row
+										span.detail-title 镜像创建时间
+										span.detail-content {{log.imageInfo.createTime|formateDate }}
+									li.detail-row
+										span.detail-title 镜像大小
+										span.detail-content {{log.imageInfo.imageSize + 'MB'}}
+									li.detail-row(ng-if = "log.state == 'Success'")
+										span.detail-title 拉取命令
+										span.detail-content 
+											input.cmd-txt.ui-input-white(readonly="true" ng-value="'docker pull '+log.imageInfo.registry + '/' + log.imageInfo.imageName + ':' + log.imageInfo.imageTag" id="{{'input'+$index}}")
+											a.link-safe.link-copy(id="'btn'+ $index" data-clipboard-target="{{'#input'+ $index}}" data-text="{{'docker pull ' + log.imageInfo.registry + '/' + log.imageInfo.imageName + ':' + log.imageInfo.imageTag}}") 复制
+											p.cmd-prompt(ng-if="log.isLogin") 拉取镜像前请登录: docker login {{log.imageInfo.registry}}
+									li.detail-row(ng-if="log.codeInfo && log.commitInfo")
+										span.detail-title Branch名称
+										span.detail-content {{log.codeInfo.codeBranch}}
+									li.detail-row(ng-if="log.codeInfo && log.commitInfo")
+										span.detail-title author
+										span.detail-content {{log.commitInfo.authorName || '无'}}
+									li.detail-row(ng-if="log.codeInfo && log.commitInfo")
+										span.detail-title author email
+										span.detail-content {{log.commitInfo.authorEmail || '无'}}
+									li.detail-row(ng-if="log.codeInfo && log.commitInfo")
+										span.detail-title commit time
+										span.detail-content {{log.commitInfo.createdAt|formateDate }}
+									li.detail-row(ng-if="log.codeInfo && log.commitInfo")
+										span.detail-title commit id
+										span.detail-content {{log.commitInfo.id }}	
+									li.detail-row(ng-if="log.codeInfo && log.commitInfo")
+										span.detail-title commit info
+										span.detail-content {{log.commitInfo.message}}
+									li.detail-row
+										span.detail-title Dockerfile
+										span.detail-content(ng-bind-html="dockerfile")
+			.build-log-pagination
+				.pagination-per-page
+					span 每页
+					.com-select-con(select-con)
+						button.ui-btn.ui-btn-white.ui-btn-select(ng-cloak) {{itemsPerPage}}
+							i.icon-down
+						ul.select-list(ng-init="perPageCountList = [10,25,50,100]")
+							li.select-item(ng-repeat="perPageCount in perPageCountList")
+								a(ng-click="togglePerPageCount(perPageCount)") {{perPageCount}}
+					span  行
+				.pagination-info
+					span(ng-cloak) 共 {{totalItems}} 个
+				.pagination-navigation
+					pagination.pagination-sm(total-items="totalItems" ng-model="pagination.currentPage" ng-change="pageChanged()" max-size="maxSize" items-per-page="itemsPerPage"  rotate="false" num-pages="numPages" previous-text="上一页" next-text="下一页")

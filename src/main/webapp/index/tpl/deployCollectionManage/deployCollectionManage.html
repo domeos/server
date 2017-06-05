@@ -1,0 +1,34 @@
+
+<div class="mod-deploy-collection deploy-collection-manage">
+  <div class="mod-option">
+    <button class="ui-btn ui-btn-lg ui-btn-bright" ui-sref="createDeployCollection"><span class="btn-txt">新建服务</span><i class="fa fa-plus"></i></button>
+    <div class="pull-right right-option"><span ng-cloak="ng-cloak">共{{collectionListFilter.length}}个服务</span>
+      <input class="ui-input-search ui-input-fill" type="text" placeholder="输入服务名称查询" ng-model="proKeywards"/><a class="deploy-list-btn" ui-sref="deployAllManage({'id':0,'name':'all-deploy'})"><i class="fa fa-th-list fa-lg" title="查看所有部署"></i></a>
+    </div>
+  </div>
+  <loading ng-if="isLoading"></loading>
+  <div class="mod-tips-info">
+    <p class="txt-prompt"><i class="fa fa-info-circle icon-algin-right"></i>服务是部署的集合，用来控制一组部署的访问权限。</p>
+  </div>
+  <ul class="collection-list">
+    <li class="no-collection" ng-if="!isLoading&amp;&amp;(!collectionList||collectionListFilter.length===0)"><span>暂无服务，可以新建一个</span></li>
+    <li ng-repeat="deployCollection in collectionListFilter = (collectionList |filter:{name:proKeywards}|orderBy:'createTime':true)" ng-if="deployCollection.currentUserRole !== ''">
+      <div class="collection-item text-center" ng-form="ng-form" name="deployCollectionFrom$index">
+        <div class="collection-header"><a class="collection-name" ng-if="!deployCollection.isEdit" ui-sref="deployManage({'id':deployCollection.id,'name':deployCollection.name})" ng-bind="deployCollection.name"></a>
+          <input class="ui-input-fill line-element" ng-if="deployCollection.isEdit" ng-model="deployCollection.name" name="deployCollectionName" placeholder="不能有大写字母，不能以中横线开头和结尾" required="required" ng-pattern="/^[a-z0-9]+([._-][a-z0-9]+)*$/" ng-model-options="{updateOn:'default blur',debounce:{default:500,blur:0}}" is-deploy-collection-exist="is-deploy-collection-exist"/><span class="txt-error" ng-if="deployCollectionFrom$index.deployCollectionName.$dirty&amp;&amp;deployCollectionFrom$index.deployCollectionName.$error.required">必填</span><span class="txt-error" ng-if="deployCollectionFrom$index.deployCollectionName.$dirty&amp;&amp;!deployCollectionFrom$index.deployCollectionName.$error.required&amp;&amp;deployCollectionFrom$index.deployCollectionName.$error.pattern">非法的名称</span><span class="txt-error" ng-if="deployCollectionFrom$index.deployCollectionName.$dirty&amp;&amp;!deployCollectionFrom$index.deployCollectionName.$error.required&amp;&amp;!deployCollectionFrom$index.deployCollectionName.$error.pattern&amp;&amp;deployCollectionFrom$index.deployCollectionName.$invalid&amp;&amp;deployCollectionFrom$index.deployCollectionName.$error.isDeployCollectionExist">服务名已存在</span><span class="build-collection-title pull-right pull-right-margin">
+            <button class="fa fa-pencil ui-btn-none" ng-if="!deployCollection.isEdit" ng-click="deployCollection.isEdit = true" ng-class="{true:'icon-edit-color',false:'icon-fa-disabled'}[deployCollection.role==='MASTER'||deployCollection.role==='DEVELOPER']" ng-disabled="!(deployCollection.role==='MASTER'||deployCollection.role==='DEVELOPER')" tooltip="编辑"></button>
+            <button class="fa fa-trash-o ui-btn-none" ng-if="!deployCollection.isEdit" ng-click="deleteDeployCollection(deployCollection.id)" ng-class="{true:'icon-trash-color',false:'icon-fa-disabled'}[deployCollection.role==='MASTER']" ng-disabled="!(deployCollection.role==='MASTER')" tooltip="删除"></button>
+            <button class="fa fa-floppy-o ui-btn-none icon-success-color" ng-if="deployCollection.isEdit" ng-disabled="!deployCollectionFrom$index.deployCollectionName.$valid" ng-click="saveEdit(deployCollection);deployCollection.isEdit = false" tooltip="保存"></button>
+            <button class="fa fa-times ui-btn-none icon-cancel-color" ng-if="deployCollection.isEdit" ng-click="cancelEdit();deployCollection.isEdit = false" tooltip="取消"></button></span>
+        </div>
+        <div class="collection-content">
+          <div class="collection-info-description" ng-show="!deployCollection.isEdit">{{deployCollection.description || '此服务无描述信息'}}</div>
+          <div class="collection-info-description" ng-show="deployCollection.isEdit">
+            <textarea class="ui-input-fill textarea-edit" ng-model="deployCollection.description" name="serviceDescription"></textarea>
+          </div>
+        </div>
+        <div class="collection-content content-last"><span class="collection-info col embed">部署数：<span class="txt-bright">{{deployCollection.deployCount}}</span></span><span class="collection-info col embed">成员数：<span class="txt-success">{{deployCollection.memberCount}}</span></span><span class="collection-info create-time-size">创建时间：{{deployCollection.createTime|date:'yyyy-MM-dd'}}</span><span class="collection-info">创建者：{{deployCollection.creatorName}}</span></div>
+      </div>
+    </li>
+  </ul>
+</div>

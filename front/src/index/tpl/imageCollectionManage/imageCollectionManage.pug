@@ -1,0 +1,113 @@
+.mod-image.image-manage
+    tabset.mod-tab
+        tab(heading="基础镜像" active="tabActive[0].active" ui-sref="imageCollectionManage.baseimages")
+            loading(ng-if="isLoadingBaseImage")
+            .image-option
+                button.ui-btn.ui-btn-bright.ui-btn-sm(ng-disabled="!baseImageDeleteAuth" ng-class="{'ui-btn-lg-disabled':!baseImageDeleteAuth}" ng-if="!isShowAdd" ng-click="toggleShowAdd(true)") 添加
+                button.ui-btn.ui-btn-bright.ui-btn-sm(ng-if="isShowAdd" ng-click="toggleShowAdd(false)") 取消
+                .pull-right.right-option
+                    span(ng-cloak) 共{{baseImagesFiltered.length}}个镜像
+                    input.ui-input-fill.ui-input-search(placeholder="输入镜像名称查找" ng-model="baseImageKey")
+            p.txt-prompt(ng-if="!isShowAdd")
+                i.fa.fa-info-circle.icon-algin-right
+                | 只有管理员才能添加基础镜像。添加完成后可以作为工程通用配置里的基础镜像使用，也可以直接部署。
+            ul.add-image(ng-form ng-class="{'need-valid':needValid.value}" name="imageForm" ng-show="isShowAdd")
+                p.txt-prompt
+                    i.fa.fa-info-circle.icon-algin-right
+                    | DomeOS会验证镜像的存在性，请通过浏览器访问“镜像仓库/v2/镜像名称/tags/list”确认存在该镜像版本。可以通过浏览器访问“镜像仓库/v2/_catalog”查看该仓库中存在的镜像。
+                li
+                    span.info-name 镜像所在仓库
+                    input.ui-input-info.ui-input-white(ng-model="newImageInfo.registry" ng-pattern="/^[^\\s]*$/" name="registry" required)
+                li
+                    span.info-name 镜像名称
+                    input.ui-input-info.ui-input-white(ng-model="newImageInfo.imageName" ng-pattern="/^[^\\s]*$/" name="imageName" required)
+                li
+                    span.info-name 镜像版本号
+                    input.ui-input-info.ui-input-white(ng-model="newImageInfo.imageTag" is-tag-exist baseimages="baseImages" imagename="newImageInfo.imageName" ng-pattern="/^[^\\s]*$/" name="imageTag" required)
+                    span.tool-inline-error(ng-if="imageForm.imageTag.$error.isTagExist") 已存在
+                li
+                    span.info-name 镜像描述
+                    input.ui-input-info.ui-input-white(ng-model="newImageInfo.description" name="description")
+                    button.ui-btn.ui-btn-bright.ui-btn-lg(ng-disabled="isLoading" ng-click="needValid.value=true;imageForm.$valid&&createImage(imageForm);") 添加镜像
+            table.ui-table-dome
+                thead
+                    tr
+                        th 镜像名称
+                        th(style="width:25%") 拉取命令
+                        th 镜像版本
+                        th 仓库地址
+                        th 镜像描述
+                        th(ng-show="baseImageDeleteAuth" style="width:5%") 操作
+                tbody
+                    tr(ng-if="!isLoadingBaseImage&&(!baseImages||baseImagesFiltered.length===0)")
+                        td(colspan="5") 无相关镜像信息
+                    tr(ng-repeat="img in baseImagesFiltered=(baseImages|filter:{'imageName':baseImageKey})|orderBy:'imageName'")
+                        td(ng-bind="img.imageName")
+                        td
+                            input.cmd-txt.ui-input-white(id="foo{{$index}}" readonly="true" value="docker pull {{img.registry|urlProtocolFilter}}/{{img.imageName}}:{{img.imageTag}}" title="docker pull {{img.registry|urlProtocolFilter}}/{{img.imageName}}:{{img.imageTag}}")
+                            button.ui-btn.btn-copy(ngclipboard data-clipboard-target="#foo{{$index}}" tooltip="复制")
+                                i.fa.fa-clipboard.copy-cmd-logo
+                        td(ng-bind="img.imageTag")
+                        td(ng-bind="img.registry")
+                        td(ng-bind="img.description")
+                        td(ng-show="baseImageDeleteAuth")
+                            button.fa.fa-trash-o.ui-btn-none.icon-trash-color(ng-click="deleteBaseImage(img.id)")
+        tab(heading="官方仓库" active="tabActive[1].active" ui-sref="imageCollectionManage.publicimages")
+            div(ng-if="tabActive[1].active" style="margin: 0 -20px;")
+                div(ng-include="'index/tpl/imageCollectionManage/publicImages/publicImages.html'")
+        tab(heading="项目镜像" active="tabActive[2].active" ui-sref="imageCollectionManage.proimages")
+            loading(ng-if="isLoading")
+            .image-option
+                span.registry-address 仓库地址：{{projectRegistry}}
+                .pull-right.right-option
+                    span(ng-cloak) 共{{projectImagesFiltered.length}}个镜像
+                    input.ui-input-fill.ui-input-search(placeholder="输入镜像名称查找" ng-model="projectImageKey")
+            .mod-tips-info-image
+                p.txt-prompt
+                    i.fa.fa-info-circle.icon-algin-right
+                    | 私有镜像仓库中存在的镜像如下，DomeOS按照项目名对镜像进行了分类，方便查看。
+            .image-project-collection
+                ul.image-project-collection-list
+                    li.no-image-project-collection(ng-if="!isLoading&&(!imageProjectCollections||projectImagesFiltered.length===0)")
+                        span 暂无项目镜像
+                    li(ng-repeat="imgProjectCollection in projectImagesFiltered=(imageProjectCollections|filter:{'projectCollectionName':projectImageKey})|orderBy:'projectCollectionName'")
+                        .image-project-collection-item.text-center
+                            .image-project-collection-header
+                                //- div.dropdown.pull-right
+                                //-     a.icon-delete(ng-show="imgProjectCollection.deletable" ng-click="deleteImageProjectCollection(imgProjectCollection.projectCollectionId)" title="删除项目镜像组")
+                                a.image-project-collection-name(ng-click="gotoProjectImageDetail(imgProjectCollection)" ng-bind="imgProjectCollection.projectCollectionName")
+                            .image-project-collection-content
+                                .image-project-collection-info-description(title="{{imgProjectCollection.description}}") {{imgProjectCollection.description || '无描述信息'}}
+                            .image-project-collection-content.content-last
+                                span.image-project-collection-info.embed 镜像数：
+                                    span.txt-bright {{imgProjectCollection.projectImages.length}}
+                                span.image-project-collection-info.creat-time 创建时间：{{imgProjectCollection.createTime|date:'yyyy-MM-dd'}}
+                                span.image-project-collection-info.creator 创建者：{{imgProjectCollection.creator}}
+
+                    //- 非项目卡片
+                    li.not-project-image-list
+                        .image-project-collection-item.text-center
+                            .image-project-collection-header
+                                a.not-project-image-name.image-project-collection-name(ng-click="gotoNotProjectImageDetail(otherImages)") 其他镜像
+                            .image-project-collection-content
+                                .image-project-collection-info-description
+                                    | DomeOS在私有镜像仓库中读取到的，无法分类的镜像信息
+                            .image-project-collection-content.not-project-image-bottom
+                                span.image-project-collection-info.embed 镜像数：
+                                    span.txt-bright(ng-cloak) {{otherImages.length}}
+
+script(type="text/ng-template" id="imageTagModal.html")
+    .d-modal-header(ng-bind="imageName")
+    .d-modal-full
+        loading(ng-if="isLoading")
+        table.ui-table-dome.modal-full-table
+            thead
+                tr
+                    th 版本名
+                    th 创建时间
+            tbody
+                tr(ng-if="tagInfo.length===0")
+                    td(colspan="2") 无版本信息
+                tr(ng-repeat="tag in tagInfo")
+                    td(ng-bind="tag.tag")
+                    td(ng-bind="(tag.createTime | time)")

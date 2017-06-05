@@ -1,0 +1,25 @@
+//
+   Created by haozhou on 2017/3/14.
+form-container(left-column-width="150px")
+    form(name="createLoadBalanceCollection")
+        form-config-group
+            form-config-item(config-title="负载均衡名称" required)
+                form-input-container
+                    input(name="loadBalanceCollectionName" type="text" placeholder="相同负载均衡类型下，名称唯一" ng-model="loadBalanceCollection.name" required)
+                    form-error-message(form="createLoadBalanceCollection" target="loadBalanceCollectionName" type="required") 名称不能为空
+        form-config-group
+            form-config-item(config-title="负载均衡描述")
+                form-input-container
+                    textarea(ng-model="loadBalanceCollection.description" style="padding-top: 6px;")
+        form-config-group
+            form-config-item(config-title="负载均衡成员")
+                form-input-container
+                    add-multiple-member(chosen-user-list="chosenUserList")
+        form-config-group
+            form-config-item(config-title="负载均衡类型")
+                form-input-container
+                    form-input-radio-group(ng-model="loadBalanceCollection.type" name="loadBalanceCollectionType" fallback-value="'KUBE_PROXY'" options="loadBalanceCollectionTypeRadioList" required)
+        form-config-group
+            form-config-item
+                button(type="button" ui-sref="loadBalanceCollection" style="margin-right:15px;") 取消
+                form-submit-button(form="createLoadBalanceCollection" on-submit="createLoadBalanceCollectionSubmit()") 提交

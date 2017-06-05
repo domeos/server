@@ -1,0 +1,109 @@
+
+<page-container>
+  <style>
+    .chart .dygraph-legend {
+      border-radius: 3px;
+      pointer-events: none;
+      width: 10px;
+      background: transparent;
+      border: 0;
+      overflow: visible;
+      font-size: 12px;
+      position: relative;
+      z-index: 1000;
+    }
+    .chart .dygraph-legend .legend-content {
+      width: 100%;
+    }
+    .chart .dygraph-legend .legend-wrap {
+      width: 90px;
+      left: -37px;
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid #ddd;
+      border-radius: 3px;
+      text-shadow: 0 0 2px white;
+      color: #888;
+      padding: 10px 0;
+      position: relative;
+    }
+    .chart .dygraph-legend .legend-center {
+      margin: 0 auto;
+      display: table;
+    }
+  </style>
+  <page-content-box>
+    <div class="overview-page">
+      <form-help-line>
+        <icon name="info" type="info-circle"></icon>用户在总览页可以查看到各模块概况，详细信息需进入各模块进行查看。
+      </form-help-line>
+      <div class="overview-main">
+        <div class="overview-charts">
+          <div class="overview-actions-container">
+            <title-line text="最近一周操作"></title-line>
+            <ul class="overview-actions">
+              <li class="overview-actions-item overview-actions-project">
+                <line-chart id="build-chart" chart-title="工程" groups="['自动构建', '手动构建']" legend-position="bottom" color="['#31b0d5', '#4bd396']" empty-text="暂无数据" chart-height="50%"></line-chart>
+              </li>
+              <li class="overview-actions-item overview-actions-deploy">
+                <line-chart id="deploy-chart" chart-title="部署" groups="['自动部署', '上线次数']" legend-position="bottom" color="['#31b0d5', '#4bd396']" empty-text="暂无数据" chart-height="50%"></line-chart>
+              </li>
+            </ul>
+          </div>
+          <div class="overview-resources-content">
+            <title-line text="资源概览"></title-line>
+            <ul class="overview-resources">
+              <li class="overview-resources-item overview-resources-memory">
+                <chart chart-title="内存使用量" type="pie" data="[data.memory.using, data.memory.free]" groups="['使用：' + (data.memory.using | byte) , '可用：' + (data.memory.free | byte)]" legend-position="right" color="['#31b0d5', '#4bd396']" empty-text="暂无数据"></chart>
+              </li>
+              <li class="overview-resources-item overview-resources-cpu">
+                <chart chart-title="主机CPU利用率" type="pie" data="[
+                    data.cpu.load_0_25,
+                    data.cpu.load_25_50,
+                    data.cpu.load_50_75,
+                    data.cpu.load_75_100
+                  ]" groups="[
+                    '0%~25%：' + data.cpu.load_0_25 + '台',
+                    '25%~50%：' + data.cpu.load_25_50 + '台',
+                    '50%~75%：' + data.cpu.load_50_75 + '台',
+                    '75%~100%：' + data.cpu.load_75_100 + '台',
+                  ]" legend-position="right" color="['#31b0d5', '#4bd396', '#f9c851', '#f5707a']" empty-text="暂无数据"></chart>
+              </li>
+              <li class="overview-resources-item overview-resources-disk">
+                <chart chart-title="磁盘使用量" type="pie" data="[data.disk.using, data.disk.free]" groups="['使用：' + (data.disk.using | byte) , '可用：' + (data.disk.free | byte)]" legend-position="right" color="['#31b0d5', '#4bd396']" empty-text="暂无数据"></chart>
+              </li>
+              <li class="overview-resources-item overview-resources-node">
+                <chart chart-title="主机状态" type="pie" data="[data.node.online, data.node.offline]" groups="['在线：' + data.node.online + '台', '离线：' + data.node.offline + '台']" legend-position="right" color="['#31b0d5', '#4bd396']" empty-text="暂无数据"></chart>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="overview-records">
+          <script id="eventListContent" type="text/ng-template"><span ng-if="column === 'time'" ng-bind="value | date:'HH:mm:ss'"></span><span ng-if="column !== 'time'" ng-bind="value"></span></script>
+          <div class="overview-record-container overview-recent-alert"><a class="overview-card-link" ui-sref="alarm.currentAlarms"></a>
+            <title-line text="未恢复报警"></title-line>
+            <div class="overview-record-item" ng-class="{ 'overview-record-empty': !data.alarmList || !data.alarmList.length }">
+              <event-list event-type="error" value="data.alarmList" column="['time', 'text']" template="eventListContent" empty-text="{{ data.alarmList ? '暂无报警信息' : '未被添加进报警组，暂无报警信息' }}"></event-list>
+            </div>
+          </div>
+          <div class="overview-record-container overview-recent-action">
+            <title-line text="今日操作记录"></title-line>
+            <div class="overview-record-item" ng-class="{ 'overview-record-empty': !data.actionList || !data.actionList.length }">
+              <event-list event-type="info" value="data.actionList" column="['time', 'text']" template="eventListContent" empty-text="暂无操作记录"></event-list>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="overview-usage">
+        <title-line text="使用情况概览"></title-line>
+        <ul class="overview-usage-list">
+          <li class="overview-usage-item"><a class="overview-card-link" ui-sref="projectCollectionManage"><span class="overview-usage-container"><span class="overview-usage-item-logo"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYBAMAAAASWSDLAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAwUExURUxpcZubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm2eq9RLdfUwAAAAOdFJOUwD+5krngEnkaP1iZWxvNPzmaAAAAGZJREFUGNNjYEADbHrv3r2ThXKYgOx3Dw9AOHwPgPidBBLn6cMNIB0KYM6DOCmQjgcQZe9eghVBOe/gHCDAyuH//x8HB13Zf+wcXEaDvfDu3RMwh9kPzCmGegAOUDhIOhgYkHSgAAB1xViIbhd+mwAAAABJRU5ErkJggg=="/></span><span class="overview-usage-item-title"><span class="overview-usage-item-title-name">项目</span><span class="overview-usage-item-title-count" ng-bind="data.project.collection"></span></span><span class="overview-usage-item-content"><span class="overview-usage-item-content-name">工程</span><span class="overview-usage-item-content-count" ng-bind="data.project.total"></span></span></span></a></li>
+          <li class="overview-usage-item"><a class="overview-card-link" ui-sref="deployCollectionManage"><span class="overview-usage-container"><span class="overview-usage-item-logo"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAMAAADXqc3KAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAA/UExURUxpcU6Bum1tbW1tbQoSGjtijlmU1XqImQgNFBkpPC5XjypFZEBqmiY/Wz9pmCY/Wi9YkCpGZZubm2eq9TZ5xEWL/egAAAASdFJOUwDDxMMgld/6FT+/aaFgn1/Aah0pWQEAAABeSURBVCjPrZJLCoAwDERb7de/nd7/rC6MkkZciHmrIY8QBmKMLhYN9ponCBKJjMD3AzKlERMXC3ZKHjMXKzyloTouXN0oxSKIJMqDW7S1fouz9BehdPylYC/nne4fHIsLC4JHwRSFAAAAAElFTkSuQmCC"/></span><span class="overview-usage-item-title"><span class="overview-usage-item-title-name">服务</span><span class="overview-usage-item-title-count" ng-bind="data.deploy.collection"></span></span><span class="overview-usage-item-content"><span class="overview-usage-item-content-name">部署</span><span class="overview-usage-item-content-count" ng-bind="data.deploy.total"></span></span></span></a></li>
+          <li class="overview-usage-item"><a class="overview-card-link" ui-sref="imageCollectionManage.proimages"><span class="overview-usage-container"><span class="overview-usage-item-logo"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYAgMAAACdGdVrAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAJUExURUxpcWeq9Zubm6SOaZAAAAABdFJOUwBA5thmAAAAJElEQVQI12NgwApCQ7hWNcCpABEuJsopVDNRwaoVYEEohQUAAO9yFeEJMzdLAAAAAElFTkSuQmCC"/></span><span class="overview-usage-item-title"><span class="overview-usage-item-title-name">项目镜像</span><span class="overview-usage-item-title-count" ng-bind="data.image.project"></span></span><span class="overview-usage-item-content"></span></span></a></li>
+          <li class="overview-usage-item"><a class="overview-card-link" ui-sref="clusterManage"><span class="overview-usage-container"><span class="overview-usage-item-logo"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYAgMAAACdGdVrAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAJUExURUxpcWeq9Zubm6SOaZAAAAABdFJOUwBA5thmAAAALElEQVQI12NgwAaYVq0QDXWAUw0aIoy4KBSVGKZorWqAUw0aGky4KBSV2AAAmAIb5ZgtLDQAAAAASUVORK5CYII="/></span><span class="overview-usage-item-title"><span class="overview-usage-item-title-name">集群</span><span class="overview-usage-item-title-count" ng-bind="data.cluster.total"></span></span><span class="overview-usage-item-content"></span></span></a></li>
+          <li class="overview-usage-item"><a class="overview-card-link" ui-sref="loadBalanceCollection"><span class="overview-usage-container"><span class="overview-usage-item-logo"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAeklEQVRIiWNgGAUEACMhBemrvv7HJz8zjBuvGUykuohUwEKsQnSXEvIZDNDcB4MniIgNEnRAcx+QBGbPnv1/9uzZJPmE5j7AmUlIdWlqairBTEu2BfjU0jeI8LkEPQiIVTswGQ3ZBYTigpDagfEBtVIQA8NgKypGJgAAebEwC3qoNV0AAAAASUVORK5CYII="/></span><span class="overview-usage-item-title"><span class="overview-usage-item-title-name">负载均衡</span><span class="overview-usage-item-title-count" ng-bind="data.loadBalance.total"></span></span><span class="overview-usage-item-content"></span></span></a></li>
+          <li class="overview-usage-item"><a class="overview-card-link" ui-sref="configMapCollection"><span class="overview-usage-container"><span class="overview-usage-item-logo"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAABGElEQVRIie2Tv07DMBDGP9tNGCrK3oGnQPAQ7EViQkRRn4mchJgq0Z2HAPEUDN2L1IE/zjGgoMS52BdVbP2N58/fZ9/ZwIEERiO6f/7gl7dvMLc2GuD8dILbi6Ooh9UEhOYAwPxbTzHRBDTmd4vp32mX6x2HoRKqG+zDvweoWtSwXO8UTemSfEVExADwenLdWzvbrgAAZVkO+kQDGvOiKJy1to5phkJUMxgy3wsi4uZ0Kaqq8kTkpTXxBm3juq7zVIAxxgKwzNzz6/Tt4fGJv943PYNsNsfN1WWvx6Hee//pnMvb+k6iZD6m7pzLw7r4D9ovQjOHmF790bQDD1EHSO9cEyoGjD1tTN8ZcnY8F0XZbKA+Un9A5AfYoHUIQtiZJAAAAABJRU5ErkJggg=="/></span><span class="overview-usage-item-title"><span class="overview-usage-item-title-name">配置集合</span><span class="overview-usage-item-title-count" ng-bind="data.config.collection"></span></span><span class="overview-usage-item-content"><span class="overview-usage-item-content-name">配置</span><span class="overview-usage-item-content-count" ng-bind="data.config.total"></span></span></span></a></li>
+        </ul>
+      </div><img class="overview-tracker" ng-if="trackerReady" ng-src="https://info.domeos.org/overview?{{trackerUrl}}"/>
+    </div>
+  </page-content-box>
+</page-container>

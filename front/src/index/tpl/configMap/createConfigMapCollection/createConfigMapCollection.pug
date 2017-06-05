@@ -1,0 +1,24 @@
+//
+   Created by haozhou on 2017/2/10.
+.dome-config-map
+    form-container(left-column-width="150px")
+        form(name="createConfigMapCollection")
+            form-config-group
+                form-config-item(config-title="配置集合名称" required)
+                    form-input-container
+                        input(name="configMapCollectionName" type="text" placeholder="名称唯一，不可重复" ng-model="configMapCollection.name" required is-config-collection-unique ng-model-options="{updateOn:'default blur',debounce:{default:1000,blur:0}}")
+                        form-error-message(form="createConfigMapCollection" target="configMapCollectionName" type="required") 名称不能为空
+                        form-error-message(form="createConfigMapCollection" target="configMapCollectionName" type="isConfigCollectionUnique") 名称重复，请修改！
+            form-config-group
+                form-config-item(config-title="配置集合描述")
+                    form-input-container
+                        textarea(ng-model="configMapCollection.description" style="padding-top: 6px;")
+            form-config-group
+                form-config-item(config-title="配置集合成员")
+                    form-input-container
+                        add-multiple-member(chosen-user-list="chosenUserList")
+
+            form-config-group
+                form-config-item
+                    button(type="button" ui-sref="configMapCollection" style="margin-right:15px;") 取消
+                    form-submit-button(form="createConfigMapCollection" on-submit="createConfigMapSubmit()") 提交

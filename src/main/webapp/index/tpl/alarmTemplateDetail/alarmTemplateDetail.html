@@ -1,0 +1,10 @@
+
+<div class="mod-alarm alarm-tpl-detail" ng-form="ng-form" name="tplForm" ng-class="{'need-valid':needValid.valid}">
+  <loading ng-if="variables.isLoading||isEdit&amp;&amp;alarmTemplateIns.loadingIns.isLoading"></loading>
+  <button class="ui-btn ui-btn-sm ui-btn-bright btn-edit-alarm" ng-click="toggleEdit()" ng-if="!isEdit&amp;&amp;permission.role&amp;&amp;permission.role!='REPORTER'">编辑</button>
+  <button class="ui-btn ui-btn-sm ui-btn-bright btn-edit-alarm" ng-click="toggleEdit()" ng-if="isEdit">取消</button>
+  <ng-include src="'index/tpl/tplAlarmTemplate/tplAlarmTemplateInfo.html'" ng-if="!isEdit"></ng-include>
+  <ng-include src="'index/tpl/tplAlarmTemplate/tplAlarmTemplateEdit.html'" ng-if="isEdit"></ng-include>
+  <div class="com-bottom-option" ng-if="isEdit" style="text-align:left;padding-left:157px;"><span class="com-bottom-option-con">
+      <button class="ui-btn ui-btn-sm ui-btn-bright" ng-disabled="variables.isLoading||alarmTemplateIns.loadingIns.isLoading" ng-class="{'ui-btn-lg-disabled':variables.isLoading||alarmTemplateIns.loadingIns.isLoading}" ng-click="needValid.valid=true;tplForm.$valid&amp;&amp;saveModify()">保存</button><span class="txt-error" ng-if="needValid.valid&amp;&amp;tplForm.$invalid">存在不合法数据，请修改后提交。</span></span></div>
+</div>

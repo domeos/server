@@ -1,0 +1,94 @@
+@import "compass/css3";
+@import "common/css/common.scss";
+.monitor-manage{
+	min-height: 700px;
+	padding-bottom: 400px;
+	button{
+		width:132px;
+	}
+	.detail-header{
+		padding: 20px;
+	    border-bottom: 10px solid #def0fe;
+	    overflow: hidden;
+	}
+	.monitor-options{
+		margin: 0 20px;
+    	padding: 20px 0px;
+		border-bottom: $light-border;
+		.option-title{
+			display: inline-block;
+			width: 56px;
+		}
+		.com-select-con{
+			display: inline-block;
+			margin-left: 6px;
+		}
+		.monitor-option{
+			display: inline-block;
+			margin-right: 18px;
+			margin-top: 12px;
+		}
+		.monitor-line{
+			margin-top: 12px;
+			.host-label{
+				width: 746px;
+			}
+			.input-btn-size{
+				width: 100%;
+			}
+		}
+		.com-select-con{
+			width: 190px;
+		}
+	}
+
+	@media (max-width: 1170px) {
+		.monitor-line .host-label{
+			width: 644px !important;
+		}
+		.com-select-con{
+			width: 156px !important;
+		}
+	}
+	// }
+	.monitor-info{
+		padding: 16px $page-padding 16px $page-padding;
+	}
+	.link-tooltip{
+		display: inline-block;
+		position: relative;
+	}
+	.table-detail{
+		td,th{
+			padding-right: 15px;
+			padding-bottom: 2px;
+			text-align: left;
+		}
+	}
+}
+.mod-monitor{
+	th.active{
+		background-color: dome-color(background,primary);
+	}
+	.icon-down{
+		margin-left:4px;
+		&.up{
+			@include rotate(180deg);
+		}
+	}
+	.selected-count{
+		font-weight: 700;
+		color: dome-color(dome,primary);
+	}
+	.container-name{
+		width: 162px;
+	}
+	.container-image{
+		width: 127px;
+		word-break:break-all;
+	}
+	.mod-list{
+		padding:0 20px 0 20px;
+	}
+
+}

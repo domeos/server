@@ -1,0 +1,321 @@
+.mod-cluster.cluster-detail
+    //- .mod-option
+        //- a.icon-delete(ng-click="deleteCluster()")
+    .cluster-info
+        tabset
+            tab(heading="主机列表" active="tabActive[0].active" ui-sref="clusterDetail.hostlist")
+                loading(ng-if="isWaitingHost || isUpdateLabel")
+                .info-options.mod-option(style="display: flex")
+                    div(style="flex: 1;")
+                        button.ui-btn.ui-btn-lg.ui-btn-bright(ng-class="{'ui-btn-lg-disabled':!mayEditCluster()}" ng-disabled="!mayEditCluster()" ng-click="addHost(clusterId)")
+                            span.btn-txt 添加主机
+                            i.fa.fa-plus
+                        button.ui-btn.ui-btn-bright.ui-btn-lg(ng-click="modifyLabels()" ng-class="{'ui-btn-lg-disabled':!mayEditCluster()}" ng-disabled="!mayEditCluster()")
+                            | 修改主机标签
+                        button.ui-btn.ui-btn-bright.ui-btn-lg(ng-click="modifyWorkEnv()" ng-class="{'ui-btn-lg-disabled':!mayEditCluster()}" ng-disabled="!mayEditCluster()")
+                            | 添加工作场景
+                    div(style="flex: 1; line-height: 40px;")
+                        span.info-count(ng-cloak) 共{{nodelistFiltered.length}}台主机
+                        div(style="display: inline-block;")
+                            form-select(ng-model="nodeSearch.displaySearchType" on-change="changeSearchType()" options="[{text: '搜索主机名称', value: 'name'}, {text: '搜索主机标签', value: 'label'}]" show-search-input="never")
+                        span(ng-show="nodeSearch.displaySearchType === 'name'")
+                            //button.dome-btn-none(style="color: #4bd396;" type="button" ng-click="hostKey='';getNodeLabel();displayCondition = false") 搜索主机标签
+                            input.ui-input-fill.ui-input-white.ui-input-search(style="width: calc(100% - 215px);" placeholder="输入主机名查找" ng-model="nodeSearch.searchKey")
+                        span(ng-show="nodeSearch.displaySearchType === 'label'")
+                            //button.dome-btn-none(style="color: #4bd396;" type="button" ng-click="labels.selectedNodeLabelList='';getNodeListByLabel();displayCondition = true") 搜索主机名称
+                            div(style="display: inline-block; width: calc(100% - 215px);")
+                                form-multiple-select(style="display: inline;" ng-model="labels.selectedNodeLabelList" on-change="getNodeListByLabel()" options="nodeLabelSelectorList" is-loading="isLoadingNodeLabel" placeholder="选择主机标签" empty-text="无相关标签信息")
+                    div
+                        custom-table-column(ng-model="hideHostColumn")
+                .table-wrap
+                    table.ui-table-dome.full
+                        thead
+                            tr
+                                th
+                                    dome-check(d-id="allNode" ng-model="nodeListIns.isCheckAll" d-change="nodeListIns.checkAllItem(model)")
+                                    span.tool-enable-click(ng-click="toggleHostOrderBy('name')" ng-class="{'active': hostOrderBy.item==='name'}") 主机名称
+                                        i.icon-order(ng-show="hostOrderBy.item!='name'")
+                                        i.icon-down(ng-show="hostOrderBy.item=='name'" ng-class="{'up':!hostOrderBy.isReverse}")
+                                th
+                                    span.tool-enable-click(ng-click="toggleHostOrderBy('ipNumber')" ng-class="{'active': hostOrderBy.item==='ipNumber'}") 主机IP
+                                        i.icon-order(ng-show="hostOrderBy.item!='ipNumber'")
+                                        i.icon-down(ng-show="hostOrderBy.item=='ipNumber'" ng-class="{'up':!hostOrderBy.isReverse}")
+                                th(ng-show="hideHostColumn.cpu.isShow")
+                                    span.tool-enable-click(ng-click="toggleHostOrderBy('cpuNumber')" ng-class="{'active': hostOrderBy.item==='cpuNumber'}") CPU总量（个）
+                                        i.icon-order(ng-show="hostOrderBy.item!='cpuNumber'")
+                                        i.icon-down(ng-show="hostOrderBy.item=='cpuNumber'" ng-class="{'up':!hostOrderBy.isReverse}")
+                                th(ng-show="hideHostColumn.memory.isShow")
+                                    span.tool-enable-click(ng-click="toggleHostOrderBy('memoryNumber')" ng-class="{'active': hostOrderBy.item==='memoryNumber'}") 内存总量（MB）
+                                        i.icon-order(ng-show="hostOrderBy.item!='memoryNumber'")
+                                        i.icon-down(ng-show="hostOrderBy.item=='memoryNumber'" ng-class="{'up':!hostOrderBy.isReverse}")
+                                th(ng-show="hideHostColumn.workEnv.isShow")
+                                    span.tool-enable-click(ng-click="toggleHostOrderBy('workEnv')" ng-class="{'active': hostOrderBy.item==='workEnv'}") 工作场景
+                                        i.icon-order(ng-show="hostOrderBy.item!='workEnv'")
+                                        i.icon-down(ng-show="hostOrderBy.item=='workEnv'" ng-class="{'up':!hostOrderBy.isReverse}")
+                                th(ng-show="hideHostColumn.runningPods.isShow")
+                                    span.tool-enable-click(ng-click="toggleHostOrderBy('runningPods')" ng-class="{'active': hostOrderBy.item==='runningPods'}") 运行实例（个）
+                                        i.icon-order(ng-show="hostOrderBy.item!='runningPods'")
+                                        i.icon-down(ng-show="hostOrderBy.item=='runningPods'" ng-class="{'up':!hostOrderBy.isReverse}")
+                                th(ng-show="hideHostColumn.dockerVersion.isShow")
+                                    span.tool-enable-click(ng-click="toggleHostOrderBy('dockerVersion')" ng-class="{'active': hostOrderBy.item==='dockerVersion'}") Docker版本
+                                        i.icon-order(ng-show="hostOrderBy.item!='dockerVersion'")
+                                        i.icon-down(ng-show="hostOrderBy.item=='dockerVersion'" ng-class="{'up':!hostOrderBy.isReverse}")
+                                th(ng-show="hideHostColumn.k8sVersion.isShow")
+                                    span.tool-enable-click(ng-click="toggleHostOrderBy('kubeletVersion')" ng-class="{'active': hostOrderBy.item==='kubeletVersion'}") Kubernetes版本
+                                        i.icon-order(ng-show="hostOrderBy.item!='kubeletVersion'")
+                                        i.icon-down(ng-show="hostOrderBy.item=='kubeletVersion'" ng-class="{'up':!hostOrderBy.isReverse}")
+                                th
+                                    span.tool-enable-click(ng-click="toggleHostOrderBy('status')" ng-class="{'active': hostOrderBy.item==='status'}") 状态
+                                        i.icon-order(ng-show="hostOrderBy.item!='status'")
+                                        i.icon-down(ng-show="hostOrderBy.item=='status'" ng-class="{'up':!hostOrderBy.isReverse}")
+                                th(ng-if="config.buildConfig===1") 是否用于构建
+                        tbody
+                            tr(ng-if="!isWaitingHost && nodelistFiltered.length===0")
+                                td(colspan="10") 无相关信息
+                            tr(ng-repeat="node in nodelistFiltered=(nodeListIns.nodeList|checkboxListFilter:'name': nodeSearch.searchKey | orderBy: (hostOrderBy.isReverse ? '-' + hostOrderBy.item : hostOrderBy.item))")
+                                td
+                                    dome-check(d-id="node{{$index}}" ng-model="node.isSelected" d-change="nodeListIns.toggleCheck(node,model)")
+                                    a.ui-table-link(ng-bind="node.name" ui-sref="hostDetail({name:node.name,clusterId:clusterId})")
+                                td(ng-bind="node.ip")
+                                td(ng-show="hideHostColumn.cpu.isShow" ng-bind="node.capacity.cpu")
+                                td(ng-show="hideHostColumn.memory.isShow" ng-bind="node.capacity.memory")
+                                td(ng-show="hideHostColumn.workEnv.isShow" ng-bind="node.workEnv")
+                                td(ng-show="hideHostColumn.runningPods.isShow" ng-bind="node.runningPods")
+                                td(ng-show="hideHostColumn.dockerVersion.isShow" ng-bind="node.dockerVersion")
+                                td(ng-show="hideHostColumn.k8sVersion.isShow" ng-bind="node.kubeletVersion")
+                                td(ng-switch="node.status")
+                                    span(ng-switch-when="Ready").txt-safe 在线
+                                    span(ng-switch-default).txt-prompt 离线
+                                td(ng-if="config.buildConfig===1")
+                                    dome-toggle(ng-class="{'on':node.isUsedByBuild}" ng-click="toggleNodeLabel(node)" ng-disabled="!mayEditCluster()")
+            tab(heading="集群设置" active="tabActive[1].active" ui-sref="clusterDetail.info")
+                .info-options
+                    button.ui-btn.ui-btn-sm.ui-btn-bright(ng-click="checkEdit()" ng-if="!isEdit" ng-class="{'ui-btn-lg-disabled':!mayEditCluster()}" ng-disabled="!mayEditCluster()") 编辑
+                    button.ui-btn.ui-btn-sm.ui-btn-bright(ng-click="checkEdit()" ng-if="isEdit") 取消
+                div(ng-form name="modifyclusterFrom")
+                    div.tab-cluster(ng-include="'index/tpl/tplClusterInfo/tplClusterInfo.html'" ng-if="!isEdit")
+                    div.tab-cluster(ng-include="'index/tpl/tplClusterInfo/tplClusterInfoEdit.html'" ng-if="isEdit")
+                .com-bottom-option(ng-if="isEdit" style="text-align:left;padding-left:190px;")
+                    .com-bottom-option-con
+                        button.ui-btn.ui-btn-bright.ui-btn-sm(ng-disabled="isWaitingModify" ng-click="valid.needValid=true;modifyclusterFrom.$valid&&modifyCluster()" ng-class="{'ui-btn-lg-disabled':isWaitingModify}") 保存
+                        span.txt-error(ng-if="valid.needValid&&(modifyclusterFrom.$invalid||!clusterIns.etcdValid||!clusterIns.zookeeperValid||!clusterIns.kafkaValid)") 存在不合法数据，请修改后提交。
+            tab(heading="监听器设置" active="tabActive[5].active" ui-sref="clusterDetail.watcher")
+                .info-options.watcher-option(ng-if="!hasWatcher")
+                    button.ui-btn.ui-btn-sm.ui-btn-bright(ng-click="createWatcher(clusterId)")
+                        span.btn-txt 添加监听器
+                        span.fa.fa-plusd
+                    .mod-tips-info
+                        p.txt-prompt
+                            i.fa.fa-info-circle.icon-algin-right
+                            | 监听器用于收集集群产生的事件信息，协助用户了解部署运行状况，添加监听器后可以在部署的事件信息中查看到由于集群自动调度产生的事件记录
+                .info-options.watcher-option(ng-if="hasWatcher" ng-switch="watcher.state")
+                    span.title 状态
+                    status(type="{{watcher.state}}")
+                    a.detail(ui-sref="watcherDetail({'clusterId':clusterId,'deployId':watcher.deployId})") 查看详情
+                ul.com-list-info.watcherVersionInfo(ng-repeat="versionSelectorInfo in watcher.versionSelectorInfos")
+                     li
+                        span.info-name 名称
+                        .info-content.info-content-lg-height
+                            div
+                                .small-info {{watcher.name}}
+                     li
+                        span.info-name 版本
+                        .info-content.info-content-lg-height
+                            div
+                                .small-info {{versionSelectorInfo.version ? 'version'+versionSelectorInfo.version : '-'}}
+                     li
+                        span.info-name 筛选主机
+                        .info-content.info-content-lg-height
+                            div
+                                span.subtitle 部署环境:
+                                span.subinfo {{watcher.hostEnv || '-'}}
+                            div
+                                span.subtitle 主机标签:
+                                span.subinfo(ng-repeat = "label in versionSelectorInfo.labelSelectors") 
+                                    span.select-label {{label.name || '-'}}
+                                span.show-host
+                                    a.link-safe(ng-click="showHost(versionSelectorInfo.labelSelectors)") 查看选中主机
+                     li
+                        span.info-name 镜像配置
+                        .info-content.info-content-lg-height
+                            div
+                                span.subtitle 仓库地址：
+                                span.subinfo {{versionSelectorInfo.containerDrafts[0].registry || '-'}} 
+                            div
+                                span.subtitle 名称：
+                                span.subinfo {{versionSelectorInfo.containerDrafts[0].image || '-'}}
+                            div
+                                span.subtitle 版本：
+                                span.subinfo {{versionSelectorInfo.containerDrafts[0].tag || '-'}}           
+                ul.com-list-info.watcherVersionInfo(ng-if="!hasActiveVersions")
+                    li
+                        span.info-name 名称
+                        .info-content.info-content-lg-height
+                            div
+                                .small-info {{watcher.name || '-'}}
+                    li
+                        span.info-name 版本
+                        .info-content.info-content-lg-height
+                            div
+                                .small-info -
+                    li
+                        span.info-name 筛选主机
+                        .info-content.info-content-lg-height
+                            div
+                                span.subtitle 部署环境：
+                                span.subinfo {{watcher.hostEnv || '-'}}
+                            div
+                                span.subtitle 主机标签：
+                                span.subinfo -
+                    li
+                        span.info-name 镜像配置
+                        .info-content.info-content-lg-height
+                            div
+                                span.subtitle 仓库地址：
+                                span.subinfo -
+                            div
+                                span.subtitle 名称：
+                                span.subinfo -
+                            div
+                                span.subtitle 版本：
+                                span.subinfo -
+                
+            tab(heading="namespace" ng-click="getNamespace()" active="tabActive[2].active" ui-sref="clusterDetail.namespace")
+                loading(ng-if="isWaitingNamespace")
+                .info-options(ng-form role="form" name="namespaceForm" ng-class="{'need-valid':needValidNamespace}")
+                    span.namespace-title namespace
+                    .namespace-con
+                        p.txt-prompt.namespace-description 通过namespace对集群内的部署进行逻辑划分，同一集群的同一namespace下，不会出现同名部署。
+                        .new-namespace
+                            input.ui-input-white.namespace-txt(ng-model="namespaceTxt.namespace" name="namespace" ng-pattern="/^[a-zA-Z][a-zA-Z0-9_-]*$/" placeholder="不能以数字开头")
+                            button.ui-btn.ui-btn-sm.ui-btn-bright(ng-disabled="isLoadingNamespace || !mayEditCluster()" ng-click="needValidNamespace=true;namespaceForm.$valid&&addNamespace()") 添加namespace
+                        span.txt-error(ng-if="(valid.needValid||namespaceForm.namespace.$dirty)&&namespaceForm.namespace.$invalid")
+                        ul.com-label-list.namespace-list
+                            li(ng-repeat="namespace in namespaceList")
+                                span.label-item
+                                    | {{namespace}}
+            tab(heading="实例列表" active="tabActive[4].active" ui-sref="clusterDetail.instances")
+                loading(ng-if="isWaitingInstances")
+                .info-options.mod-option(style="display: flex;")
+                    div(style="flex: 1; top: 50%; left: 50%; margin: auto;")
+                        span.tool-next
+                        span.dome-dot.dome-dot-success
+                        span.dome-dot-next Running {{(instanceListFiltered|filter:{'status':'Running'}).length}}个
+                        span.dome-dot.dome-dot-error
+                        span.dome-dot-next Error {{(instanceListFiltered|filter:{'status':'Error'}).length}}个
+                        span.dome-dot.dome-dot-default
+                        span.dome-dot-next Other {{instanceListFiltered.length - (instanceListFiltered|filter:{'status':'Running'}).length - (instanceListFiltered|filter:{'status':'Error'}).length}}个
+                    div(style="flex: 1; line-height: 40px;")
+                        span(ng-cloak ) 共{{instanceListFiltered.length || 0}}个实例
+                        div(style="display: inline-block;")
+                            form-select(ng-model="instanceSearch.displaySearchType" on-change="changeInstanceSearchType()" options="[{text: '搜索主机名称', value: 'name'}, {text: '搜索主机标签', value: 'label'}]" show-search-input="never")
+                        span(ng-show="instanceSearch.displaySearchType === 'name'")
+                            //button.dome-btn-none(style="color: #4bd396;" type="button" ng-click="searchHostKey='';getNodeLabel();displayInstanceSearch=true;") 搜索主机标签
+                            input.ui-input-fill.ui-input-white.ui-input-search(style="width: calc(100% - 215px);" placeholder="请输入主机名称" ng-model="instanceSearch.searchKey")
+                        span(ng-show="instanceSearch.displaySearchType === 'label'")
+                            //button.dome-btn-none(style="color: #4bd396;" type="button" ng-click="labels.selectedLabelForInstance='';listInstanceByLabel();displayInstanceSearch=false") 搜索主机名称
+                            div(style="display: inline-block; width: calc(100% - 215px);")
+                                form-multiple-select(style="display: inline;" ng-model="labels.selectedLabelForInstance" on-change="listInstanceByLabel()" options="nodeLabelSelectorList" is-loading="isLoadingNodeLabel" placeholder="选择主机标签" empty-text="无相关标签信息")
+                    div
+                        custom-table-column(ng-model="hideInstanceColumn")
+                .table-wrap.instances-table
+                    table.ui-table-dome.full
+                        thead
+                            tr
+                                th
+                                    span.tool-enable-click(ng-click="toggleOrderBy('instanceName')" ng-class="{'active':orderBy.item==='instanceName'}")  实例名称
+                                        i.icon-order(ng-show="orderBy.item!='instanceName'")
+                                        i.icon-down(ng-show="orderBy.item=='instanceName'" ng-class="{'up':!orderBy.isReverse}")
+                                th(ng-show="hideInstanceColumn.hostName.isShow")
+                                    span.tool-enable-click(ng-click="toggleOrderBy('hostName')" ng-class="{'active':orderBy.item==='hostName'}") 主机名称
+                                        i.icon-order(ng-show="orderBy.item!='hostName'")
+                                        i.icon-down(ng-show="orderBy.item=='hostName'" ng-class="{'up':!orderBy.isReverse}")
+
+                                th(ng-show="hideInstanceColumn.podIp.isShow")
+                                    span.tool-enable-click(ng-click="toggleOrderBy('podIpNumber')" ng-class="{'active':orderBy.item==='podIpNumber'}") 实例IP
+                                        i.icon-order(ng-show="orderBy.item!='podIpNumber'")
+                                        i.icon-down(ng-show="orderBy.item=='podIpNumber'" ng-class="{'up':!orderBy.isReverse}")
+
+                                th(ng-show="hideInstanceColumn.status.isShow")
+                                    span.tool-enable-click(ng-click="toggleOrderBy('status')" ng-class="{'active':orderBy.item==='status'}") 实例状态
+                                        i.icon-order(ng-show="orderBy.item!='status'")
+                                        i.icon-down(ng-show="orderBy.item=='status'" ng-class="{'up':!orderBy.isReverse}")
+
+                                th(ng-show="hideInstanceColumn.deployName.isShow")
+                                    span.tool-enable-click(ng-click="toggleOrderBy('deployName')" ng-class="{'active':orderBy.item==='deployName'}") 部署名称
+                                        i.icon-order(ng-show="orderBy.item!='deployName'")
+                                        i.icon-down(ng-show="orderBy.item=='deployName'" ng-class="{'up':!orderBy.isReverse}")
+
+                                th(ng-show="hideInstanceColumn.deployVersion.isShow")
+                                    span.tool-enable-click(ng-click="toggleOrderBy('versionId')" ng-class="{'active':orderBy.item==='versionId'}")  部署版本
+                                        i.icon-order(ng-show="orderBy.item!='versionId'")
+                                        i.icon-down(ng-show="orderBy.item=='versionId'" ng-class="{'up':!orderBy.isReverse}")
+
+                                th(ng-show="hideInstanceColumn.namespace.isShow")
+                                    span.tool-enable-click(ng-click="toggleOrderBy('namespace')" ng-class="{'active':orderBy.item==='namespace'}") namespace
+                                        i.icon-order(ng-show="orderBy.item!='namespace'")
+                                        i.icon-down(ng-show="orderBy.item=='namespace'" ng-class="{'up':!orderBy.isReverse}")
+
+                                th(ng-show="hideInstanceColumn.startTime.isShow")
+                                    span.tool-enable-click(ng-click="toggleOrderBy('startTime')" ng-class="{'active':orderBy.item==='startTime'}") 启动时间
+                                        i.icon-order(ng-show="orderBy.item!='startTime'")
+                                        i.icon-down(ng-show="orderBy.item=='startTime'" ng-class="{'up':!orderBy.isReverse}")
+
+                                th(ng-show="hideInstanceColumn.containerId.isShow")
+                                    span.tool-enable-click(ng-click="toggleOrderBy('containers[0].containerId')" ng-class="{'active':orderBy.item==='containers[0].containerId'}") 容器ID
+                                        i.icon-order(ng-show="orderBy.item!='containers[0].containerId'")
+                                        i.icon-down(ng-show="orderBy.item=='containers[0].containerId'" ng-class="{'up':!orderBy.isReverse}")
+
+                                th(ng-show="hideInstanceColumn.imageName.isShow")
+                                    span.tool-enable-click(ng-click="toggleOrderBy('containers[0].imageName')" ng-class="{'active':orderBy.item==='containers[0].imageName'}") 镜像名称
+                                        i.icon-order(ng-show="orderBy.item!='containers[0].imageName'")
+                                        i.icon-down(ng-show="orderBy.item=='containers[0].imageName'" ng-class="{'up':!orderBy.isReverse}")
+                                //th 日志
+                                //th 容器控制台
+                        tbody
+                            tr(ng-if="instanceList&&instanceListFiltered.length===0")
+                                td(colspan="10") 无相关实例信息
+                            tr(ng-repeat="ins in instanceListFiltered=(instanceList|filter:{ hostName: instanceSearch.searchKey } | orderBy: (orderBy.isReverse ? '-' + orderBy.item : orderBy.item))")
+                                td
+                                    a.ui-table-link(ng-if="ins.versionId!==0" ng-click="goToDeployInstance(ins)" ng-bind="ins.instanceName")
+                                    span(ng-if="ins.versionId===0" ng-bind="ins.instanceName")
+                                td(ng-show="hideInstanceColumn.hostName.isShow" ng-bind="ins.hostName || '无'")
+                                td(ng-show="hideInstanceColumn.podIp.isShow" ng-bind="ins.podIp || '无'")
+                                td(ng-show="hideInstanceColumn.status.isShow" ng-bind="ins.status" ng-class="ins.status === 'Running' ? 'txt-success' : ins.status === 'Error' ? 'txt-error' : 'txt-warning'")
+                                td(ng-show="hideInstanceColumn.deployName.isShow" ng-bind="ins.deployName || '由后台创建'")
+                                td(ng-cloak ng-show="hideInstanceColumn.deployVersion.isShow")
+                                    span(ng-if="ins.versionId!==0") version{{ins.versionId}}
+                                    span(ng-if="ins.versionId===0") 无
+                                td(ng-bind="ins.namespace" ng-show="hideInstanceColumn.namespace.isShow")
+                                td(ng-bind="(ins.startTime) | time" ng-show="hideInstanceColumn.startTime.isShow")
+                                td(ng-show="hideInstanceColumn.containerId.isShow")
+                                    div(ng-repeat="container in ins.containers")
+                                        div(ng-bind="container.containerId | limitTo:12")
+                                td(ng-show="hideInstanceColumn.imageName.isShow" style="max-width: 35%;word-break: break-all;")
+                                    div(ng-repeat="container in ins.containers")
+                                        div(ng-bind="container.imageName")
+                                //td
+                                //    a.link-safe(ng-click="showLog(ins.instanceName,ins.containers,ins.namespace)") 日志
+                                //td
+                                //    a.link-safe(ng-click="toConsole(ins.containers, ins.hostIp)") 进入
+            tab(heading="集群成员" active="tabActive[3].active" ui-sref="clusterDetail.users")
+                form-container(left-column-width="0")
+                    form
+                      collection-member-table(collection-id="resourceId" collection-type="resourceType" on-role-change="setRole(role)" on-no-permission="exitToList()" help-text="有MASTER权限的成员可以查看、修改、删除集群，可以在集群上启动部署；有DEVELOPER权限的成员可以查看、修改集群配置，可以在项目中添加、查看、修改工程，可以在集群上启动部署；有REPORTER权限的成员可以查看集群。添加、修改或删除集群成员需要MASTER权限。")
+script(type="text/ng-template" id="addLabelModal.html")
+    .d-modal-header 添加主机标签
+    .modal-body.modal-addlabel
+        span.label-name 主机标签
+        .labels-wrap
+            input.ui-input.ui-input-white.label-txt(ng-model="newLabel")
+            button.ui-btn.ui-btn-lg.ui-btn-bright(ng-click="addLabel()" ng-disabled="!newLabel") 添加标签
+            p.txt-prompt 会对勾选的主机加上相同的主机标签
+            .labels-con
+                span.ui-label(ng-repeat="label in labelList" ng-cloak)
+                    //- | {{label}}
+                    //- a.icon-cancel(ng-click="deleteLabel($index)")
+                    a.icon-cancle.icon-cancle-former(ng-click="deleteLabel($index)")
+                    | {{label}}
+    .modal-footer.text-right
+        button.ui-btn.ui-btn-white.ui-btn-sm(ng-click="cancel()") 取消
+        button.ui-btn.ui-btn-bright.ui-btn-sm(ng-click="submitLabels()") 确定

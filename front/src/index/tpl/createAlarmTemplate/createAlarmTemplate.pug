@@ -1,0 +1,8 @@
+.mod-alarm.create-alarm-tpl(ng-form ng-class="{'need-valid':needValid.valid}" role="form" name="createTplFrom")
+	loading(ng-if="isLoading||alarmTemplateIns.loadingIns.isLoading")
+	ng-include(src="'index/tpl/tplAlarmTemplate/tplAlarmTemplateEdit.html'")
+	.com-bottom-option
+		span.com-bottom-option-con
+			a.ui-btn.ui-btn-link.ui-btn-sm.ui-btn-bright(ui-sref="alarm.templates") 返回
+			button.ui-btn.ui-btn-md.ui-btn-bright(ng-disabled="isLoading||alarmTemplateIns.loadingIns.isLoading" ng-click="needValid.valid=true;createTplFrom.$valid&&toCreate()") 完成创建
+			span.txt-error(ng-if="needValid.valid&&createTplFrom.$invalid") 存在不合法数据，请修改后提交。

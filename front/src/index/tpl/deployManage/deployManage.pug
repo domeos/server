@@ -1,0 +1,154 @@
+tabset.mod-tab
+    .tab-border
+    tab.first(heading="部署" active="tabActive[0].active" ui-sref="deployManage.deploy")
+        .mod-deploy.deploy-manage
+            .mod-option
+                //button.ui-btn.ui-btn-lg.ui-btn-bright(ui-sref="createDeployCommon({'collectionId':collectionId, 'collectionName':collectionName})" ng-class="{'ui-btn-lg-disabled':!mayCreate()}" ng-disabled="!mayCreate()")
+                //    span.btn-txt 新建部署
+                //    i.fa.fa-plus
+                button.ui-btn.ui-btn-lg.ui-btn-bright(ui-sref="createDeploy({'collectionId':collectionId, 'collectionName':collectionName})" ng-class="{'ui-btn-lg-disabled':!mayCreate()}" ng-disabled="!mayCreate()")
+                    span.btn-txt 新建部署
+                    i.fa.fa-plus
+                .pull-right.right-option
+                    span(ng-cloak) 共{{deployListFilter.length}}个部署
+                    input.ui-input-search.ui-input-fill(type="text" placeholder="输入部署名称查询" ng-model="depKeyword")
+                    //- button.ui-btn.ui-btn-sm.ui-btn-safe(ng-click="toggleShowSelect()" ng-if="!showSelect") 筛选
+                    //-     i.icon-down-white.up
+                    //- button.ui-btn.ui-btn-sm.ui-btn-safe(ng-click="toggleShowSelect()" ng-if="showSelect") 收起
+                    //-     i.icon-down-white
+                    a.deploy-list-btn(ng-click="toggleShowSelect()")
+                        i.fa.fa-filter.fa-lg(title="筛选")
+            .mod-tips-info
+                p.txt-prompt
+                    i.fa.fa-info-circle.icon-algin-right
+                    | 部署定义了运行在集群上的一组实例，可以对这些实例进行统一管理。
+            .chose-lists(ng-if="showSelect")
+                .chose-item
+                    span.chose-title 部署环境：
+                    .chose-options
+                        em(ng-class="{'active':selectOption.env.ALL}" ng-click="toggleAll('env')") 全部
+                        em(ng-class="{'active':selectOption.env.PROD}" ng-click="toggleSelect('env','PROD')") 生产环境
+                        em(ng-class="{'active':selectOption.env.TEST}" ng-click="toggleSelect('env','TEST')") 测试环境
+                .chose-item
+                    span.chose-title 集群：
+                    .chose-options
+                        em(ng-class="{'active':selectOption.cluster.ALL}" ng-click="toggleAll('cluster')") 全部
+                        em(ng-repeat="(opt,isSelect) in selectOption.cluster track by $index" ng-bind="opt" ng-class="{'active':isSelect}" ng-if="opt!=='ALL'" ng-click="toggleSelect('cluster',opt)")
+                .chose-item
+                    span.chose-title namespace：
+                    .chose-options
+                        em(ng-class="{'active':selectOption.namespace.ALL}" ng-click="toggleAll('namespace')") 全部
+                        em(ng-repeat="(opt,isSelect) in selectOption.namespace track by $index" ng-bind="opt" ng-class="{'active':isSelect}" ng-if="opt!=='ALL'" ng-click="toggleSelect('namespace',opt)")
+                .chose-item
+                    span.chose-title 部署类型：
+                    .chose-options
+                        em(ng-class="{'active':selectOption.deployTypeShow.ALL}" ng-click="toggleAll('deployTypeShow')") 全部
+                        em(ng-class="{'active':selectOption.deployTypeShow.RC}" ng-click="toggleSelect('deployTypeShow','RC')") RC
+                        em(ng-class="{'active':selectOption.deployTypeShow.Deployment}" ng-click="toggleSelect('deployTypeShow','Deployment')") Deployment
+                        em(ng-class="{'active':selectOption.deployTypeShow.DaemonSet}" ng-click="toggleSelect('deployTypeShow','DaemonSet')") DaemonSet
+                .chose-item
+                    span.chose-title 状态：
+                    .chose-options
+                        em(ng-class="{'active':selectOption.status.ALL}" ng-click="toggleAll('status')") 全部
+                        em(ng-class="{'active':selectOption.status.DEPLOYING}" ng-click="toggleSelect('status','DEPLOYING')") 部署中
+                        em(ng-class="{'active':selectOption.status.RUNNING}" ng-click="toggleSelect('status','RUNNING')") 运行中
+                        //- em(ng-class="{'active':selectOption.status.AB_TEST}" ng-click="toggleSelect('status','AB_TEST')") 灰度发布
+                        em(ng-class="{'active':selectOption.status.STOP}" ng-click="toggleSelect('status','STOP')") 停止
+                        em(ng-class="{'active':selectOption.status.ERROR}" ng-click="toggleSelect('status','ERROR')") 异常
+                        em(ng-class="{'active':selectOption.status.STOPPING}" ng-click="toggleSelect('status','STOPPING')") 停止中
+                        em(ng-class="{'active':selectOption.status.UPDATING}" ng-click="toggleSelect('status','UPDATING')") 升级中
+                        em(ng-class="{'active':selectOption.status.BACKROLLING}" ng-click="toggleSelect('status','BACKROLLING')") 回滚中
+                        em(ng-class="{'active':selectOption.status.UPSCALING}" ng-click="toggleSelect('status','UPSCALING')") 扩容中
+                        em(ng-class="{'active':selectOption.status.DOWNSCALING}" ng-click="toggleSelect('status','DOWNSCALING')") 缩容中
+                        em(ng-class="{'active':selectOption.status.ABORTING}" ng-click="toggleSelect('status','ABORTING')") 中断中
+                        em(ng-class="{'active':selectOption.status.BACKROLL_ABORTED}" ng-click="toggleSelect('status','BACKROLL_ABORTED')") 回滚已中断
+                        em(ng-class="{'active':selectOption.status.UPDATE_ABORTED}" ng-click="toggleSelect('status','UPDATE_ABORTED')") 升级已中断
+            .mod-list
+                loading(ng-if="isLoading")
+                table.ui-table-dome(style="word-break: break-all;")
+                    thead
+                        tr
+                            th
+                                span.tool-enable-click(ng-click="toggleOrderBy('deployName')" ng-class="{'active':orderBy.item=='deployName'}")  部署名称
+                                    i.icon-order(ng-show="orderBy.item!='deployName'")
+                                    i.icon-down(ng-show="orderBy.item=='deployName'" ng-class="{'up':!orderBy.isReverse}")
+                            th
+                                span.tool-enable-click(ng-click="toggleOrderBy('deploymentStatus')" ng-class="{'active':orderBy.item=='deploymentStatus'}") 状态
+                                    i.icon-order(ng-show="orderBy.item!='deploymentStatus'")
+                                    i.icon-down(ng-show="orderBy.item=='deploymentStatus'" ng-class="{'up':!orderBy.isReverse}")
+                            th
+                                span.tool-enable-click(ng-click="toggleOrderBy('clusterName')" ng-class="{'active':orderBy.item=='clusterName'}") 所在集群
+                                    i.icon-order(ng-show="orderBy.item!='clusterName'")
+                                    i.icon-down(ng-show="orderBy.item=='clusterName'" ng-class="{'up':!orderBy.isReverse}")
+                            th namespace
+                            th 部署类型
+                            th
+                                span.tool-enable-click(ng-click="toggleOrderBy('comparePercentSort')" ng-class="{'active':orderBy.item=='comparePercentSort'}") 资源占用比
+                                    i.icon-order(ng-show="orderBy.item!='comparePercentSort'")
+                                    i.icon-down(ng-show="orderBy.item=='comparePercentSort'" ng-class="{'up':!orderBy.isReverse}")
+                            th
+                                span.tool-enable-click(ng-click="toggleOrderBy('lastUpdateTime')" ng-class="{'active':orderBy.item=='lastUpdateTime'}") 升级时间
+                                    i.icon-order(ng-show="orderBy.item!='lastUpdateTime'")
+                                    i.icon-down(ng-show="orderBy.item=='lastUpdateTime'" ng-class="{'up':!orderBy.isReverse}")
+                            th 迁移
+                            th(style="width: 10%") 内网域名
+                    tbody
+                        tr(ng-if="deployListFilter&&deployListFilter.length===0")
+                            td.text-center(colspan="9") 无相关信息
+                        tr(ng-repeat="deploy in deployListFilter=(deloyList|filter:{'deployName':depKeyword}|deployOptions:selectOption.env:selectOption.namespace:selectOption.cluster:selectOption.status:selectOption.deployTypeShow |orderBy:(orderBy.isReverse ? '-' + orderBy.item : orderBy.item))")
+                            td
+                                a.ui-table-link(ng-bind="deploy.deployName" ui-sref="deployDetail({'id':deploy.deployId, 'collectionId':collectionId, 'collectionName':collectionName})")
+                            td(ng-switch="deploy.deploymentStatus")
+                                span.txt-success(ng-switch-when="RUNNING") 运行中
+                                span.txt-normal(ng-switch-when="DEPLOYING") 部署中
+                                span.txt-warning(ng-switch-when="STOP") 停止
+                                span.txt-warning(ng-switch-when="ERROR") 异常
+                                //- span(ng-switch-when="AB_TEST") 灰度发布
+                                span.txt-normal(ng-switch-when="BACKROLLING") 回滚中
+                                span.txt-normal(ng-switch-when="STOPPING") 停止中
+                                span.txt-normal(ng-switch-when="UPDATING") 升级中
+                                span.txt-normal(ng-switch-when="UPSCALING") 扩容中
+                                span.txt-normal(ng-switch-when="DOWNSCALING") 缩容中
+                                span.txt-normal(ng-switch-when="ABORTING") 中断中
+                                span.txt-warning(ng-switch-when="BACKROLL_ABORTED") 回滚已中断
+                                span.txt-warning(ng-switch-when="UPDATE_ABORTED") 升级已中断
+                            td(ng-bind="deploy.clusterName")
+                            td(ng-bind="deploy.namespace")
+                            td(ng-bind="deploy.deployTypeShow")
+                            td(ng-cloak ng-class="{'txt-normal':deploy.comparePercent<30,'txt-success':deploy.comparePercent>=30&&deploy.comparePercent<70,'txt-warning':deploy.comparePercent>=70}")
+                                i.icon-cpu(ng-if="deploy.compare=='cpu'" tooltip="CPU：{{deploy.cpuUsed}} / {{deploy.cpuTotal}}（个）" )
+                                i.icon-memory(ng-if="deploy.compare=='memory'" tooltip="内存：{{deploy.memoryUsed}} / {{deploy.memoryTotal}}" )
+                                | {{deploy.comparePercent}}%
+                            td(ng-bind="(deploy.lastUpdateTime | day)")
+                            td
+                                button.fa.fa-share-square-o.ui-btn-none.icon-edit-color(ng-click="openMigrateDeployModal(deploy.deployId,deploy.deployName)" ng-class="{'icon-fa-disabled':!mayMigrate()}" ng-disabled="!mayMigrate()" tooltip="迁移")
+                            td
+                                div(style="display: flex;" ng-repeat="dns in deploy.dnsName track by $index")
+                                    div.long-text-wrap(style="max-width: 90%" ng-bind="dns" title="{{ dns }}")
+                                    button.dome-btn-none(ng-if="dns !== '无'" type="button" ngclipboard data-clipboard-text="{{ dns }}" tooltip="复制" ngclipboard-success="onSuccess(e, dns)" ngclipboard-error="onError(e)")
+                                        i.fa.fa-clipboard
+    //- 成员
+    tab(heading="成员" active="tabActive[1].active" ui-sref="deployManage.user")
+        form-container(left-column-width="0")
+            form
+              collection-member-table(collection-id="resourceId" collection-type="resourceType" on-role-change="setRole(role)" on-no-permission="exitToList()" help-text="有MASTER权限的成员可以查看、修改、删除服务，可以在服务中添加、查看、修改、删除部署；有DEVELOPER权限的成员可以查看、修改服务，可以在项目中添加、查看、修改部署；有REPORTER权限的成员可以查看服务，可以查看项目中的部署。迁移部署需要同时在两个服务中拥有MASTER权限。添加、修改或删除服务成员需要MASTER权限。")
+script(type="text/ng-template" id="migrateDeployModal.html")
+    .d-modal-header 手动迁移部署 {{migrateDeployName}}
+    .d-modal-full
+        loading(ng-if="isLoading")
+        .migrate-operation
+            .migrate-select-list
+                span.text-content 迁移至
+                .com-select-con.deploy-migrate(select-con)
+                    button.ui-btn.ui-btn-white.ui-btn-select(ng-cloak)
+                        i.icon-down
+                        | {{migrateCollectionName || '选择镜像版本'}}
+                    ul.select-list.select-list-migrate
+                        li.select-item(ng-repeat="deployCollection in deployCollectionList")
+                            a(ng-click="toggleCollectionName($parent.$index,deployCollection.name,deployCollection.id)")
+                                span(ng-bind="deployCollection.name")
+            .migrate-content.txt-prompt 部署迁移后将不再属于这个服务
+
+    .modal-footer.text-right
+        button.ui-btn.ui-btn-sm.ui-btn-white(ng-click="cancel()") 取消
+        button.ui-btn.ui-btn-sm.ui-btn-bright(ng-click="save()") 确定

@@ -1,0 +1,42 @@
+
+<!--Created by haozhou on 2017/3/14.
+-->
+<form-container left-column-width="150px">
+  <form name="createLoadBalanceCollection">
+    <form-config-group>
+      <form-config-item config-title="负载均衡名称" required="required">
+        <form-input-container>
+          <input name="loadBalanceCollectionName" type="text" placeholder="相同负载均衡类型下，名称唯一" ng-model="loadBalanceCollection.name" required="required"/>
+          <form-error-message form="createLoadBalanceCollection" target="loadBalanceCollectionName" type="required">名称不能为空</form-error-message>
+        </form-input-container>
+      </form-config-item>
+    </form-config-group>
+    <form-config-group>
+      <form-config-item config-title="负载均衡描述">
+        <form-input-container>
+          <textarea ng-model="loadBalanceCollection.description" style="padding-top: 6px;"></textarea>
+        </form-input-container>
+      </form-config-item>
+    </form-config-group>
+    <form-config-group>
+      <form-config-item config-title="负载均衡成员">
+        <form-input-container>
+          <add-multiple-member chosen-user-list="chosenUserList"></add-multiple-member>
+        </form-input-container>
+      </form-config-item>
+    </form-config-group>
+    <form-config-group>
+      <form-config-item config-title="负载均衡类型">
+        <form-input-container>
+          <form-input-radio-group ng-model="loadBalanceCollection.type" name="loadBalanceCollectionType" fallback-value="'KUBE_PROXY'" options="loadBalanceCollectionTypeRadioList" required="required"></form-input-radio-group>
+        </form-input-container>
+      </form-config-item>
+    </form-config-group>
+    <form-config-group>
+      <form-config-item>
+        <button type="button" ui-sref="loadBalanceCollection" style="margin-right:15px;">取消</button>
+        <form-submit-button form="createLoadBalanceCollection" on-submit="createLoadBalanceCollectionSubmit()">提交</form-submit-button>
+      </form-config-item>
+    </form-config-group>
+  </form>
+</form-container>

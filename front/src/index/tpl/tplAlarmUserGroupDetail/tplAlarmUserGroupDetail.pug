@@ -1,0 +1,49 @@
+.mod-group.alarm-user-group-detail(ng-form name="deployCollectionFrom" ng-class="{'need-valid':needValid}" novalidate)
+	loading(ng-if="isWaitingCreate")
+	.mod-option
+		.pull-right.right-option
+			span(ng-cloak) 共{{userinfoFilterred1.length}}个成员
+			input.ui-input.ui-input-fill.ui-input-search(placeholder="搜索{{resourceName}}成员" ng-model="userKey1")
+		button.ui-btn.ui-btn-lg.ui-btn-bright(ng-class="{'ui-btn-lg-disabled':permission.role==='REPORTER'}" ng-disabled="permission.role==='REPORTER'" ng-click="isEdit=true" ng-show="!isEdit") 
+			span.btn-txt 添加成员
+			i.fa.fa-plus
+		span
+			button.ui-btn.ui-btn-lg.ui-btn-bright(ng-click="isEdit=false" ng-show="isEdit") 
+				span.btn-txt 退出编辑
+				i.fa.fa-undo
+	.list-info(ng-if="isEdit")
+		.info-content
+			.line-long
+				.com-select-con.line-element.input-size(select-con label="true")
+					ul.selected-labels
+						li.select-label(ng-repeat="user in selectedUsers" ng-cloak)
+							//- | {{user.username}}
+							//- a.icon-cancel(ng-click="cancelUser($index)")
+							a.icon-cancle.icon-cancle-former(ng-click="cancelUser($index)")
+							| {{user.username}}
+						li.select-input
+							input.line-element.ui-btn-select(placeholder="搜索成员" ng-model="userKey.key" ng-keydown="userKeyDown($event,userKey.key,userListFiltered[0])")
+					ul.select-list
+						li(ng-if="!userList||userListFiltered.length===0")
+							a 无相关用户信息
+						li.select-item(ng-repeat="user in userListFiltered=(userList| filter:{'username':userKey.key})")
+							a(ng-bind="user.username" ng-click="selectUser(user);")
+				button.ui-btn.ui-btn-sm.ui-btn-bright.ui-btn-add(ng-click="addUser()") 添加
+	.mod-list
+		table.ui-table-dome
+			thead
+				tr
+					th 用户名称
+					th 邮箱
+					th 电话
+					th(ng-if="permission.role&&permission.role!='REPORTER'" style="width:15%") 操作
+			tbody
+				tr(ng-if="!userInfos||userinfoFilterred1.length===0")
+					td(colspan="3" ng-if="!(permission.role&&permission.role!='REPORTER')") 无相关用户信息
+					td(colspan="4" ng-if="permission.role&&permission.role!='REPORTER'") 无相关用户信息
+				tr(ng-repeat="user in userinfoFilterred1=(userInfos|filter:{'username':userKey1})")
+					td(ng-bind="user.username")
+					td(ng-bind="user.email")
+					td(ng-bind="user.phone")
+					td(ng-if="permission.role&&permission.role!='REPORTER'")
+						button.fa.fa-trash-o.ui-btn-none.icon-trash-color(ng-click="deleteUser(user.id)" tooltip="删除")

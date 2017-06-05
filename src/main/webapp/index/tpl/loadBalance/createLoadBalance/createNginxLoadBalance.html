@@ -1,0 +1,110 @@
+
+<!--Created by haozhou on 2017/3/15.-->
+<form-container left-column-width="100px">
+  <form name="createNginxLB">
+    <loading ng-if="isCreating"></loading>
+    <form-config-group>
+      <form-config-item config-title="名称" required="required">
+        <form-input-container>
+          <input ng-model="loadBalanceDraft.name" type="text" name="name" placeholder="不能有大写字母，不能以中横线开头和结尾" ng-pattern="/^[0-9a-z](-*[0-9a-z]+)*$/" required="required" is-loadBalance-unique="is-loadBalance-unique" clustername="{{ loadBalanceDraft.cluster.name }}" namespace="{{ loadBalanceDraft.namespace.namespace }}" ng-model-options="{updateOn:'default blur',debounce:{default:1000,blur:0}}"/>
+          <form-error-message form="createKubeLB" target="name" type="required">名称不能为空</form-error-message>
+          <form-error-message form="createKubeLB" target="name" type="isLoadBalanceUnique">名称重复，请修改</form-error-message>
+          <form-error-message form="createKubeLB" target="name" type="pattern">输入格式错误，不能有大写字母，不能以中横线开头和结尾，请修改！</form-error-message>
+        </form-input-container>
+      </form-config-item>
+    </form-config-group>
+    <form-config-group>
+      <form-config-item config-title="描述">
+        <form-input-container>
+          <textarea ng-model="loadBalanceDraft.description"></textarea>
+        </form-input-container>
+      </form-config-item>
+    </form-config-group>
+    <form-config-group>
+      <form-config-item config-title="集群" required="required">
+        <form-input-container>
+          <cluster-selector ng-model="loadBalanceDraft.cluster" name="cluster" on-change="listForeignServiceIP()" required="true"></cluster-selector>
+          <form-error-message form="createKubeLB" target="cluster" type="required">集群不能为空</form-error-message>
+        </form-input-container>
+      </form-config-item>
+    </form-config-group>
+    <form-config-group>
+      <form-config-item config-title="namespace" required="required">
+        <form-input-container>
+          <namespace-selector ng-model="loadBalanceDraft.namespace" name="namespace" on-change="listDeployment()" cluster="loadBalanceDraft.cluster" form-name="createKubeLB"></namespace-selector>
+        </form-input-container>
+      </form-config-item>
+    </form-config-group>
+    <form-config-group>
+      <form-config-item config-title="工作场景" required="required">
+        <form-input-container>
+          <form-input-radio-group ng-model="loadBalanceDraft.nginxDraft.hostEnv" name="workEnv" fallback-value="'TEST'" options="[{value: 'TEST', text: '测试环境'}, {value: 'PROD', text: '生产环境'}]" required="required"></form-input-radio-group>
+        </form-input-container>
+      </form-config-item>
+    </form-config-group>
+    <form-config-group>
+      <form-config-item config-title="所在主机" required="required">
+        <form-input-container help-text="主机数量与启动实例个数相同">
+          <form-multiple-select-list ng-model="loadBalanceDraft.nginxDraft.nodeDraft" name="nodeList" parameters="{clusterId:loadBalanceDraft.cluster.id,hostEnv:loadBalanceDraft.nginxDraft.hostEnv}" form-name="createNginxLB" placeholder="请选择主机" loading-text="正在获取主机" empty-text="无相关信息" error-message="主机不能为空" get-list-fn="{{'nodeByLabels'}}"></form-multiple-select-list>
+        </form-input-container>
+      </form-config-item>
+    </form-config-group>
+    <form-config-group>
+      <form-config-item config-title="监听端口" required="required">
+        <form-input-container>
+          <input type="number" ng-model="loadBalanceDraft.nginxDraft.listenPort" min="1" max="65535" required="required"/>
+        </form-input-container>
+      </form-config-item>
+    </form-config-group>
+    <form-config-group>
+      <form-config-item config-title="定制镜像">
+        <form-input-container><span ng-bind="loadBalanceDraft.nginxDraft.registry + '/'"></span><span ng-bind="loadBalanceDraft.nginxDraft.image + ':'"></span><span ng-bind="loadBalanceDraft.nginxDraft.tag"></span><span ng-if="!isUserDefined">（默认）</span>
+          <icon-edit tooltip="编辑" ng-click="userDefinedImage()"></icon-edit>
+        </form-input-container>
+      </form-config-item>
+    </form-config-group>
+    <form-config-group>
+      <form-config-item config-title="资源限额" required="required">
+        <form-input-container><span style="margin-right: 20px;"><span>CPU(个)</span>
+            <input ng-model="loadBalanceDraft.nginxDraft.cpu" type="number" step="0.1" min="0" name="cpu" required="required" ng-pattern="/^(([0-9]+.[0-9]*[0-9][0-9]*)|([0-9]*[0-9][0-9]*.[0-9]+)|([0-9]*[0-9][0-9]*))$/"/></span><span style="margin-right: 20px;"><span>内存(MB)</span>
+            <input ng-model="loadBalanceDraft.nginxDraft.mem" type="number" min="0" name="memory" required="required" ng-pattern="/^[0-9]\d*$/"/></span></form-input-container>
+      </form-config-item>
+    </form-config-group>
+    <form-config-group>
+      <form-config-item config-title="日志存储" required="required">
+        <form-input-container help-text="{{ logStoragePrompt[loadBalanceDraft.nginxDraft.volumeConsole.volumeType] }}">
+          <form-multiple-inline>
+            <form-multiple-inline-item style="flex: 1; margin:0 6px 0 0;">
+              <form-select ng-model="loadBalanceDraft.nginxDraft.volumeConsole.volumeType" name="relateDeployment" options="[{value: 'EMPTYDIR', text: '不存储日志'}, {value: 'HOSTPATH', text: '主机目录'}]" show-search-input="never" placeholder="请选择类型" empty-text="无相关信息" required="true"></form-select>
+            </form-multiple-inline-item>
+            <form-multiple-inline-item style="flex: 2;">
+              <input ng-if="loadBalanceDraft.nginxDraft.volumeConsole.volumeType === 'HOSTPATH'" type="text" ng-model="loadBalanceDraft.nginxDraft.volumeConsole.hostPath" name="hostPath" placeholder="主机内路径"/>
+            </form-multiple-inline-item>
+          </form-multiple-inline>
+        </form-input-container>
+      </form-config-item>
+    </form-config-group>
+    <form-config-group>
+      <form-config-item config-title="负载策略" required="required">
+        <form-input-container>
+          <form-input-radio-group ng-model="loadBalanceDraft.nginxDraft.lbMethod" name="lbMethod" fallback-value="'ROUNDROBIN'" options="[{value: 'ROUNDROBIN', text: 'round_robin'}, {value: 'IPHASH', text: 'ip_hash'}, {value: 'LEASTCONN', text: 'least_conn'}]" required="required"></form-input-radio-group>
+        </form-input-container>
+      </form-config-item>
+    </form-config-group>
+    <form-config-group>
+      <form-config-item config-title="转发规则">
+        <form-input-container help-text="根据服务域名将请求转发到不同的部署实例。只能关联相同集群、相同namespace且运行中的创建了对内服务的部署(用户在老版本的DomeOS中创建的对外服务类型的部署，也可以在此进行关联)。">
+          <lb-nginx-rule ng-model="loadBalanceDraft.nginxDraft.rules" form-name="createNginxLB" parameters="{clusterId:loadBalanceDraft.cluster.id,namespace:loadBalanceDraft.namespace.namespace,loadBalanceType:loadBalanceDraft.type}"></lb-nginx-rule>
+        </form-input-container>
+      </form-config-item>
+    </form-config-group>
+    <form-config-group>
+      <form-config-item>
+        <form-input-container>
+          <button type="button" ng-click="cancel()" style="margin-right:15px;">取消</button>
+          <form-submit-button form="createNginxLB" on-submit="createNginxLoadBalance()" is-waiting="isCreating">提交</form-submit-button>
+        </form-input-container>
+      </form-config-item>
+    </form-config-group>
+  </form>
+</form-container>

@@ -1,0 +1,256 @@
+
+<div class="mod-deploy create-deploy-image" ng-form="ng-form" name="mirrorsListFrom" ng-class="{'need-valid':needValid.valid}" novalidate="novalidate">
+  <loading ng-if="loadingsIns.isLoading||deployIns.loadingIns.isLoading"></loading>
+  <div class="mirror-info-con">
+    <ul class="com-list-info">
+      <li class="has-border"><span class="info-name">存储设置</span>
+        <div class="info-content">
+          <div class="config-item-add">
+            <button class="ui-btn ui-btn-sm ui-btn-active add-volume-button" ng-click="addVolumeDraft();">添加</button><span class="txt-prompt" style="margin-left:12px;">如果需要在容器中挂载存储，需要先在此处进行配置</span>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+  <div class="containerdrafts-con">
+    <ul list-scroll="list-scroll" width-offset="400">
+      <li class="nav-option" disabled="true"><span><a class="icon-last to-last"></a><a class="icon-next to-next"></a></span></li>
+      <li ng-repeat="volume in config.volumeDrafts" ng-class="{'active':currentVolumeDraft.index===$index,'txt-error':needValid.valid&amp;&amp;mirrorsListFrom['Form'+$index].$invalid}">
+        <div class="container-wrap"><a class="link-list" ng-click="currentVolumeDraft.index=$index;" ng-bind="volume.name || '(名称未填写)'"></a><a class="fa fa-times cancel-container" ng-click="deleteVolumeDraft(volume, config.containerDrafts);fresh()"></a></div>
+      </li>
+    </ul>
+  </div>
+  <div class="mirror-info-con" ng-repeat="volume in config.volumeDrafts" ng-init="formName='VolumeForm'+$index;" ng-show="currentVolumeDraft.index === $index"> 
+    <ul class="com-list-info">
+      <li class="has-border"></li>
+      <li class="has-border"><span class="info-name">类别</span>
+        <div class="info-content">
+          <div class="com-select-con" select-con="select-con" style="width:240px;">
+            <button class="ui-btn ui-btn-white ui-btn-select volume-input" ng-cloak="ng-cloak"><i class="icon-down"></i>{{deployIns.mountVolumeType[volume.volumeType]}}</button>
+            <ul class="select-list volume-input">
+              <li class="select-item" ng-repeat="mountType in ['HOSTPATH', 'EMPTYDIR','PERSISTENTVOLUMECLAIM']"><a ng-click="deployIns.toggleVolumeType(volume, mountType)"><span>{{deployIns.mountVolumeType[mountType]}}</span></a></li>
+            </ul>
+          </div><span class="txt-prompt" ng-if="volume.volumeType === 'HOSTPATH'" style="margin-left:12px;">该类别会将主机目录挂载到容器内部，实例调度后存在于主机目录的文件不会回收</span><span class="txt-prompt" ng-if="volume.volumeType === 'EMPTYDIR'" style="margin-left:12px;">该类别创建的存储，可以被示例内容器共同访问，当实例调度时，存储内容会被回收</span><span class="txt-prompt" ng-if="volume.volumeType === 'PERSISTENTVOLUMECLAIM'" style="margin-left:12px;">该类别可将“运维管理->存储”中的数据卷挂载到实例中，实例调度后存在于数据卷的数据不会回收</span>
+        </div>
+      </li>
+      <li class="has-border"><span class="info-name">名称</span>
+        <div class="info-content">
+          <input class="ui-input-fill volume-input" name="volumename" ng-model="volume.name" ng-change="deployIns.updateVolumeMountName(volume, config.containerDrafts);" required="required"/><span class="txt-prompt" style="margin-left:12px;">名称在该部署内唯一不可重复</span>
+        </div>
+      </li>
+      <li class="has-border" ng-if="volume.volumeType === 'HOSTPATH'"><span class="info-name">主机目录</span>
+        <div class="info-content">
+          <input class="ui-input-fill volume-input" name="volumepath" ng-model="volume.hostPath" pattern="^/.*"/><span class="txt-prompt" style="margin-left:12px;">需要填写绝对路径</span>
+        </div>
+      </li>
+      <li class="has-border" ng-if="volume.volumeType === 'PERSISTENTVOLUMECLAIM'"><span class="info-name">PVC配置</span>
+        <div class="info-content">
+          <div class="line-long">
+            <!--input.ui-input-fill(name="volumePvcClaimName" ng-model="volume.volumePVC.name" placeholder="输入名称" required)-->
+            <div class="com-select-con line-element" select-con="select-con">
+              <input class="ui-input-search ui-input-fill full ui-btn-select" placeholder="{{volume.volumePVC.volumeName?volume.volumePVC.volumeName:'选择数据卷'}}" name="volumeNameKey" ng-model="volumeNameKey"/>
+              <ul class="select-list">
+                <li class="select-item" ng-if="!deployIns.storageVolumeConsole || filterVolume.length === 0"><a>无相关信息</a></li>
+                <li class="select-item" ng-repeat="storageVolume in filterVolume = (deployIns.storageVolumeConsole|filter:{storageVolumeDraft:{name:volumeNameKey}})"><a ng-click="deployIns.toggleStorageVolumeName(volume,storageVolume);$parent.volumeNameKey=''"><span>{{ storageVolume.storageVolumeDraft.name }}</span><span class="txt-prompt pull-right">{{storageVolume.storageType.toString().toLowerCase()}}/{{storageVolume.status}}</span></a></li>
+              </ul>
+            </div>
+            <div class="com-select-con line-element next-item" select-con="select-con">
+              <button class="ui-btn ui-btn-white ui-btn-select" ng-cloak="ng-cloak"><i class="icon-down"></i>{{ ({false:'读写', true:'只读'}[volume.volumePVC.readOnly]) }}</button>
+              <ul class="select-list">
+                <li class="select-item" ng-repeat="accessControl in [true, false]"><a ng-click="deployIns.toggleStorageVolumeReadonly(volume, accessControl)"><span>{{ ({false:'读写', true:'只读'}[accessControl]) }}</span></a></li>
+              </ul>
+            </div>
+            <input name="validateVolumeId{{$index}}" type="hidden" ng-model="volume.volumePVC.volumeId" required="required"/><span class="dome-right-prompt txt-error" ng-show="needValid.valid&amp;&amp;mirrorsListFrom.validateVolumeId{{$index}}.$invalid">数据卷不能为空</span>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+  <div class="mirror-info-con">
+    <ul class="com-list-info">
+      <li class="has-border"><span class="info-name">选择镜像 <span class="require-domain">*</span></span>
+        <div class="info-content">
+          <div class="line-long">
+            <div class="com-select-con deploy-select-image-input" select-con="select-con" event-type="focus">
+              <input class="ui-input-fill search-txt ui-btn-select" placeholder="搜索镜像" ng-model="mirKey"/>
+              <div class="select-list">
+                <ul>
+                  <li ng-if="imageFiltered.length===0"><a>无相关镜像信息</a></li>
+                  <li class="select-item" ng-repeat="image in imageFiltered=(deployIns.imageList|filter:{'imageName':mirKey})"><a ng-click="deployIns.addImage(image)" ng-cloak="ng-cloak">{{image.imageName}}<span class="txt-prompt pull-right" ng-bind="image.registry"></span></a></li>
+                </ul>
+              </div><span class="txt-wrap txt-prompt">可添加多个镜像</span><span class="mirror-button"><a class="link-safe" ng-click="deployIns.addOtherImage()" tooltip="添加新镜像">其他镜像</a></span>
+            </div>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+  <p class="nomirror" ng-if="!config.containerDrafts||config.containerDrafts.length===0">您尚未选择任何镜像。</p>
+  <div class="containerdrafts-con">
+    <ul list-scroll="list-scroll" width-offset="400">
+      <li class="nav-option" disabled="true"><span><a class="icon-last to-last"></a><a class="icon-next to-next"></a></span></li>
+      <li ng-repeat="image in config.containerDrafts" ng-class="{'active':currentContainerDraft.index===$index,'txt-error':needValid.valid&amp;&amp;mirrorsListFrom['Form'+$index].$invalid}">
+        <div class="container-wrap"><a class="link-list" ng-click="currentContainerDraft.index=$index;" ng-bind="image.image"></a><a class="fa fa-times cancel-container" ng-click="deleteImage($index);fresh()"></a></div>
+      </li>
+    </ul>
+  </div>
+  <div ng-repeat="image in config.containerDrafts" ng-init="formName='Form'+$index;imageindex=$index;" ng-show="currentContainerDraft.index===$index">
+    <ng-form class="mirror-info-con" role="form" name="{{formName}}">
+      <ul class="com-list-info">
+        <li class="has-border"><span class="info-name info-name-content-for-label">镜像仓库</span>
+          <div class="info-content info-name-content-for-label" ng-bind="image.registry"></div>
+        </li>
+        <li class="has-border"><span class="info-name">镜像版本</span>
+          <div class="info-content">
+            <div class="com-select-con" select-con="select-con">
+              <button class="ui-btn ui-btn-white ui-btn-select" ng-cloak="ng-cloak"><i class="icon-down"></i>{{image.tag || '选择镜像版本'}}</button>
+              <ul class="select-list">
+                <li class="select-item" ng-repeat="tag in image.tagList"><a ng-click="deployIns.toggleImageTag($parent.$index,tag.tag)"><span ng-bind="tag.tag"></span><span class="txt-prompt" ng-bind="(tag.createTime | time)"></span></a></li>
+              </ul>
+            </div>
+          </div>
+        </li>
+        <li class="has-border"><span class="info-name">自动部署</span>
+          <div class="info-content">
+            <dome-toggle ng-class="{'on':image.autoDeploy}" ng-click="image.autoDeploy=!image.autoDeploy" ng-model="image.autoDeploy"></dome-toggle><span class="txt-prompt">开启后，通过项目构建产生该镜像的新版本时，会自动触发该部署升级。该功能只对运行中的部署有效。</span>
+          </div>
+        </li>
+        <li class="has-border" ng-if="config.volumeDrafts.length &gt; 0"><span class="info-name">存储挂载</span>
+          <div class="info-content">
+            <ul class="volume-list">
+              <li class="line-long" ng-repeat="volumeMount in image.volumeMountDrafts">
+                <div class="com-select-con line-element" select-con="select-con">
+                  <button class="ui-btn ui-btn-white ui-btn-select" ng-cloak="ng-cloak"><i class="icon-down"></i>{{ volumeMount.name || '选择存储' }}</button>
+                  <ul class="select-list">
+                    <li class="select-item" ng-repeat="volume in config.volumeDrafts"><a ng-click="deployIns.toggleVolumeMountName(volumeMount, volume)"><span>{{ volume.name }}</span></a></li>
+                  </ul>
+                </div>
+                <div class="com-select-con line-element next-item" select-con="select-con">
+                  <button class="ui-btn ui-btn-white ui-btn-select" ng-cloak="ng-cloak"><i class="icon-down"></i>{{ ({false:'读写', true:'只读'}[volumeMount.readOnly]) }}</button>
+                  <ul class="select-list">
+                    <li class="select-item" ng-repeat="accessControl in [true, false]"><a ng-click="deployIns.toggleVolumeMountReadonly(volumeMount, accessControl)"><span>{{ ({false:'读写', true:'只读'}[accessControl]) }}</span></a></li>
+                  </ul>
+                </div>
+                <input class="line-element next-item ui-input-fill" placeholder="路径" name="path" ng-model="volumeMount.mountPath"/>
+                <button class="txt-wrap delete-icon fa fa-trash-o ui-btn-none icon-trash-color" ng-click="deployIns.deleteVolumeMountDraft(image, volumeMount)"></button>
+              </li>
+            </ul><span class="add-env line-long" ng-click="deployIns.addVolumeMountDraft(image)" style="margin-top:12px;"><i class="icon-add"></i></span>
+          </div>
+        </li>
+        <li class="has-border"><span class="info-name">配置管理</span>
+          <div class="info-content">
+            <ul class="env-list">
+              <li class="line-long" ng-repeat="configMapVolumeMount in image.configMapVolumeMountDrafts">
+                <div class="com-select-con" select-con="select-con">
+                  <button class="ui-btn ui-btn-white ui-btn-select" ng-cloak="ng-cloak"><i class="icon-down"></i>{{configMapVolumeMount._configMap.name || '选择配置'}}</button>
+                  <ul class="select-list">
+                    <li class="select-item" ng-repeat="configMap in deployIns.configMapListConsole"><a ng-click="deployIns.toggleConfigMap(configMap, configMapVolumeMount)"><span>{{ configMap.name }}</span></a></li>
+                  </ul>
+                </div>
+                <input class="line-element next-item ui-input-fill" placeholder="挂载目录，如：/app" name="path" ng-model="configMapVolumeMount.mountPath" required="required"/>
+                <div class="next-item" style="width:100px; line-height:34px;"><a class="link-safe" ng-click="" tooltip="修改配置文件路径">配置文件</a></div>
+                <button class="txt-wrap delete-icon fa fa-trash-o ui-btn-none icon-trash-color" ng-click="deployIns.deleteConfigMapMountDraft(image,configMapVolumeMount)"></button>
+              </li>
+            </ul><span class="add-env line-long" ng-click="deployIns.addConfigMapMountDraft(image)"><i class="icon-add"></i></span>
+          </div>
+        </li>
+        <li class="has-border"><span class="info-name">运行过程环境变量</span>
+          <div class="info-content">
+            <table class="ui-table-primary ui-table-mirror" ng-show="image.oldEnv.length!==0">
+              <thead>
+                <tr>
+                  <th>环境变量名</th>
+                  <th>环境变量值</th>
+                  <th>描述</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr ng-repeat="env in image.oldEnv">
+                  <td ng-bind="env.key"></td>
+                  <td class="tb-value">
+                    <input class="ui-input-fill" ng-model="env.value" name="oldEnvValue"/>
+                  </td>
+                  <td ng-bind="env.description"></td>
+                </tr>
+              </tbody>
+            </table>
+            <ul class="env-list">
+              <li class="line-long" ng-repeat="env in image.newEnv" ng-form="ng-form" name="childForm">
+                <input class="line-element ui-input-fill" placeholder="环境变量名" ng-pattern="/^[A-Za-z_][A-Za-z0-9_]*$/" name="key" ng-model="env.key" required="required" param1="{{env.value}}" param2="{{env.description}}"/>
+                <input class="line-element next-item ui-input-fill" placeholder="环境变量值" name="value" ng-model="env.value" required="required" param1="{{env.key}}" param2="{{env.description}}"/>
+                <input class="line-element next-item ui-input-fill" placeholder="描述20字以内" name="description" ng-model="env.description"/>
+                <button class="txt-wrap delete-icon fa fa-trash-o ui-btn-none icon-trash-color" ng-click="deployIns.deleteImageEnv($parent.$index,$index)"></button>
+              </li>
+            </ul><span class="add-env line-long" ng-click="deployIns.addImageEnv($index)"><i class="icon-add"></i></span>
+          </div>
+        </li>
+        <li class="has-border"><span class="info-name info-name-content-for-label">容器大小</span>
+          <div class="info-content info-name-content-for-label">CPU(个)
+            <input class="ui-input-fill ui-input-sm" ng-model="image.cpu" name="cpu" ng-pattern="/^(\d*\.)?\d+$/" required="required"/>内存(MB)
+            <input class="ui-input-fill ui-input-sm" ng-model="image.mem" name="mem" ng-pattern="/^(\d*\.)?\d+$/" required="required"/><span class="tool-inline-error" ng-if="(needValid.valid||mirrorsListFrom[formName].cpu.$dirty)&amp;&amp;mirrorsListFrom[formName].cpu.$invalid||(needValid.valid||mirrorsListFrom[formName].mem.$dirty)&amp;&amp;mirrorsListFrom[formName].mem.$invalid">请填写数字</span>
+          </div>
+        </li>
+        <li class="has-border"><span class="info-name info-name-content-for-label">镜像拉取策略</span>
+          <div class="info-content info-name-content-for-label">
+            <dome-radio class="com-check-con" d-id="{{'pullPolicyAlways_'+formName}}" d-value="'Always'" d-name="pullPolicyType{{formName}}" d-label="Always" d-model="image.imagePullPolicy"></dome-radio>
+            <dome-radio class="com-check-con" d-id="{{'pullPolicyNever_'+formName}}" d-value="'Never'" d-name="pullPolicyType{{formName}}" d-label="Never" d-model="image.imagePullPolicy"></dome-radio>
+            <dome-radio class="com-check-con" d-id="{{'pullPolicyIfNotPresent_'+formName}}" d-value="'IfNotPresent'" d-name="pullPolicyType{{formName}}" d-label="If Not Present" d-model="image.imagePullPolicy"></dome-radio>
+          </div>
+        </li>
+        <li class="has-border"><span class="info-name tool-align-input">健康检查</span>
+          <div class="info-content info-content-lg-height">
+            <dome-radio class="com-check-con" ng-if="config.networkMode!=='HOST'" d-id="{{'checkNONE_'+formName}}" d-value="'NONE'" d-name="healthCheckerType{{formName}}" d-label="None" d-model="image.healthChecker.type"></dome-radio>
+            <dome-radio class="com-check-con" ng-if="config.networkMode!=='HOST'" d-id="{{'checkTCP_'+formName}}" d-value="'TCP'" d-name="healthCheckerType{{formName}}" d-disabled="{{config.networkMode=='HOST'}}" d-label="TCP检查" d-model="image.healthChecker.type"></dome-radio>
+            <dome-radio class="com-check-con" ng-if="config.networkMode!=='HOST'" d-id="{{'checkHTTP_'+formName}}" d-value="'HTTP'" d-name="healthCheckerType{{formName}}" d-disabled="{{config.networkMode=='HOST'}}" d-label="HTTP检查" d-model="image.healthChecker.type"></dome-radio>
+            <p class="txt-prompt" ng-if="config.networkMode=='HOST'">Host网络模式下不能使用健康检查</p>
+            <div class="line-long" ng-if="image.healthChecker.type=='TCP'||image.healthChecker.type=='HTTP'"><span class="child-name">检查端口</span>
+              <input class="ui-input-fill line-element" placeholder="请输入端口号" name="port" ng-model="image.healthChecker.port" required="required"/>
+            </div><span class="child-error txt-error" ng-if="(needValid.valid||mirrorsListFrom[formName].port.$dirty)&amp;&amp;mirrorsListFrom[formName].port.$invalid">必填</span>
+            <div class="line-long" ng-if="image.healthChecker.type=='TCP'||image.healthChecker.type=='HTTP'"><span class="child-name">超时时间（s）</span>
+              <input class="ui-input-fill line-element" placeholder="超过时间达到规定阈值，则健康检查判定为异常" name="timeout" ng-model="image.healthChecker.timeout" required="required" ng-pattern="/^[1-9]\d*$/"/>
+            </div><span class="child-error txt-error" ng-if="(needValid.valid||mirrorsListFrom[formName].timeout.$dirty)&amp;&amp;mirrorsListFrom[formName].timeout.$invalid">请填写数字</span>
+            <div class="line-long" ng-if="image.healthChecker.type=='TCP'||image.healthChecker.type=='HTTP'"><span class="child-name">首次检测延迟（s）</span>
+              <input class="ui-input-fill line-element" placeholder="容器启动后延迟规定秒数，再开始健康检查" name="delay" ng-model="image.healthChecker.delay" required="required" ng-pattern="/^[1-9]\d*$/"/>
+            </div><span class="child-error txt-error" ng-if="(needValid.valid||mirrorsListFrom[formName].delay.$dirty)&amp;&amp;mirrorsListFrom[formName].delay.$invalid">请填写数字</span>
+            <div class="line-long" ng-if="image.healthChecker.type=='HTTP'"><span class="child-name">检测URL</span>
+              <input class="ui-input-fill line-element" placeholder="请输入URL" name="url" ng-model="image.healthChecker.url" required="required"/>
+            </div><span class="child-error txt-error" ng-if="(needValid.valid||mirrorsListFrom[formName].url.$dirty)&amp;&amp;mirrorsListFrom[formName].url.$invalid">必填</span>
+            <div class="line-long" ng-if="image.healthChecker.type=='HTTP'"><span class="child-name">允许返回值</span><span class="child-txt"> 200-400(不包含400)</span></div>
+          </div>
+        </li>
+        <li><span class="info-name" ng-class="{'info-name-lg':deployIns.logConfig!==0}">日志</span>
+          <div class="info-content">
+            <p class="txt-prompt" ng-if="deployIns.logConfig===0" style="line-height: 34px;">所选集群没有开启日志自动收集。不能进行日志相关配置。</p>
+            <div class="log-item" ng-form="ng-form" ng-repeat="log in image.logItemDrafts" name="childForm" ng-if="deployIns.logConfig"><a class="icon-cancel cancel-log" ng-click="deployIns.deleteLogDraft(image, log)"></a>
+              <input class="ui-input-fill element-full" placeholder="请输入日志路径，不能放在根目录下" ng-pattern="/^/.*[^/]$/" ng-model="log.logPath" name="logPath" is-required="is-required" param1="{{log.autoCollect&amp;&amp;log.logTopic}}" param2="{{log.autoCollect&amp;&amp;log.processCmd}}" param3="{{log.autoDelete&amp;&amp;log.logExpired}}"/><span class="txt-error" ng-if="(needValid||childForm.logPath.$dirty)&amp;&amp;childForm.logPath.$error.pattern">非法的格式</span>
+              <div class="log-check">
+                <input class="ui-check" id="autoCollect_{{imageindex}}_{{$index}}" type="checkbox" name="autoCollect" ng-model="log.autoCollect"/>
+                <label for="autoCollect_{{imageindex}}_{{$index}}">自动收集日志</label>
+              </div>
+              <div class="line-full" ng-if="log.autoCollect"><span class="log-title"> 日志topic</span>
+                <input class="ui-input-fill line-element" placeholder="请输入日志topic" name="logTopic" ng-model="log.logTopic" required="required"/>
+              </div>
+              <div class="line-full" ng-if="log.autoCollect"><span class="log-title"> 预处理命令</span>
+                <div class="line-element">
+                  <input class="ui-input-fill full" placeholder="请输入预处理命令" name="processCmd" ng-model="log.processCmd"/><span class="txt-wrap"><a class="icon-help" popover="对收集到的日志做进一步处理，比如筛选或增减字段等，可以用grep和awk命令完成，命令以管道形式执行，因此必须以“|”开始，比如一个典型的处理命令为：   | grep &quot;ERROR\\|WARN\\| EXCEPTION\\| statistic&quot; | awk -vnhost=&quot;$HOSTNAME&quot; '{print &quot;[&quot;nhost&quot;]--&quot;$0}'，该命令将只筛选包含四个对应关键字的行，并且会在行首添加&quot;[hostname]--&quot;的字符串，参照可完成其他复杂的处理方式"></a></span>
+                </div>
+              </div>
+              <div class="log-check">
+                <input class="ui-check" id="autoDelete_{{imageindex}}_{{$index}}" type="checkbox" name="autoDelete" ng-model="log.autoDelete"/>
+                <label for="autoDelete_{{imageindex}}_{{$index}}">自动删除日志</label>
+              </div>
+              <div class="line-full" ng-if="log.autoDelete"><span class="log-title"> 过期时间</span>
+                <input class="ui-input-fill" placeholder="过期则自动删除" name="logExpired" ng-model="log.logExpired" required="required" ng-pattern="/^[1-9]\d*$/"/><span class="unit">小时</span>
+              </div>
+              <div class="txt-error log-error" ng-if="(needValid||deployForm.logExpired.$dirty)&amp;&amp;deployForm.logExpired.$invalid">请输入大于0的整数</div>
+            </div>
+            <button class="ui-btn ui-btn-sm ui-btn-active add-log" ng-click="deployIns.addLogDraft(image)" ng-if="deployIns.logConfig">添加</button>
+          </div>
+        </li>
+      </ul>
+    </ng-form>
+  </div>
+  <div class="com-bottom-option text-center"><span class="com-bottom-option-con">
+      <button class="ui-btn ui-btn-md ui-btn-bright" ng-disabled="loadingsIns.isLoading||deployIns.loadingIns.isLoading" ng-click="toLastStep()">上一步</button>
+      <button class="ui-btn ui-btn-md ui-btn-bright" ng-disabled="loadingsIns.isLoading||deployIns.loadingIns.isLoading" ng-click="needValid.valid=true;mirrorsListFrom.$valid&amp;&amp;toCreate()">完成</button><span class="txt-error" ng-if="needValid.valid&amp;&amp;mirrorsListFrom.$invalid">存在不合法数据，请修改后提交！</span></span></div>
+</div>

@@ -1,0 +1,26 @@
+@import "compass/css3";
+@import "common/css/common.scss";
+
+.project-manage{
+	.project-options{
+		padding:20px;
+		// height: 82px;
+		.ui-btn-lg{
+			height: 34px;
+			width: 100px;
+			color: #fff;
+			font-size:14px;
+			font-weight: normal;
+			background-color:#188ae2;
+			.icon-add-white{
+				margin-right: 4px;
+			}
+		}
+		.ui-input-search{
+			margin-left: 34px;
+		}
+	}
+	.mod-list{
+		padding: 0 20px 20px;
+	}
+}

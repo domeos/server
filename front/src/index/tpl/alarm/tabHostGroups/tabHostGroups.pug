@@ -1,0 +1,57 @@
+.tab-hostsgroups
+	.com-btn-group.mod-option
+		input.ui-input.ui-input-white(placeholder="请输入主机组名称" ng-model="vmHostGroup.newHostGroup")
+		button.ui-btn.ui-btn-bright.ui-btn-lg(ng-disabled="vm.permission.role == null || vm.permission.role === 'REPORTER' || !vmHostGroup.newHostGroup" ng-click="vmHostGroup.addHostGroup()" ng-class="{'ui-btn-lg-disabled': vm.permission.role == null || vm.permission.role === 'REPORTER'}") 添加主机组
+		.pull-right.right-option
+			span(ng-cloak) 共{{hostGroupFilter.length}}个主机组
+			input.ui-input-search.ui-input-fill(type="text" placeholder="输入主机组名称查询" ng-model="hostGroupKey")
+	.mod-tips-info
+		p.txt-prompt
+			i.fa.fa-info-circle.icon-algin-right
+			| 通过配置主机组,可以对一批主机统一进行报警配置，DEVELOPER及以上权限的报警组成员可以添加主机组。
+	ul.list-hostgroups.mod-list-alarm
+		li.hostgroup-wrap(ng-repeat="hostgroup in hostGroupFilter=(vmHostGroup.hostGroupList|filter:{'hostGroupName':hostGroupKey})")
+			.hostgroup
+				.hostgroup-header
+					h4.hostgroup-name(ng-bind="hostgroup.hostGroupName")
+					span.hostgroup-detail.txt-prompt(ng-clock) 创建者：{{hostgroup.creatorName}} 创建时间：{{(hostgroup.createTime) | day}}
+					.hostgroup-opt(select-con ng-if="vm.permission.role&&vm.permission.role!='REPORTER'")
+						button.ui-btn-none.ui-btn-select
+							i.icon-down-round
+						ul.select-list
+							li.select-item
+								a(ng-click="vmHostGroup.rename(hostgroup)") 重命名
+							li.select-item
+								a(ng-click="vmHostGroup.deleteHostGroup(hostgroup.id)") 删除该组
+				.hostgroup-body
+					.hostgroup-left
+						h5.hostgroup-left-header
+							a.link-addhost.link-primary(ui-sref="alarmAddHosts({id:hostgroup.id,name:hostgroup.hostGroupName})" ng-if="vm.permission.role&&vm.permission.role!='REPORTER'") +添加主机
+							em.txt-embed 主机
+						.list-hosts-wrap
+							ul.list-hosts
+								li.sig-host(ng-repeat="host in hostgroup.hostList")
+									div.sig-host-info-wrap(ng-mouseenter="hostGroupPopover.name=host.hostname;hostGroupPopover.ip=host.ip;" popover-template="'hostGroupPopover.html'" popover-trigger="mouseenter")
+										a.icon-cancel(ng-if="vm.permission.role&&vm.permission.role!='REPORTER'" ng-click="vmHostGroup.deleteNode(hostgroup,$index)")
+										em.txt-embed.tool-nowrap(ng-bind="host.hostname")
+										span.txt-prompt.tool-nowrap(ng-bind="host.ip")
+					.hostgroup-right
+						h5.hostgroup-right-header.txt-embed 报警模板
+						ul.list-tpls
+							li(ng-repeat="tpl in hostgroup.templateList")
+								.tool-nowrap.tpl-wrap(popover="{{tpl.templateName}}" popover-trigger="mouseenter")
+									a.txt-primary(ng-bind="tpl.templateName" ui-sref="alarmTemplateDetail({id:tpl.id})")
+script(type="text/ng-template" id="hostGroupPopover.html")
+	div.text-center(ng-bind="hostGroupPopover.name")
+	div.text-center(ng-bind="hostGroupPopover.ip")
+script(type="text/ng-template" id="renameHostGroupModal.html")
+	.d-modal-header(ng-cloak) {{vmRename.hostGroup.hostGroupName}}重命名
+	ul.modal-branchcheck.modal-info(role="form" ng-form name="hostGroupForm" ng-class="{'need-valid':needValid}")
+		li
+			span.info-name 输入新名称
+			.info-txt
+				input.ui-input-fill.full(is-hostgroup-exist name="hostGroupName" ng-model="vmRename.hostGroupName" hostgroup-list="vmRename.hostGroupList" is-required)
+				span.txt-error.text-left(ng-if="(vmRename.needValid||hostGroupForm.hostGroupName.$dirty)&&hostGroupForm.hostGroupName.$error.isHostgroupExist")  名称已存在
+	.modal-footer
+		button.ui-btn.ui-btn-sm.ui-btn-white(ng-click="vmRename.cancel()") 取消
+		button.ui-btn.ui-btn-sm.ui-btn-bright(ng-click="vmRename.needValid=true;hostGroupForm.$valid&&vmRename.submitName();") 确定

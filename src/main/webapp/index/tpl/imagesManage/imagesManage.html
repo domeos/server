@@ -1,0 +1,44 @@
+
+<div class="mod-image image-list-manage">
+  <loading ng-if="isLoading"></loading>
+  <div class="image-option"><span class="registry-address">仓库地址：{{projectRegistry}}</span>
+    <div class="pull-right right-option"><span ng-cloak="ng-cloak">共{{imageFilterd.length}}个镜像</span>
+      <input class="ui-input-fill ui-input-search" placeholder="输入镜像名称查找" ng-model="otherImageKey"/>
+    </div>
+  </div>
+  <div class="mod-list image-list">
+    <div class="image-list-title" ng-if="!isLoading&amp;&amp;(!imagesInfo||imageFilterd.length===0)"><span class="image-list-name"> <span class="image-list-icon icon-docker-image"></span> 无相关镜像</span><span class="image-list-count"><span class="image-list-nav" ng-cloak="ng-cloak">版本数：0</span></span></div>
+    <div class="image-list-title" ng-repeat-start="img in imageFilterd=(imagesInfo|filter:{'imageName':otherImageKey})|orderBy:'imageName'" ng-class="" ng-click="isShowImageDetail!==$index&amp;&amp;getTagDetail(img);isShowImage($index)"><span class="image-list-name"> <span class="image-list-icon icon-docker-image"></span>{{img.imageName}}</span><span class="image-list-count"><span class="image-list-nav" ng-cloak="ng-cloak">版本数：{{img.tags.length||0}}</span><span class="image-list-fold-icon"> <i class="fa" ng-class="{'fa-angle-down':isShowImageDetail===$index,'fa-angle-right':isShowImageDetail!==$index}"></i></span></span></div>
+    <div class="image-list-detail-container list-detail-container project-group-detail-fold" ng-repeat-end="ng-repeat-end" ng-class="" ng-show="isShowImageDetail===$index" ng-init="formName='Form'+$index;">
+      <loading ng-if="isLoadingTagDetail"></loading>
+      <div class="image-list-detail">
+        <table class="ui-table-dome">
+          <thead>
+            <tr>
+              <th style="width:25%;">版本名称</th>
+              <th style="width:45%;">拉取命令</th>
+              <th style="width:25%;">创建时间</th>
+              <th style="width:5%;">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr ng-if="!isLoadingTagDetail&amp;&amp;(!img.tagsDetail||img.tagsDetail.length===0)">
+              <td colspan="3">无相关版本信息</td>
+            </tr>
+            <tr ng-repeat="tagInfo in img.tagsDetail|orderBy:'createTime'">
+              <td ng-bind="tagInfo.tag"></td>
+              <td> 
+                <input class="cmd-txt ui-input-white" id="foo{{formName+$index}}" readonly="true" value="docker pull {{tagInfo.registry|urlProtocolFilter}}/{{img.imageName}}:{{tagInfo.tag}}" title="docker pull {{tagInfo.registry|urlProtocolFilter}}/{{img.imageName}}:{{tagInfo.tag}}"/>
+                <button class="ui-btn btn-copy" ngclipboard="ngclipboard" data-clipboard-target="#foo{{formName+$index}}" tooltip="复制"><i class="fa fa-clipboard copy-logo"></i></button>
+              </td>
+              <td ng-bind="(tagInfo.createTime | time)"></td>
+              <td> 
+                <button class="button fa fa-trash-o ui-btn-none" ng-click="deletePrivateImage(tagInfo.name,tagInfo.tag,tagInfo.registry)" ng-disabled="!isDelete" ng-class="{true:'icon-trash-color',false:'icon-fa-disabled'}[isDelete]" title="删除"></button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

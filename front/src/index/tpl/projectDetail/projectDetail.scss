@@ -1,0 +1,298 @@
+@import "compass/css3";
+@import "common/css/common.scss";
+.project-detail{
+	$tab-padding: 20px;
+	padding-bottom: 100px;
+	.tab-pane{
+		padding: 0 $tab-padding;
+		overflow: visible;
+	}
+	.edit-creator{
+		font-size: 14px;
+	}
+	.enlarge-foucs{
+		padding: 5px !important;
+	}
+	.com-select-con{
+		width: 350px
+	}
+	.tab-member{
+		margin: 0 0-$tab-padding 0 0-$tab-padding;
+	}
+	.proInfo-form{
+		margin-left: -$page-padding;
+		margin-right: $page-padding;
+	}
+	.project-options{
+		// background-color: dome-color(background,primary);
+		padding: 20px;
+		border-bottom: 20px solid dome-color(background, light);
+		.ui-btn-delete{
+			display: inline-block;
+			width: 34px;
+			padding: 6px 0 7px 0;
+			height: 34px;
+			margin-left: 10px;
+			text-align: center;
+			border-radius: $default-radius;
+			background-color: #fff;
+		}
+		.text-group{
+			display: inline-block;
+		    height: 34px;
+		    vertical-align: middle;
+		    .text-name{
+		    	padding: 8px;
+		    	vertical-align: -webkit-baseline-middle;
+		    }
+		    .text-content{
+		    	padding: 8px;
+		    	vertical-align: -webkit-baseline-middle;
+		    }
+		}
+		.detail-header{
+			padding: 0;
+		    border-bottom: 0;
+		    overflow: hidden;
+		}
+	}
+	.code-origin{
+		padding: 20px 0 ;
+		font-size: 16px;
+		a{
+			color:dome-color(dome,primary);
+		}
+	}
+	.project-creator{
+		padding-top: 20px;
+		font-size: 16px;
+	}
+	.custom-type{
+		font-weight: bold;
+		font-size: 14px;
+	}
+	// .dockerfile-setting{
+	// 	overflow: hidden;
+	// 	padding: 28px 0 29px 28px;
+	// 	.s1{
+	// 		margin-right: 20px;
+	// 		font-weight: bold;
+	// 	}
+	// 	.s2{
+	// 		display: inline-block;
+	// 		vertical-align: middle;
+	// 	}
+	// 	.s3{
+	// 		margin-left: 12px;
+	// 		color:dome-color(dome,primary);
+	// 	}
+	// }
+	.dockerfile-options{
+		padding: 20px 0;
+		.ui-btn-dockerfile{
+			color: dome-color(dome,bright);
+		}
+	}
+	.btn-options{
+		text-align: center;
+		padding-top: 32px;
+	}
+	.ci-con{
+		padding-top: 20px;
+		// padding-bottom: 20px;
+		.ci-title{
+			font-weight: bold;
+			margin-right: 30px;
+			display: inline-block;
+			width: 98px;
+			text-align: right;
+		}
+		.ci-content{
+			width: 80%;
+			display: inline-block;
+			vertical-align: top;
+			.input-md{
+				width: 340px;
+			}
+		}
+		@media (max-width: 1200px){
+			.ci-content {
+				max-width: 700px;
+			}
+		}
+		.branch-check{
+			display: inline-block;
+			margin-right: 64px;
+			.ui-input-white{
+				width: 350px;
+			}
+		}
+	}
+	.chose-log{
+		padding: 20px 8px;
+		.chose-title{
+			font-weight: bold;
+		}
+		.txt-chose{
+			margin-left: 18px;
+			&.active{
+				color: dome-color(dome,bright);
+			}
+		}
+		.sep{
+			margin-left: 45px;
+			margin-right: 45px;
+			color: dome-color(border,deep);
+			font-style: normal;
+		}
+	}
+	.build-log{
+		border-top: $deep-border;
+		.ui-table-dome{
+			//td{
+			//	padding-top: 15px;
+			//	padding-bottom: 15px;
+			//}
+			td:first-child{
+				padding-left: 8px;
+			}
+			td:last-child{
+				padding-right: 8px;
+			}
+		}
+	}
+	.log-detail{
+		background-color: dome-color(background,light);
+		padding:8px;
+		&:hover{
+			background-color: dome-color(background,light);
+		}
+		.detail-list{
+			position: relative;
+			flex:1;
+			.detail-row{
+				padding: 10px 0 10px 0;
+				display: block;
+				.detail-title{
+					position: relative;
+					display: inline-block;
+					width: 125px;
+					vertical-align: top;
+				}
+				.cmd-txt{
+					width: 40%;
+					background-color: #fff;
+					border: none;
+					margin-bottom: 3px;
+				}
+				.detail-content{
+					display: inline-block;
+					width: 70%;
+					.cmd-prompt{
+						padding-left: 12px;
+					}
+					.link-safe{
+						margin-left: 10px;
+					}
+				}
+			}
+		}
+	}
+	.btn-options{
+		padding-bottom: 60px;
+	}
+	.build-log-pagination{
+		text-align: right;
+		margin: 20px 0;
+		.pagination-per-page{
+			display: inline-block;
+			.com-select-con{
+				width: 55px;
+				.ui-btn-select{
+					height: 30px;
+				}
+				.select-list{
+					top: 27px;
+					li{
+						a{
+							line-height: 15px;
+						}
+					}
+				}
+			}
+		}
+		.pagination-info{
+			display: inline-block;
+			margin-left: 15px;
+		}
+		.pagination-navigation{
+			display: inline-block;
+			margin-left: 15px;
+		}
+	}
+	.pagination{
+		margin: -10px 0;
+		.active{
+			a{
+				background-color: #188ae2;
+				border-color: #188ae2;
+				color: #fff;
+			}
+		}
+		li{
+			a{
+				color: #188ae2;
+			}
+		}
+		.disabled{
+			a{
+				color: #777;
+			}
+		}
+	}
+	.pagination-sm{
+		li{
+			a{
+				padding: 4px 10px;
+				font-size: 14px;
+				line-height: inherit;
+			}
+		}
+	}
+	.tb-tr{
+		display: flex;
+		display: -webkit-flex;
+	}
+	.tb-td{
+		flex:1;
+		vertical-align: middle;
+		height: 45px;
+		padding: 8px;
+		line-height: 29px;
+		border-bottom: 1px solid #ddd;
+	}
+}
+.modal-log{
+	background-color: #000;
+	max-height: 430px;
+	min-height: 140px;
+	overflow: auto;
+	padding:  10px;
+	color: #fff;
+	.nolog{
+		padding: 20px 0 10px 0;
+		margin: 0;
+		text-align: center;
+	}
+}
+.modal-dockerfile{
+	.dockerfile-content{
+		padding: 12px 30px 36px 38px;
+		min-height: 140px;
+		max-height: 400px;
+		overflow: auto;
+	}
+}
+.modal-branchcheck{
+	padding: 20px 0  30px 0;
+}
