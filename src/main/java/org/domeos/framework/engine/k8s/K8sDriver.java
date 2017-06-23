@@ -222,9 +222,14 @@ public class K8sDriver implements RuntimeDriver {
         //loadBalancer
         try {
             if (deployment.getNetworkMode() != NetworkMode.HOST  && deployment.getUsedLoadBalancer() == 0) {
-                LoadBalancer lb = loadBalancerBiz.getInnerLoadBalancerByDeployId(deployment.getId());
-                if (lb != null) {
-                    kubeUtils.deleteService(GlobalConstant.RC_NAME_PREFIX + deployment.getName());
+                List<LoadBalancer> lbs = loadBalancerBiz.getInnerAndExternalLoadBalancerByDeployId(deployment.getId());
+                if (lbs != null) {
+                    for (LoadBalancer lb  : lbs) {
+                        if (lb.getName().equals(deployment.getName())) {
+                            kubeUtils.deleteService(GlobalConstant.RC_NAME_PREFIX + deployment.getName());
+                            break;
+                        }
+                    }
                 }
             }
             deployResourceHandler.delete();
