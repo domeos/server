@@ -5,26 +5,35 @@ import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.SimpleAuthenticationInfo;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
+import org.apache.shiro.cas.CasAuthenticationException;
 import org.apache.shiro.cas.CasRealm;
+import org.apache.shiro.cas.CasToken;
 import org.apache.shiro.subject.PrincipalCollection;
+import org.apache.shiro.subject.SimplePrincipalCollection;
+import org.apache.shiro.util.CollectionUtils;
 import org.domeos.framework.api.biz.auth.AuthBiz;
 import org.domeos.framework.api.biz.global.GlobalBiz;
 import org.domeos.framework.api.model.auth.User;
 import org.domeos.framework.api.model.auth.related.LoginType;
 import org.domeos.framework.api.model.auth.related.UserState;
 import org.domeos.framework.api.model.global.SsoInfo;
-import org.domeos.framework.api.model.global.SsoToken;
-import org.domeos.global.GlobalConstant;
 import org.domeos.util.StringUtils;
+import org.jasig.cas.client.authentication.AttributePrincipal;
+import org.jasig.cas.client.validation.Assertion;
+import org.jasig.cas.client.validation.TicketValidationException;
+import org.jasig.cas.client.validation.TicketValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by KaiRen on 2017/4/11.
  */
 public class SsoRealm  extends CasRealm {
+
 
     @Autowired
     private GlobalBiz globalBiz;
@@ -70,11 +79,7 @@ public class SsoRealm  extends CasRealm {
     }
 
     protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) {
-        SsoToken ssoToken = (SsoToken) token;
-        if (!StringUtils.isBlank(ssoToken.getFrom())) {
-            setCasService(ssoToken.getFrom() + GlobalConstant.SSO_API);
-        }
-        AuthenticationInfo authc = super.doGetAuthenticationInfo(token);
+        AuthenticationInfo authc = testInfo(token);
         if (authc == null) {
             return null;
         }
@@ -102,5 +107,40 @@ public class SsoRealm  extends CasRealm {
                 token.getCredentials(),
                 getName()
         );
+    }
+
+    private AuthenticationInfo testInfo(AuthenticationToken token) {
+        CasToken casToken = (CasToken)token;
+        if(token == null) {
+            return null;
+        } else {
+            String ticket = (String)casToken.getCredentials();
+            if(!org.apache.shiro.util.StringUtils.hasText(ticket)) {
+                return null;
+            } else {
+                TicketValidator ticketValidator = this.ensureTicketValidator();
+                try {
+                    Assertion casAssertion = ticketValidator.validate(ticket, this.getCasService());
+                    AttributePrincipal casPrincipal = casAssertion.getPrincipal();
+                    String userId = casPrincipal.getName();
+//                    logger.info("Validate ticket : {} in CAS server : {} to retrieve user : {}", new Object[]{ticket, this.getCasServerUrlPrefix(), userId});
+                    Map<String, Object> attributes = casPrincipal.getAttributes();
+                    casToken.setUserId(userId);
+                    String rememberMeAttributeName = this.getRememberMeAttributeName();
+                    String rememberMeStringValue = (String)attributes.get(rememberMeAttributeName);
+                    boolean isRemembered = rememberMeStringValue != null && Boolean.parseBoolean(rememberMeStringValue);
+                    if(isRemembered) {
+                        casToken.setRememberMe(true);
+                    }
+
+                    List<Object> principals = CollectionUtils.asList(new Object[]{userId, attributes});
+                    PrincipalCollection principalCollection = new SimplePrincipalCollection(principals, this.getName());
+                    return new SimpleAuthenticationInfo(principalCollection, ticket);
+                } catch (TicketValidationException var14) {
+//                    logger.info("now authentication token");
+                    throw new CasAuthenticationException("Unable to validate ticket [" + ticket + "]", var14);
+                }
+            }
+        }
     }
 }

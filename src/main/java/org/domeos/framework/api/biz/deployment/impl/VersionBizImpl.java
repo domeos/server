@@ -148,7 +148,7 @@ public class VersionBizImpl extends BaseBizImpl implements VersionBiz {
         // for version 0.4
         List<ContainerDraft> containerDrafts = version.getContainerDrafts();
         if (containerDrafts == null) {
-            return true;
+            return false;
         }
         for (ContainerDraft containerDraft : containerDrafts) {
             if (containerDraft.getLogItemDrafts() != null && containerDraft.getLogItemDrafts().size() > 0) {

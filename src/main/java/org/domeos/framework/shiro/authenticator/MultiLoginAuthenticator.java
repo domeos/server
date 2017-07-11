@@ -4,9 +4,9 @@ import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
+import org.apache.shiro.cas.CasToken;
 import org.apache.shiro.realm.Realm;
 import org.domeos.framework.api.model.auth.related.LoginType;
-import org.domeos.framework.api.model.global.SsoToken;
 import org.domeos.framework.shiro.token.MultiAuthenticationToken;
 
 import java.util.Collection;
@@ -17,13 +17,14 @@ import java.util.Collection;
 
 public class MultiLoginAuthenticator extends ModularRealmAuthenticator {
 
+
     @Override
     protected AuthenticationInfo doAuthenticate(AuthenticationToken authenticationToken) throws AuthenticationException {
 //        assertRealmsConfigured();
         MultiAuthenticationToken mlat;
         Realm loginRealm;
 
-        if (authenticationToken instanceof SsoToken) {
+        if (authenticationToken instanceof CasToken) {
             return doSingleRealmAuthentication(lookupRealm(LoginType.SSO), authenticationToken);
         }
 

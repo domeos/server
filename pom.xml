@@ -74,11 +74,6 @@
             <version>${mybatis-spring.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.shiro</groupId>
-            <artifactId>shiro-cas</artifactId>
-            <version>${shiro.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.mybatis.spring.boot</groupId>
             <artifactId>mybatis-spring-boot-starter</artifactId>
             <version>1.2.0</version>
@@ -256,6 +251,11 @@
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>http-builder</artifactId>
             <version>0.4.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.shiro</groupId>
+            <artifactId>shiro-cas</artifactId>
+            <version>${shiro.version}</version>
         </dependency>
         <!--<dependency>-->
             <!--<groupId>org.springframework.boot</groupId>-->

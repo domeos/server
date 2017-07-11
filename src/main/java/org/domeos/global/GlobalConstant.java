@@ -113,5 +113,6 @@ public class GlobalConstant {
     public static String LOAD_BALANCER_ID_STR = "loadBalancerId";
     
     public static final String SSO_API="/api/ssologin";
+    public static final String DOMEOS_SERVER_URL="DOMEOS_SERVER_URL";
 
 }

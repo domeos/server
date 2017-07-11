@@ -3,6 +3,7 @@ package org.domeos.configuration;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.shiro.cache.ehcache.EhCacheManager;
+import org.apache.shiro.cas.CasFilter;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.session.Session;
 import org.apache.shiro.session.SessionListener;
@@ -48,6 +49,11 @@ public class ShiroConfig {
     @Autowired(required = false)
     Collection<SessionListener> sessionListeners;
 
+    public String getDomeosServerUrl() {
+        return System.getenv(GlobalConstant.DOMEOS_SERVER_URL);
+    }
+
+
     /**
      * FilterRegistrationBean
      *
@@ -76,7 +82,7 @@ public class ShiroConfig {
         bean.setSuccessUrl("/");
         SsoFilter ssoFilter = new SsoFilter();
         ssoFilter.setSuccessUrl("/");
-        ssoFilter.setFailureUrl("/login/login.html");
+        ssoFilter.setFailureUrl(getDomeosServerUrl() + "/login/login.html");
         DmoLogoutFilter dmoLogoutFilter = new DmoLogoutFilter();
         dmoLogoutFilter.setRedirectUrl("/login/login.html");
 
@@ -206,7 +212,7 @@ public class ShiroConfig {
     @DependsOn(value = {"lifecycleBeanPostProcessor", "shiroRedisCacheManager", "retryLimitHashedCredentialsMatcher"})
     public SsoRealm ssoRealm() {
         SsoRealm ssoRealm = new SsoRealm();
-        ssoRealm.setCasService(GlobalConstant.SSO_API);
+        ssoRealm.setCasService(getDomeosServerUrl() + GlobalConstant.SSO_API);
         return ssoRealm;
     }
 
